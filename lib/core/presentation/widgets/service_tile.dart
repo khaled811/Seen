@@ -1,12 +1,11 @@
 // ServiceTile — Figma "Service tile": 104px card with a 40px service icon and a
 // label. `soon` = dashed outline, muted icon and a "Soon" tag; not tappable.
-import 'dart:ui' show PathMetric;
-
 import 'package:flutter/material.dart';
 
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
+import 'dashed_border.dart';
 import 'svg_icon.dart';
 
 class SeenServiceTile extends StatelessWidget {
@@ -17,6 +16,9 @@ class SeenServiceTile extends StatelessWidget {
     this.onTap,
     this.soon = false,
     this.soonLabel,
+    this.caption,
+    this.height = 104,
+    this.labelLines = 1,
   });
 
   final String label;
@@ -26,6 +28,11 @@ class SeenServiceTile extends StatelessWidget {
   /// Coming-soon state: dashed border, muted icon, [soonLabel] tag, no tap.
   final bool soon;
   final String? soonLabel;
+
+  /// Optional small line under the label (e.g. the price).
+  final String? caption;
+  final double height;
+  final int labelLines;
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +49,22 @@ class SeenServiceTile extends StatelessWidget {
           const SizedBox(height: SeenSpace.s2),
           Text(
             label,
-            maxLines: 1,
+            maxLines: labelLines,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: type.label.copyWith(color: c.ink),
           ),
+          if (caption != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                caption!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: type.caption.copyWith(color: c.inkMuted),
+              ),
+            ),
         ],
       ),
     );
@@ -57,10 +75,11 @@ class SeenServiceTile extends StatelessWidget {
       label: soon && soonLabel != null ? '$label, $soonLabel' : label,
       excludeSemantics: true,
       child: SizedBox(
-        height: 104,
+        height: height,
         child: soon
-            ? CustomPaint(
-                foregroundPainter: _DashedBorderPainter(color: c.borderStrong, radius: SeenRadius.r18.x),
+            ? SeenDashedBorder(
+                color: c.borderStrong,
+                radius: SeenRadius.r18.x,
                 child: DecoratedBox(
                   decoration: BoxDecoration(color: c.card, borderRadius: radius),
                   child: Stack(
@@ -93,36 +112,4 @@ class SeenServiceTile extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 1.5px dashed rounded-rectangle outline (Figma `border-dashed`).
-class _DashedBorderPainter extends CustomPainter {
-  const _DashedBorderPainter({required this.color, required this.radius});
-
-  final Color color;
-  final double radius;
-
-  static const _width = 1.5;
-  static const _dash = 5.0;
-  static const _gap = 4.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = _width;
-    final rect = Offset.zero & size;
-    final path = Path()..addRRect(RRect.fromRectAndRadius(rect.deflate(_width / 2), Radius.circular(radius)));
-    for (final PathMetric metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        canvas.drawPath(metric.extractPath(distance, distance + _dash), paint);
-        distance += _dash + _gap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedBorderPainter old) => old.color != color || old.radius != radius;
 }

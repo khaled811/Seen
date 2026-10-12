@@ -122,6 +122,13 @@ class SeenStrings {
     return n == 1 ? '1 request awaiting documents' : '$n requests awaiting documents';
   }
 
+  /// Booking flow: "Step 2 of 3", "Traveler 1 of 3", "Service fee × 3".
+  String bookingStep(int n, int total) =>
+      _t('الخطوة ${numeral(n)} من ${numeral(total)}', 'Step $n of $total');
+  String travelerOf(int n, int total) =>
+      _t('المسافر ${numeral(n)} من ${numeral(total)}', 'Traveler $n of $total');
+  String serviceFeeTimes(int n) => _t('رسوم الخدمة × ${numeral(n)}', 'Service fee × $n');
+
   /// Compact remaining time "46:12 س" / "46:12 h".
   String clockHm(int h, int m) {
     final text = '$h:${m.toString().padLeft(2, '0')}';

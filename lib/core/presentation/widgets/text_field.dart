@@ -40,6 +40,8 @@ class SeenTextField extends StatelessWidget {
     this.suffix,
     this.readOnly = false,
     this.enabled = true,
+    this.maxLines = 1,
+    this.picker = false,
     this.obscureText = false,
     this.keyboardType,
     this.textInputAction,
@@ -80,6 +82,13 @@ class SeenTextField extends StatelessWidget {
 
   /// false = Figma "Disabled" state.
   final bool enabled;
+
+  /// 1 = single line; more for free text (textarea).
+  final int maxLines;
+
+  /// A tap-to-pick field (date, select): not editable, but drawn as a normal
+  /// enabled field rather than the read-only look.
+  final bool picker;
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -110,9 +119,10 @@ class SeenTextField extends StatelessWidget {
     final type = SeenType.of(context);
     final rtlContext = Directionality.of(context) == ui.TextDirection.rtl;
     final base = mono ? type.inputMono : type.body;
-    final valueColor = !enabled ? c.inkMuted : (readOnly ? c.inkSecondary : c.ink);
-    final filled = !enabled || readOnly;
-    final restingBorder = readOnly && enabled ? c.border : c.borderStrong;
+    final valueColor = !enabled ? c.inkMuted : (readOnly && !picker ? c.inkSecondary : c.ink);
+    final plainReadOnly = readOnly && !picker;
+    final filled = !enabled || plainReadOnly;
+    final restingBorder = plainReadOnly && enabled ? c.border : c.borderStrong;
     const errorBorder = SeenBrand.inputErrorBorder;
     final helperStyle = type.caption.copyWith(color: c.inkMuted);
     final errorStyle = type.caption.copyWith(color: c.dangerFg);
@@ -130,6 +140,7 @@ class SeenTextField extends StatelessWidget {
           initialValue: controller == null ? initialValue : null,
           focusNode: focusNode,
           enabled: enabled,
+          maxLines: obscureText ? 1 : maxLines,
           readOnly: readOnly,
           obscureText: obscureText,
           keyboardType: keyboardType,

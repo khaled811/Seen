@@ -1255,5 +1255,126 @@
   "requestDocumentsReady": "Ready",
   "@requestDocumentsReady": {
     "description": "Requests screens copy."
+  },
+  "servicesNewTitle": "New service request",
+  "@servicesNewTitle": {
+    "description": "Booking flow copy."
+  },
+  "servicesNewSubtitle": "Choose a service to start",
+  "@servicesNewSubtitle": {
+    "description": "Booking flow copy."
+  },
+  "servicesSearchHint": "Search a service",
+  "@servicesSearchHint": {
+    "description": "Booking flow copy."
+  },
+  "servicesGroupApprovals": "Approvals",
+  "@servicesGroupApprovals": {
+    "description": "Booking flow copy."
+  },
+  "servicesGroupTravel": "Travel",
+  "@servicesGroupTravel": {
+    "description": "Booking flow copy."
+  },
+  "servicesGroupOther": "Other services",
+  "@servicesGroupOther": {
+    "description": "Booking flow copy."
+  },
+  "servicesPerTraveler": "per traveler",
+  "@servicesPerTraveler": {
+    "description": "Booking flow copy."
+  },
+  "servicesNoResults": "No matching services",
+  "@servicesNoResults": {
+    "description": "Booking flow copy."
+  },
+  "servicesNoResultsHint": "Try a different search.",
+  "@servicesNoResultsHint": {
+    "description": "Booking flow copy."
+  },
+  "servicesEmpty": "No services are available right now.",
+  "@servicesEmpty": {
+    "description": "Booking flow copy."
+  },
+  "servicesHelpTitle": "Cannot find the service?",
+  "@servicesHelpTitle": {
+    "description": "Booking flow copy."
+  },
+  "servicesHelpSubtitle": "Our support team helps within minutes",
+  "@servicesHelpSubtitle": {
+    "description": "Booking flow copy."
+  },
+  "servicesHelpAction": "Contact",
+  "@servicesHelpAction": {
+    "description": "Booking flow copy."
+  },
+  "bookingStepService": "Service",
+  "@bookingStepService": {
+    "description": "Booking flow copy."
+  },
+  "bookingStepTravelers": "Travelers",
+  "@bookingStepTravelers": {
+    "description": "Booking flow copy."
+  },
+  "bookingStepReview": "Review",
+  "@bookingStepReview": {
+    "description": "Booking flow copy."
+  },
+  "bookingBackAction": "Back",
+  "@bookingBackAction": {
+    "description": "Booking flow copy."
+  },
+  "bookingNextAction": "Next",
+  "@bookingNextAction": {
+    "description": "Booking flow copy."
+  },
+  "travelerStateNew": "New",
+  "@travelerStateNew": {
+    "description": "Booking flow copy."
+  },
+  "travelerStateReady": "Ready",
+  "@travelerStateReady": {
+    "description": "Booking flow copy."
+  },
+  "travelerStateIncomplete": "Incomplete",
+  "@travelerStateIncomplete": {
+    "description": "Booking flow copy."
+  },
+  "reviewEditAction": "Edit",
+  "@reviewEditAction": {
+    "description": "Booking flow copy."
+  },
+  "reviewFeesSection": "Fees",
+  "@reviewFeesSection": {
+    "description": "Booking flow copy."
+  },
+  "reviewTotal": "Total",
+  "@reviewTotal": {
+    "description": "Booking flow copy."
+  },
+  "reviewHoldTitle": "{amount} will be held from your balance",
+  "@reviewHoldTitle": {
+    "description": "Booking flow copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewHoldNote": "The amount is deducted for good once the approval is issued",
+  "@reviewHoldNote": {
+    "description": "Booking flow copy."
+  },
+  "reviewAvailableAfter": "Available after booking",
+  "@reviewAvailableAfter": {
+    "description": "Booking flow copy."
+  },
+  "reviewConfirmTerms": "I confirm the data and attached documents are correct",
+  "@reviewConfirmTerms": {
+    "description": "Booking flow copy."
+  },
+  "reviewSubmitAction": "Confirm and submit request",
+  "@reviewSubmitAction": {
+    "description": "Booking flow copy."
   }
 }

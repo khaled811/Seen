@@ -232,11 +232,12 @@ class SeenActionBar extends StatelessWidget {
     final c = SeenColors.of(context);
     final text = Theme.of(context).textTheme;
     return Container(
-      decoration: BoxDecoration(color: c.card, boxShadow: c.sheetShadow),
+      // Figma sticky actions: white bar, upward violet-tinted shadow.
+      decoration: BoxDecoration(color: c.card, boxShadow: SeenShadows.stickyBar),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(SeenSpace.s4, SeenSpace.s3, SeenSpace.s4, SeenSpace.s4),
+          padding: const EdgeInsetsDirectional.fromSTEB(20, 14, 20, 14),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -21,6 +21,7 @@ abstract final class SeenIcons {
   static IconData get check => PhosphorIcons.check(PhosphorIconsStyle.bold);
   static IconData get x => PhosphorIcons.x();
   static IconData get download => PhosphorIcons.downloadSimple();
+  static IconData get upload => PhosphorIcons.uploadSimple();
   static IconData get credit => PhosphorIcons.arrowDownLeft(PhosphorIconsStyle.bold); // money in — never mirrored
   static IconData get debit => PhosphorIcons.arrowUpRight(PhosphorIconsStyle.bold); // money out — never mirrored
   static IconData get lock => PhosphorIcons.lock();
