@@ -11,6 +11,21 @@ abstract final class PhoneIdentifier {
   static const minDigits = 7;
   static const maxDigits = 15;
 
+  static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+  /// The login field takes an email or a phone number. Anything typed with an
+  /// `@` or a letter is an email; otherwise it is a phone number.
+  static bool looksLikeEmail(String raw) => RegExp(r'[@A-Za-z]').hasMatch(raw);
+
+  /// Valid email (when [looksLikeEmail]) or valid phone number.
+  static bool isValidIdentifier(String raw) =>
+      looksLikeEmail(raw) ? _emailPattern.hasMatch(raw.trim()) : isValid(raw);
+
+  /// The `identifier` for the auth contract: a trimmed email as typed, or the
+  /// E.164 phone from [toIdentifier].
+  static String toLoginIdentifier(String raw, {String countryCode = defaultCountryCode}) =>
+      looksLikeEmail(raw) ? raw.trim() : toIdentifier(raw, countryCode: countryCode);
+
   /// Digits only, Latin, no spaces/dashes/leading `+`.
   static String digitsOf(String raw) => toLatinDigits(raw).replaceAll(RegExp(r'[^0-9]'), '');
 

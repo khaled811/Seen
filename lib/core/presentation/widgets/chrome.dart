@@ -7,7 +7,9 @@ import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
 import '../foundation/seen_motion_icons.dart';
 import '../foundation/seen_strings.dart';
+import '../foundation/seen_vectors.dart';
 import 'actions.dart';
+import 'svg_icon.dart';
 
 /// 56px app bar. `.home` = org identity + language + bell (no page title);
 /// `.inner` = back, centered title + subtitle (step or reference), trailing action.
@@ -164,19 +166,48 @@ class SeenBottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
+  static const _icons = [
+    SeenVectors.iconHome,
+    SeenVectors.iconRequests,
+    SeenVectors.iconWallet,
+    SeenVectors.iconAgents,
+    SeenVectors.iconAccount,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
+    final type = SeenType.of(context);
     final labels = SeenStrings.of(context).nav;
-    final icons = [SeenIcons.home, SeenIcons.list, SeenIcons.wallet, SeenIcons.users, SeenIcons.user];
+    // Figma tab item: 22px glyph in a 56x30 pill (violet-10 when active),
+    // 11px label — Regular muted when idle, Medium link color when active.
     return DecoratedBox(
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: c.border))),
-      child: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onSelected,
-        destinations: [
-          for (var i = 0; i < 5; i++) NavigationDestination(icon: Icon(icons[i]), label: labels[i]),
-        ],
+      decoration: BoxDecoration(color: c.card, border: Border(top: BorderSide(color: c.border))),
+      child: NavigationBarTheme(
+        data: NavigationBarTheme.of(context).copyWith(
+          backgroundColor: c.card,
+          indicatorColor: c.primarySoft,
+          indicatorShape: const StadiumBorder(),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final selected = states.contains(WidgetState.selected);
+            return type.caption.copyWith(
+              color: selected ? c.primaryInk : c.inkMuted,
+              fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
+            );
+          }),
+        ),
+        child: NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onSelected,
+          destinations: [
+            for (var i = 0; i < 5; i++)
+              NavigationDestination(
+                icon: SeenSvgIcon(_icons[i], color: SeenBrand.tabIconInactive),
+                selectedIcon: SeenSvgIcon(_icons[i], color: c.primary),
+                label: labels[i],
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -261,7 +292,7 @@ class SeenSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: SeenSpace.s6, bottom: SeenSpace.s3),
       child: Row(
         children: [
-          Flexible(child: Text(title, style: text.titleSmall)),
+          Flexible(child: Text(title, style: SeenType.of(context).h2)),
           if (count != null) ...[
             const SizedBox(width: SeenSpace.s2),
             Container(
@@ -273,7 +304,7 @@ class SeenSectionHeader extends StatelessWidget {
             ),
           ],
           const Spacer(),
-          if (actionLabel != null) SeenLink(label: actionLabel!, onTap: onAction),
+          if (actionLabel != null) SeenTextLink(label: actionLabel!, onTap: onAction),
         ],
       ),
     );

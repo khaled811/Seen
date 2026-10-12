@@ -201,3 +201,56 @@ class _SeenSlaTagState extends State<SeenSlaTag> {
     );
   }
 }
+
+enum SeenCountdownState { warm, urgent, expired }
+
+/// Figma "Countdown pill": clock + remaining time on the status colors of the
+/// deadline (warm = action required, urgent = under 24h, expired). The caller
+/// supplies the localized [label]; pass [ltrLabel] for clock-style values such
+/// as "0:42" so their digits are never reordered inside Arabic text.
+class SeenCountdownPill extends StatelessWidget {
+  const SeenCountdownPill({
+    super.key,
+    required this.label,
+    this.state = SeenCountdownState.warm,
+    this.ltrLabel = false,
+    this.semanticLabel,
+  });
+
+  final String label;
+  final SeenCountdownState state;
+  final bool ltrLabel;
+  final String? semanticLabel;
+
+  SeenRequestStatus get _status => switch (state) {
+        SeenCountdownState.warm => SeenRequestStatus.actionRequired,
+        SeenCountdownState.urgent => SeenRequestStatus.deadlineUnder24h,
+        SeenCountdownState.expired => SeenRequestStatus.expired,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = _status.colors;
+    final style = SeenType.of(context).chipM.copyWith(color: colors.fg, fontFeatures: SeenFonts.tabular);
+    Widget text = Text(label, style: style, maxLines: 1);
+    if (ltrLabel) text = Directionality(textDirection: TextDirection.ltr, child: text);
+    return Semantics(
+      label: semanticLabel ?? label,
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: colors.bg, borderRadius: const BorderRadius.all(SeenRadius.full)),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(start: 12, end: 10, top: 5, bottom: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(SeenIcons.clock, size: 16, color: colors.fg),
+              const SizedBox(width: 6),
+              Flexible(child: text),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

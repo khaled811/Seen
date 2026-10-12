@@ -41,7 +41,7 @@ void main() {
 
     await tester.tap(find.text('تسجيل الدخول'));
     await tester.pumpAndSettle();
-    expect(find.text('رقم الجوال'), findsOneWidget);
+    expect(find.text('رقم الجوال أو البريد الإلكتروني'), findsOneWidget);
     expect(find.text('أهلًا بك في سين أعمال'), findsNothing);
 
     await tester.tap(find.byType(SeenRoundIconButton));
@@ -63,6 +63,22 @@ void main() {
     await tester.tap(find.text('دخول'));
     await tester.pumpAndSettle();
     expect(find.text('أدخل رقم جوال صحيحًا.'), findsOneWidget);
+  });
+
+  testWidgets('Login: an email hides the phone prefix and gets the email error when malformed', (tester) async {
+    await boot(tester);
+    await tester.tap(find.text('تسجيل الدخول'));
+    await tester.pumpAndSettle();
+    expect(find.text('+967'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, 'agent@');
+    await tester.pump();
+    expect(find.text('+967'), findsNothing);
+
+    await tester.ensureVisible(find.text('دخول'));
+    await tester.tap(find.text('دخول'));
+    await tester.pumpAndSettle();
+    expect(find.text('أدخل بريدًا إلكترونيًا صالحًا.'), findsOneWidget);
   });
 
   testWidgets('Login: Arabic-Indic digits are converted to Latin as typed', (tester) async {

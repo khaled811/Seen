@@ -12,6 +12,10 @@
 // needs to change, it must be updated here too, independently of the ARB
 // files. Flag if you'd rather these be reconciled into ARB instead.
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
+
+import '../../theme/seen_colors.dart';
+import '../../utils/latin_digits.dart';
 
 class SeenStrings {
   const SeenStrings._(this.isArabic);
@@ -34,6 +38,76 @@ class SeenStrings {
   String get completed => _t('مكتمل', 'Completed');
   String get approved => _t('معتمد', 'Approved');
   String get posted => _t('مُرحّل', 'Posted');
+
+  // Numerals: counts and dates use Arabic-Indic digits in Arabic and Latin
+  // in English. Money, references, phone numbers and clock times stay Latin
+  // (see SeenFormat).
+  String numeral(int v) {
+    final latin = NumberFormat('#,##0', 'en').format(v);
+    return isArabic ? toArabicIndicDigits(latin) : latin;
+  }
+
+  /// Home greeting line: how many requests need follow-up today.
+  String attentionSummary(int n) {
+    if (isArabic) {
+      return switch (n) {
+        0 => 'لا توجد طلبات تحتاج متابعة اليوم',
+        1 => 'لديك طلب واحد يحتاج متابعة اليوم',
+        2 => 'لديك طلبان يحتاجان متابعة اليوم',
+        >= 3 && <= 10 => 'لديك ${numeral(n)} طلبات تحتاج متابعة اليوم',
+        _ => 'لديك ${numeral(n)} طلبًا تحتاج متابعة اليوم',
+      };
+    }
+    return switch (n) {
+      0 => 'No requests need follow-up today',
+      1 => '1 request needs follow-up today',
+      _ => '$n requests need follow-up today',
+    };
+  }
+
+  /// Traveler count on a request card.
+  String travelerCount(int n) {
+    if (isArabic) {
+      return switch (n) {
+        1 => 'مسافر واحد',
+        2 => 'مسافران',
+        >= 3 && <= 10 => '${numeral(n)} مسافرين',
+        _ => '${numeral(n)} مسافرًا',
+      };
+    }
+    return n == 1 ? '1 traveler' : '$n travelers';
+  }
+
+  // Request status chips (Figma "Request statuses" — 12 states)
+  String requestStatus(SeenRequestStatus s) => switch (s) {
+        SeenRequestStatus.newRequest => _t('طلب جديد', 'New request'),
+        SeenRequestStatus.submitted => _t('مُرسل', 'Submitted'),
+        SeenRequestStatus.underReview => _t('قيد المراجعة', 'Under review'),
+        SeenRequestStatus.processing => _t('قيد المعالجة', 'Processing'),
+        SeenRequestStatus.withAuthority => _t('لدى الجهة المختصة', 'With authority'),
+        SeenRequestStatus.actionRequired => _t('بانتظار مستند', 'Action required'),
+        SeenRequestStatus.deadlineUnder24h => _t('أقل من ٢٤ ساعة', 'Under 24 hours'),
+        SeenRequestStatus.completed => _t('مكتمل', 'Completed'),
+        SeenRequestStatus.confirmed => _t('مؤكدة', 'Confirmed'),
+        SeenRequestStatus.rejected => _t('مرفوض', 'Rejected'),
+        SeenRequestStatus.cancelled => _t('ملغي', 'Cancelled'),
+        SeenRequestStatus.expired => _t('انتهت المهلة', 'Expired'),
+      };
+
+  // Request progress (5 steps shown on request cards)
+  String requestStep(int step) => switch (step) {
+        1 => _t('استلام الطلب', 'Request received'),
+        2 => _t('مراجعة المستندات', 'Reviewing documents'),
+        3 => _t('لدى الجهة المختصة', 'With the authority'),
+        4 => _t('إصدار الموافقة', 'Issuing approval'),
+        _ => _t('صادرة', 'Issued'),
+      };
+  String stepOf(int step, int total) =>
+      _t('${numeral(step)} من ${numeral(total)}', '$step of $total');
+
+  // Deadline countdown pill
+  String remainingHours(int h) => _t('يتبقى ${numeral(h)} ساعة', '$h h left');
+  String remainingMinutes(int m) => _t('يتبقى ${numeral(m)} دقيقة', '$m min left');
 
   // SLA
   String get slaExceeded => _t('تجاوز المهلة', 'SLA exceeded');

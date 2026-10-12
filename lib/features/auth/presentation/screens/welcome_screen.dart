@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
+import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
@@ -34,8 +35,7 @@ class WelcomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: c.card,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: SeenBrand.gradientScreen),
+      body: SeenScreenBackground(
         child: SafeArea(
           child: LayoutBuilder(builder: (context, box) {
             return SingleChildScrollView(

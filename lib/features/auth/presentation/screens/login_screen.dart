@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,6 +8,7 @@ import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_motion_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
+import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/motion_icon.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     context.read<AuthBloc>().add(
           AuthLoginSubmitted(
-            identifier: PhoneIdentifier.toIdentifier(_phoneController.text),
+            identifier: PhoneIdentifier.toLoginIdentifier(_phoneController.text),
             password: _passwordController.text,
           ),
         );
@@ -82,8 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text((state as AuthFailure).message)));
         },
-        child: DecoratedBox(
-          decoration: const BoxDecoration(gradient: SeenBrand.gradientScreen),
+        child: SeenScreenBackground(
           child: SafeArea(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -121,33 +120,44 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: SeenSpace.s1),
                           Text(l10n.loginSubtitle, style: type.body.copyWith(color: c.inkMuted)),
                           const SizedBox(height: SeenSpace.s5),
-                          SeenTextField(
-                            label: l10n.loginPhoneLabel,
-                            helper: l10n.loginPhoneHelper,
-                            controller: _phoneController,
-                            ltr: true,
-                            keyboardType: TextInputType.phone,
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.telephoneNumber],
-                            // Latin digits only, even from an Arabic keyboard.
-                            inputFormatters: [
-                              const LatinDigitsFormatter(),
-                              FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s-]')),
-                            ],
-                            // Country context. Fixed default: Figma has no picker.
-                            prefix: Padding(
-                              padding: const EdgeInsetsDirectional.only(end: SeenSpace.s2),
-                              child: Directionality(
-                                textDirection: TextDirection.ltr,
-                                child: Text(
-                                  PhoneIdentifier.defaultCountryCode,
-                                  style: type.bodyStrong.copyWith(color: c.ink),
-                                ),
-                              ),
-                            ),
-                            validator: (value) =>
-                                FormValidators.required(value, message: l10n.validationRequired) ??
-                                (PhoneIdentifier.isValid(value ?? '') ? null : l10n.validationInvalidPhone),
+                          // Email or phone. With letters / "@" it is an email and the
+                          // phone prefix and digit handling step aside.
+                          ListenableBuilder(
+                            listenable: _phoneController,
+                            builder: (context, _) {
+                              final isEmail = PhoneIdentifier.looksLikeEmail(_phoneController.text);
+                              return SeenTextField(
+                                label: l10n.loginPhoneLabel,
+                                helper: l10n.loginPhoneHelper,
+                                controller: _phoneController,
+                                ltr: true,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.username, AutofillHints.telephoneNumber],
+                                // Latin digits only, even from an Arabic keyboard.
+                                inputFormatters: const [LatinDigitsFormatter()],
+                                // Country context for phone numbers. Fixed default: Figma has no picker.
+                                prefix: isEmail
+                                    ? null
+                                    : Padding(
+                                        padding: const EdgeInsetsDirectional.only(end: SeenSpace.s2),
+                                        child: Directionality(
+                                          textDirection: TextDirection.ltr,
+                                          child: Text(
+                                            PhoneIdentifier.defaultCountryCode,
+                                            style: type.bodyStrong.copyWith(color: c.ink),
+                                          ),
+                                        ),
+                                      ),
+                                validator: (value) =>
+                                    FormValidators.required(value, message: l10n.validationRequired) ??
+                                    (PhoneIdentifier.isValidIdentifier(value ?? '')
+                                        ? null
+                                        : (PhoneIdentifier.looksLikeEmail(value ?? '')
+                                            ? l10n.validationInvalidEmail
+                                            : l10n.validationInvalidPhone)),
+                              );
+                            },
                           ),
                           const SizedBox(height: SeenSpace.s5),
                           SeenTextField(

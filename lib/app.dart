@@ -125,7 +125,7 @@ class _AuthGate extends StatelessWidget {
               agentTabs: _agentTabs(context),
               onAccount: showAccountSheet,
             ),
-          AuthUnauthenticated() => const AuthEntryFlow(),
+          AuthUnauthenticated(:final startOnLogin) => AuthEntryFlow(startOnLogin: startOnLogin),
           // A rejected sign-in goes back to Login, not Welcome.
           AuthFailure() => const AuthEntryFlow(startOnLogin: true),
         };

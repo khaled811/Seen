@@ -9,6 +9,8 @@ import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/feedback.dart';
+import '../../../../core/presentation/widgets/screen_background.dart';
+import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
@@ -92,6 +94,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     context.read<AuthBloc>().add(AuthOtpSubmitted(code: value));
   }
 
+  void _back() => context.read<AuthBloc>().add(const AuthOtpCancelled());
+
   void _resend() {
     context.read<AuthBloc>().add(const AuthOtpResendRequested());
   }
@@ -102,78 +106,93 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
     final identifier = _identifier;
-    return Scaffold(
-      backgroundColor: c.card,
-      body: BlocListener<AuthBloc, AuthState>(
-        listenWhen: (previous, current) => current is AuthFailure && current.stage == AuthFailureStage.otp,
-        listener: (context, state) {
-          setState(() => _hasError = true);
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text((state as AuthFailure).message)));
-        },
-        child: DecoratedBox(
-          decoration: const BoxDecoration(gradient: SeenBrand.gradientScreen),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: ExcludeSemantics(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: c.primarySoft,
-                                borderRadius: const BorderRadius.all(SeenRadius.r20),
-                              ),
-                              child: SizedBox(
-                                width: 64,
-                                height: 64,
-                                child: Center(child: SvgPicture.asset(SeenVectors.iconChat, width: 36, height: 36)),
+    return PopScope(
+      canPop: false, // system back = same as the on-screen back button
+      onPopInvoked: (didPop) {
+        if (!didPop) _back();
+      },
+      child: Scaffold(
+        backgroundColor: c.card,
+        body: BlocListener<AuthBloc, AuthState>(
+          listenWhen: (previous, current) => current is AuthFailure && current.stage == AuthFailureStage.otp,
+          listener: (context, state) {
+            setState(() => _hasError = true);
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text((state as AuthFailure).message)));
+          },
+          child: SeenScreenBackground(
+            child: SafeArea(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: SeenRoundIconButton(
+                              icon: SeenIcons.back(context),
+                              semanticLabel: MaterialLocalizations.of(context).backButtonTooltip,
+                              tonal: true,
+                              onPressed: _back,
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: ExcludeSemantics(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: c.primarySoft,
+                                  borderRadius: const BorderRadius.all(SeenRadius.r20),
+                                ),
+                                child: SizedBox(
+                                  width: 64,
+                                  height: 64,
+                                  child: Center(child: SvgPicture.asset(SeenVectors.iconChat, width: 36, height: 36)),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 22),
-                        Text(l10n.otpTitle, style: type.h1),
-                        const SizedBox(height: SeenSpace.s1),
-                        Text(
-                          identifier == null
-                              ? l10n.otpInstructions
-                              : l10n.otpSentTo(PhoneIdentifier.mask(identifier)),
-                          style: type.body.copyWith(color: c.inkMuted),
-                        ),
-                        const SizedBox(height: 22),
-                        SeenOtpInput(
-                          length: _otpLength,
-                          controller: _codeController,
-                          error: _hasError,
-                          onCompleted: _submit,
-                        ),
-                        const SizedBox(height: 22),
-                        _ResendRow(secondsRemaining: _secondsRemaining, onResend: _resend),
-                        const SizedBox(height: 96),
-                        BlocBuilder<AuthBloc, AuthState>(
-                          buildWhen: (previous, current) => previous is AuthLoading || current is AuthLoading,
-                          builder: (context, state) {
-                            final isLoading = state is AuthLoading;
-                            return SeenButton(
-                              label: isLoading ? l10n.loading : l10n.otpConfirm,
-                              size: SeenButtonSize.large,
-                              expand: true,
-                              loading: isLoading,
-                              onPressed: () => _submit(),
-                            );
-                          },
-                        ),
-                      ],
+                          const SizedBox(height: 22),
+                          Text(l10n.otpTitle, style: type.h1),
+                          const SizedBox(height: SeenSpace.s1),
+                          Text(
+                            identifier == null
+                                ? l10n.otpInstructions
+                                : l10n.otpSentTo(PhoneIdentifier.mask(identifier)),
+                            style: type.body.copyWith(color: c.inkMuted),
+                          ),
+                          const SizedBox(height: 22),
+                          SeenOtpInput(
+                            length: _otpLength,
+                            controller: _codeController,
+                            error: _hasError,
+                            onCompleted: _submit,
+                          ),
+                          const SizedBox(height: 22),
+                          _ResendRow(secondsRemaining: _secondsRemaining, onResend: _resend),
+                          const SizedBox(height: 96),
+                          BlocBuilder<AuthBloc, AuthState>(
+                            buildWhen: (previous, current) => previous is AuthLoading || current is AuthLoading,
+                            builder: (context, state) {
+                              final isLoading = state is AuthLoading;
+                              return SeenButton(
+                                label: isLoading ? l10n.loading : l10n.otpConfirm,
+                                size: SeenButtonSize.large,
+                                expand: true,
+                                loading: isLoading,
+                                onPressed: () => _submit(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -210,46 +229,14 @@ class _ResendRow extends StatelessWidget {
           ),
         ),
         if (waiting)
-          _CountdownPill(seconds: secondsRemaining)
+          SeenCountdownPill(
+            label: '${secondsRemaining ~/ 60}:${(secondsRemaining % 60).toString().padLeft(2, '0')}',
+            ltrLabel: true,
+            semanticLabel: l10n.otpResendIn(secondsRemaining),
+          )
         else
           SeenTextLink(label: l10n.otpResendAction, onTap: onResend),
       ],
-    );
-  }
-}
-
-/// Figma "Countdown pill · Warm": action-required colors, clock + m:ss in
-/// Latin digits.
-class _CountdownPill extends StatelessWidget {
-  const _CountdownPill({required this.seconds});
-
-  final int seconds;
-
-  @override
-  Widget build(BuildContext context) {
-    final type = SeenType.of(context);
-    final colors = SeenRequestStatus.actionRequired.colors;
-    final label = '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
-    return Semantics(
-      label: AppLocalizations.of(context)!.otpResendIn(seconds),
-      excludeSemantics: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: colors.bg, borderRadius: const BorderRadius.all(SeenRadius.full)),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.only(start: 12, end: 10, top: 5, bottom: 5),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(SeenIcons.clock, size: 16, color: colors.fg),
-              const SizedBox(width: 6),
-              Directionality(
-                textDirection: TextDirection.ltr,
-                child: Text(label, style: type.label.copyWith(color: colors.fg, fontFeatures: SeenFonts.tabular)),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

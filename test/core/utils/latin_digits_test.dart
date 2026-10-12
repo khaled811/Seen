@@ -9,6 +9,11 @@ void main() {
     expect(toLatinDigits('+٩٦٧ 77-abc'), '+967 77-abc');
   });
 
+  test('Arabic-Indic display conversion handles digits and the group separator', () {
+    expect(toArabicIndicDigits('1,234'), '١٬٢٣٤');
+    expect(toArabicIndicDigits('52'), '٥٢');
+  });
+
   test('formatter converts as the user types and keeps selection', () {
     const formatter = LatinDigitsFormatter();
     const typed = TextEditingValue(text: '٧٧', selection: TextSelection.collapsed(offset: 2));

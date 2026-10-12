@@ -54,7 +54,7 @@
   },
   "validationInvalidPhone": "Enter a valid phone number.",
   "@validationInvalidPhone": {
-    "description": "Shown when a phone field fails format validation."
+    "description": "Phone validation error."
   },
   "validationMinLength": "Must be at least {count} characters.",
   "@validationMinLength": {
@@ -480,25 +480,45 @@
     "description": "Button label returning to the home screen after a completed booking."
   },
   "requestStatusDraft": "Draft",
-  "@requestStatusDraft": { "description": "Request status label." },
+  "@requestStatusDraft": {
+    "description": "Request status label."
+  },
   "requestStatusSubmitted": "Submitted",
-  "@requestStatusSubmitted": { "description": "Request status label." },
+  "@requestStatusSubmitted": {
+    "description": "Request status label."
+  },
   "requestStatusPendingAgentApproval": "Pending Agent Approval",
-  "@requestStatusPendingAgentApproval": { "description": "Request status label." },
+  "@requestStatusPendingAgentApproval": {
+    "description": "Request status label."
+  },
   "requestStatusPendingManagementApproval": "Pending Management Approval",
-  "@requestStatusPendingManagementApproval": { "description": "Request status label." },
+  "@requestStatusPendingManagementApproval": {
+    "description": "Request status label."
+  },
   "requestStatusUnderReview": "Under Review",
-  "@requestStatusUnderReview": { "description": "Request status label." },
+  "@requestStatusUnderReview": {
+    "description": "Request status label."
+  },
   "requestStatusInfoRequired": "Action Required",
-  "@requestStatusInfoRequired": { "description": "Request status label." },
+  "@requestStatusInfoRequired": {
+    "description": "Request status label."
+  },
   "requestStatusProcessing": "Processing",
-  "@requestStatusProcessing": { "description": "Request status label." },
+  "@requestStatusProcessing": {
+    "description": "Request status label."
+  },
   "requestStatusCompleted": "Completed",
-  "@requestStatusCompleted": { "description": "Request status label." },
+  "@requestStatusCompleted": {
+    "description": "Request status label."
+  },
   "requestStatusRejected": "Rejected",
-  "@requestStatusRejected": { "description": "Request status label." },
+  "@requestStatusRejected": {
+    "description": "Request status label."
+  },
   "requestStatusCancelled": "Cancelled",
-  "@requestStatusCancelled": { "description": "Request status label." },
+  "@requestStatusCancelled": {
+    "description": "Request status label."
+  },
   "slaOverdue": "SLA overdue",
   "@slaOverdue": {
     "description": "Shown on the SLA countdown badge once the 72-hour deadline has passed."
@@ -507,69 +527,121 @@
   "@slaTimeRemaining": {
     "description": "Shown on the SLA countdown badge before the deadline.",
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "requestsDashboardTitle": "My Requests",
-  "@requestsDashboardTitle": { "description": "Title of the Requests Dashboard screen." },
+  "@requestsDashboardTitle": {
+    "description": "Title of the Requests Dashboard screen."
+  },
   "requestsFilterAll": "All",
-  "@requestsFilterAll": { "description": "Dashboard status filter option." },
+  "@requestsFilterAll": {
+    "description": "Dashboard status filter option."
+  },
   "requestsFilterPendingUnderReview": "Under Review",
-  "@requestsFilterPendingUnderReview": { "description": "Dashboard status filter option." },
+  "@requestsFilterPendingUnderReview": {
+    "description": "Dashboard status filter option."
+  },
   "requestsFilterCompleted": "Completed",
-  "@requestsFilterCompleted": { "description": "Dashboard status filter option." },
+  "@requestsFilterCompleted": {
+    "description": "Dashboard status filter option."
+  },
   "requestsFilterActionRequired": "Action Required",
-  "@requestsFilterActionRequired": { "description": "Dashboard status filter option." },
+  "@requestsFilterActionRequired": {
+    "description": "Dashboard status filter option."
+  },
   "requestsEmptyMessage": "No requests match this filter.",
-  "@requestsEmptyMessage": { "description": "Shown when the filtered request list is empty." },
+  "@requestsEmptyMessage": {
+    "description": "Shown when the filtered request list is empty."
+  },
   "requestsSearchHint": "Search by reference or service",
-  "@requestsSearchHint": { "description": "Placeholder in the inline requests search field." },
+  "@requestsSearchHint": {
+    "description": "Placeholder in the inline requests search field."
+  },
   "requestsSearchAction": "Search",
-  "@requestsSearchAction": { "description": "Accessible label for the search icon button opening the inline search field." },
+  "@requestsSearchAction": {
+    "description": "Accessible label for the search icon button opening the inline search field."
+  },
   "requestsEmptySearchTitle": "No matching requests",
-  "@requestsEmptySearchTitle": { "description": "Title shown when a search/filter combination has no results." },
+  "@requestsEmptySearchTitle": {
+    "description": "Title shown when a search/filter combination has no results."
+  },
   "requestsEmptySearchMessage": "Try a different reference or service name.",
-  "@requestsEmptySearchMessage": { "description": "Body text shown when a search/filter combination has no results." },
+  "@requestsEmptySearchMessage": {
+    "description": "Body text shown when a search/filter combination has no results."
+  },
   "requestsBookNewAction": "Book a new approval",
-  "@requestsBookNewAction": { "description": "Button on the empty-search state that starts a new booking." },
+  "@requestsBookNewAction": {
+    "description": "Button on the empty-search state that starts a new booking."
+  },
   "requestDetailCopyReferenceAction": "Copy reference",
-  "@requestDetailCopyReferenceAction": { "description": "Overflow menu item copying the request's reference id." },
+  "@requestDetailCopyReferenceAction": {
+    "description": "Overflow menu item copying the request's reference id."
+  },
   "requestDetailContactSupportAction": "Contact support",
-  "@requestDetailContactSupportAction": { "description": "Overflow menu item opening the support tickets screen." },
+  "@requestDetailContactSupportAction": {
+    "description": "Overflow menu item opening the support tickets screen."
+  },
   "requestDetailReferenceCopiedMessage": "Reference copied to clipboard.",
-  "@requestDetailReferenceCopiedMessage": { "description": "Snackbar shown after copying the request reference." },
+  "@requestDetailReferenceCopiedMessage": {
+    "description": "Snackbar shown after copying the request reference."
+  },
   "requestDetailDownloadApprovalsAction": "Download issued approvals ({count})",
   "@requestDetailDownloadApprovalsAction": {
     "description": "Sticky bottom bar button downloading every approved traveler's document.",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "requestDetailDownloadApprovalsUnavailable": "Approvals will be available once issued",
-  "@requestDetailDownloadApprovalsUnavailable": { "description": "Caption shown under the download-approvals button when no traveler is approved yet." },
+  "@requestDetailDownloadApprovalsUnavailable": {
+    "description": "Caption shown under the download-approvals button when no traveler is approved yet."
+  },
   "requestDetailSubmittedPrefix": "Submitted",
-  "@requestDetailSubmittedPrefix": { "description": "Prefix before the submission timestamp in the request detail summary meta line." },
+  "@requestDetailSubmittedPrefix": {
+    "description": "Prefix before the submission timestamp in the request detail summary meta line."
+  },
   "requestDetailHeldPrefix": "Held",
-  "@requestDetailHeldPrefix": { "description": "Prefix before the held amount in the request detail summary meta line." },
+  "@requestDetailHeldPrefix": {
+    "description": "Prefix before the held amount in the request detail summary meta line."
+  },
   "requestCardTravelersLabel": "{count, plural, one{1 traveler} other{{count} travelers}}",
   "@requestCardTravelersLabel": {
     "description": "Traveler count shown on a dashboard request card.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "requestDetailTitle": "Request Detail",
-  "@requestDetailTitle": { "description": "Title of the Request Detail screen." },
+  "@requestDetailTitle": {
+    "description": "Title of the Request Detail screen."
+  },
   "requestDetailTravelersSection": "Travelers",
-  "@requestDetailTravelersSection": { "description": "Detail screen section title." },
+  "@requestDetailTravelersSection": {
+    "description": "Detail screen section title."
+  },
   "requestDetailTimelineSection": "Timeline",
-  "@requestDetailTimelineSection": { "description": "Detail screen section title." },
+  "@requestDetailTimelineSection": {
+    "description": "Detail screen section title."
+  },
   "requestDetailOutputSection": "Output Delivery",
-  "@requestDetailOutputSection": { "description": "Detail screen section title." },
+  "@requestDetailOutputSection": {
+    "description": "Detail screen section title."
+  },
   "requestDetailDownloadAction": "Download Approval Document",
   "@requestDetailDownloadAction": {
     "description": "Mocked action to download the completed request's output document."
   },
   "requestDetailCancelAction": "Cancel Request",
-  "@requestDetailCancelAction": { "description": "Button label to cancel a request." },
+  "@requestDetailCancelAction": {
+    "description": "Button label to cancel a request."
+  },
   "requestDetailCancelConfirmTitle": "Cancel this request?",
   "@requestDetailCancelConfirmTitle": {
     "description": "Confirmation dialog title before cancelling a request."
@@ -583,34 +655,56 @@
     "description": "Shown after a request is successfully cancelled."
   },
   "yes": "Yes",
-  "@yes": { "description": "Generic affirmative confirmation button label." },
+  "@yes": {
+    "description": "Generic affirmative confirmation button label."
+  },
   "no": "No",
-  "@no": { "description": "Generic negative confirmation button label." },
+  "@no": {
+    "description": "Generic negative confirmation button label."
+  },
   "validationInvalidMaxAmount": "Amount can't exceed your available balance ({max}).",
   "@validationInvalidMaxAmount": {
     "description": "Shown when a transfer amount exceeds the sender's available balance.",
     "placeholders": {
-      "max": { "type": "String" }
+      "max": {
+        "type": "String"
+      }
     }
   },
   "subAgentsTitle": "Sub-Agents",
-  "@subAgentsTitle": { "description": "Title of the sub-agents hierarchy list screen." },
+  "@subAgentsTitle": {
+    "description": "Title of the sub-agents hierarchy list screen."
+  },
   "subAgentCodeLabel": "Code: {code}",
   "@subAgentCodeLabel": {
     "description": "Sub-agent card row showing its code.",
-    "placeholders": { "code": { "type": "String" } }
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
   },
   "subAgentActiveStatus": "Active",
-  "@subAgentActiveStatus": { "description": "Sub-agent active-status badge." },
+  "@subAgentActiveStatus": {
+    "description": "Sub-agent active-status badge."
+  },
   "subAgentInactiveStatus": "Inactive",
-  "@subAgentInactiveStatus": { "description": "Sub-agent active-status badge." },
+  "@subAgentInactiveStatus": {
+    "description": "Sub-agent active-status badge."
+  },
   "subAgentMarginLabel": "Margin: {percent}%",
   "@subAgentMarginLabel": {
     "description": "Sub-agent card row showing its assigned price markup/margin.",
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "subAgentFundAction": "Fund Wallet",
-  "@subAgentFundAction": { "description": "Button label opening the transfer-balance sheet." },
+  "@subAgentFundAction": {
+    "description": "Button label opening the transfer-balance sheet."
+  },
   "subAgentApprovalsTitle": "Pending Approvals",
   "@subAgentApprovalsTitle": {
     "description": "Title of the sub-agent request approval-gate screen."
@@ -620,9 +714,13 @@
     "description": "Shown when there are no pending-agent-approval requests."
   },
   "subAgentApproveAction": "Approve",
-  "@subAgentApproveAction": { "description": "Button label approving a sub-agent's request." },
+  "@subAgentApproveAction": {
+    "description": "Button label approving a sub-agent's request."
+  },
   "subAgentRejectAction": "Reject",
-  "@subAgentRejectAction": { "description": "Button label rejecting a sub-agent's request." },
+  "@subAgentRejectAction": {
+    "description": "Button label rejecting a sub-agent's request."
+  },
   "subAgentApproveSuccessMessage": "Request approved.",
   "@subAgentApproveSuccessMessage": {
     "description": "Shown after a sub-agent request is approved."
@@ -632,97 +730,179 @@
     "description": "Shown after a sub-agent request is rejected."
   },
   "subAgentRejectDialogTitle": "Reject this request?",
-  "@subAgentRejectDialogTitle": { "description": "Reject-reason dialog title." },
+  "@subAgentRejectDialogTitle": {
+    "description": "Reject-reason dialog title."
+  },
   "subAgentRejectReasonLabel": "Reason",
-  "@subAgentRejectReasonLabel": { "description": "Reject-reason dialog field label." },
+  "@subAgentRejectReasonLabel": {
+    "description": "Reject-reason dialog field label."
+  },
   "fundSheetTitle": "Transfer to {subAgentName}",
   "@fundSheetTitle": {
     "description": "Title of the transfer-balance modal sheet.",
-    "placeholders": { "subAgentName": { "type": "String" } }
+    "placeholders": {
+      "subAgentName": {
+        "type": "String"
+      }
+    }
   },
   "fundAmountLabel": "Amount (USD)",
-  "@fundAmountLabel": { "description": "Transfer-balance sheet field label." },
+  "@fundAmountLabel": {
+    "description": "Transfer-balance sheet field label."
+  },
   "fundAvailableBalanceLabel": "Your available balance: {amount}",
   "@fundAvailableBalanceLabel": {
     "description": "Shown above the amount field in the transfer-balance sheet.",
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "fundSubmitAction": "Transfer",
-  "@fundSubmitAction": { "description": "Button label submitting the wallet-funding transfer." },
+  "@fundSubmitAction": {
+    "description": "Button label submitting the wallet-funding transfer."
+  },
   "fundSuccessMessage": "Transfer completed.",
-  "@fundSuccessMessage": { "description": "Shown after a successful wallet-funding transfer." },
+  "@fundSuccessMessage": {
+    "description": "Shown after a successful wallet-funding transfer."
+  },
   "supportTicketsTitle": "Support Tickets",
-  "@supportTicketsTitle": { "description": "Title of the support tickets list screen." },
+  "@supportTicketsTitle": {
+    "description": "Title of the support tickets list screen."
+  },
   "ticketsEmptyMessage": "You haven't opened any tickets yet.",
-  "@ticketsEmptyMessage": { "description": "Shown when the ticket list is empty." },
+  "@ticketsEmptyMessage": {
+    "description": "Shown when the ticket list is empty."
+  },
   "ticketStatusOpen": "Open",
-  "@ticketStatusOpen": { "description": "Ticket status label." },
+  "@ticketStatusOpen": {
+    "description": "Ticket status label."
+  },
   "ticketStatusInProgress": "In Progress",
-  "@ticketStatusInProgress": { "description": "Ticket status label." },
+  "@ticketStatusInProgress": {
+    "description": "Ticket status label."
+  },
   "ticketStatusResolved": "Resolved",
-  "@ticketStatusResolved": { "description": "Ticket status label." },
+  "@ticketStatusResolved": {
+    "description": "Ticket status label."
+  },
   "ticketStatusClosed": "Closed",
-  "@ticketStatusClosed": { "description": "Ticket status label." },
+  "@ticketStatusClosed": {
+    "description": "Ticket status label."
+  },
   "ticketCategoryGeneral": "General",
-  "@ticketCategoryGeneral": { "description": "Ticket category label." },
+  "@ticketCategoryGeneral": {
+    "description": "Ticket category label."
+  },
   "ticketCategoryFinancialCorrection": "Financial Correction",
-  "@ticketCategoryFinancialCorrection": { "description": "Ticket category label." },
+  "@ticketCategoryFinancialCorrection": {
+    "description": "Ticket category label."
+  },
   "ticketLinkedRequestLabel": "Linked to request {referenceId}",
   "@ticketLinkedRequestLabel": {
     "description": "Shown on a ticket card/detail when it's linked to a request.",
-    "placeholders": { "referenceId": { "type": "String" } }
+    "placeholders": {
+      "referenceId": {
+        "type": "String"
+      }
+    }
   },
   "createTicketTitle": "New Ticket",
-  "@createTicketTitle": { "description": "Title of the create-ticket screen." },
+  "@createTicketTitle": {
+    "description": "Title of the create-ticket screen."
+  },
   "createTicketAction": "New Ticket",
-  "@createTicketAction": { "description": "FAB label opening the create-ticket screen." },
+  "@createTicketAction": {
+    "description": "FAB label opening the create-ticket screen."
+  },
   "ticketCategoryFieldLabel": "Category",
-  "@ticketCategoryFieldLabel": { "description": "Create-ticket form field label." },
+  "@ticketCategoryFieldLabel": {
+    "description": "Create-ticket form field label."
+  },
   "ticketSubjectFieldLabel": "Subject",
-  "@ticketSubjectFieldLabel": { "description": "Create-ticket form field label." },
+  "@ticketSubjectFieldLabel": {
+    "description": "Create-ticket form field label."
+  },
   "ticketMessageFieldLabel": "Message",
-  "@ticketMessageFieldLabel": { "description": "Create-ticket form field label." },
+  "@ticketMessageFieldLabel": {
+    "description": "Create-ticket form field label."
+  },
   "ticketRequestReferenceFieldLabel": "Request reference (optional)",
   "@ticketRequestReferenceFieldLabel": {
     "description": "Create-ticket form field label for the optional linked request."
   },
   "ticketDetailTitle": "Ticket Detail",
-  "@ticketDetailTitle": { "description": "Title of the ticket detail/chat screen." },
+  "@ticketDetailTitle": {
+    "description": "Title of the ticket detail/chat screen."
+  },
   "ticketReplyHint": "Type a message…",
-  "@ticketReplyHint": { "description": "Placeholder text in the ticket reply input." },
+  "@ticketReplyHint": {
+    "description": "Placeholder text in the ticket reply input."
+  },
   "notificationsTitle": "Notifications",
-  "@notificationsTitle": { "description": "Title of the notifications feed screen." },
+  "@notificationsTitle": {
+    "description": "Title of the notifications feed screen."
+  },
   "notificationsEmptyMessage": "You're all caught up.",
-  "@notificationsEmptyMessage": { "description": "Shown when the notification feed is empty." },
+  "@notificationsEmptyMessage": {
+    "description": "Shown when the notification feed is empty."
+  },
   "notificationsMarkAllReadAction": "Mark all as read",
-  "@notificationsMarkAllReadAction": { "description": "Button label marking every notification read." },
+  "@notificationsMarkAllReadAction": {
+    "description": "Button label marking every notification read."
+  },
   "notificationMarkReadTooltip": "Mark as read",
-  "@notificationMarkReadTooltip": { "description": "Tooltip on a single notification's mark-as-read action." },
+  "@notificationMarkReadTooltip": {
+    "description": "Tooltip on a single notification's mark-as-read action."
+  },
   "homeThemeToggleLabel": "Toggle theme",
-  "@homeThemeToggleLabel": { "description": "Accessible label for the home top bar's light/dark theme toggle." },
+  "@homeThemeToggleLabel": {
+    "description": "Accessible label for the home top bar's light/dark theme toggle."
+  },
   "homeQuickActionServices": "Egypt Approvals",
-  "@homeQuickActionServices": { "description": "Home quick-action tile navigating to the services/booking flow." },
+  "@homeQuickActionServices": {
+    "description": "Home quick-action tile navigating to the services/booking flow."
+  },
   "homeQuickActionRequests": "Requests Dashboard",
-  "@homeQuickActionRequests": { "description": "Home quick-action tile navigating to the requests dashboard." },
+  "@homeQuickActionRequests": {
+    "description": "Home quick-action tile navigating to the requests dashboard."
+  },
   "homeQuickActionSubAgents": "Sub-Agents",
-  "@homeQuickActionSubAgents": { "description": "Home quick-action tile navigating to the sub-agents list." },
+  "@homeQuickActionSubAgents": {
+    "description": "Home quick-action tile navigating to the sub-agents list."
+  },
   "homeQuickActionSupport": "Support",
-  "@homeQuickActionSupport": { "description": "Home quick-action tile navigating to support tickets." },
+  "@homeQuickActionSupport": {
+    "description": "Home quick-action tile navigating to support tickets."
+  },
   "homeRecentRequestsTitle": "Urgent & Recent Requests",
-  "@homeRecentRequestsTitle": { "description": "Section header above the home screen's request feed." },
+  "@homeRecentRequestsTitle": {
+    "description": "Section header above the home screen's request feed."
+  },
   "homeSeeAllAction": "See all",
-  "@homeSeeAllAction": { "description": "Link opening the full requests dashboard from the home feed section." },
+  "@homeSeeAllAction": {
+    "description": "Link opening the full requests dashboard from the home feed section."
+  },
   "homeEmptyRequestsMessage": "No requests yet.",
-  "@homeEmptyRequestsMessage": { "description": "Shown on the home feed when there are no requests." },
+  "@homeEmptyRequestsMessage": {
+    "description": "Shown on the home feed when there are no requests."
+  },
   "homeQuickActionAccount": "Account",
-  "@homeQuickActionAccount": { "description": "Home quick-action tile opening the account sheet (sign-out)." },
+  "@homeQuickActionAccount": {
+    "description": "Home quick-action tile opening the account sheet (sign-out)."
+  },
   "accountSignOutAction": "Sign Out",
-  "@accountSignOutAction": { "description": "Button label signing the current user out." },
+  "@accountSignOutAction": {
+    "description": "Button label signing the current user out."
+  },
   "reviewSubmitHoldAction": "Submit hold · {amount}",
   "@reviewSubmitHoldAction": {
     "description": "Booking review primary button label, repeating the amount that will be held.",
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "bookingReferenceCopiedMessage": "Reference copied to clipboard.",
@@ -781,8 +961,12 @@
   "@fundSubmitActionNamed": {
     "description": "Primary button on the fund-branch sheet once a valid amount is entered, naming both the amount and the receiving branch.",
     "placeholders": {
-      "amount": { "type": "String" },
-      "name": { "type": "String" }
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "notificationsUnreadFilter": "Unread",
@@ -829,11 +1013,11 @@
   "@loginSubtitle": {
     "description": "Sign-in subtitle."
   },
-  "loginPhoneLabel": "Phone number",
+  "loginPhoneLabel": "Phone number or email",
   "@loginPhoneLabel": {
     "description": "Phone field label."
   },
-  "loginPhoneHelper": "We will send a verification code to this number",
+  "loginPhoneHelper": "We may send a verification code to confirm it is you",
   "@loginPhoneHelper": {
     "description": "Phone field helper."
   },
@@ -852,10 +1036,6 @@
   "loginCreateAgency": "Create an agency account",
   "@loginCreateAgency": {
     "description": "Sign-up link."
-  },
-  "validationInvalidPhone": "Enter a valid phone number.",
-  "@validationInvalidPhone": {
-    "description": "Phone validation error."
   },
   "comingSoon": "This will be available soon.",
   "@comingSoon": {
@@ -881,5 +1061,111 @@
         "type": "String"
       }
     }
+  },
+  "homeGreetingMorning": "Good morning",
+  "@homeGreetingMorning": {
+    "description": "Home / shared component copy."
+  },
+  "homeGreetingAfternoon": "Good afternoon",
+  "@homeGreetingAfternoon": {
+    "description": "Home / shared component copy."
+  },
+  "homeGreetingEvening": "Good evening",
+  "@homeGreetingEvening": {
+    "description": "Home / shared component copy."
+  },
+  "homeSearchHint": "Search a request or traveler",
+  "@homeSearchHint": {
+    "description": "Home / shared component copy."
+  },
+  "homeBalanceCaption": "Credit balance",
+  "@homeBalanceCaption": {
+    "description": "Home / shared component copy."
+  },
+  "homeMyRequestsAction": "My requests",
+  "@homeMyRequestsAction": {
+    "description": "Home / shared component copy."
+  },
+  "homeRequestServiceAction": "Request a service",
+  "@homeRequestServiceAction": {
+    "description": "Home / shared component copy."
+  },
+  "homeServicesTitle": "Services",
+  "@homeServicesTitle": {
+    "description": "Home / shared component copy."
+  },
+  "homeLatestRequestsTitle": "Latest requests",
+  "@homeLatestRequestsTitle": {
+    "description": "Home / shared component copy."
+  },
+  "serviceSaudiVisa": "Saudi visa",
+  "@serviceSaudiVisa": {
+    "description": "Home / shared component copy."
+  },
+  "serviceEgyptEntry": "Egypt entry",
+  "@serviceEgyptEntry": {
+    "description": "Home / shared component copy."
+  },
+  "serviceFlights": "Flights",
+  "@serviceFlights": {
+    "description": "Home / shared component copy."
+  },
+  "serviceIndiaVisa": "India visa",
+  "@serviceIndiaVisa": {
+    "description": "Home / shared component copy."
+  },
+  "serviceSecurityApproval": "Security approval",
+  "@serviceSecurityApproval": {
+    "description": "Home / shared component copy."
+  },
+  "serviceHotels": "Hotels",
+  "@serviceHotels": {
+    "description": "Home / shared component copy."
+  },
+  "serviceSoonTag": "Soon",
+  "@serviceSoonTag": {
+    "description": "Home / shared component copy."
+  },
+  "promoBadge": "New",
+  "@promoBadge": {
+    "description": "Home / shared component copy."
+  },
+  "promoTitle": "Saudi visa in 48 hours",
+  "@promoTitle": {
+    "description": "Home / shared component copy."
+  },
+  "promoSubtitle": "Reduced agent fees this month",
+  "@promoSubtitle": {
+    "description": "Home / shared component copy."
+  },
+  "promoAction": "Order now",
+  "@promoAction": {
+    "description": "Home / shared component copy."
+  },
+  "homeHoldChip": "On hold {amount}",
+  "@homeHoldChip": {
+    "description": "Home / shared component copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "homeCreditLimitChip": "Credit limit {amount}",
+  "@homeCreditLimitChip": {
+    "description": "Home / shared component copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "balanceHiddenLabel": "Show balance",
+  "@balanceHiddenLabel": {
+    "description": "Home / shared component copy."
+  },
+  "balanceShownLabel": "Hide balance",
+  "@balanceShownLabel": {
+    "description": "Home / shared component copy."
   }
 }

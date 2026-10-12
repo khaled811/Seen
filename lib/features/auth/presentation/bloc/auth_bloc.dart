@@ -35,6 +35,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginSubmitted>(_onLoginSubmitted, transformer: droppable());
     on<AuthOtpSubmitted>(_onOtpSubmitted, transformer: droppable());
     on<AuthOtpResendRequested>(_onOtpResendRequested, transformer: droppable());
+    on<AuthOtpCancelled>(_onOtpCancelled);
     on<AuthLogoutRequested>(_onLogoutRequested, transformer: droppable());
     on<AuthSessionInvalidated>(_onSessionInvalidated);
     on<AuthDebugBypassRequested>(_onDebugBypassRequested);
@@ -150,6 +151,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       ),
     );
+  }
+
+  void _onOtpCancelled(AuthOtpCancelled event, Emitter<AuthState> emit) {
+    // Only meaningful while an OTP challenge is pending; a stale event is ignored.
+    if (_currentChallengeToken() == null) return;
+    _pendingIdentifier = null;
+    emit(const AuthUnauthenticated(startOnLogin: true));
   }
 
   Future<void> _onLogoutRequested(

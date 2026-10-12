@@ -267,6 +267,9 @@ abstract final class SeenBrand {
   static const inputErrorBorder = Color(0xFFA3263A);
   static const focusHalo = Color(0x297B52F5); // violet @ 16%
 
+  /// Inactive bottom-navigation icon (Figma tab item, Default).
+  static const tabIconInactive = Color(0xFFB3ADC8);
+
   // Progress segments (request cards, wallet usage bar)
   static const progressTodo = Color(0xFFECEAF3);
   static const progressWaiting = Color(0xFFE8B54A);

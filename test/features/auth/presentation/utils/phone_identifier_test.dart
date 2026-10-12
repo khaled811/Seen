@@ -22,6 +22,26 @@ void main() {
     });
   });
 
+  group('email or phone', () {
+    test('letters or @ make it an email, which is passed through trimmed', () {
+      expect(PhoneIdentifier.looksLikeEmail('agent@seen.com'), isTrue);
+      expect(PhoneIdentifier.looksLikeEmail('agent'), isTrue);
+      expect(PhoneIdentifier.looksLikeEmail('77 123'), isFalse);
+      expect(PhoneIdentifier.toLoginIdentifier('  agent@seen.com '), 'agent@seen.com');
+    });
+
+    test('phones still get the E.164 treatment', () {
+      expect(PhoneIdentifier.toLoginIdentifier('77 123 4567'), '+967771234567');
+    });
+
+    test('validates the right kind', () {
+      expect(PhoneIdentifier.isValidIdentifier('agent@seen.com'), isTrue);
+      expect(PhoneIdentifier.isValidIdentifier('agent@'), isFalse);
+      expect(PhoneIdentifier.isValidIdentifier('771234567'), isTrue);
+      expect(PhoneIdentifier.isValidIdentifier('123'), isFalse);
+    });
+  });
+
   group('isValid', () {
     test('requires 7-15 digits', () {
       expect(PhoneIdentifier.isValid(''), isFalse);

@@ -54,7 +54,14 @@ final class AuthAuthenticated extends AuthState {
 }
 
 final class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
+  const AuthUnauthenticated({this.startOnLogin = false});
+
+  /// Open the entry flow on Login instead of Welcome (e.g. after backing out
+  /// of the OTP step).
+  final bool startOnLogin;
+
+  @override
+  List<Object?> get props => [startOnLogin];
 }
 
 final class AuthFailure extends AuthState {

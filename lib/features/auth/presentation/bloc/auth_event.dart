@@ -35,6 +35,12 @@ final class AuthOtpResendRequested extends AuthEvent {
   const AuthOtpResendRequested();
 }
 
+/// The user backed out of the OTP step. Drops the pending challenge and
+/// returns to Login (no network call: nothing is signed in yet).
+final class AuthOtpCancelled extends AuthEvent {
+  const AuthOtpCancelled();
+}
+
 final class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }
