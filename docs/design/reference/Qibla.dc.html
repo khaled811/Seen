@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>بوصلة القبلة</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font-family:inherit;cursor:pointer}
+svg{flex-shrink:0}
+@keyframes qpulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.16);opacity:0}}
+.qpulse{animation:qpulse 1.6s ease-out infinite}
+@media (prefers-reduced-motion: reduce){.qpulse{animation:none;opacity:.35}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; background: #F8F9FA; font-family: Tajawal, 'IBM Plex Sans Arabic', sans-serif; color: #44474E; display: flex; flex-direction: column; gap: 14px; padding: 8px 16px 24px 16px">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+    <a href="Main.dc.html" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 21px; font-weight: 800; color: #1A1C1E">اتجاه القبلة</h1>
+    <span style="width: 48px; height: 48px"></span>
+  </header>
+
+  <!-- Status -->
+  <div aria-live="polite" style="align-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 20px; border-radius: 24px; background: {{statusBg}}; color: {{statusFg}}; font-size: 18px; font-weight: 800">
+    <sc-if value="{{locked}}" hint-placeholder-val="{{ false }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{statusFg}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+    </sc-if>
+    <sc-if value="{{turnRight}}" hint-placeholder-val="{{ true }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{statusFg}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17a8 8 0 0 1 13.5-5.8M19 6v5.5h-5.5"></path></svg>
+    </sc-if>
+    <sc-if value="{{turnLeft}}" hint-placeholder-val="{{ false }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{statusFg}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17a8 8 0 0 0-13.5-5.8M5 6v5.5h5.5"></path></svg>
+    </sc-if>
+    {{statusText}}
+  </div>
+
+  <!-- Compass -->
+  <section style="display: flex; flex-direction: column; align-items: center; gap: 0">
+    <span aria-hidden="true" style="width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 16px solid {{pointer}}; margin-bottom: 6px"></span>
+    <div role="img" aria-label="{{dialLabel}}" style="position: relative; width: 300px; height: 300px">
+      <sc-if value="{{locked}}" hint-placeholder-val="{{ false }}">
+        <span class="qpulse" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; border: 6px solid #3F6654"></span>
+      </sc-if>
+      <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; background: #FFFFFF; border: 3px solid {{ringColor}}; box-sizing: border-box; box-shadow: 0 2px 12px rgba(26,28,30,0.05); transform: rotate({{dialRot}}deg)">
+        <sc-for list="{{ticks}}" as="k" hint-placeholder-count="72">
+          <span style="position: absolute; left: {{k.left}}px; top: 5px; width: {{k.w}}px; height: {{k.h}}px; background: {{k.c}}; border-radius: 2px; transform-origin: {{k.ox}}px 142px; transform: rotate({{k.deg}}deg)"></span>
+        </sc-for>
+        <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+          <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: rotate({{c.deg}}deg)">
+            <span style="position: absolute; top: 30px; left: 129px; width: 36px; text-align: center; font-size: {{c.size}}px; font-weight: 800; color: {{c.color}}; transform: rotate({{c.counter}}deg)">{{c.label}}</span>
+          </div>
+        </sc-for>
+        <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: rotate({{qibla}}deg)">
+          <span style="position: absolute; top: 26px; left: 133px; width: 28px; height: 28px; transform: rotate({{kaabaCounter}}deg); display: flex; align-items: center; justify-content: center">
+            <span style="width: 26px; height: 26px; border-radius: 4px; background: #1A1C1E; position: relative; display: block">
+              <span style="position: absolute; top: 6px; left: 0; right: 0; height: 3px; background: #C9A96E"></span>
+            </span>
+          </span>
+        </div>
+      </div>
+      <div style="position: absolute; top: 72px; left: 72px; width: 156px; height: 156px; border-radius: 50%; background: #F8F9FA; border: 1px solid #ECEDEF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+        <span style="font-size: 14px; font-weight: 500; color: #44474E">زاوية القبلة</span>
+        <span style="font-size: 46px; font-weight: 800; color: #1A1C1E; line-height: 1.1">{{qiblaAr}}°</span>
+        <span style="font-size: 14px; font-weight: 700; color: {{headColor}}">اتجاهك {{headAr}}°</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Metadata -->
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 16px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 15px; font-weight: 500; color: #74777F">المسافة إلى مكة</span>
+      <span style="font-size: 26px; font-weight: 800; color: #1A1C1E">٨,٣٢٥ <span style="font-size: 17px; font-weight: 700">كم</span></span>
+    </section>
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 16px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 15px; font-weight: 500; color: #74777F">دقة البوصلة</span>
+      <span style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 24px; font-weight: 800; color: #3F6654">ممتازة</span>
+        <span aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 20px">
+          <span style="width: 5px; height: 8px; border-radius: 2px; background: #3F6654"></span>
+          <span style="width: 5px; height: 14px; border-radius: 2px; background: #3F6654"></span>
+          <span style="width: 5px; height: 20px; border-radius: 2px; background: #3F6654"></span>
+        </span>
+      </span>
+    </section>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 14px 16px; display: flex; align-items: center; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+      <span style="font-size: 16px; font-weight: 700; color: #1A1C1E">الكعبة المشرفة</span>
+      <span style="font-size: 14px; color: #44474E">٢١٫٤٢٢٥° ش · ٣٩٫٨٢٦٢° ق</span>
+    </div>
+    <button onClick="{{recalibrate}}" style="height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid #D5D7DB; background: #FFFFFF; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #1A1C1E">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c2-4 4-4 6 0s4 4 6 0 3-3 4-1"></path><path d="M4 17c2-4 4-4 6 0s4 4 6 0 3-3 4-1" opacity="0.5"></path></svg>
+      معايرة
+    </button>
+  </section>
+  <p style="margin: 0; text-align: center; font-size: 14px; color: #74777F">ضع الهاتف مستويًا وابتعد عن المعادن والأجهزة الكهربائية</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7B2D3B","options":["#7B2D3B","#3F6654","#1F4E5F"]},"demo":{"editor":"enum","options":["animate","locked","searching"],"default":"animate"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var demo = props.demo ?? 'animate';
+    this.state = { heading: demo === 'locked' ? 293 : 248 };
+    this.wasLocked = false;
+  }
+  componentDidMount() { if ((this.props.demo ?? 'animate') === 'animate') this.run(); }
+  componentDidUpdate(prev) {
+    if (prev.demo !== this.props.demo) {
+      clearInterval(this._iv);
+      var d = this.props.demo ?? 'animate';
+      if (d === 'locked') this.setState({ heading: 293 });
+      else if (d === 'searching') this.setState({ heading: 248 });
+      else this.run();
+    }
+  }
+  componentWillUnmount() { clearInterval(this._iv); }
+  run() {
+    var self = this, from = 248, to = 293, start = Date.now(), dur = 2600;
+    clearInterval(this._iv);
+    this.setState({ heading: from });
+    this._iv = setInterval(function () {
+      var p = Math.min(1, (Date.now() - start) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      self.setState({ heading: from + (to - from) * e });
+      if (p >= 1) clearInterval(self._iv);
+    }, 40);
+  }
+  ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[Number(d)]; }); }
+  renderVals() {
+    var self = this;
+    var accent = this.props.accent ?? '#7B2D3B';
+    var tones = { '#7B2D3B': '#F6ECEE', '#3F6654': '#E9F1EC', '#1F4E5F': '#E7F0F3' };
+    var tint = tones[String(accent).toUpperCase()] || '#F1F2F4';
+    var qibla = 293;
+    var heading = this.state.heading;
+    var diff = ((qibla - heading + 540) % 360) - 180;
+    var locked = Math.abs(diff) <= 2;
+    if (locked && !this.wasLocked) { try { if (navigator.vibrate) navigator.vibrate([30, 50, 30]); } catch (e) {} }
+    this.wasLocked = locked;
+    var dialRot = -heading;
+
+    var ticks = [];
+    for (var i = 0; i < 72; i++) {
+      var deg = i * 5, major = deg % 30 === 0, midT = deg % 10 === 0;
+      var w = major ? 3 : (midT ? 2 : 1.5);
+      ticks.push({ deg: deg, w: w, left: 150 - w / 2 - 3, ox: w / 2,
+        h: major ? 16 : (midT ? 11 : 7),
+        c: major ? '#1A1C1E' : (midT ? '#44474E' : '#A3A5AA') });
+    }
+    var cards = [['ش', 0], ['ق', 90], ['ج', 180], ['غ', 270]].map(function (c) {
+      return { label: c[0], deg: c[1], counter: -(c[1] + dialRot), size: c[1] === 0 ? 22 : 18, color: c[1] === 0 ? accent : '#1A1C1E' };
+    });
+    var off = Math.round(Math.abs(diff));
+    return {
+      accent: accent, qibla: qibla, dialRot: dialRot, ticks: ticks, cards: cards,
+      kaabaCounter: -(qibla + dialRot),
+      locked: locked, turnRight: !locked && diff > 0, turnLeft: !locked && diff < 0,
+      statusText: locked ? 'أنت تواجه القبلة' : (diff > 0 ? 'استدر يمينًا ' : 'استدر يسارًا ') + this.ar(off) + '°',
+      statusBg: locked ? '#E3EFE7' : tint,
+      statusFg: locked ? '#2F5442' : accent,
+      pointer: locked ? '#3F6654' : '#1A1C1E',
+      ringColor: locked ? '#3F6654' : '#E2E3E6',
+      qiblaAr: this.ar(qibla), headAr: this.ar(Math.round(((heading % 360) + 360) % 360)),
+      headColor: locked ? '#2F5442' : '#44474E',
+      dialLabel: 'بوصلة: القبلة على زاوية ' + this.ar(qibla) + ' درجة، واتجاهك الحالي ' + this.ar(Math.round(heading)) + ' درجة',
+      recalibrate: function () { self.run(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

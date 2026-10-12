@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الرئيسية الدينية</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font-family:inherit;cursor:pointer}
+svg{flex-shrink:0}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 1180px; box-sizing: border-box; background: #F8F9FA; font-family: Tajawal, 'IBM Plex Sans Arabic', sans-serif; color: #44474E; display: flex; flex-direction: column">
+
+  <!-- Top bar -->
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 4px 16px; gap: 8px">
+    <button aria-label="تغيير المدينة" style="min-height: 48px; display: flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0 4px; font-size: 18px; font-weight: 700; color: #1A1C1E">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+      <span>مكة المكرمة</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#74777F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+    </button>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E7E8EA; font-size: 15px; font-weight: 500; color: #44474E">١٤ ربيع الآخر ١٤٤٨</span>
+      <button aria-label="الملف الشخصي والإعدادات" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; padding: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main style="display: flex; flex-direction: column; gap: 16px; padding: 12px 16px 24px 16px">
+
+    <!-- Next prayer -->
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 20px 20px 16px 20px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 500; color: #74777F">الصلاة القادمة</span>
+          <span style="font-size: 30px; font-weight: 800; color: #1A1C1E; line-height: 1.3">الظهر</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 18px; background: {{tint}}; color: {{accent}}; font-size: 16px; font-weight: 700">
+          <span style="width: 8px; height: 8px; border-radius: 4px; background: {{accent}}"></span>
+          متبقي ٠٠:٣٥
+        </span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px">
+        <span style="font-size: 56px; font-weight: 800; color: #1A1C1E; line-height: 1; letter-spacing: -0.5px">١٢:١٥</span>
+        <span style="font-size: 18px; font-weight: 500; color: #44474E">ظهرًا</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="height: 4px; border-radius: 2px; background: {{mid}}"></span>
+          <span style="font-size: 14px; color: #74777F">الفجر</span>
+          <span style="font-size: 15px; font-weight: 500; color: #74777F">٤:٥٨</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="height: 4px; border-radius: 2px; background: {{accent}}"></span>
+          <span style="font-size: 14px; font-weight: 700; color: {{accent}}">الظهر</span>
+          <span style="font-size: 15px; font-weight: 800; color: #1A1C1E">١٢:١٥</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="height: 4px; border-radius: 2px; background: #E7E8EA"></span>
+          <span style="font-size: 14px; color: #44474E">العصر</span>
+          <span style="font-size: 15px; font-weight: 500; color: #1A1C1E">٣:٣٧</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="height: 4px; border-radius: 2px; background: #E7E8EA"></span>
+          <span style="font-size: 14px; color: #44474E">المغرب</span>
+          <span style="font-size: 15px; font-weight: 500; color: #1A1C1E">٦:٠٤</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="height: 4px; border-radius: 2px; background: #E7E8EA"></span>
+          <span style="font-size: 14px; color: #44474E">العشاء</span>
+          <span style="font-size: 15px; font-weight: 500; color: #1A1C1E">٧:٣٤</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Today's rites -->
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 20px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 15px; font-weight: 500; color: #74777F">مناسك اليوم</span>
+        <span style="font-size: 14px; font-weight: 700; color: {{accent}}">وضع الحاج</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #1A1C1E; line-height: 1.35">طواف العمرة</h2>
+        <span style="font-size: 17px; font-weight: 500; color: #44474E">الشوط ٣ من ٧</span>
+      </div>
+      <div aria-label="الشوط ٣ من ٧" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+        <span style="height: 8px; border-radius: 4px; background: {{accent}}"></span>
+        <span style="height: 8px; border-radius: 4px; background: {{accent}}"></span>
+        <span style="height: 8px; border-radius: 4px; background: {{mid}}"></span>
+        <span style="height: 8px; border-radius: 4px; background: #E7E8EA"></span>
+        <span style="height: 8px; border-radius: 4px; background: #E7E8EA"></span>
+        <span style="height: 8px; border-radius: 4px; background: #E7E8EA"></span>
+        <span style="height: 8px; border-radius: 4px; background: #E7E8EA"></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 15px; color: #74777F">
+        <span style="display: inline-flex; align-items: center; gap: 4px; color: #44474E">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          الإحرام
+        </span>
+        <span>·</span>
+        <span style="font-weight: 700; color: #1A1C1E">الطواف</span>
+        <span>·</span>
+        <span>السعي</span>
+        <span>·</span>
+        <span>التقصير</span>
+      </div>
+      <a href="Tawaf.dc.html" style="height: 58px; border-radius: 16px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 19px; font-weight: 700">
+        متابعة النسك
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      </a>
+    </section>
+
+    <!-- Daily reading -->
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 20px 20px 8px 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="width: 48px; height: 48px; border-radius: 14px; background: #E9F1EC; display: flex; align-items: center; justify-content: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3F6654" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.8C10.2 5.4 7.4 4.8 4 5.2v13c3.4-.4 6.2.2 8 1.6 1.8-1.4 4.6-2 8-1.6v-13c-3.4-.4-6.2.2-8 1.6z"></path><path d="M12 6.8v13"></path></svg>
+        </span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+          <span style="font-size: 15px; font-weight: 500; color: #74777F">وِردك اليومي</span>
+          <span style="font-size: 18px; font-weight: 700; color: #1A1C1E">سورة الكهف • صفحة ٢٩٣</span>
+        </div>
+        <span style="font-size: 17px; font-weight: 800; color: #3F6654">٦٠٪</span>
+      </div>
+      <div role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="تقدم القراءة" style="height: 8px; border-radius: 4px; background: #EEF0EF; overflow: hidden">
+        <div style="width: 60%; height: 8px; border-radius: 4px; background: #3F6654"></div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 15px; color: #74777F">٣ من ٥ صفحات</span>
+        <a href="Quran.dc.html" style="min-height: 48px; display: inline-flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 700; color: {{accent}}">
+          إكمال القراءة
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #1A1C1E">الخدمات</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <a href="QuranIndex.dc.html" style="min-height: 132px; background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 8px; box-sizing: border-box">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: {{tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.8C10.2 5.4 7.4 4.8 4 5.2v13c3.4-.4 6.2.2 8 1.6 1.8-1.4 4.6-2 8-1.6v-13c-3.4-.4-6.2.2-8 1.6z"></path><path d="M12 6.8v13"></path></svg>
+          </span>
+          <span style="font-size: 16px; font-weight: 700; color: #1A1C1E; text-align: center; line-height: 1.35">المصحف الشريف</span>
+        </a>
+        <a href="Tawaf.dc.html" style="min-height: 132px; background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 8px; box-sizing: border-box">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: {{tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"></path><path d="M19.6 4.2v3.6H16"></path><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="0.6"></rect></svg>
+          </span>
+          <span style="font-size: 16px; font-weight: 700; color: #1A1C1E; text-align: center; line-height: 1.35">رفيق الطواف والسعي</span>
+        </a>
+        <a href="Duas.dc.html" style="min-height: 132px; background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 8px; box-sizing: border-box">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: {{tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h8.5L19 7v13.5H7z"></path><path d="M10 10.5h6M10 14h6M10 17.5h3.5"></path></svg>
+          </span>
+          <span style="font-size: 16px; font-weight: 700; color: #1A1C1E; text-align: center; line-height: 1.35">الأدعية المأثورة</span>
+        </a>
+        <a href="Qibla.dc.html" style="min-height: 132px; background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 8px; box-sizing: border-box">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: {{tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 6.5l2.2 5.5L12 17.5 9.8 12z"></path></svg>
+          </span>
+          <span style="font-size: 16px; font-weight: 700; color: #1A1C1E; text-align: center; line-height: 1.35">اتجاه القبلة</span>
+        </a>
+        <a href="Prayer.dc.html" style="min-height: 132px; background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 8px; box-sizing: border-box">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: {{tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
+          </span>
+          <span style="font-size: 16px; font-weight: 700; color: #1A1C1E; text-align: center; line-height: 1.35">مواقيت الصلاة</span>
+        </a>
+        <a href="Tasbeeh.dc.html" style="min-height: 132px; background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 20px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 8px; box-sizing: border-box">
+          <span style="width: 52px; height: 52px; border-radius: 26px; background: {{tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9.5" r="5.8" stroke-dasharray="0.01 3.03" stroke-width="2.6"></circle><path d="M12 15.5v4"></path><circle cx="12" cy="21" r="0.8"></circle></svg>
+          </span>
+          <span style="font-size: 16px; font-weight: 700; color: #1A1C1E; text-align: center; line-height: 1.35">أذكار المسافر</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom navigation -->
+  <nav aria-label="التنقل الرئيسي" style="margin-top: auto; background: #FFFFFF; border-top: 1px solid #E7E8EA; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 20px 8px">
+    <a href="#" aria-current="page" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{accent}}; font-size: 13px; font-weight: 700">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5L12 4l8 6.5V20h-5v-5.5H9V20H4z"></path></svg>
+      الرئيسية
+    </a>
+    <a href="Tawaf.dc.html" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #44474E; font-size: 13px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.5L12 4l7 3.5v10L12 21l-7-3.5z"></path><path d="M5 10.5l7 3.5 7-3.5"></path></svg>
+      المناسك
+    </a>
+    <a href="QuranIndex.dc.html" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #44474E; font-size: 13px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.8C10.2 5.4 7.4 4.8 4 5.2v13c3.4-.4 6.2.2 8 1.6 1.8-1.4 4.6-2 8-1.6v-13c-3.4-.4-6.2.2-8 1.6z"></path><path d="M12 6.8v13"></path></svg>
+      المصحف
+    </a>
+    <a href="#" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #44474E; font-size: 13px; font-weight: 500">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"></path></svg>
+      حسابي
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7B2D3B","options":["#7B2D3B","#3F6654","#1F4E5F"]},"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#7B2D3B';
+    const tones = {
+      '#7B2D3B': { tint: '#F6ECEE', mid: '#DDB4BC' },
+      '#3F6654': { tint: '#E9F1EC', mid: '#B4CCBD' },
+      '#1F4E5F': { tint: '#E7F0F3', mid: '#AFC8D2' }
+    };
+    const t = tones[String(accent).toUpperCase()] || { tint: '#F1F2F4', mid: '#C9CBD0' };
+    return { accent: accent, tint: t.tint, mid: t.mid };
+  }
+}
+</script>
+</body>
+</html>

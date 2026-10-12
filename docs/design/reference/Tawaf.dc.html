@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>رفيق الطواف والسعي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;family=Amiri+Quran&amp;family=Amiri:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font-family:inherit;cursor:pointer}
+svg{flex-shrink:0}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; background: #F8F9FA; font-family: Tajawal, 'IBM Plex Sans Arabic', sans-serif; color: #44474E; display: flex; flex-direction: column; padding: 8px 16px 20px 16px; gap: 12px">
+
+  <!-- Top bar -->
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+    <a href="Main.dc.html" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+    <span style="font-size: 19px; font-weight: 800; color: #1A1C1E">{{title}}</span>
+    <button onClick="{{finish}}" style="height: 48px; padding: 0 14px; border-radius: 24px; background: transparent; border: 1px solid #D5D7DB; font-size: 15px; font-weight: 700; color: #44474E">إنهاء النسك</button>
+  </header>
+
+  <!-- Mode switch -->
+  <div role="tablist" aria-label="نوع النسك" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; background: #ECEDEF; border-radius: 16px">
+    <button role="tab" aria-selected="{{isTawaf}}" onClick="{{setTawaf}}" style="height: 48px; border: 0; border-radius: 12px; font-size: 17px; font-weight: 700; background: {{tawafBg}}; color: {{tawafFg}}; box-shadow: {{tawafShadow}}">الطواف</button>
+    <button role="tab" aria-selected="{{isSai}}" onClick="{{setSai}}" style="height: 48px; border: 0; border-radius: 12px; font-size: 17px; font-weight: 700; background: {{saiBg}}; color: {{saiFg}}; box-shadow: {{saiShadow}}">السعي</button>
+  </div>
+
+  <!-- Counter -->
+  <section aria-live="polite" style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <div style="position: relative; width: 256px; height: 256px">
+      <svg width="256" height="256" viewBox="0 0 280 280" aria-hidden="true" style="transform: scaleX(-1); display: block">
+        <g transform="rotate(-90 140 140)" fill="none" stroke-width="16">
+          <circle cx="140" cy="140" r="118" stroke="{{s0}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="0"></circle>
+          <circle cx="140" cy="140" r="118" stroke="{{s1}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="-105.92"></circle>
+          <circle cx="140" cy="140" r="118" stroke="{{s2}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="-211.83"></circle>
+          <circle cx="140" cy="140" r="118" stroke="{{s3}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="-317.75"></circle>
+          <circle cx="140" cy="140" r="118" stroke="{{s4}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="-423.67"></circle>
+          <circle cx="140" cy="140" r="118" stroke="{{s5}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="-529.59"></circle>
+          <circle cx="140" cy="140" r="118" stroke="{{s6}}" stroke-dasharray="95.92 645.5" stroke-dashoffset="-635.5"></circle>
+        </g>
+      </svg>
+      <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center">
+        <sc-if value="{{notDone}}" hint-placeholder-val="{{ true }}">
+          <span style="font-size: 18px; font-weight: 500; color: #44474E">الشوط</span>
+          <span style="font-size: 112px; font-weight: 800; color: #1A1C1E; line-height: 1">{{currentAr}}</span>
+          <span style="font-size: 22px; font-weight: 700; color: #74777F">من ٧</span>
+        </sc-if>
+        <sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+          <span style="width: 72px; height: 72px; border-radius: 36px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          </span>
+          <span style="font-size: 26px; font-weight: 800; color: #1A1C1E; margin-top: 12px">{{doneLabel}}</span>
+        </sc-if>
+      </div>
+    </div>
+    <span style="font-size: 17px; font-weight: 700; color: #1A1C1E">{{guide}}</span>
+  </section>
+
+  <!-- Status + undo -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+    <span style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 20px; background: {{statusBg}}; color: {{statusFg}}; font-size: 15px; font-weight: 700">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{statusFg}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      {{status}}
+    </span>
+    <button onClick="{{undo}}" disabled="{{undoDisabled}}" style="height: 48px; padding: 0 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #D5D7DB; display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: #44474E; opacity: {{undoOpacity}}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7l4.5 4.5L15 16"></path><path d="M19.5 11.5H10a5 5 0 0 0 0 10h2"></path></svg>
+      إلغاء شوط
+    </button>
+  </div>
+
+  <!-- Dua -->
+  <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 16px 20px 18px 20px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+      <span style="font-size: 15px; font-weight: 500; color: #74777F; line-height: 1.4">{{duaLabel}}</span>
+      <button onClick="{{toggleAudio}}" aria-pressed="{{playing}}" style="height: 48px; padding: 0 14px; border-radius: 24px; border: 0; background: {{audioBg}}; color: {{audioFg}}; display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; flex-shrink: 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{audioFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"></path></svg>
+        {{audioLabel}}
+      </button>
+    </div>
+    <p style="margin: 0; font-family: {{duaFont}}; font-size: 25px; line-height: 1.9; color: #1A1C1E; text-align: center">{{dua}}</p>
+  </section>
+
+  <!-- Primary action -->
+  <button onClick="{{next}}" style="margin-top: auto; min-height: 96px; border: 0; border-radius: 26px; background: {{btnBg}}; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 6px 20px rgba(26,28,30,0.12); transform: {{btnScale}}; transition: transform 120ms ease">
+    <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 23px; font-weight: 800">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+      {{btnLabel}}
+    </span>
+    <span style="font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9)">{{btnHint}}</span>
+  </button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7B2D3B","options":["#7B2D3B","#3F6654","#1F4E5F"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'tawaf', current: 3, done: false, playing: false, status: 'تم تسجيل الشوط ٢', flash: false, pressed: false };
+  }
+  ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[Number(d)]; }); }
+  buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+  pulse() {
+    var self = this;
+    clearTimeout(this._t1); clearTimeout(this._t2);
+    this._t1 = setTimeout(function () { self.setState({ pressed: false }); }, 140);
+    this._t2 = setTimeout(function () { self.setState({ flash: false }); }, 1200);
+  }
+  componentWillUnmount() { clearTimeout(this._t1); clearTimeout(this._t2); }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var accent = this.props.accent ?? '#7B2D3B';
+    var tones = {
+      '#7B2D3B': { tint: '#F6ECEE', mid: '#DDB4BC' },
+      '#3F6654': { tint: '#E9F1EC', mid: '#B4CCBD' },
+      '#1F4E5F': { tint: '#E7F0F3', mid: '#AFC8D2' }
+    };
+    var t = tones[String(accent).toUpperCase()] || { tint: '#F1F2F4', mid: '#C9CBD0' };
+    var tawaf = s.mode === 'tawaf';
+    var segs = [];
+    for (var i = 0; i < 7; i++) {
+      var c = '#E4E5E8';
+      if (s.done || i < s.current - 1) c = accent;
+      else if (i === s.current - 1) c = t.mid;
+      segs.push(c);
+    }
+    var guide;
+    if (s.done) guide = tawaf ? 'تقبّل الله طوافك' : 'تقبّل الله سعيك';
+    else if (tawaf) guide = s.current === 1 ? 'ابدأ من الحجر الأسود، والكعبة عن يسارك' : 'الكعبة عن يسارك • ينتهي الشوط عند الحجر الأسود';
+    else guide = (s.current % 2 === 1) ? 'من الصفا إلى المروة' : 'من المروة إلى الصفا';
+
+    var setMode = function (m) {
+      if (m === s.mode) return;
+      self.setState({ mode: m, current: 1, done: false, status: 'بداية ' + (m === 'tawaf' ? 'الطواف' : 'السعي'), flash: false });
+    };
+    var next = function () {
+      self.buzz(s.current === 7 ? [40, 60, 40] : 35);
+      if (s.done) {
+        if (tawaf) setMode('sai');
+        return;
+      }
+      if (s.current >= 7) {
+        self.setState({ done: true, status: 'تم تسجيل الشوط ٧', flash: true, pressed: true });
+      } else {
+        self.setState({ current: s.current + 1, status: 'تم تسجيل الشوط ' + self.ar(s.current), flash: true, pressed: true });
+      }
+      self.pulse();
+    };
+    var undo = function () {
+      self.buzz(20);
+      if (s.done) { self.setState({ done: false, status: 'أُلغي تسجيل الشوط ٧', flash: false }); return; }
+      if (s.current <= 1) return;
+      self.setState({ current: s.current - 1, status: 'أُلغي تسجيل الشوط ' + self.ar(s.current - 1), flash: false });
+    };
+
+    var on = '#FFFFFF', off = 'transparent', sh = '0 1px 4px rgba(26,28,30,0.08)';
+    return {
+      accent: accent,
+      title: tawaf ? 'طواف العمرة' : 'سعي العمرة',
+      isTawaf: tawaf ? 'true' : 'false',
+      isSai: tawaf ? 'false' : 'true',
+      tawafBg: tawaf ? on : off, tawafFg: tawaf ? '#1A1C1E' : '#44474E', tawafShadow: tawaf ? sh : 'none',
+      saiBg: tawaf ? off : on, saiFg: tawaf ? '#44474E' : '#1A1C1E', saiShadow: tawaf ? 'none' : sh,
+      setTawaf: function () { setMode('tawaf'); },
+      setSai: function () { setMode('sai'); },
+      s0: segs[0], s1: segs[1], s2: segs[2], s3: segs[3], s4: segs[4], s5: segs[5], s6: segs[6],
+      done: s.done, notDone: !s.done,
+      currentAr: this.ar(s.current),
+      doneLabel: tawaf ? 'اكتمل الطواف' : 'اكتمل السعي',
+      guide: guide,
+      status: s.status,
+      statusBg: s.flash ? t.tint : '#ECEDEF',
+      statusFg: s.flash ? accent : '#44474E',
+      undo: undo,
+      undoDisabled: !s.done && s.current <= 1,
+      undoOpacity: (!s.done && s.current <= 1) ? '0.45' : '1',
+      duaLabel: tawaf ? 'بين الركن اليماني والحجر الأسود' : 'عند الصعود على الصفا والمروة',
+      duaFont: tawaf ? "'Amiri Quran', 'Amiri', serif" : "'Amiri', serif",
+      dua: tawaf
+        ? 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ'
+        : 'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ',
+      playing: s.playing ? 'true' : 'false',
+      toggleAudio: function () { self.setState({ playing: !s.playing }); },
+      audioBg: s.playing ? accent : t.tint,
+      audioFg: s.playing ? '#FFFFFF' : accent,
+      audioLabel: s.playing ? 'إيقاف' : 'استماع',
+      next: next,
+      finish: function () { self.setState({ done: true, current: 7, status: 'تم إنهاء النسك', flash: false }); },
+      btnBg: accent,
+      btnScale: s.pressed ? 'scale(0.97)' : 'scale(1)',
+      btnLabel: s.done ? (tawaf ? 'الانتقال إلى السعي' : 'تم بحمد الله') : (s.current === 7 ? 'تسجيل الشوط الأخير' : 'تسجيل الشوط التالي'),
+      btnHint: s.done ? (tawaf ? 'يبدأ السعي من الصفا' : 'تقبّل الله منك') : (tawaf ? 'اضغط عند محاذاة الحجر الأسود' : 'اضغط عند الوصول إلى نهاية الشوط')
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مكتبة الأدعية والأذكار</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;family=Amiri:wght@400;700&amp;family=Amiri+Quran&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font-family:inherit;cursor:pointer}
+svg{flex-shrink:0}
+.chips::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; background: #F8F9FA; font-family: Tajawal, 'IBM Plex Sans Arabic', sans-serif; color: #44474E; display: flex; flex-direction: column">
+
+  <header style="padding: 8px 16px 10px 16px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+      <a href="Main.dc.html" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+      <h1 style="margin: 0; font-size: 21px; font-weight: 800; color: #1A1C1E">الأدعية والأذكار</h1>
+      <a href="Tasbeeh.dc.html" aria-label="المسبحة" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9.5" r="5.8" stroke-dasharray="0.01 3.03" stroke-width="2.6"></circle><path d="M12 15.5v4"></path><circle cx="12" cy="21" r="0.8"></circle></svg>
+      </a>
+    </div>
+    <div class="chips" role="tablist" aria-label="التصنيفات" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px; scrollbar-width: none">
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="5">
+        <button role="tab" aria-selected="{{c.sel}}" onClick="{{c.pick}}" style="flex-shrink: 0; height: 48px; padding: 0 18px; border-radius: 24px; border: 1px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 16px; font-weight: 700; white-space: nowrap">{{c.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 4px 16px 24px 16px; display: flex; flex-direction: column; gap: 12px">
+    <sc-for list="{{items}}" as="d" hint-placeholder-count="4">
+      <article style="background: #FFFFFF; border: 1px solid {{d.border}}; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); overflow: hidden">
+        <button onClick="{{d.toggle}}" aria-expanded="{{d.expanded}}" style="width: 100%; min-height: 64px; border: 0; background: transparent; padding: 16px 18px 8px 18px; display: flex; align-items: flex-start; gap: 12px; text-align: right">
+          <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 18px; font-weight: 800; color: #1A1C1E">{{d.title}}</span>
+            <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+              <span style="display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border-radius: 13px; background: #F1F2F4; font-size: 13px; font-weight: 700; color: #44474E">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#44474E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.8C10.2 5.4 7.4 4.8 4 5.2v13c3.4-.4 6.2.2 8 1.6 1.8-1.4 4.6-2 8-1.6v-13c-3.4-.4-6.2.2-8 1.6z"></path></svg>
+                {{d.source}}
+              </span>
+              <span style="font-size: 14px; color: #74777F">{{d.catLabel}}</span>
+            </span>
+          </span>
+          <span style="width: 32px; height: 32px; border-radius: 16px; background: #F6F7F8; display: flex; align-items: center; justify-content: center; transform: {{d.chev}}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+          </span>
+        </button>
+        <p style="margin: 0; padding: 4px 18px 16px 18px; font-family: Amiri, 'Amiri Quran', serif; font-size: {{d.fs}}px; line-height: 2; color: #1A1C1E; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: {{d.clamp}}; overflow: hidden">{{d.text}}</p>
+
+        <sc-if value="{{d.expanded}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 18px 16px 18px; display: flex; flex-direction: column; gap: 14px">
+            <sc-if value="{{d.hasNote}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 15px; color: #44474E">{{d.note}}</span>
+            </sc-if>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; background: #F8F9FA; border-radius: 18px">
+              <button onClick="{{d.play}}" aria-label="{{d.playLabel}}" style="width: 52px; height: 52px; border-radius: 26px; border: 0; background: {{accent}}; display: flex; align-items: center; justify-content: center; padding: 0">
+                <sc-if value="{{d.isPlaying}}" hint-placeholder-val="{{ false }}">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><rect x="6.5" y="5" width="4" height="14" rx="1.2"></rect><rect x="13.5" y="5" width="4" height="14" rx="1.2"></rect></svg>
+                </sc-if>
+                <sc-if value="{{d.notPlaying}}" hint-placeholder-val="{{ true }}">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z"></path></svg>
+                </sc-if>
+              </button>
+              <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px">
+                <div role="progressbar" aria-label="تقدم التلاوة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{d.pct}}" style="height: 6px; border-radius: 3px; background: #E4E5E8; overflow: hidden">
+                  <div style="width: {{d.pct}}%; height: 6px; border-radius: 3px; background: {{accent}}"></div>
+                </div>
+                <span style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; color: #44474E">
+                  <span>{{d.elapsed}}</span><span>{{d.total}}</span>
+                </span>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <button onClick="{{d.share}}" style="min-height: 52px; border-radius: 14px; border: 1px solid #E7E8EA; background: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 700; color: #1A1C1E">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4"></path><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"></path></svg>
+                مشاركة
+              </button>
+              <button onClick="{{d.copy}}" style="min-height: 52px; border-radius: 14px; border: 1px solid #E7E8EA; background: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 700; color: #1A1C1E">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"></rect><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"></path></svg>
+                {{d.copyLabel}}
+              </button>
+              <button onClick="{{d.fav}}" aria-pressed="{{d.favPressed}}" style="min-height: 52px; border-radius: 14px; border: 1px solid {{d.favBorder}}; background: {{d.favBg}}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 700; color: {{d.favFg}}">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="{{d.favFill}}" stroke="{{d.favFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg>
+                {{d.favLabel}}
+              </button>
+            </div>
+          </div>
+        </sc-if>
+      </article>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7B2D3B","options":["#7B2D3B","#3F6654","#1F4E5F"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cat: 'all', open: 'safar', fav: { rukn: true }, playing: null, prog: { safar: 0.28 }, copied: null };
+  }
+  componentWillUnmount() { clearInterval(this._iv); clearTimeout(this._ct); }
+  ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[Number(d)]; }); }
+  mmss(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return this.ar(m + ':' + (s < 10 ? '0' : '') + s); }
+  startAudio(id, dur) {
+    var self = this;
+    clearInterval(this._iv);
+    if (this.state.playing === id) { this.setState({ playing: null }); return; }
+    var p0 = this.state.prog[id] || 0;
+    if (p0 >= 1) p0 = 0;
+    this.setState({ playing: id, prog: Object.assign({}, this.state.prog, (function () { var o = {}; o[id] = p0; return o; })()) });
+    this._iv = setInterval(function () {
+      var cur = (self.state.prog[id] || 0) + 0.25 / dur;
+      var o = Object.assign({}, self.state.prog); o[id] = Math.min(1, cur);
+      if (cur >= 1) { clearInterval(self._iv); self.setState({ prog: o, playing: null }); }
+      else self.setState({ prog: o });
+    }, 250);
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var accent = this.props.accent ?? '#7B2D3B';
+    var tones = { '#7B2D3B': ['#F6ECEE', '#DDB4BC'], '#3F6654': ['#E9F1EC', '#B4CCBD'], '#1F4E5F': ['#E7F0F3', '#AFC8D2'] };
+    var tn = tones[String(accent).toUpperCase()] || ['#F1F2F4', '#C9CBD0'];
+    var cats = [['all', 'الكل'], ['hajj', 'العمرة والحج'], ['safar', 'أدعية السفر'], ['adhkar', 'أذكار الصباح والمساء'], ['jawami', 'جوامع الدعاء']];
+    var catName = {}; cats.forEach(function (c) { catName[c[0]] = c[1]; });
+    var data = [
+      { id: 'safar', cat: 'safar', title: 'دعاء السفر', source: 'صحيح مسلم', dur: 48,
+        note: 'يُقال عند ركوب وسيلة السفر.',
+        text: 'اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ، وَإِنَّا إِلَىٰ رَبِّنَا لَمُنقَلِبُونَ، اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَٰذَا الْبِرَّ وَالتَّقْوَىٰ، وَمِنَ الْعَمَلِ مَا تَرْضَىٰ، اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَٰذَا وَاطْوِ عَنَّا بُعْدَهُ، اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ، وَالْخَلِيفَةُ فِي الْأَهْلِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ، وَكَآبَةِ الْمَنْظَرِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالْأَهْلِ' },
+      { id: 'talbiyah', cat: 'hajj', title: 'التلبية', source: 'متفق عليه', dur: 14,
+        note: 'من الإحرام إلى بدء الطواف في العمرة.',
+        text: 'لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيكَ لَكَ' },
+      { id: 'rukn', cat: 'hajj', title: 'بين الركن اليماني والحجر الأسود', source: 'سنن أبي داود', dur: 8, quran: true,
+        note: '',
+        text: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ' },
+      { id: 'manzil', cat: 'safar', title: 'عند النزول في مكان', source: 'صحيح مسلم', dur: 6,
+        note: 'يُقال عند الوصول إلى الفندق أو أي منزل في السفر.',
+        text: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ' },
+      { id: 'istighfar', cat: 'adhkar', title: 'سيد الاستغفار', source: 'صحيح البخاري', dur: 32,
+        note: 'مرة واحدة في الصباح ومرة في المساء.',
+        text: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ' },
+      { id: 'afiyah', cat: 'jawami', title: 'سؤال العفو والعافية', source: 'سنن ابن ماجه', dur: 7,
+        note: '',
+        text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ' },
+      { id: 'thabat', cat: 'jawami', title: 'الثبات على الدين', source: 'سنن الترمذي', dur: 5,
+        note: '',
+        text: 'يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَىٰ دِينِكَ' }
+    ];
+    var chips = cats.map(function (c) {
+      var on = s.cat === c[0];
+      return { label: c[1], sel: on ? 'true' : 'false', bg: on ? accent : '#FFFFFF', fg: on ? '#FFFFFF' : '#1A1C1E', border: on ? accent : '#E2E3E6',
+        pick: function () { self.setState({ cat: c[0] }); } };
+    });
+    var items = data.filter(function (d) { return s.cat === 'all' || d.cat === s.cat; }).map(function (d) {
+      var open = s.open === d.id, fav = !!s.fav[d.id], playing = s.playing === d.id, p = s.prog[d.id] || 0;
+      return {
+        title: d.title, source: d.source, catLabel: catName[d.cat], text: d.text,
+        note: d.note, hasNote: !!d.note,
+        expanded: open, clamp: open ? 'none' : '2', fs: open ? 25 : 22,
+        border: open ? tn[1] : '#EEEFF1', chev: open ? 'rotate(180deg)' : 'none',
+        toggle: function () { self.setState({ open: open ? null : d.id }); },
+        isPlaying: playing, notPlaying: !playing,
+        playLabel: playing ? 'إيقاف التلاوة' : 'استماع',
+        play: function () { self.startAudio(d.id, d.dur); },
+        pct: Math.round(p * 100), elapsed: self.mmss(p * d.dur), total: self.mmss(d.dur),
+        share: function () { try { if (navigator.share) navigator.share({ title: d.title, text: d.text }); } catch (e) {} },
+        copy: function () {
+          try { if (navigator.clipboard) navigator.clipboard.writeText(d.text + '\n— ' + d.source); } catch (e) {}
+          clearTimeout(self._ct);
+          self.setState({ copied: d.id });
+          self._ct = setTimeout(function () { self.setState({ copied: null }); }, 1600);
+        },
+        copyLabel: s.copied === d.id ? 'تم النسخ' : 'نسخ',
+        fav: function () { var f = Object.assign({}, s.fav); f[d.id] = !fav; self.setState({ fav: f }); },
+        favPressed: fav ? 'true' : 'false', favLabel: fav ? 'محفوظ' : 'حفظ',
+        favBg: fav ? tn[0] : '#FFFFFF', favFg: fav ? accent : '#1A1C1E', favBorder: fav ? tn[1] : '#E7E8EA', favFill: fav ? accent : 'none'
+      };
+    });
+    return { accent: accent, chips: chips, items: items };
+  }
+}
+</script>
+</body>
+</html>

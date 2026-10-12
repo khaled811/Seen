@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المصحف — سورة الكهف</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;family=Amiri+Quran&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font-family:inherit;cursor:pointer}
+svg{flex-shrink:0}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF9F6; font-family: Tajawal, 'IBM Plex Sans Arabic', sans-serif; color: #44474E; display: flex; flex-direction: column; position: relative; overflow: hidden">
+
+  <!-- Header -->
+  <header style="background: #FAF9F6; border-bottom: 1px solid #E9E8E4; padding: 8px 16px 12px 16px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+      <a href="Main.dc.html" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+        <h1 style="margin: 0; font-size: 21px; font-weight: 800; color: #1A1C1E">سورة الكهف</h1>
+        <span style="font-size: 14px; font-weight: 500; color: #74777F">مكية · ١١٠ آيات · صفحة ٢٩٣</span>
+      </div>
+      <button aria-label="حفظ موضع القراءة" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; padding: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg>
+      </button>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 2px; background: #FFFFFF; border: 1px solid #E7E8EA; border-radius: 16px; padding: 2px">
+        <button onClick="{{smaller}}" aria-label="تصغير الخط" disabled="{{minFs}}" style="width: 52px; height: 48px; border: 0; background: transparent; border-radius: 14px; font-size: 16px; font-weight: 800; color: #1A1C1E; opacity: {{minOp}}">A−</button>
+        <span style="min-width: 36px; text-align: center; font-size: 15px; font-weight: 700; color: #44474E">{{fsAr}}</span>
+        <button onClick="{{bigger}}" aria-label="تكبير الخط" disabled="{{maxFs}}" style="width: 52px; height: 48px; border: 0; background: transparent; border-radius: 14px; font-size: 21px; font-weight: 800; color: #1A1C1E; opacity: {{maxOp}}">A+</button>
+      </div>
+      <button onClick="{{toggleTr}}" aria-pressed="{{trPressed}}" style="height: 48px; padding: 0 16px; border-radius: 16px; border: 1px solid {{trBorder}}; background: {{trBg}}; color: {{trFg}}; font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px">
+        <span style="font-family: Georgia, serif; font-size: 15px; font-weight: 700">En</span>
+        الترجمة
+      </button>
+    </div>
+  </header>
+
+  <!-- Verses -->
+  <main style="flex-grow: 1; overflow-y: auto; padding: 8px 22px 32px 22px">
+    <p style="margin: 20px 0 8px 0; text-align: center; font-family: 'Amiri Quran', 'Amiri', serif; font-size: 26px; line-height: 2; color: #1A1C1E">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <sc-for list="{{verses}}" as="v" hint-placeholder-count="4">
+      <article style="padding: 18px 0 10px 0; border-bottom: 1px solid #ECEBE7">
+        <p style="margin: 0; font-family: 'Amiri Quran', 'Amiri', serif; font-size: {{v.fs}}px; line-height: 2.05; color: #1A1C1E; text-align: right">{{v.text}} <span aria-label="{{v.label}}" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 16px; border: 1.5px solid {{v.ring}}; font-family: Tajawal, sans-serif; font-size: 15px; font-weight: 700; color: #44474E; vertical-align: middle; line-height: 1">{{v.numAr}}</span></p>
+        <sc-if value="{{v.showTr}}" hint-placeholder-val="{{ false }}">
+          <p dir="ltr" lang="en" style="margin: 10px 0 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.6; color: #44474E; text-align: left">{{v.en}}</p>
+        </sc-if>
+        <div style="display: flex; justify-content: flex-start; margin-top: 4px">
+          <button onClick="{{v.open}}" style="min-height: 48px; padding: 0 4px; border: 0; background: transparent; display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: {{accent}}">
+            التفسير والترجمة
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+          </button>
+        </div>
+      </article>
+    </sc-for>
+  </main>
+
+  <!-- Tafsir sheet -->
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(26,28,30,0.36); display: flex; flex-direction: column; justify-content: flex-end">
+      <button onClick="{{close}}" aria-label="إغلاق" style="flex-grow: 1; border: 0; background: transparent"></button>
+      <section role="dialog" aria-label="تفسير الآية" style="background: #FFFFFF; border-radius: 28px 28px 0 0; padding: 10px 22px 28px 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 -4px 24px rgba(26,28,30,0.08)">
+        <span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #D5D7DB"></span>
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 18px; font-weight: 800; color: #1A1C1E">{{sheet.title}}</span>
+          <button onClick="{{close}}" aria-label="إغلاق" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: #F1F2F4; display: flex; align-items: center; justify-content: center; padding: 0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </button>
+        </div>
+        <p style="margin: 0; font-family: 'Amiri Quran', 'Amiri', serif; font-size: 24px; line-height: 2; color: #1A1C1E; background: #FAF9F6; border-radius: 16px; padding: 12px 16px">{{sheet.text}}</p>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 15px; font-weight: 700; color: {{accent}}">معنى الآية</span>
+          <p style="margin: 0; font-size: 18px; line-height: 1.75; color: #44474E">{{sheet.meaning}}</p>
+          <span style="font-size: 14px; color: #74777F">[مصدر التفسير المعتمد]</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #ECEDEF; padding-top: 12px">
+          <span style="font-size: 15px; font-weight: 700; color: {{accent}}">الترجمة الإنجليزية</span>
+          <p dir="ltr" lang="en" style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.6; color: #44474E; text-align: left">{{sheet.en}}</p>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7B2D3B","options":["#7B2D3B","#3F6654","#1F4E5F"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { fsIdx: 2, showTr: false, sheet: null };
+  }
+  ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[Number(d)]; }); }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var accent = this.props.accent ?? '#7B2D3B';
+    var sizes = [24, 27, 30, 34, 38, 42];
+    var fs = sizes[s.fsIdx];
+    var data = [
+      { n: 1, text: 'الْحَمْدُ لِلَّهِ الَّذِي أَنزَلَ عَلَىٰ عَبْدِهِ الْكِتَابَ وَلَمْ يَجْعَل لَّهُ عِوَجًا ۜ',
+        en: '[All] praise is [due] to Allah, who has sent down upon His Servant the Book and has not made therein any deviance.',
+        meaning: 'الثناء الكامل لله الذي أنزل القرآن على عبده محمد ﷺ، ولم يجعل فيه ميلًا عن الحق ولا اختلافًا.' },
+      { n: 2, text: 'قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ الْمُؤْمِنِينَ الَّذِينَ يَعْمَلُونَ الصَّالِحَاتِ أَنَّ لَهُمْ أَجْرًا حَسَنًا',
+        en: '[He has made it] straight, to warn of severe punishment from Him and to give good tidings to the believers who do righteous deeds that they will have a good reward.',
+        meaning: 'جعله مستقيمًا معتدلًا، ليحذّر من عذاب شديد من عنده، ويبشّر المؤمنين العاملين بالصالحات بأن لهم ثوابًا حسنًا.' },
+      { n: 3, text: 'مَّاكِثِينَ فِيهِ أَبَدًا',
+        en: 'In which they will remain forever.',
+        meaning: 'مقيمين في ذلك الثواب أبدًا، لا يزول عنهم ولا يتحولون عنه.' },
+      { n: 4, text: 'وَيُنذِرَ الَّذِينَ قَالُوا اتَّخَذَ اللَّهُ وَلَدًا',
+        en: 'And to warn those who say, "Allah has taken a son."',
+        meaning: 'ويحذّر الذين نسبوا إلى الله الولد، تعالى الله عن ذلك.' },
+      { n: 5, text: 'مَّا لَهُم بِهِ مِنْ عِلْمٍ وَلَا لِآبَائِهِمْ ۚ كَبُرَتْ كَلِمَةً تَخْرُجُ مِنْ أَفْوَاهِهِمْ ۚ إِن يَقُولُونَ إِلَّا كَذِبًا',
+        en: 'They have no knowledge of it, nor had their fathers. Grave is the word that comes out of their mouths; they speak not except a lie.',
+        meaning: 'ليس لهم ولا لآبائهم على هذا القول علم ولا دليل، عظُمت هذه الكلمة الخارجة من أفواههم، وما يقولون إلا كذبًا.' }
+    ];
+    var verses = data.map(function (d, i) {
+      return {
+        text: d.text, en: d.en, fs: fs, showTr: s.showTr,
+        numAr: self.ar(d.n), label: 'الآية ' + self.ar(d.n),
+        ring: s.sheet === i ? accent : '#C9C7C0',
+        open: function () { self.setState({ sheet: i }); }
+      };
+    });
+    var cur = s.sheet === null ? null : data[s.sheet];
+    return {
+      accent: accent,
+      verses: verses,
+      fsAr: this.ar(fs),
+      smaller: function () { if (s.fsIdx > 0) self.setState({ fsIdx: s.fsIdx - 1 }); },
+      bigger: function () { if (s.fsIdx < sizes.length - 1) self.setState({ fsIdx: s.fsIdx + 1 }); },
+      minFs: s.fsIdx === 0, maxFs: s.fsIdx === sizes.length - 1,
+      minOp: s.fsIdx === 0 ? '0.4' : '1', maxOp: s.fsIdx === sizes.length - 1 ? '0.4' : '1',
+      toggleTr: function () { self.setState({ showTr: !s.showTr }); },
+      trPressed: s.showTr ? 'true' : 'false',
+      trBg: s.showTr ? accent : '#FFFFFF',
+      trFg: s.showTr ? '#FFFFFF' : '#1A1C1E',
+      trBorder: s.showTr ? accent : '#E7E8EA',
+      sheetOpen: cur !== null,
+      sheet: cur ? { title: 'الآية ' + this.ar(cur.n) + ' · سورة الكهف', text: cur.text, meaning: cur.meaning, en: cur.en } : { title: '', text: '', meaning: '', en: '' },
+      close: function () { self.setState({ sheet: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

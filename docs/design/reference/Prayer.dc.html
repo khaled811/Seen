@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مواقيت الصلاة والتنبيهات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font-family:inherit;cursor:pointer}
+svg{flex-shrink:0}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 1000px; box-sizing: border-box; background: #F8F9FA; font-family: Tajawal, 'IBM Plex Sans Arabic', sans-serif; color: #44474E; display: flex; flex-direction: column; gap: 14px; padding: 8px 16px 24px 16px">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+    <a href="Main.dc.html" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+      <h1 style="margin: 0; font-size: 21px; font-weight: 800; color: #1A1C1E">مواقيت الصلاة</h1>
+      <span style="font-size: 14px; font-weight: 500; color: #74777F">مكة المكرمة · تقويم أم القرى</span>
+    </div>
+    <button aria-label="إعدادات الحساب والأذان" style="width: 48px; height: 48px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E8EA; display: flex; align-items: center; justify-content: center; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></svg>
+    </button>
+  </header>
+
+  <div role="tablist" aria-label="طريقة العرض" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; background: #ECEDEF; border-radius: 16px">
+    <button role="tab" aria-selected="{{isDay}}" onClick="{{showDay}}" style="height: 48px; border: 0; border-radius: 12px; font-size: 16px; font-weight: 700; background: {{dayBg}}; color: {{dayFg}}; box-shadow: {{daySh}}">اليوم</button>
+    <button role="tab" aria-selected="{{isMonth}}" onClick="{{showMonth}}" style="height: 48px; border: 0; border-radius: 12px; font-size: 16px; font-weight: 700; background: {{monthBg}}; color: {{monthFg}}; box-shadow: {{monthSh}}">الشهر</button>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button aria-label="السابق" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+    <div style="display: flex; flex-direction: column; align-items: center">
+      <span style="font-size: 18px; font-weight: 800; color: #1A1C1E">{{dateMain}}</span>
+      <span style="font-size: 14px; color: #74777F">{{dateSub}}</span>
+    </div>
+    <button aria-label="التالي" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+  </div>
+
+  <!-- DAY VIEW -->
+  <sc-if value="{{isDayB}}" hint-placeholder-val="{{ true }}">
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 16px 0 14px 0; display: flex; flex-direction: column; align-items: center; gap: 6px">
+      <div style="position: relative; width: 342px; height: 120px">
+        <svg width="342" height="120" viewBox="0 0 342 120" aria-hidden="true" style="display: block">
+          <line x1="12" y1="96" x2="330" y2="96" stroke="#D5D7DB" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round"></line>
+          <path d="M299 96 Q204.6 -56 110.3 96" fill="none" stroke="#E7E8EA" stroke-width="3" stroke-linecap="round"></path>
+          <path d="M299 96 Q255.6 26.1 212.6 20.5" fill="none" stroke="{{accent}}" stroke-width="3" stroke-linecap="round"></path>
+          <circle cx="212.6" cy="20.5" r="14" fill="{{tint}}"></circle>
+          <circle cx="212.6" cy="20.5" r="7" fill="{{accent}}"></circle>
+        </svg>
+        <sc-for list="{{marks}}" as="m" hint-placeholder-count="7">
+          <button onClick="{{m.pick}}" aria-label="{{m.name}}" style="position: absolute; left: {{m.left}}px; top: {{m.top}}px; width: 40px; height: 40px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center">
+            <span style="width: {{m.size}}px; height: {{m.size}}px; border-radius: 50%; background: {{m.fill}}; border: 2px solid {{m.ring}}; box-sizing: border-box"></span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px; border-radius: 20px; background: #F6F7F8">
+        <span style="font-size: 16px; font-weight: 800; color: #1A1C1E">{{selName}} · {{selTime}}</span>
+        <span style="font-size: 15px; font-weight: 500; color: {{selColor}}">{{selRel}}</span>
+      </div>
+    </section>
+
+    <section aria-label="صلوات اليوم" style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 6px; display: flex; flex-direction: column; gap: 2px">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 6px 12px; border-radius: 16px; background: {{r.bg}}">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <span style="display: flex; align-items: center; gap: 8px">
+              <span style="font-size: 18px; font-weight: {{r.weight}}; color: {{r.nameColor}}">{{r.name}}</span>
+              <sc-if value="{{r.active}}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 13px; font-weight: 700; color: #FFFFFF; background: {{accent}}; border-radius: 10px; padding: 3px 8px">بعد ٣٥ د</span>
+              </sc-if>
+            </span>
+            <span style="font-size: 14px; color: {{r.subColor}}">{{r.sub}}</span>
+          </div>
+          <span style="font-size: 20px; font-weight: 800; color: {{r.timeColor}}">{{r.time}}</span>
+          <button onClick="{{r.cycle}}" aria-label="{{r.aria}}" style="width: 48px; height: 48px; border-radius: 14px; border: 1px solid {{r.btnBorder}}; background: {{r.btnBg}}; display: flex; align-items: center; justify-content: center; padding: 0">
+            <sc-if value="{{r.isSound}}" hint-placeholder-val="{{ true }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{r.iconColor}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path></svg>
+            </sc-if>
+            <sc-if value="{{r.isVibrate}}" hint-placeholder-val="{{ false }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{r.iconColor}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="8" height="16" rx="2"></rect><path d="M4.5 9v6M19.5 9v6"></path></svg>
+            </sc-if>
+            <sc-if value="{{r.isSilent}}" hint-placeholder-val="{{ false }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{r.iconColor}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 9.2-5.1M18 11v5.5l1.5 2H8"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path><path d="M4 4l16 16"></path></svg>
+            </sc-if>
+          </button>
+        </div>
+      </sc-for>
+    </section>
+    <p style="margin: 0; text-align: center; font-size: 14px; color: #74777F">اضغط زر التنبيه للتبديل بين: أذان · اهتزاز · صامت</p>
+  </sc-if>
+
+  <!-- MONTH VIEW -->
+  <sc-if value="{{isMonthB}}" hint-placeholder-val="{{ false }}">
+    <section style="background: #FFFFFF; border: 1px solid #EEEFF1; border-radius: 22px; box-shadow: 0 2px 12px rgba(26,28,30,0.04); padding: 8px; overflow: hidden">
+      <table style="width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; text-align: center">
+        <thead>
+          <tr>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E; width: 58px">اليوم</th>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E">الفجر</th>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E">الشروق</th>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E">الظهر</th>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E">العصر</th>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E">المغرب</th>
+            <th scope="col" style="padding: 10px 2px; font-size: 13px; font-weight: 700; color: #44474E">العشاء</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{month}}" as="d" hint-placeholder-count="14">
+            <tr style="background: {{d.bg}}">
+              <th scope="row" style="padding: 8px 2px; border-radius: 0 12px 12px 0; font-weight: 800">
+                <span style="display: block; font-size: 17px; color: {{d.dayColor}}">{{d.h}}</span>
+                <span style="display: block; font-size: 12px; font-weight: 500; color: #74777F">{{d.g}}</span>
+              </th>
+              <td style="font-size: 15px; font-weight: 500; color: #1A1C1E">{{d.t0}}</td>
+              <td style="font-size: 15px; font-weight: 500; color: #44474E">{{d.t1}}</td>
+              <td style="font-size: 15px; font-weight: 500; color: #1A1C1E">{{d.t2}}</td>
+              <td style="font-size: 15px; font-weight: 500; color: #1A1C1E">{{d.t3}}</td>
+              <td style="font-size: 15px; font-weight: 500; color: #1A1C1E">{{d.t4}}</td>
+              <td style="font-size: 15px; font-weight: 500; color: #1A1C1E; border-radius: 12px 0 0 12px">{{d.t5}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7B2D3B","options":["#7B2D3B","#3F6654","#1F4E5F"]},"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: 'day', sel: 'dhuhr', modes: { fajr: 'sound', sunrise: 'silent', dhuhr: 'sound', asr: 'sound', maghrib: 'sound', isha: 'vibrate', night: 'silent' } };
+  }
+  ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[Number(d)]; }); }
+  fmt(min) {
+    var h = Math.floor(min / 60) % 24, m = Math.round(min % 60);
+    if (m === 60) { h = (h + 1) % 24; m = 0; }
+    var h12 = h % 12 === 0 ? 12 : h % 12;
+    return this.ar(h12 + ':' + (m < 10 ? '0' : '') + m);
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var accent = this.props.accent ?? '#7B2D3B';
+    var tones = { '#7B2D3B': ['#F6ECEE', '#DDB4BC'], '#3F6654': ['#E9F1EC', '#B4CCBD'], '#1F4E5F': ['#E7F0F3', '#AFC8D2'] };
+    var tn = tones[String(accent).toUpperCase()] || ['#F1F2F4', '#C9CBD0'];
+    var tint = tn[0], mid = tn[1];
+
+    var P = [
+      { id: 'fajr', name: 'الفجر', t: '٤:٥٨ ص', x: 318.6, y: 96, past: true },
+      { id: 'sunrise', name: 'الشروق', t: '٦:١٢ ص', x: 299, y: 96, past: true, noAdhan: true },
+      { id: 'dhuhr', name: 'الظهر', t: '١٢:١٥ م', x: 204.6, y: 20, active: true },
+      { id: 'asr', name: 'العصر', t: '٣:٣٧ م', x: 149.3, y: 46.1 },
+      { id: 'maghrib', name: 'المغرب', t: '٦:٠٤ م', x: 110.3, y: 96 },
+      { id: 'isha', name: 'العشاء', t: '٧:٣٤ م', x: 86.5, y: 96 },
+      { id: 'night', name: 'منتصف الليل', t: '١١:٣١ م', x: 23.7, y: 96, noAdhan: true, extra: 'الثلث الأخير للقيام ١:٢٠ ص' }
+    ];
+    var rel = { fajr: 'مضت', sunrise: 'مضى', dhuhr: 'بعد ٣٥ دقيقة', asr: 'بعد ٣ س ٥٧ د', maghrib: 'بعد ٦ س ٢٤ د', isha: 'بعد ٧ س ٥٤ د', night: 'بعد ١١ س ٥١ د' };
+    var modeName = { sound: 'أذان كامل', vibrate: 'اهتزاز فقط', silent: 'صامت' };
+    var order = ['sound', 'vibrate', 'silent'];
+
+    var marks = P.map(function (p) {
+      var isSel = s.sel === p.id;
+      var size = p.id === 'dhuhr' ? 0 : (isSel ? 16 : 12);
+      return { name: p.name, left: p.x - 20, top: p.y - 20, size: size,
+        fill: p.past ? mid : (isSel ? accent : '#FFFFFF'),
+        ring: p.id === 'dhuhr' ? 'transparent' : (p.past ? mid : (isSel ? accent : '#9A9CA2')),
+        pick: function () { self.setState({ sel: p.id }); } };
+    });
+    var cur = P.filter(function (p) { return p.id === s.sel; })[0];
+
+    var rows = P.map(function (p) {
+      var mode = s.modes[p.id];
+      var active = !!p.active;
+      return {
+        name: p.name, time: p.t, active: active,
+        sub: p.extra ? p.extra + ' · ' + modeName[mode] : (p.noAdhan ? 'تذكير · ' + modeName[mode] : modeName[mode]),
+        bg: active ? tint : 'transparent',
+        weight: active ? '800' : '700',
+        nameColor: active ? accent : (p.past ? '#74777F' : '#1A1C1E'),
+        subColor: active ? '#44474E' : '#74777F',
+        timeColor: p.past ? '#74777F' : '#1A1C1E',
+        btnBg: active ? '#FFFFFF' : '#F6F7F8',
+        btnBorder: active ? mid : '#EEEFF1',
+        iconColor: mode === 'silent' ? '#74777F' : (active ? accent : '#1A1C1E'),
+        isSound: mode === 'sound', isVibrate: mode === 'vibrate', isSilent: mode === 'silent',
+        aria: 'تنبيه ' + p.name + ': ' + modeName[mode] + '، اضغط للتغيير',
+        cycle: function () {
+          var next = order[(order.indexOf(mode) + 1) % 3];
+          var m = Object.assign({}, s.modes); m[p.id] = next;
+          try { if (next === 'vibrate' && navigator.vibrate) navigator.vibrate(40); } catch (e) {}
+          self.setState({ modes: m });
+        }
+      };
+    });
+
+    var base = [298, 372, 735, 937, 1084, 1174];
+    var drift = [0.5, 0.4, -0.3, -0.6, -0.7, -0.7];
+    var month = [];
+    for (var i = 0; i < 14; i++) {
+      var row = { h: this.ar(12 + i), g: this.ar(i + 1) + ' أكتوبر', bg: i === 2 ? tint : (i % 2 ? '#FAFAFB' : 'transparent'), dayColor: i === 2 ? accent : '#1A1C1E' };
+      for (var k = 0; k < 6; k++) row['t' + k] = this.fmt(base[k] + drift[k] * (i - 2));
+      month.push(row);
+    }
+
+    var day = s.view === 'day';
+    var on = '#FFFFFF', sh = '0 1px 4px rgba(26,28,30,0.08)';
+    return {
+      accent: accent, tint: tint,
+      isDay: day ? 'true' : 'false', isMonth: day ? 'false' : 'true', isDayB: day, isMonthB: !day,
+      dayBg: day ? on : 'transparent', dayFg: day ? '#1A1C1E' : '#44474E', daySh: day ? sh : 'none',
+      monthBg: day ? 'transparent' : on, monthFg: day ? '#44474E' : '#1A1C1E', monthSh: day ? 'none' : sh,
+      showDay: function () { self.setState({ view: 'day' }); },
+      showMonth: function () { self.setState({ view: 'month' }); },
+      dateMain: day ? 'السبت ١٤ ربيع الآخر' : 'ربيع الآخر ١٤٤٨',
+      dateSub: day ? '٣ أكتوبر ٢٠٢٦' : 'سبتمبر – أكتوبر ٢٠٢٦',
+      marks: marks, rows: rows, month: month,
+      selName: cur.name, selTime: cur.t, selRel: rel[cur.id],
+      selColor: cur.past ? '#74777F' : accent
+    };
+  }
+}
+</script>
+</body>
+</html>

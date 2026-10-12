@@ -1,0 +1,808 @@
+{
+  "@@locale": "en",
+  "appTitle": "Seen Booking",
+  "@appTitle": {
+    "description": "The application name, shown as the OS task/window title."
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Generic save action."
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic cancel action."
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Generic submit/confirm action."
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Action to retry a failed operation."
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Generic loading indicator label."
+  },
+  "error": "Something went wrong",
+  "@error": {
+    "description": "Generic unexpected-error message."
+  },
+  "errorNetwork": "No internet connection. Please check your network and try again.",
+  "@errorNetwork": {
+    "description": "Shown when a request fails due to no connectivity or a timeout."
+  },
+  "errorServer": "Server error. Please try again later.",
+  "@errorServer": {
+    "description": "Shown when the backend returns a 5xx or unexpected error."
+  },
+  "errorUnauthorized": "Your session has expired. Please sign in again.",
+  "@errorUnauthorized": {
+    "description": "Shown on a 401 response."
+  },
+  "errorForbidden": "You don't have permission to perform this action.",
+  "@errorForbidden": {
+    "description": "Shown on a 403 response."
+  },
+  "validationRequired": "This field is required.",
+  "@validationRequired": {
+    "description": "Shown when a required form field is left empty."
+  },
+  "validationInvalidEmail": "Enter a valid email address.",
+  "@validationInvalidEmail": {
+    "description": "Shown when an email field fails format validation."
+  },
+  "validationInvalidPhone": "Enter a valid phone number.",
+  "@validationInvalidPhone": {
+    "description": "Shown when a phone field fails format validation."
+  },
+  "validationMinLength": "Must be at least {count} characters.",
+  "@validationMinLength": {
+    "description": "Shown when a text field is shorter than the required minimum.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Display name of the English language, shown in the language switcher."
+  },
+  "languageArabic": "Arabic",
+  "@languageArabic": {
+    "description": "Display name of the Arabic language, shown in the language switcher."
+  },
+  "loginTitle": "Sign In",
+  "@loginTitle": {
+    "description": "Title of the login screen."
+  },
+  "loginIdentifierLabel": "Email or phone",
+  "@loginIdentifierLabel": {
+    "description": "Label for the login identifier field (email or phone)."
+  },
+  "loginPasswordLabel": "Password",
+  "@loginPasswordLabel": {
+    "description": "Label for the login password field."
+  },
+  "otpTitle": "Verify Code",
+  "@otpTitle": {
+    "description": "Title of the OTP verification screen."
+  },
+  "otpInstructions": "Enter the verification code sent to you.",
+  "@otpInstructions": {
+    "description": "Instructions shown above the OTP input."
+  },
+  "otpCodeLabel": "Verification code",
+  "@otpCodeLabel": {
+    "description": "Label for the OTP code field."
+  },
+  "otpResendIn": "Resend code in {seconds}s",
+  "@otpResendIn": {
+    "description": "Countdown shown before the resend action becomes available.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "otpResendAction": "Resend code",
+  "@otpResendAction": {
+    "description": "Button label to request a new OTP code."
+  },
+  "validationInvalidOtp": "Enter the {length}-digit code.",
+  "@validationInvalidOtp": {
+    "description": "Shown when the OTP field doesn't hold a valid code.",
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "validationMaxLength": "Must be no more than {count} characters.",
+  "@validationMaxLength": {
+    "description": "Shown when a text field is longer than the allowed maximum.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "validationInvalidNumber": "Enter a valid number.",
+  "@validationInvalidNumber": {
+    "description": "Shown when a number field doesn't hold a valid number."
+  },
+  "validationNumberTooSmall": "Must be at least {min}.",
+  "@validationNumberTooSmall": {
+    "description": "Shown when a number field is below its allowed minimum.",
+    "placeholders": {
+      "min": {
+        "type": "num"
+      }
+    }
+  },
+  "validationNumberTooLarge": "Must be no more than {max}.",
+  "@validationNumberTooLarge": {
+    "description": "Shown when a number field exceeds its allowed maximum.",
+    "placeholders": {
+      "max": {
+        "type": "num"
+      }
+    }
+  },
+  "validationInvalidDate": "Select a valid date.",
+  "@validationInvalidDate": {
+    "description": "Shown when a date field has no valid date selected."
+  },
+  "validationInvalidSelection": "Select a valid option.",
+  "@validationInvalidSelection": {
+    "description": "Shown when a select field's value isn't one of its options."
+  },
+  "validationExpiryTooSoon": "Must be at least {months} months from today.",
+  "@validationExpiryTooSoon": {
+    "description": "Shown when a passport expiry date is too soon.",
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "validationDateInFuture": "{fieldLabel} must not be in the future.",
+  "@validationDateInFuture": {
+    "description": "Shown when a date field (e.g. issue date, birth date) is in the future.",
+    "placeholders": {
+      "fieldLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "wizardNext": "Next",
+  "@wizardNext": {
+    "description": "Button label to advance to the next wizard step."
+  },
+  "wizardBack": "Back",
+  "@wizardBack": {
+    "description": "Button label to return to the previous wizard step."
+  },
+  "wizardFinish": "Finish",
+  "@wizardFinish": {
+    "description": "Button label on the last wizard step."
+  },
+  "wizardStepIndicator": "Step {current} of {total}",
+  "@wizardStepIndicator": {
+    "description": "Progress indicator shown above a wizard step.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "wizardCompleted": "All steps completed successfully.",
+  "@wizardCompleted": {
+    "description": "Shown after the last wizard step is submitted."
+  },
+  "formsGalleryTitle": "Dynamic Form Gallery",
+  "@formsGalleryTitle": {
+    "description": "Title of the dynamic-form engine demo/test screen."
+  },
+  "stepPersonalInfoTitle": "Personal Information",
+  "@stepPersonalInfoTitle": {
+    "description": "Wizard step title."
+  },
+  "stepPassportInfoTitle": "Passport Information",
+  "@stepPassportInfoTitle": {
+    "description": "Wizard step title."
+  },
+  "stepPreferencesTitle": "Preferences",
+  "@stepPreferencesTitle": {
+    "description": "Wizard step title."
+  },
+  "fieldFullNameLabel": "Full name",
+  "@fieldFullNameLabel": {
+    "description": "Field label."
+  },
+  "fieldEmailLabel": "Email",
+  "@fieldEmailLabel": {
+    "description": "Field label."
+  },
+  "fieldPhoneLabel": "Phone number",
+  "@fieldPhoneLabel": {
+    "description": "Field label."
+  },
+  "fieldPassportIssueDateLabel": "Passport issue date",
+  "@fieldPassportIssueDateLabel": {
+    "description": "Field label."
+  },
+  "fieldPassportExpiryDateLabel": "Passport expiry date",
+  "@fieldPassportExpiryDateLabel": {
+    "description": "Field label."
+  },
+  "fieldBirthDateLabel": "Date of birth",
+  "@fieldBirthDateLabel": {
+    "description": "Field label."
+  },
+  "fieldTravelClassLabel": "Travel class",
+  "@fieldTravelClassLabel": {
+    "description": "Field label."
+  },
+  "fieldNotesLabel": "Notes",
+  "@fieldNotesLabel": {
+    "description": "Field label."
+  },
+  "optionEconomy": "Economy",
+  "@optionEconomy": {
+    "description": "Select option."
+  },
+  "optionBusiness": "Business",
+  "@optionBusiness": {
+    "description": "Select option."
+  },
+  "validationInvalidAmount": "Enter an amount greater than 0.",
+  "@validationInvalidAmount": {
+    "description": "Shown when the top-up amount field is missing, zero, or negative."
+  },
+  "walletTitle": "Wallet",
+  "@walletTitle": {
+    "description": "Title of the wallet screen."
+  },
+  "walletAvailableBalance": "Available Balance",
+  "@walletAvailableBalance": {
+    "description": "Wallet summary card label."
+  },
+  "walletHoldBalance": "Hold Balance",
+  "@walletHoldBalance": {
+    "description": "Wallet summary card label."
+  },
+  "walletTotalBalance": "Total Balance",
+  "@walletTotalBalance": {
+    "description": "Wallet summary card label."
+  },
+  "walletCreditLimit": "Credit Limit",
+  "@walletCreditLimit": {
+    "description": "Wallet summary card label."
+  },
+  "walletTransactionsTitle": "Transactions",
+  "@walletTransactionsTitle": {
+    "description": "Section title above the ledger list."
+  },
+  "walletFilterAll": "All types",
+  "@walletFilterAll": {
+    "description": "Transaction-type filter option meaning no filter."
+  },
+  "walletEmptyTransactions": "No transactions yet.",
+  "@walletEmptyTransactions": {
+    "description": "Shown when the ledger has no entries (or none match the filter)."
+  },
+  "walletRequestTopUp": "Request Top-Up",
+  "@walletRequestTopUp": {
+    "description": "Button/FAB label opening the top-up request sheet."
+  },
+  "transactionTypeTopup": "Top-up",
+  "@transactionTypeTopup": {
+    "description": "Transaction type label."
+  },
+  "transactionTypeHold": "Hold",
+  "@transactionTypeHold": {
+    "description": "Transaction type label."
+  },
+  "transactionTypeFinalDeduction": "Final deduction",
+  "@transactionTypeFinalDeduction": {
+    "description": "Transaction type label."
+  },
+  "transactionTypeRelease": "Release",
+  "@transactionTypeRelease": {
+    "description": "Transaction type label."
+  },
+  "transactionTypeRefund": "Refund",
+  "@transactionTypeRefund": {
+    "description": "Transaction type label."
+  },
+  "transactionTypeSettlement": "Settlement",
+  "@transactionTypeSettlement": {
+    "description": "Transaction type label."
+  },
+  "transactionStatusPending": "Pending",
+  "@transactionStatusPending": {
+    "description": "Transaction status label."
+  },
+  "transactionStatusApproved": "Approved",
+  "@transactionStatusApproved": {
+    "description": "Transaction status label."
+  },
+  "transactionStatusRejected": "Rejected",
+  "@transactionStatusRejected": {
+    "description": "Transaction status label."
+  },
+  "topUpSheetTitle": "Request Top-Up",
+  "@topUpSheetTitle": {
+    "description": "Title of the top-up request bottom sheet."
+  },
+  "topUpAmountLabel": "Amount (USD)",
+  "@topUpAmountLabel": {
+    "description": "Top-up form field label."
+  },
+  "topUpPaymentMethodLabel": "Payment method",
+  "@topUpPaymentMethodLabel": {
+    "description": "Top-up form field label."
+  },
+  "topUpReferenceNumberLabel": "Reference number",
+  "@topUpReferenceNumberLabel": {
+    "description": "Top-up form field label."
+  },
+  "topUpNotesLabel": "Notes",
+  "@topUpNotesLabel": {
+    "description": "Top-up form field label."
+  },
+  "topUpMethodBankTransfer": "Bank transfer",
+  "@topUpMethodBankTransfer": {
+    "description": "Top-up payment method option."
+  },
+  "topUpMethodCash": "Cash",
+  "@topUpMethodCash": {
+    "description": "Top-up payment method option."
+  },
+  "topUpMethodExchangeHouse": "Exchange house",
+  "@topUpMethodExchangeHouse": {
+    "description": "Top-up payment method option."
+  },
+  "topUpReceiptLabel": "Receipt",
+  "@topUpReceiptLabel": {
+    "description": "Label for the (currently mocked) receipt attachment row."
+  },
+  "topUpReceiptComingSoon": "Attachment coming soon",
+  "@topUpReceiptComingSoon": {
+    "description": "Shown next to the disabled receipt-attachment control."
+  },
+  "topUpSuccessMessage": "Top-up request submitted.",
+  "@topUpSuccessMessage": {
+    "description": "Shown after a top-up request succeeds."
+  },
+  "travelerPassportNumberLabel": "Passport number",
+  "@travelerPassportNumberLabel": {
+    "description": "Traveler form field label."
+  },
+  "travelerNationalityLabel": "Nationality",
+  "@travelerNationalityLabel": {
+    "description": "Traveler form field label."
+  },
+  "servicesTitle": "Services",
+  "@servicesTitle": {
+    "description": "Title of the service-selection screen."
+  },
+  "serviceComingSoonBadge": "Coming soon",
+  "@serviceComingSoonBadge": {
+    "description": "Badge shown on a not-yet-bookable service."
+  },
+  "servicePerPersonPrice": "{amount} / person",
+  "@servicePerPersonPrice": {
+    "description": "Per-person price shown on a service card.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "travelerEntryTitle": "Traveler Details",
+  "@travelerEntryTitle": {
+    "description": "Title of the multi-traveler entry screen."
+  },
+  "travelerTabLabel": "Traveler {number}",
+  "@travelerTabLabel": {
+    "description": "Label for one traveler's tab/chip.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "addTravelerAction": "Add traveler",
+  "@addTravelerAction": {
+    "description": "Button label to add another traveler to the booking."
+  },
+  "removeTravelerAction": "Remove traveler",
+  "@removeTravelerAction": {
+    "description": "Action to remove the current traveler from the booking."
+  },
+  "continueToReviewAction": "Continue to Review",
+  "@continueToReviewAction": {
+    "description": "Button label advancing from traveler entry to the review screen."
+  },
+  "travelerAttachmentLabel": "Passport copy",
+  "@travelerAttachmentLabel": {
+    "description": "Label for the (currently mocked) passport-attachment row."
+  },
+  "attachmentComingSoon": "Attachment coming soon",
+  "@attachmentComingSoon": {
+    "description": "Shown next to a disabled file-attachment control."
+  },
+  "reviewTitle": "Review & Confirm",
+  "@reviewTitle": {
+    "description": "Title of the booking cost-breakdown/confirmation screen."
+  },
+  "reviewTravelerCountLabel": "Travelers",
+  "@reviewTravelerCountLabel": {
+    "description": "Review screen row label."
+  },
+  "reviewPerPersonPriceLabel": "Price per person",
+  "@reviewPerPersonPriceLabel": {
+    "description": "Review screen row label."
+  },
+  "reviewTotalPriceLabel": "Total price",
+  "@reviewTotalPriceLabel": {
+    "description": "Review screen row label."
+  },
+  "reviewInsufficientBalanceWarning": "Your available wallet balance may not cover this total. You can still submit — the backend will confirm.",
+  "@reviewInsufficientBalanceWarning": {
+    "description": "Warning shown when the available balance looks lower than the total price."
+  },
+  "confirmSubmitAction": "Confirm & Submit",
+  "@confirmSubmitAction": {
+    "description": "Button label submitting the booking request."
+  },
+  "bookingSuccessTitle": "Request Submitted",
+  "@bookingSuccessTitle": {
+    "description": "Title shown after a booking is successfully submitted."
+  },
+  "bookingSuccessMessage": "Reference: {id}",
+  "@bookingSuccessMessage": {
+    "description": "Shows the booking's reference/request id after submission.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingBackToHomeAction": "Back to Home",
+  "@bookingBackToHomeAction": {
+    "description": "Button label returning to the home screen after a completed booking."
+  },
+  "requestStatusDraft": "Draft",
+  "@requestStatusDraft": { "description": "Request status label." },
+  "requestStatusSubmitted": "Submitted",
+  "@requestStatusSubmitted": { "description": "Request status label." },
+  "requestStatusPendingAgentApproval": "Pending Agent Approval",
+  "@requestStatusPendingAgentApproval": { "description": "Request status label." },
+  "requestStatusPendingManagementApproval": "Pending Management Approval",
+  "@requestStatusPendingManagementApproval": { "description": "Request status label." },
+  "requestStatusUnderReview": "Under Review",
+  "@requestStatusUnderReview": { "description": "Request status label." },
+  "requestStatusInfoRequired": "Action Required",
+  "@requestStatusInfoRequired": { "description": "Request status label." },
+  "requestStatusProcessing": "Processing",
+  "@requestStatusProcessing": { "description": "Request status label." },
+  "requestStatusCompleted": "Completed",
+  "@requestStatusCompleted": { "description": "Request status label." },
+  "requestStatusRejected": "Rejected",
+  "@requestStatusRejected": { "description": "Request status label." },
+  "requestStatusCancelled": "Cancelled",
+  "@requestStatusCancelled": { "description": "Request status label." },
+  "slaOverdue": "SLA overdue",
+  "@slaOverdue": {
+    "description": "Shown on the SLA countdown badge once the 72-hour deadline has passed."
+  },
+  "slaTimeRemaining": "{time} left",
+  "@slaTimeRemaining": {
+    "description": "Shown on the SLA countdown badge before the deadline.",
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "requestsDashboardTitle": "My Requests",
+  "@requestsDashboardTitle": { "description": "Title of the Requests Dashboard screen." },
+  "requestsFilterAll": "All",
+  "@requestsFilterAll": { "description": "Dashboard status filter option." },
+  "requestsFilterPendingUnderReview": "Under Review",
+  "@requestsFilterPendingUnderReview": { "description": "Dashboard status filter option." },
+  "requestsFilterCompleted": "Completed",
+  "@requestsFilterCompleted": { "description": "Dashboard status filter option." },
+  "requestsFilterActionRequired": "Action Required",
+  "@requestsFilterActionRequired": { "description": "Dashboard status filter option." },
+  "requestsEmptyMessage": "No requests match this filter.",
+  "@requestsEmptyMessage": { "description": "Shown when the filtered request list is empty." },
+  "requestsSearchHint": "Search by reference or service",
+  "@requestsSearchHint": { "description": "Placeholder in the inline requests search field." },
+  "requestsSearchAction": "Search",
+  "@requestsSearchAction": { "description": "Accessible label for the search icon button opening the inline search field." },
+  "requestsEmptySearchTitle": "No matching requests",
+  "@requestsEmptySearchTitle": { "description": "Title shown when a search/filter combination has no results." },
+  "requestsEmptySearchMessage": "Try a different reference or service name.",
+  "@requestsEmptySearchMessage": { "description": "Body text shown when a search/filter combination has no results." },
+  "requestsBookNewAction": "Book a new approval",
+  "@requestsBookNewAction": { "description": "Button on the empty-search state that starts a new booking." },
+  "requestDetailCopyReferenceAction": "Copy reference",
+  "@requestDetailCopyReferenceAction": { "description": "Overflow menu item copying the request's reference id." },
+  "requestDetailContactSupportAction": "Contact support",
+  "@requestDetailContactSupportAction": { "description": "Overflow menu item opening the support tickets screen." },
+  "requestDetailReferenceCopiedMessage": "Reference copied to clipboard.",
+  "@requestDetailReferenceCopiedMessage": { "description": "Snackbar shown after copying the request reference." },
+  "requestDetailDownloadApprovalsAction": "Download issued approvals ({count})",
+  "@requestDetailDownloadApprovalsAction": {
+    "description": "Sticky bottom bar button downloading every approved traveler's document.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "requestDetailDownloadApprovalsUnavailable": "Approvals will be available once issued",
+  "@requestDetailDownloadApprovalsUnavailable": { "description": "Caption shown under the download-approvals button when no traveler is approved yet." },
+  "requestDetailSubmittedPrefix": "Submitted",
+  "@requestDetailSubmittedPrefix": { "description": "Prefix before the submission timestamp in the request detail summary meta line." },
+  "requestDetailHeldPrefix": "Held",
+  "@requestDetailHeldPrefix": { "description": "Prefix before the held amount in the request detail summary meta line." },
+  "requestCardTravelersLabel": "{count, plural, one{1 traveler} other{{count} travelers}}",
+  "@requestCardTravelersLabel": {
+    "description": "Traveler count shown on a dashboard request card.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "requestDetailTitle": "Request Detail",
+  "@requestDetailTitle": { "description": "Title of the Request Detail screen." },
+  "requestDetailTravelersSection": "Travelers",
+  "@requestDetailTravelersSection": { "description": "Detail screen section title." },
+  "requestDetailTimelineSection": "Timeline",
+  "@requestDetailTimelineSection": { "description": "Detail screen section title." },
+  "requestDetailOutputSection": "Output Delivery",
+  "@requestDetailOutputSection": { "description": "Detail screen section title." },
+  "requestDetailDownloadAction": "Download Approval Document",
+  "@requestDetailDownloadAction": {
+    "description": "Mocked action to download the completed request's output document."
+  },
+  "requestDetailCancelAction": "Cancel Request",
+  "@requestDetailCancelAction": { "description": "Button label to cancel a request." },
+  "requestDetailCancelConfirmTitle": "Cancel this request?",
+  "@requestDetailCancelConfirmTitle": {
+    "description": "Confirmation dialog title before cancelling a request."
+  },
+  "requestDetailCancelConfirmMessage": "This can't be undone. The request will be marked as cancelled.",
+  "@requestDetailCancelConfirmMessage": {
+    "description": "Confirmation dialog body before cancelling a request."
+  },
+  "requestDetailCancelSuccessMessage": "Request cancelled.",
+  "@requestDetailCancelSuccessMessage": {
+    "description": "Shown after a request is successfully cancelled."
+  },
+  "yes": "Yes",
+  "@yes": { "description": "Generic affirmative confirmation button label." },
+  "no": "No",
+  "@no": { "description": "Generic negative confirmation button label." },
+  "validationInvalidMaxAmount": "Amount can't exceed your available balance ({max}).",
+  "@validationInvalidMaxAmount": {
+    "description": "Shown when a transfer amount exceeds the sender's available balance.",
+    "placeholders": {
+      "max": { "type": "String" }
+    }
+  },
+  "subAgentsTitle": "Sub-Agents",
+  "@subAgentsTitle": { "description": "Title of the sub-agents hierarchy list screen." },
+  "subAgentCodeLabel": "Code: {code}",
+  "@subAgentCodeLabel": {
+    "description": "Sub-agent card row showing its code.",
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "subAgentActiveStatus": "Active",
+  "@subAgentActiveStatus": { "description": "Sub-agent active-status badge." },
+  "subAgentInactiveStatus": "Inactive",
+  "@subAgentInactiveStatus": { "description": "Sub-agent active-status badge." },
+  "subAgentMarginLabel": "Margin: {percent}%",
+  "@subAgentMarginLabel": {
+    "description": "Sub-agent card row showing its assigned price markup/margin.",
+    "placeholders": { "percent": { "type": "String" } }
+  },
+  "subAgentFundAction": "Fund Wallet",
+  "@subAgentFundAction": { "description": "Button label opening the transfer-balance sheet." },
+  "subAgentApprovalsTitle": "Pending Approvals",
+  "@subAgentApprovalsTitle": {
+    "description": "Title of the sub-agent request approval-gate screen."
+  },
+  "subAgentApprovalsEmptyMessage": "No requests are awaiting your approval.",
+  "@subAgentApprovalsEmptyMessage": {
+    "description": "Shown when there are no pending-agent-approval requests."
+  },
+  "subAgentApproveAction": "Approve",
+  "@subAgentApproveAction": { "description": "Button label approving a sub-agent's request." },
+  "subAgentRejectAction": "Reject",
+  "@subAgentRejectAction": { "description": "Button label rejecting a sub-agent's request." },
+  "subAgentApproveSuccessMessage": "Request approved.",
+  "@subAgentApproveSuccessMessage": {
+    "description": "Shown after a sub-agent request is approved."
+  },
+  "subAgentRejectSuccessMessage": "Request rejected.",
+  "@subAgentRejectSuccessMessage": {
+    "description": "Shown after a sub-agent request is rejected."
+  },
+  "subAgentRejectDialogTitle": "Reject this request?",
+  "@subAgentRejectDialogTitle": { "description": "Reject-reason dialog title." },
+  "subAgentRejectReasonLabel": "Reason",
+  "@subAgentRejectReasonLabel": { "description": "Reject-reason dialog field label." },
+  "fundSheetTitle": "Transfer to {subAgentName}",
+  "@fundSheetTitle": {
+    "description": "Title of the transfer-balance modal sheet.",
+    "placeholders": { "subAgentName": { "type": "String" } }
+  },
+  "fundAmountLabel": "Amount (USD)",
+  "@fundAmountLabel": { "description": "Transfer-balance sheet field label." },
+  "fundAvailableBalanceLabel": "Your available balance: {amount}",
+  "@fundAvailableBalanceLabel": {
+    "description": "Shown above the amount field in the transfer-balance sheet.",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "fundSubmitAction": "Transfer",
+  "@fundSubmitAction": { "description": "Button label submitting the wallet-funding transfer." },
+  "fundSuccessMessage": "Transfer completed.",
+  "@fundSuccessMessage": { "description": "Shown after a successful wallet-funding transfer." },
+  "supportTicketsTitle": "Support Tickets",
+  "@supportTicketsTitle": { "description": "Title of the support tickets list screen." },
+  "ticketsEmptyMessage": "You haven't opened any tickets yet.",
+  "@ticketsEmptyMessage": { "description": "Shown when the ticket list is empty." },
+  "ticketStatusOpen": "Open",
+  "@ticketStatusOpen": { "description": "Ticket status label." },
+  "ticketStatusInProgress": "In Progress",
+  "@ticketStatusInProgress": { "description": "Ticket status label." },
+  "ticketStatusResolved": "Resolved",
+  "@ticketStatusResolved": { "description": "Ticket status label." },
+  "ticketStatusClosed": "Closed",
+  "@ticketStatusClosed": { "description": "Ticket status label." },
+  "ticketCategoryGeneral": "General",
+  "@ticketCategoryGeneral": { "description": "Ticket category label." },
+  "ticketCategoryFinancialCorrection": "Financial Correction",
+  "@ticketCategoryFinancialCorrection": { "description": "Ticket category label." },
+  "ticketLinkedRequestLabel": "Linked to request {referenceId}",
+  "@ticketLinkedRequestLabel": {
+    "description": "Shown on a ticket card/detail when it's linked to a request.",
+    "placeholders": { "referenceId": { "type": "String" } }
+  },
+  "createTicketTitle": "New Ticket",
+  "@createTicketTitle": { "description": "Title of the create-ticket screen." },
+  "createTicketAction": "New Ticket",
+  "@createTicketAction": { "description": "FAB label opening the create-ticket screen." },
+  "ticketCategoryFieldLabel": "Category",
+  "@ticketCategoryFieldLabel": { "description": "Create-ticket form field label." },
+  "ticketSubjectFieldLabel": "Subject",
+  "@ticketSubjectFieldLabel": { "description": "Create-ticket form field label." },
+  "ticketMessageFieldLabel": "Message",
+  "@ticketMessageFieldLabel": { "description": "Create-ticket form field label." },
+  "ticketRequestReferenceFieldLabel": "Request reference (optional)",
+  "@ticketRequestReferenceFieldLabel": {
+    "description": "Create-ticket form field label for the optional linked request."
+  },
+  "ticketDetailTitle": "Ticket Detail",
+  "@ticketDetailTitle": { "description": "Title of the ticket detail/chat screen." },
+  "ticketReplyHint": "Type a message…",
+  "@ticketReplyHint": { "description": "Placeholder text in the ticket reply input." },
+  "notificationsTitle": "Notifications",
+  "@notificationsTitle": { "description": "Title of the notifications feed screen." },
+  "notificationsEmptyMessage": "You're all caught up.",
+  "@notificationsEmptyMessage": { "description": "Shown when the notification feed is empty." },
+  "notificationsMarkAllReadAction": "Mark all as read",
+  "@notificationsMarkAllReadAction": { "description": "Button label marking every notification read." },
+  "notificationMarkReadTooltip": "Mark as read",
+  "@notificationMarkReadTooltip": { "description": "Tooltip on a single notification's mark-as-read action." },
+  "homeThemeToggleLabel": "Toggle theme",
+  "@homeThemeToggleLabel": { "description": "Accessible label for the home top bar's light/dark theme toggle." },
+  "homeQuickActionServices": "Egypt Approvals",
+  "@homeQuickActionServices": { "description": "Home quick-action tile navigating to the services/booking flow." },
+  "homeQuickActionRequests": "Requests Dashboard",
+  "@homeQuickActionRequests": { "description": "Home quick-action tile navigating to the requests dashboard." },
+  "homeQuickActionSubAgents": "Sub-Agents",
+  "@homeQuickActionSubAgents": { "description": "Home quick-action tile navigating to the sub-agents list." },
+  "homeQuickActionSupport": "Support",
+  "@homeQuickActionSupport": { "description": "Home quick-action tile navigating to support tickets." },
+  "homeRecentRequestsTitle": "Urgent & Recent Requests",
+  "@homeRecentRequestsTitle": { "description": "Section header above the home screen's request feed." },
+  "homeSeeAllAction": "See all",
+  "@homeSeeAllAction": { "description": "Link opening the full requests dashboard from the home feed section." },
+  "homeEmptyRequestsMessage": "No requests yet.",
+  "@homeEmptyRequestsMessage": { "description": "Shown on the home feed when there are no requests." },
+  "homeQuickActionAccount": "Account",
+  "@homeQuickActionAccount": { "description": "Home quick-action tile opening the account sheet (sign-out)." },
+  "accountSignOutAction": "Sign Out",
+  "@accountSignOutAction": { "description": "Button label signing the current user out." },
+  "reviewSubmitHoldAction": "Submit hold · {amount}",
+  "@reviewSubmitHoldAction": {
+    "description": "Booking review primary button label, repeating the amount that will be held.",
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "bookingReferenceCopiedMessage": "Reference copied to clipboard.",
+  "@bookingReferenceCopiedMessage": {
+    "description": "Snackbar shown after copying the booking reference id."
+  },
+  "bookingCopyReferenceTooltip": "Copy reference",
+  "@bookingCopyReferenceTooltip": {
+    "description": "Tooltip/semantic label for the copy-reference icon button on the booking success screen."
+  },
+  "serviceProcessingEgyptNationalSecurity": "3–5 business days",
+  "@serviceProcessingEgyptNationalSecurity": {
+    "description": "Processing-time fact shown on the Egypt National Security service card."
+  },
+  "serviceDocumentsEgyptNationalSecurity": "Passport copy, photo",
+  "@serviceDocumentsEgyptNationalSecurity": {
+    "description": "Required-documents fact shown on the Egypt National Security service card."
+  },
+  "serviceProcessingEgyptMilitaryIntelligence": "5–7 business days",
+  "@serviceProcessingEgyptMilitaryIntelligence": {
+    "description": "Processing-time fact shown on the Egypt Military Intelligence service card."
+  },
+  "serviceDocumentsEgyptMilitaryIntelligence": "Passport copy, photo, itinerary",
+  "@serviceDocumentsEgyptMilitaryIntelligence": {
+    "description": "Required-documents fact shown on the Egypt Military Intelligence service card."
+  },
+  "serviceFactUnavailable": "—",
+  "@serviceFactUnavailable": {
+    "description": "Placeholder processing/documents fact for a not-yet-bookable service card."
+  },
+  "topUpMethodBankTransferCaption": "Posts in 1–4 business hours",
+  "@topUpMethodBankTransferCaption": {
+    "description": "Timing note under the Bank transfer top-up method option."
+  },
+  "topUpMethodCashCaption": "Confirmed by your branch the same day",
+  "@topUpMethodCashCaption": {
+    "description": "Timing note under the Cash top-up method option."
+  },
+  "topUpMethodExchangeHouseCaption": "Posts once the receipt is verified",
+  "@topUpMethodExchangeHouseCaption": {
+    "description": "Timing note under the Exchange house top-up method option."
+  },
+  "walletLedgerFilterCredits": "Credits",
+  "@walletLedgerFilterCredits": {
+    "description": "Ledger segment filter: money coming in (top-ups, releases, refunds)."
+  },
+  "walletLedgerFilterDebits": "Debits",
+  "@walletLedgerFilterDebits": {
+    "description": "Ledger segment filter: money going out (holds, final deductions, settlements)."
+  },
+  "subAgentsDirectoryTitle": "Branches",
+  "@subAgentsDirectoryTitle": {
+    "description": "Section header above the sub-agent directory list."
+  },
+  "fundSubmitActionNamed": "Transfer {amount} to {name}",
+  "@fundSubmitActionNamed": {
+    "description": "Primary button on the fund-branch sheet once a valid amount is entered, naming both the amount and the receiving branch.",
+    "placeholders": {
+      "amount": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "notificationsUnreadFilter": "Unread",
+  "@notificationsUnreadFilter": {
+    "description": "Segment filter chip showing only unread notifications."
+  },
+  "ticketSendMessageTooltip": "Send message",
+  "@ticketSendMessageTooltip": {
+    "description": "Accessible label for the ticket reply's send button."
+  },
+  "refreshAction": "Refresh",
+  "@refreshAction": {
+    "description": "Accessible label for a manual refresh button (in addition to pull-to-refresh)."
+  },
+  "showPasswordAction": "Show password",
+  "@showPasswordAction": {
+    "description": "Accessible label for the password field's show-password toggle."
+  },
+  "hidePasswordAction": "Hide password",
+  "@hidePasswordAction": {
+    "description": "Accessible label for the password field's hide-password toggle."
+  }
+}

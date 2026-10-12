@@ -1,0 +1,55 @@
+import 'package:equatable/equatable.dart';
+
+sealed class AuthEvent extends Equatable {
+  const AuthEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Dispatched once at app start to restore a persisted session.
+final class AuthCheckRequested extends AuthEvent {
+  const AuthCheckRequested();
+}
+
+final class AuthLoginSubmitted extends AuthEvent {
+  const AuthLoginSubmitted({required this.identifier, required this.password});
+
+  final String identifier;
+  final String password;
+
+  @override
+  List<Object?> get props => [identifier, password];
+}
+
+final class AuthOtpSubmitted extends AuthEvent {
+  const AuthOtpSubmitted({required this.code});
+
+  final String code;
+
+  @override
+  List<Object?> get props => [code];
+}
+
+final class AuthOtpResendRequested extends AuthEvent {
+  const AuthOtpResendRequested();
+}
+
+final class AuthLogoutRequested extends AuthEvent {
+  const AuthLogoutRequested();
+}
+
+/// Raised internally when [AuthSessionController] reports the session is no
+/// longer valid (a 401 from any request, anywhere in the app). Not meant to
+/// be dispatched from the UI.
+final class AuthSessionInvalidated extends AuthEvent {
+  const AuthSessionInvalidated();
+}
+
+/// DEBUG ONLY — bypasses the real login/OTP flow with a mock, fully
+/// permissioned session, so screens can be exercised without a live
+/// backend. The bloc no-ops this outside a debug build (see `AuthBloc`);
+/// never dispatch it from anything but the debug-gated bypass button.
+final class AuthDebugBypassRequested extends AuthEvent {
+  const AuthDebugBypassRequested();
+}

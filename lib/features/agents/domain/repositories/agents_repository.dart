@@ -1,0 +1,28 @@
+import 'package:fpdart/fpdart.dart';
+
+import '../../../../core/error/failure.dart';
+import '../entities/sub_agent.dart';
+import '../entities/sub_agent_request_summary.dart';
+
+abstract interface class AgentsRepository {
+  Future<Either<Failure, List<SubAgent>>> getSubAgents();
+
+  /// Requests submitted by any sub-agent, currently sitting at the master
+  /// agent's approval gate (`RequestStatus.pendingAgentApproval`).
+  Future<Either<Failure, List<SubAgentRequestSummary>>> getPendingApprovalRequests();
+
+  /// Approves the request, committing it forward to management review.
+  Future<Either<Failure, void>> approveRequest(String requestId);
+
+  Future<Either<Failure, void>> rejectRequest(String requestId, {required String reason});
+
+  /// Transfers [amountCents] from the master agent's wallet into
+  /// [subAgentId]'s internal balance. Returns the sub-agent's updated
+  /// record. Callers must validate `amountCents` against the master
+  /// agent's available balance before calling this (see
+  /// `FormValidators.maxAmount`) — the backend re-validates regardless.
+  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+    required String subAgentId,
+    required int amountCents,
+  });
+}

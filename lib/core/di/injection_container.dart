@@ -1,0 +1,277 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../../features/auth/data/datasources/auth_local_data_source.dart';
+import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/usecases/get_persisted_session_usecase.dart';
+import '../../features/auth/domain/usecases/login_usecase.dart';
+import '../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../features/auth/domain/usecases/resend_otp_usecase.dart';
+import '../../features/auth/domain/usecases/verify_otp_usecase.dart';
+import '../../features/agents/data/datasources/agents_remote_data_source.dart';
+import '../../features/agents/data/datasources/agents_remote_data_source_debug_fallback.dart';
+import '../../features/agents/data/repositories/agents_repository_impl.dart';
+import '../../features/agents/domain/repositories/agents_repository.dart';
+import '../../features/agents/domain/usecases/approve_sub_agent_request_usecase.dart';
+import '../../features/agents/domain/usecases/fund_sub_agent_wallet_usecase.dart';
+import '../../features/agents/domain/usecases/get_pending_approval_requests_usecase.dart';
+import '../../features/agents/domain/usecases/get_sub_agents_usecase.dart';
+import '../../features/agents/domain/usecases/reject_sub_agent_request_usecase.dart';
+import '../../features/agents/presentation/bloc/agents_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_event.dart';
+import '../../features/dynamic_forms/domain/validators/dynamic_field_validator.dart';
+import '../../features/requests/data/datasources/requests_remote_data_source.dart';
+import '../../features/requests/data/datasources/requests_remote_data_source_debug_fallback.dart';
+import '../../features/requests/data/repositories/requests_repository_impl.dart';
+import '../../features/requests/domain/repositories/requests_repository.dart';
+import '../../features/requests/domain/usecases/cancel_request_usecase.dart';
+import '../../features/requests/domain/usecases/get_request_detail_usecase.dart';
+import '../../features/requests/domain/usecases/get_requests_usecase.dart';
+import '../../features/requests/presentation/bloc/requests_bloc.dart';
+import '../../features/services/data/datasources/services_remote_data_source.dart';
+import '../../features/services/data/datasources/services_remote_data_source_debug_fallback.dart';
+import '../../features/services/data/repositories/services_repository_impl.dart';
+import '../../features/services/domain/repositories/services_repository.dart';
+import '../../features/services/domain/usecases/get_available_services_usecase.dart';
+import '../../features/services/domain/usecases/submit_booking_usecase.dart';
+import '../../features/services/presentation/bloc/service_booking_bloc.dart';
+import '../../features/support/data/datasources/support_remote_data_source.dart';
+import '../../features/support/data/datasources/support_remote_data_source_debug_fallback.dart';
+import '../../features/support/data/repositories/support_repository_impl.dart';
+import '../../features/support/domain/repositories/support_repository.dart';
+import '../../features/support/domain/usecases/create_ticket_usecase.dart';
+import '../../features/support/domain/usecases/get_notifications_usecase.dart';
+import '../../features/support/domain/usecases/get_tickets_usecase.dart';
+import '../../features/support/domain/usecases/mark_all_notifications_read_usecase.dart';
+import '../../features/support/domain/usecases/mark_notification_read_usecase.dart';
+import '../../features/support/domain/usecases/reply_to_ticket_usecase.dart';
+import '../../features/support/presentation/bloc/notifications_bloc.dart';
+import '../../features/support/presentation/bloc/support_bloc.dart';
+import '../../features/wallet/data/datasources/wallet_remote_data_source.dart';
+import '../../features/wallet/data/datasources/wallet_remote_data_source_debug_fallback.dart';
+import '../../features/wallet/data/repositories/wallet_repository_impl.dart';
+import '../../features/wallet/domain/repositories/wallet_repository.dart';
+import '../../features/wallet/domain/usecases/get_transactions_usecase.dart';
+import '../../features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
+import '../../features/wallet/domain/usecases/request_top_up_usecase.dart';
+import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
+import '../network/auth_session_controller.dart';
+import '../network/graphql_client_factory.dart';
+import '../network/graphql_service.dart';
+
+/// Manual composition root.
+///
+/// A plain singleton class, not a service-locator package (`get_it` et al.):
+/// at this app's current size a hand-written graph is easier to read and
+/// trace than a package would be. Revisit once the number of features makes
+/// this file unwieldy.
+class InjectionContainer {
+  InjectionContainer._();
+
+  static final InjectionContainer instance = InjectionContainer._();
+
+  bool _initialized = false;
+
+  late final FlutterSecureStorage secureStorage;
+  late final AuthSessionController authSessionController;
+  late final GraphQLClientFactory graphQLClientFactory;
+  late final GraphQLService graphQLService;
+
+  late final AuthRemoteDataSource authRemoteDataSource;
+  late final AuthLocalDataSource authLocalDataSource;
+  late final AuthRepository authRepository;
+  late final LoginUseCase loginUseCase;
+  late final VerifyOtpUseCase verifyOtpUseCase;
+  late final ResendOtpUseCase resendOtpUseCase;
+  late final LogoutUseCase logoutUseCase;
+  late final GetPersistedSessionUseCase getPersistedSessionUseCase;
+
+  late final WalletRemoteDataSource walletRemoteDataSource;
+  late final WalletRepository walletRepository;
+  late final GetWalletBalanceUseCase getWalletBalanceUseCase;
+  late final GetTransactionsUseCase getTransactionsUseCase;
+  late final RequestTopUpUseCase requestTopUpUseCase;
+
+  late final ServicesRemoteDataSource servicesRemoteDataSource;
+  late final ServicesRepository servicesRepository;
+  late final GetAvailableServicesUseCase getAvailableServicesUseCase;
+  late final SubmitBookingUseCase submitBookingUseCase;
+
+  late final RequestsRemoteDataSource requestsRemoteDataSource;
+  late final RequestsRepository requestsRepository;
+  late final GetRequestsUseCase getRequestsUseCase;
+  late final GetRequestDetailUseCase getRequestDetailUseCase;
+  late final CancelRequestUseCase cancelRequestUseCase;
+
+  late final AgentsRemoteDataSource agentsRemoteDataSource;
+  late final AgentsRepository agentsRepository;
+  late final GetSubAgentsUseCase getSubAgentsUseCase;
+  late final GetPendingApprovalRequestsUseCase getPendingApprovalRequestsUseCase;
+  late final ApproveSubAgentRequestUseCase approveSubAgentRequestUseCase;
+  late final RejectSubAgentRequestUseCase rejectSubAgentRequestUseCase;
+  late final FundSubAgentWalletUseCase fundSubAgentWalletUseCase;
+
+  late final SupportRemoteDataSource supportRemoteDataSource;
+  late final SupportRepository supportRepository;
+  late final GetTicketsUseCase getTicketsUseCase;
+  late final CreateTicketUseCase createTicketUseCase;
+  late final ReplyToTicketUseCase replyToTicketUseCase;
+  late final GetNotificationsUseCase getNotificationsUseCase;
+  late final MarkNotificationReadUseCase markNotificationReadUseCase;
+  late final MarkAllNotificationsReadUseCase markAllNotificationsReadUseCase;
+
+  /// Builds the dependency graph. Call once, before `runApp`. Safe to call
+  /// more than once — subsequent calls are no-ops.
+  void init() {
+    if (_initialized) return;
+    _initialized = true;
+
+    secureStorage = const FlutterSecureStorage();
+    authSessionController = AuthSessionController();
+    graphQLClientFactory = GraphQLClientFactory(
+      authSessionController: authSessionController,
+      secureStorage: secureStorage,
+    );
+    graphQLService = GraphQLService(clientFactory: graphQLClientFactory);
+
+    authRemoteDataSource =
+        AuthRemoteDataSourceImpl(graphQLService: graphQLService);
+    authLocalDataSource =
+        AuthLocalDataSourceImpl(secureStorage: secureStorage);
+    authRepository = AuthRepositoryImpl(
+      remote: authRemoteDataSource,
+      local: authLocalDataSource,
+    );
+
+    loginUseCase = LoginUseCase(authRepository);
+    verifyOtpUseCase = VerifyOtpUseCase(authRepository);
+    resendOtpUseCase = ResendOtpUseCase(authRepository);
+    logoutUseCase = LogoutUseCase(authRepository);
+    getPersistedSessionUseCase = GetPersistedSessionUseCase(authRepository);
+
+    // Wrapped unconditionally: the fallback is itself gated on `kDebugMode`
+    // (a compile-time constant), so this is a no-op passthrough — and is
+    // dead-code-eliminated entirely — in a release build.
+    walletRemoteDataSource = DebugFallbackWalletRemoteDataSource(
+      WalletRemoteDataSourceImpl(graphQLService: graphQLService),
+    );
+    walletRepository = WalletRepositoryImpl(remote: walletRemoteDataSource);
+    getWalletBalanceUseCase = GetWalletBalanceUseCase(walletRepository);
+    getTransactionsUseCase = GetTransactionsUseCase(walletRepository);
+    requestTopUpUseCase = RequestTopUpUseCase(walletRepository);
+
+    // Same reasoning as the wallet fallback above: inert in release builds.
+    servicesRemoteDataSource = DebugFallbackServicesRemoteDataSource(
+      ServicesRemoteDataSourceImpl(graphQLService: graphQLService),
+    );
+    servicesRepository = ServicesRepositoryImpl(remote: servicesRemoteDataSource);
+    getAvailableServicesUseCase = GetAvailableServicesUseCase(servicesRepository);
+    submitBookingUseCase = SubmitBookingUseCase(servicesRepository);
+
+    // Same reasoning as the wallet/services fallbacks above: inert in
+    // release builds.
+    requestsRemoteDataSource = DebugFallbackRequestsRemoteDataSource(
+      RequestsRemoteDataSourceImpl(graphQLService: graphQLService),
+    );
+    requestsRepository = RequestsRepositoryImpl(remote: requestsRemoteDataSource);
+    getRequestsUseCase = GetRequestsUseCase(requestsRepository);
+    getRequestDetailUseCase = GetRequestDetailUseCase(requestsRepository);
+    cancelRequestUseCase = CancelRequestUseCase(requestsRepository);
+
+    // Same reasoning as the other feature fallbacks above: inert in release
+    // builds.
+    agentsRemoteDataSource = DebugFallbackAgentsRemoteDataSource(
+      AgentsRemoteDataSourceImpl(graphQLService: graphQLService),
+    );
+    agentsRepository = AgentsRepositoryImpl(remote: agentsRemoteDataSource);
+    getSubAgentsUseCase = GetSubAgentsUseCase(agentsRepository);
+    getPendingApprovalRequestsUseCase =
+        GetPendingApprovalRequestsUseCase(agentsRepository);
+    approveSubAgentRequestUseCase = ApproveSubAgentRequestUseCase(agentsRepository);
+    rejectSubAgentRequestUseCase = RejectSubAgentRequestUseCase(agentsRepository);
+    fundSubAgentWalletUseCase = FundSubAgentWalletUseCase(agentsRepository);
+
+    // Same reasoning as the other feature fallbacks above: inert in release
+    // builds.
+    supportRemoteDataSource = DebugFallbackSupportRemoteDataSource(
+      SupportRemoteDataSourceImpl(graphQLService: graphQLService),
+    );
+    supportRepository = SupportRepositoryImpl(remote: supportRemoteDataSource);
+    getTicketsUseCase = GetTicketsUseCase(supportRepository);
+    createTicketUseCase = CreateTicketUseCase(supportRepository);
+    replyToTicketUseCase = ReplyToTicketUseCase(supportRepository);
+    getNotificationsUseCase = GetNotificationsUseCase(supportRepository);
+    markNotificationReadUseCase = MarkNotificationReadUseCase(supportRepository);
+    markAllNotificationsReadUseCase = MarkAllNotificationsReadUseCase(supportRepository);
+  }
+
+  /// Builds a fresh [AuthBloc] and kicks off session restore. Call once per
+  /// app run (e.g. from the root `BlocProvider`) — the Bloc, not this
+  /// container, owns its lifetime from here on.
+  AuthBloc createAuthBloc() => AuthBloc(
+        loginUseCase: loginUseCase,
+        verifyOtpUseCase: verifyOtpUseCase,
+        resendOtpUseCase: resendOtpUseCase,
+        logoutUseCase: logoutUseCase,
+        getPersistedSessionUseCase: getPersistedSessionUseCase,
+        authSessionController: authSessionController,
+      )..add(const AuthCheckRequested());
+
+  /// Builds a fresh [WalletBloc]. The caller (the wallet screen's own
+  /// `BlocProvider`) owns its lifetime from here on.
+  WalletBloc createWalletBloc() => WalletBloc(
+        getWalletBalanceUseCase: getWalletBalanceUseCase,
+        getTransactionsUseCase: getTransactionsUseCase,
+        requestTopUpUseCase: requestTopUpUseCase,
+      );
+
+  /// Builds a fresh [ServiceBookingBloc]. [validator] is built by the caller
+  /// (needs `AppLocalizations`, only available where there's a `BuildContext`)
+  /// — see `ServiceSelectionScreen.buildValidator`.
+  ServiceBookingBloc createServiceBookingBloc({
+    required DynamicFieldValidator validator,
+  }) =>
+      ServiceBookingBloc(
+        getAvailableServicesUseCase: getAvailableServicesUseCase,
+        submitBookingUseCase: submitBookingUseCase,
+        getWalletBalanceUseCase: getWalletBalanceUseCase,
+        validator: validator,
+      );
+
+  /// Builds a fresh [RequestsBloc]. The caller (the dashboard screen's own
+  /// `BlocProvider`) owns its lifetime from here on.
+  RequestsBloc createRequestsBloc() => RequestsBloc(
+        getRequestsUseCase: getRequestsUseCase,
+        getRequestDetailUseCase: getRequestDetailUseCase,
+        cancelRequestUseCase: cancelRequestUseCase,
+      );
+
+  /// Builds a fresh [AgentsBloc]. The caller (the sub-agents list screen's
+  /// own `BlocProvider`) owns its lifetime from here on.
+  AgentsBloc createAgentsBloc() => AgentsBloc(
+        getSubAgentsUseCase: getSubAgentsUseCase,
+        getPendingApprovalRequestsUseCase: getPendingApprovalRequestsUseCase,
+        approveSubAgentRequestUseCase: approveSubAgentRequestUseCase,
+        rejectSubAgentRequestUseCase: rejectSubAgentRequestUseCase,
+        fundSubAgentWalletUseCase: fundSubAgentWalletUseCase,
+        getWalletBalanceUseCase: getWalletBalanceUseCase,
+      );
+
+  /// Builds a fresh [SupportBloc]. The caller (the tickets list screen's
+  /// own `BlocProvider`) owns its lifetime from here on.
+  SupportBloc createSupportBloc() => SupportBloc(
+        getTicketsUseCase: getTicketsUseCase,
+        createTicketUseCase: createTicketUseCase,
+        replyToTicketUseCase: replyToTicketUseCase,
+      );
+
+  /// Builds a fresh [NotificationsBloc]. The caller (the notifications
+  /// screen's own `BlocProvider`) owns its lifetime from here on.
+  NotificationsBloc createNotificationsBloc() => NotificationsBloc(
+        getNotificationsUseCase: getNotificationsUseCase,
+        markNotificationReadUseCase: markNotificationReadUseCase,
+        markAllNotificationsReadUseCase: markAllNotificationsReadUseCase,
+      );
+}
