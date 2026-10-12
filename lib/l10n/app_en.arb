@@ -1167,5 +1167,93 @@
   "balanceShownLabel": "Hide balance",
   "@balanceShownLabel": {
     "description": "Home / shared component copy."
+  },
+  "requestsEmptyTitle": "No requests yet",
+  "@requestsEmptyTitle": {
+    "description": "Requests screens copy."
+  },
+  "requestsEmptyBody": "Start your first request for your clients and follow every stage from here.",
+  "@requestsEmptyBody": {
+    "description": "Requests screens copy."
+  },
+  "requestsActionBannerBody": "Upload the documents before the 72-hour window ends",
+  "@requestsActionBannerBody": {
+    "description": "Requests screens copy."
+  },
+  "requestsStatActionRequired": "Action required",
+  "@requestsStatActionRequired": {
+    "description": "Requests screens copy."
+  },
+  "requestsStatProcessing": "Processing",
+  "@requestsStatProcessing": {
+    "description": "Requests screens copy."
+  },
+  "requestsStatAll": "All requests",
+  "@requestsStatAll": {
+    "description": "Requests screens copy."
+  },
+  "requestTrackingTitle": "Track request",
+  "@requestTrackingTitle": {
+    "description": "Requests screens copy."
+  },
+  "requestTrackingSteps": "Request stages",
+  "@requestTrackingSteps": {
+    "description": "Requests screens copy."
+  },
+  "requestTicketFees": "Fees",
+  "@requestTicketFees": {
+    "description": "Requests screens copy."
+  },
+  "requestTicketTravelers": "Travelers",
+  "@requestTicketTravelers": {
+    "description": "Requests screens copy."
+  },
+  "requestTicketDate": "Request date",
+  "@requestTicketDate": {
+    "description": "Requests screens copy."
+  },
+  "requestDeadlineTitle": "Time remaining",
+  "@requestDeadlineTitle": {
+    "description": "Requests screens copy."
+  },
+  "requestDeadlineSubtitle": "to upload the required documents",
+  "@requestDeadlineSubtitle": {
+    "description": "Requests screens copy."
+  },
+  "requestDeadlineExpired": "Window ended",
+  "@requestDeadlineExpired": {
+    "description": "Requests screens copy."
+  },
+  "requestSupportAction": "Support",
+  "@requestSupportAction": {
+    "description": "Requests screens copy."
+  },
+  "requestViewDocumentsAction": "View documents",
+  "@requestViewDocumentsAction": {
+    "description": "Requests screens copy."
+  },
+  "requestDocumentsTitle": "Documents",
+  "@requestDocumentsTitle": {
+    "description": "Requests screens copy."
+  },
+  "requestDocumentsEmpty": "No documents yet. They will appear here once approvals are issued.",
+  "@requestDocumentsEmpty": {
+    "description": "Requests screens copy."
+  },
+  "requestDocumentsApprovals": "Approvals document",
+  "@requestDocumentsApprovals": {
+    "description": "Requests screens copy."
+  },
+  "requestDocumentsCopyLink": "Copy link",
+  "@requestDocumentsCopyLink": {
+    "description": "Requests screens copy."
+  },
+  "requestDocumentsLinkCopied": "Link copied.",
+  "@requestDocumentsLinkCopied": {
+    "description": "Requests screens copy."
+  },
+  "requestDocumentsReady": "Ready",
+  "@requestDocumentsReady": {
+    "description": "Requests screens copy."
   }
 }

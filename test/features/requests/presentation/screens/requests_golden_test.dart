@@ -1,31 +1,38 @@
-// Golden coverage for the Requests list/detail redesign (design/requests/SPEC.md §7).
+// Golden coverage for the Requests list / empty / tracking screens (Figma 06,
+// 18, 07).
 //
-// These goldens assemble the SAME public design-system widgets the real
-// screens use (SeenRequestCard, SeenSegmentChips, SeenStatusBadge,
-// SeenSlaTag, SeenStatusStepper, SeenListGroup, SeenTopBar), fed with fixed
-// SPEC-matching fixture data, rather than driving RequestsDashboardScreen/
-// RequestDetailScreen directly — those own screens create their Bloc via
-// InjectionContainer.instance.createRequestsBloc(), which is wired to a
-// real (placeholder) GraphQL endpoint with no test-time override seam, so
-// their content isn't deterministic enough for pixel goldens. The private
-// `_DashboardBody`/`_DetailBody` classes that hold the actual layout also
-// aren't reachable from a separate test library. This still exercises the
-// exact widgets/theme/tokens the real screens render with — see the
-// session's final comparison notes for what this does and doesn't prove.
+// These goldens assemble the SAME public widgets the real screens use
+// (SeenRequestSummaryCard, SeenStatCard, SeenSegmentChips, SeenEmptyState,
+// SeenRequestTicket, SeenStatusStepper, SeenRoundIconButton), fed with fixed
+// fixture data, rather than driving RequestsDashboardScreen /
+// RequestDetailScreen directly: those create their Bloc via
+// InjectionContainer.instance.createRequestsBloc(), which is wired to a real
+// (placeholder) GraphQL endpoint with no test-time override seam, and the
+// layout lives in private classes. Live-ticking pieces (the HH:MM:SS deadline
+// counter) are deliberately left out so the pixels are deterministic.
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:seen_booking/core/presentation/foundation/seen_status.dart';
-import 'package:seen_booking/core/presentation/widgets/avatar.dart';
-import 'package:seen_booking/core/presentation/widgets/chrome.dart';
+import 'package:seen_booking/core/constants/enums.dart';
+import 'package:seen_booking/core/presentation/foundation/seen_icons.dart';
+import 'package:seen_booking/core/presentation/foundation/seen_strings.dart';
+import 'package:seen_booking/core/presentation/foundation/seen_vectors.dart';
+import 'package:seen_booking/core/presentation/widgets/actions.dart';
+import 'package:seen_booking/core/presentation/widgets/empty_state.dart';
 import 'package:seen_booking/core/presentation/widgets/filters.dart';
-import 'package:seen_booking/core/presentation/widgets/status.dart';
+import 'package:seen_booking/core/presentation/widgets/screen_background.dart';
+import 'package:seen_booking/core/presentation/widgets/stat_card.dart';
 import 'package:seen_booking/core/presentation/widgets/steppers.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
+import 'package:seen_booking/core/theme/seen_colors.dart';
 import 'package:seen_booking/core/theme/seen_dimensions.dart';
-import 'package:seen_booking/features/requests/presentation/widgets/seen_request_card.dart';
+import 'package:seen_booking/core/theme/seen_format.dart';
+import 'package:seen_booking/core/theme/seen_typography.dart';
+import 'package:seen_booking/features/requests/presentation/widgets/request_status_seen_mapping.dart';
+import 'package:seen_booking/features/requests/presentation/widgets/seen_request_summary_card.dart';
+import 'package:seen_booking/features/requests/presentation/widgets/seen_request_ticket.dart';
 
 const _surfaceSize = Size(390, 844);
 
@@ -48,57 +55,79 @@ class _RequestsListPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    final type = SeenType.of(context);
+    final s = SeenStrings.of(context);
+    final deadline = DateTime.now().add(const Duration(hours: 52, minutes: 30));
     return Scaffold(
-      appBar: const SeenTopBar.inner(title: 'طلباتي'),
-      body: Column(
-        children: [
-          const SizedBox(height: SeenSpace.s2),
-          SeenSegmentChips(
-            items: const [
-              SeenSegment(label: 'الكل', count: 48),
-              SeenSegment(label: 'قيد المراجعة', count: 12),
-              SeenSegment(label: 'مطلوب إجراء', count: 3, alert: true),
-              SeenSegment(label: 'مكتمل', count: 33),
+      backgroundColor: c.card,
+      body: SeenScreenBackground(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(14),
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text('طلباتي', style: type.h1)),
+                  SeenRoundIconButton(icon: SeenIcons.search, semanticLabel: 'بحث', onPressed: () {}),
+                  const SizedBox(width: SeenSpace.s2),
+                  SeenRoundIconButton(icon: SeenIcons.plus, semanticLabel: 'جديد', tonal: true, onPressed: () {}),
+                ],
+              ),
+              const SizedBox(height: SeenSpace.s3),
+              Row(
+                children: [
+                  Expanded(child: SeenStatCard(label: 'كل الطلبات', value: s.numeral(24), dotColor: c.inkMuted)),
+                  const SizedBox(width: SeenSpace.s2),
+                  Expanded(child: SeenStatCard(label: 'قيد المعالجة', value: s.numeral(8), dotColor: SeenBrand.violet)),
+                  const SizedBox(width: SeenSpace.s2),
+                  Expanded(child: SeenStatCard(label: 'بانتظار إجراء', value: s.numeral(3), dotColor: SeenBrand.progressWaiting)),
+                ],
+              ),
+              const SizedBox(height: SeenSpace.s3),
+              SeenSegmentChips(
+                padding: EdgeInsets.zero,
+                items: const [
+                  SeenSegment(label: 'الكل', count: 24),
+                  SeenSegment(label: 'قيد المعالجة', count: 8),
+                  SeenSegment(label: 'بانتظار إجراء', count: 3, alert: true),
+                  SeenSegment(label: 'مكتمل', count: 12),
+                ],
+                selectedIndex: 0,
+                onSelected: (_) {},
+              ),
+              const SizedBox(height: SeenSpace.s4),
+              SeenRequestSummaryCard(
+                title: 'دخول مصر',
+                subtitle: s.travelerCount(2),
+                status: RequestStatus.infoRequired.toSeenRequestStatus(slaDeadline: deadline),
+                progress: RequestStatus.infoRequired.progress,
+                reference: 'SB-20476',
+                dateLabel: '12/11/2026',
+                slaDeadline: deadline,
+                note: 'مطلوب نسخة أوضح من جواز السفر',
+              ),
+              const SizedBox(height: SeenSpace.s3),
+              SeenRequestSummaryCard(
+                title: 'موافقة أمنية · الأردن',
+                subtitle: s.travelerCount(1),
+                status: RequestStatus.processing.toSeenRequestStatus(),
+                progress: RequestStatus.processing.progress,
+                reference: 'SB-20481',
+                dateLabel: '12/11/2026',
+              ),
+              const SizedBox(height: SeenSpace.s3),
+              SeenRequestSummaryCard(
+                title: 'تأشيرة السعودية',
+                subtitle: s.travelerCount(3),
+                status: RequestStatus.completed.toSeenRequestStatus(),
+                progress: RequestStatus.completed.progress,
+                reference: 'SB-20470',
+                dateLabel: '12/11/2026',
+              ),
             ],
-            selectedIndex: 0,
-            onSelected: (_) {},
           ),
-          const SizedBox(height: SeenSpace.s2),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(SeenSpace.s4, 0, SeenSpace.s4, SeenSpace.s4),
-              children: const [
-                SeenRequestCard(
-                  reference: 'EG-MI-2026-003190',
-                  service: 'موافقة الاستخبارات العسكرية',
-                  travelers: 2,
-                  date: '25/09/2026',
-                  status: SeenStatus.action,
-                  amount: 400,
-                  note: 'مطلوب نسخة أوضح من جواز السفر',
-                ),
-                SizedBox(height: SeenSpace.s3),
-                SeenRequestCard(
-                  reference: 'EG-NS-2026-004718',
-                  service: 'موافقة الأمن الوطني',
-                  travelers: 1,
-                  date: '24/09/2026',
-                  status: SeenStatus.review,
-                  amount: 270,
-                ),
-                SizedBox(height: SeenSpace.s3),
-                SeenRequestCard(
-                  reference: 'EG-NS-2026-004602',
-                  service: 'موافقة الأمن الوطني',
-                  travelers: 3,
-                  date: '20/09/2026',
-                  status: SeenStatus.completed,
-                  amount: 810,
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -109,12 +138,34 @@ class _RequestsEmptyPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: SeenTopBar.inner(title: 'طلباتي'),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(SeenSpace.s6),
-          child: Text('لا توجد طلبات مطابقة', textAlign: TextAlign.center),
+    final c = SeenColors.of(context);
+    final type = SeenType.of(context);
+    return Scaffold(
+      backgroundColor: c.card,
+      body: SeenScreenBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Expanded(child: Text('طلباتي', style: type.h1)),
+                    SeenRoundIconButton(icon: SeenIcons.plus, semanticLabel: 'جديد', tonal: true, onPressed: () {}),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SeenEmptyState(
+                  iconAsset: SeenVectors.iconRequests,
+                  title: 'لا توجد طلبات بعد',
+                  message: 'ابدأ أول طلب لعملائك، وتابع كل مراحله من هنا.',
+                  actionLabel: 'اطلب خدمة',
+                  onAction: () {},
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -126,54 +177,69 @@ class _RequestDetailPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    final type = SeenType.of(context);
+    final s = SeenStrings.of(context);
     return Scaffold(
-      appBar: const SeenTopBar.inner(title: 'تفاصيل الطلب', subtitle: 'EG-MI-2026-003190'),
-      body: ListView(
-        padding: const EdgeInsets.all(SeenSpace.s4),
-        children: const [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: c.card,
+      body: SeenScreenBackground(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
             children: [
-              SeenStatusBadge(status: SeenStatus.review),
-              SeenSlaTag.fixed(remaining: Duration(hours: 52), totalHours: 72),
-            ],
-          ),
-          SizedBox(height: SeenSpace.s3),
-          Text('موافقة الاستخبارات العسكرية'),
-          SizedBox(height: SeenSpace.s6),
-          SeenSectionHeader(title: 'مراحل الطلب'),
-          SeenStatusStepper(
-            current: 2,
-            steps: [
-              SeenStep(title: 'تم الإرسال وحجز المبلغ', meta: '27/09 · 09:15'),
-              SeenStep(title: 'التحقق من المستندات', meta: '27/09 · 11:02'),
-              SeenStep(title: 'قيد المراجعة لدى الجهة', meta: 'متوقع خلال 52 ساعة'),
-              SeenStep(title: 'صدور الموافقات والخصم النهائي'),
-            ],
-          ),
-          SizedBox(height: SeenSpace.s6),
-          SeenSectionHeader(title: 'المسافرون'),
-          SeenListGroup(children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: SeenSpace.s3),
-              child: Row(children: [
-                SeenAvatar(initial: '1'),
-                SizedBox(width: SeenSpace.s3),
-                Expanded(
+              Row(
+                children: [
+                  SeenRoundIconButton(icon: SeenIcons.back(context), semanticLabel: 'رجوع', onPressed: () {}),
+                  Expanded(child: Text('تتبع الطلب', textAlign: TextAlign.center, style: type.title)),
+                  SeenRoundIconButton(icon: SeenIcons.headset, semanticLabel: 'الدعم', onPressed: () {}),
+                ],
+              ),
+              const SizedBox(height: SeenSpace.s4),
+              SeenRequestTicket(
+                status: SeenRequestStatus.processing,
+                statusLabel: s.requestStatus(SeenRequestStatus.processing),
+                reference: 'SB-20481',
+                title: 'محمد عبدالله الحميري',
+                subtitle: 'موافقة أمنية · الأردن',
+                feeLabel: 'الرسوم',
+                feeValue: SeenFormat.usd(150),
+                travelersLabel: 'المسافرون',
+                travelersValue: s.numeral(3),
+                dateLabel: 'تاريخ الطلب',
+                dateValue: '12/11/2026',
+              ),
+              const SizedBox(height: 18),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: c.card,
+                  borderRadius: const BorderRadius.all(SeenRadius.r22),
+                  border: Border.all(color: c.border),
+                  boxShadow: SeenShadows.card,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('MOHAMMED ALI SALEH', textDirection: TextDirection.ltr),
-                      Text('08A1234', textDirection: TextDirection.ltr),
+                      Text('مراحل الطلب', style: type.title),
+                      const SizedBox(height: SeenSpace.s3),
+                      SeenStatusStepper(
+                        current: 2,
+                        steps: [
+                          SeenStep(title: s.requestStepTitle(1), meta: '12/11/2026 · 09:14'),
+                          SeenStep(title: s.requestStepTitle(2), meta: '12/11/2026 · 11:40'),
+                          SeenStep(title: s.requestStepTitle(3), meta: '13/11/2026 · 08:05'),
+                          SeenStep(title: s.requestStepTitle(4)),
+                          SeenStep(title: s.requestStepTitle(5)),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                SizedBox(width: SeenSpace.s2),
-                SeenStatusBadge(status: SeenStatus.approved, dense: true),
-              ]),
-            ),
-          ]),
-        ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

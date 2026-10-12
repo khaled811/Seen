@@ -160,6 +160,21 @@ void main() {
       expect(state.filteredRequests, isEmpty);
     });
 
+    test('a burst of keystrokes is debounced to a single emission with the last query', () async {
+      await load();
+      final emitted = <RequestsLoaded>[];
+      final sub = bloc.stream.listen((s) => emitted.add(s as RequestsLoaded));
+      for (final q in ['s', 'sb', 'sb-', 'sb-4']) {
+        bloc.add(RequestsSearchChanged(q));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+      await Future<void>.delayed(RequestsBloc.searchDebounce + const Duration(milliseconds: 100));
+      await sub.cancel();
+
+      expect(emitted, hasLength(1));
+      expect(emitted.single.searchQuery, 'sb-4');
+    });
+
     test('clearing the query restores the full filtered list', () async {
       await load();
       bloc.add(const RequestsSearchChanged('sb-4'));

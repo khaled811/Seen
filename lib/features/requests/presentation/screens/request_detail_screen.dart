@@ -6,10 +6,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_motion_icons.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
-import '../../../../core/presentation/widgets/avatar.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/motion_icon.dart';
+import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/presentation/widgets/steppers.dart';
@@ -23,22 +24,26 @@ import '../../domain/entities/request_traveler_status.dart';
 import '../bloc/requests_bloc.dart';
 import '../bloc/requests_event.dart';
 import '../bloc/requests_state.dart';
+import '../widgets/request_documents_sheet.dart';
 import '../widgets/request_status_labels.dart';
 import '../widgets/request_status_seen_mapping.dart';
+import '../widgets/seen_deadline_card.dart';
+import '../widgets/seen_request_ticket.dart';
 
-/// The request's SLA window — every deadline is 72h from submission. Used
-/// both for `SeenSlaTag`'s "x of 72" caption and the elapsed-share progress
-/// bar under the summary card.
-const _slaTotalHours = 72;
+const _gutter = 20.0;
 
-enum _DetailMenuAction { copyReference, contactSupport }
+void _openSupport(BuildContext context) =>
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen()));
 
+/// Request tracking (Figma 07): ticket, deadline counter, 5-stage stepper,
+/// travelers, and sticky Support / View documents actions.
 class RequestDetailScreen extends StatelessWidget {
   const RequestDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
     return BlocListener<RequestsBloc, RequestsState>(
       listenWhen: (previous, current) =>
           current is RequestsLoaded && current.cancelStatus == RequestCancelStatus.failure,
@@ -49,62 +54,35 @@ class RequestDetailScreen extends StatelessWidget {
           ..showSnackBar(SnackBar(content: Text(message)));
       },
       child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(SeenSize.appBar),
-          child: BlocBuilder<RequestsBloc, RequestsState>(
-            buildWhen: (previous, current) => current is RequestsLoaded && current.detail != null,
-            builder: (context, state) {
-              final referenceId = state is RequestsLoaded ? state.detail?.referenceId : null;
-              return SeenTopBar.inner(
-                title: l10n.requestDetailTitle,
-                subtitle: referenceId,
-                trailing: PopupMenuButton<_DetailMenuAction>(
-                  icon: Icon(SeenIcons.more, color: SeenColors.of(context).slate, size: 22),
-                  onSelected: (action) async {
-                    switch (action) {
-                      case _DetailMenuAction.copyReference:
-                        if (referenceId == null) return;
-                        await Clipboard.setData(ClipboardData(text: referenceId));
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context)
-                          ..hideCurrentSnackBar()
-                          ..showSnackBar(SnackBar(content: Text(l10n.requestDetailReferenceCopiedMessage)));
-                      case _DetailMenuAction.contactSupport:
-                        Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen()));
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: _DetailMenuAction.copyReference,
-                      child: Text(l10n.requestDetailCopyReferenceAction),
-                    ),
-                    PopupMenuItem(
-                      value: _DetailMenuAction.contactSupport,
-                      child: Text(l10n.requestDetailContactSupportAction),
-                    ),
-                  ],
+        backgroundColor: c.card,
+        body: SeenScreenBackground(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                const _Header(),
+                Expanded(
+                  child: BlocBuilder<RequestsBloc, RequestsState>(
+                    builder: (context, state) {
+                      if (state is! RequestsLoaded || state.detail == null) {
+                        if (state is RequestsLoaded && state.detailStatus == RequestDetailStatus.failure) {
+                          return _DetailErrorView(message: state.detailError ?? l10n.error);
+                        }
+                        return const _DetailSkeleton();
+                      }
+                      return _DetailBody(state: state, detail: state.detail!);
+                    },
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
-        ),
-        body: BlocBuilder<RequestsBloc, RequestsState>(
-          builder: (context, state) {
-            if (state is! RequestsLoaded || state.detail == null) {
-              if (state is RequestsLoaded && state.detailStatus == RequestDetailStatus.failure) {
-                return _DetailErrorView(message: state.detailError ?? l10n.error);
-              }
-              return const _DetailSkeleton();
-            }
-            return _DetailBody(state: state, detail: state.detail!);
-          },
         ),
         bottomNavigationBar: BlocBuilder<RequestsBloc, RequestsState>(
           buildWhen: (previous, current) => current is RequestsLoaded && current.detail != null,
           builder: (context, state) {
             if (state is! RequestsLoaded || state.detail == null) return const SizedBox.shrink();
-            return _DownloadApprovalsBar(detail: state.detail!);
+            return _ActionsBar(detail: state.detail!);
           },
         ),
       ),
@@ -112,8 +90,38 @@ class RequestDetailScreen extends StatelessWidget {
   }
 }
 
-class _DownloadApprovalsBar extends StatelessWidget {
-  const _DownloadApprovalsBar({required this.detail});
+/// Back · title · support (Figma header).
+class _Header extends StatelessWidget {
+  const _Header();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final type = SeenType.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s3, _gutter, SeenSpace.s3),
+      child: Row(
+        children: [
+          SeenRoundIconButton(
+            icon: SeenIcons.back(context),
+            semanticLabel: SeenStrings.of(context).back,
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          Expanded(child: Text(l10n.requestTrackingTitle, textAlign: TextAlign.center, style: type.title)),
+          SeenRoundIconButton(
+            icon: SeenIcons.headset,
+            semanticLabel: l10n.requestDetailContactSupportAction,
+            onPressed: () => _openSupport(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sticky bottom actions: Support (outline) and View documents (primary).
+class _ActionsBar extends StatelessWidget {
+  const _ActionsBar({required this.detail});
 
   final RequestDetail detail;
 
@@ -121,26 +129,30 @@ class _DownloadApprovalsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
-    final approvedCount =
-        detail.travelers.where((t) => t.status == TravelerApprovalStatus.approved).length;
-    return Container(
-      decoration: BoxDecoration(
-        color: c.surface,
-        border: Border(top: BorderSide(color: c.border)),
-        boxShadow: c.sheetShadow,
-      ),
+    return DecoratedBox(
+      decoration: BoxDecoration(color: c.card, boxShadow: SeenShadows.stickyBar),
       child: SafeArea(
         top: false,
-        bottom: true,
         child: Padding(
-          padding: const EdgeInsets.all(SeenSpace.s4),
-          child: SeenButton.secondary(
-            label: approvedCount > 0
-                ? l10n.requestDetailDownloadApprovalsAction(approvedCount)
-                : l10n.requestDetailDownloadApprovalsUnavailable,
-            icon: SeenIcons.download,
-            expand: true,
-            onPressed: approvedCount > 0 ? () {} : null,
+          padding: const EdgeInsets.fromLTRB(_gutter, 14, _gutter, 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: SeenButton(
+                  label: l10n.requestViewDocumentsAction,
+                  expand: true,
+                  onPressed: () => showRequestDocumentsSheet(context, detail),
+                ),
+              ),
+              const SizedBox(width: SeenSpace.s3),
+              Expanded(
+                child: SeenButton.outline(
+                  label: l10n.requestSupportAction,
+                  expand: true,
+                  onPressed: () => _openSupport(context),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -172,7 +184,7 @@ class _DetailBody extends StatelessWidget {
           ),
           const SizedBox(width: SeenSpace.s3),
           Expanded(
-            child: SeenButton.dangerOutline(
+            child: SeenButton.destructive(
               label: l10n.yes,
               expand: true,
               onPressed: () => Navigator.of(sheetContext).pop(true),
@@ -186,112 +198,64 @@ class _DetailBody extends StatelessWidget {
     }
   }
 
+  Future<void> _copyReference(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    await Clipboard.setData(ClipboardData(text: detail.referenceId));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.requestDetailReferenceCopiedMessage)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final c = SeenColors.of(context);
-    final text = Theme.of(context).textTheme;
+    final s = SeenStrings.of(context);
     final isCancelling = state.cancelStatus == RequestCancelStatus.submitting;
+    final status = detail.status.toSeenRequestStatus(slaDeadline: detail.slaDeadline);
+    final leadTraveler = detail.travelers.isNotEmpty ? detail.travelers.first.name : null;
+    final showDeadline = detail.status == RequestStatus.infoRequired && detail.slaDeadline != null;
 
     return ListView(
-      padding: const EdgeInsets.all(SeenSpace.s4),
+      padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s1, _gutter, SeenSpace.s6),
       children: [
-        Container(
-          padding: const EdgeInsets.all(SeenSpace.s4),
-          decoration: BoxDecoration(
-            color: c.card,
-            borderRadius: const BorderRadius.all(SeenRadius.md),
-            border: Border.all(color: c.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (detail.slaDeadline != null)
-                    SeenSlaTag(deadline: detail.slaDeadline!, totalHours: _slaTotalHours)
-                  else
-                    const SizedBox.shrink(),
-                  SeenStatusBadge(status: detail.status.toSeenStatus),
-                ],
-              ),
-              const SizedBox(height: SeenSpace.s3),
-              Text(detail.serviceName, style: text.titleMedium),
-              const SizedBox(height: SeenSpace.s1),
-              Text(
-                '${l10n.requestCardTravelersLabel(detail.travelers.length)} · '
-                '${l10n.requestDetailSubmittedPrefix} ${SeenFormat.isolate('${SeenFormat.date(detail.submittedAt)} ${SeenFormat.time(detail.submittedAt)}')} · '
-                '${l10n.requestDetailHeldPrefix} ${SeenFormat.usd(detail.totalPriceCents / 100)}',
-                style: text.bodySmall!.copyWith(color: c.inkMuted),
-              ),
-              if (detail.slaDeadline != null) ...[
-                const SizedBox(height: SeenSpace.s3),
-                _SlaProgressBar(deadline: detail.slaDeadline!),
-              ],
-            ],
-          ),
+        SeenRequestTicket(
+          status: status,
+          statusLabel: s.requestStatus(status),
+          reference: detail.referenceId,
+          title: leadTraveler ?? detail.serviceName,
+          subtitle: leadTraveler != null ? detail.serviceName : s.travelerCount(detail.travelers.length),
+          feeLabel: l10n.requestTicketFees,
+          feeValue: SeenFormat.usd(detail.totalPriceCents / 100),
+          travelersLabel: l10n.requestTicketTravelers,
+          travelersValue: s.numeral(detail.travelers.length),
+          dateLabel: l10n.requestTicketDate,
+          dateValue: SeenFormat.date(detail.submittedAt),
+          onReferenceTap: () => _copyReference(context),
         ),
-        if (detail.travelers.isNotEmpty) ...[
-          const SizedBox(height: SeenSpace.s6),
-          SeenSectionHeader(title: l10n.requestDetailTravelersSection),
-          SeenListGroup(children: [
-            for (var i = 0; i < detail.travelers.length; i++)
-              _TravelerRow(traveler: detail.travelers[i], number: i + 1),
-          ]),
-        ],
-        if (detail.timeline.isNotEmpty) ...[
-          const SizedBox(height: SeenSpace.s6),
-          SeenSectionHeader(title: l10n.requestDetailTimelineSection),
-          Container(
-            padding: const EdgeInsets.all(SeenSpace.s4),
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: const BorderRadius.all(SeenRadius.md),
-              border: Border.all(color: c.border),
-            ),
-            child: Builder(
-              builder: (context) {
-                String stageTitle(RequestStatus status) => switch (status) {
-                      RequestStatus.submitted => 'تم الإرسال وحجز المبلغ',
-                      RequestStatus.processing => 'التحقق من المستندات',
-                      RequestStatus.underReview => 'قيد المراجعة لدى الجهة',
-                      RequestStatus.completed => 'صدور الموافقات والخصم النهائي',
-                      _ => RequestStatusLabels.of(l10n, status),
-                    };
-
-                final steps = <SeenStep>[
-                  for (final entry in detail.timeline)
-                    SeenStep(
-                      title: stageTitle(entry.status),
-                      meta: entry.note ??
-                          (entry.status == RequestStatus.underReview && detail.slaDeadline != null
-                              ? 'متوقع خلال ${detail.slaDeadline!.difference(DateTime.now()).inHours.clamp(0, 72)} ساعة'
-                              : SeenFormat.isolate(
-                                  '${SeenFormat.date(entry.occurredAt)} · ${SeenFormat.time(entry.occurredAt)}')),
-                    ),
-                ];
-                final hasCompletedStep = detail.timeline.any((e) => e.status == RequestStatus.completed);
-                if (!hasCompletedStep &&
-                    detail.status != RequestStatus.cancelled &&
-                    detail.status != RequestStatus.rejected) {
-                  steps.add(SeenStep(title: stageTitle(RequestStatus.completed)));
-                }
-                return SeenStatusStepper(
-                  current: detail.timeline.length - 1,
-                  steps: steps,
-                );
-              },
-            ),
+        if (showDeadline) ...[
+          const SizedBox(height: 18),
+          SeenDeadlineCard(
+            deadline: detail.slaDeadline!,
+            title: l10n.requestDeadlineTitle,
+            subtitle: l10n.requestDeadlineSubtitle,
+            expiredLabel: l10n.requestDeadlineExpired,
           ),
+        ],
+        const SizedBox(height: 18),
+        _StagesCard(detail: detail),
+        if (detail.travelers.isNotEmpty) ...[
+          SeenSectionHeader(title: l10n.requestDetailTravelersSection),
+          _TravelersCard(travelers: detail.travelers),
         ],
         if (detail.isCancellable) ...[
           const SizedBox(height: SeenSpace.s6),
-          SeenButton.dangerOutline(
+          SeenButton.destructive(
             label: isCancelling ? l10n.loading : l10n.requestDetailCancelAction,
             icon: SeenIcons.x,
             expand: true,
-            onPressed: isCancelling ? null : () => _confirmCancel(context),
+            loading: isCancelling,
+            onPressed: () => _confirmCancel(context),
           ),
         ],
       ],
@@ -299,37 +263,93 @@ class _DetailBody extends StatelessWidget {
   }
 }
 
-/// Elapsed share of the 72h SLA, filled from the reading start. Solid
-/// `slaSolid` once under 24h remaining (matching `SeenSlaTag`'s own
-/// urgency tone), `primary` otherwise.
-class _SlaProgressBar extends StatelessWidget {
-  const _SlaProgressBar({required this.deadline});
+DecoratedBox _card(SeenColors c, Widget child) => DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: const BorderRadius.all(SeenRadius.r22),
+        border: Border.all(color: c.border),
+        boxShadow: SeenShadows.card,
+      ),
+      child: child,
+    );
 
-  final DateTime deadline;
+/// "Request stages": the 5-step journey with timestamps where the timeline has
+/// them. Statuses with no meaningful progress (rejected, cancelled) fall back
+/// to the raw timeline entries.
+class _StagesCard extends StatelessWidget {
+  const _StagesCard({required this.detail});
+
+  final RequestDetail detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final s = SeenStrings.of(context);
+    final c = SeenColors.of(context);
+    final type = SeenType.of(context);
+    final progress = detail.status.progress;
+
+    String stamp(DateTime at) => SeenFormat.isolate('${SeenFormat.date(at)} · ${SeenFormat.time(at)}');
+
+    final List<SeenStep> steps;
+    final int current;
+    if (progress.isVisible) {
+      steps = [
+        for (var i = 1; i <= progress.total; i++)
+          SeenStep(
+            title: s.requestStepTitle(i),
+            meta: () {
+              // The latest timeline entry that belongs to this stage.
+              final entries = detail.timeline.where((e) => e.status.progress.step == i);
+              if (entries.isEmpty) return null;
+              final entry = entries.last;
+              return (i == progress.step ? entry.note : null) ?? stamp(entry.occurredAt);
+            }(),
+          ),
+      ];
+      current = detail.status == RequestStatus.completed ? progress.total : progress.step - 1;
+    } else {
+      steps = [
+        for (final e in detail.timeline)
+          SeenStep(title: RequestStatusLabels.of(l10n, e.status), meta: e.note ?? stamp(e.occurredAt)),
+      ];
+      current = steps.length - 1;
+    }
+
+    return _card(
+      c,
+      Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.requestTrackingSteps, style: type.title),
+            const SizedBox(height: SeenSpace.s3),
+            SeenStatusStepper(steps: steps, current: current),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TravelersCard extends StatelessWidget {
+  const _TravelersCard({required this.travelers});
+
+  final List<RequestTravelerStatus> travelers;
 
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
-    const total = Duration(hours: _slaTotalHours);
-    final remaining = deadline.difference(DateTime.now());
-    final elapsed = total - remaining;
-    final fraction = (elapsed.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
-    final urgent = remaining.inHours < 24;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(2),
-      child: SizedBox(
-        height: 4,
-        child: Stack(
-          children: [
-            Container(color: c.surfaceSunken),
-            FractionallySizedBox(
-              alignment: AlignmentDirectional.centerStart,
-              widthFactor: fraction,
-              child: Container(color: urgent ? c.slaSolid : c.primary),
-            ),
+    return _card(
+      c,
+      Column(
+        children: [
+          for (var i = 0; i < travelers.length; i++) ...[
+            if (i > 0) Divider(height: 1, thickness: 1, color: c.border),
+            _TravelerRow(traveler: travelers[i], number: i + 1),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -340,31 +360,42 @@ class _TravelerRow extends StatelessWidget {
 
   final RequestTravelerStatus traveler;
 
-  /// This traveler's 1-based position in the request — shown in the
-  /// avatar, matching the spec (a running passenger number, not initials).
+  /// This traveler's 1-based position in the request (a running passenger
+  /// number, not initials).
   final int number;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
-    final text = Theme.of(context).textTheme;
+    final type = SeenType.of(context);
     final approved = traveler.status == TravelerApprovalStatus.approved;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: SeenSpace.s3),
+      padding: const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: 14),
       child: Row(children: [
-        SeenAvatar(initial: '$number'),
+        DecoratedBox(
+          decoration: BoxDecoration(color: c.primarySoft, shape: BoxShape.circle),
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: Center(
+              child: Text(SeenStrings.of(context).numeral(number), style: type.label.copyWith(color: c.primary)),
+            ),
+          ),
+        ),
         const SizedBox(width: SeenSpace.s3),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(traveler.name, textDirection: TextDirection.ltr, style: text.bodyMedium),
+              Text(traveler.name, style: type.bodyStrong),
               if (traveler.passportNumber != null)
-                Text(
-                  traveler.passportNumber!,
+                Directionality(
                   textDirection: TextDirection.ltr,
-                  style: SeenType.of(context).refMono.copyWith(fontSize: 12, color: c.inkMuted),
+                  child: Text(
+                    traveler.passportNumber!,
+                    style: type.caption.copyWith(color: c.inkMuted, fontFeatures: SeenFonts.tabular),
+                  ),
                 ),
             ],
           ),
@@ -372,8 +403,7 @@ class _TravelerRow extends StatelessWidget {
         const SizedBox(width: SeenSpace.s2),
         SeenStatusBadge(status: traveler.status.toSeenStatus, dense: true),
         // Per-traveler download — still mocked (no real document storage
-        // yet, same treatment as elsewhere in this app), so tapping only
-        // plays the acknowledgment animation.
+        // yet), so tapping only plays the acknowledgment animation.
         if (approved) ...[
           const SizedBox(width: SeenSpace.s1),
           SeenMotionIcon(
@@ -403,71 +433,49 @@ class _DetailSkeleton extends StatelessWidget {
           decoration: BoxDecoration(color: c.surfaceSunken, borderRadius: BorderRadius.circular(4)),
         );
 
+    Widget panel(Widget child) => Container(
+          padding: const EdgeInsets.all(SeenSpace.s4),
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: const BorderRadius.all(SeenRadius.r22),
+            border: Border.all(color: c.border),
+          ),
+          child: child,
+        );
+
     return Padding(
-      padding: const EdgeInsets.all(SeenSpace.s4),
+      padding: const EdgeInsets.all(_gutter),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(SeenSpace.s4),
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: const BorderRadius.all(SeenRadius.md),
-              border: Border.all(color: c.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          panel(Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [block(14, 90), block(28, 90)]),
+              const SizedBox(height: SeenSpace.s3),
+              block(20, 200),
+              const SizedBox(height: SeenSpace.s2),
+              block(14, 140),
+            ],
+          )),
+          const SizedBox(height: 18),
+          panel(Column(
+            children: [
+              for (var i = 0; i < 3; i++) ...[
+                if (i > 0) const SizedBox(height: SeenSpace.s4),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    block(24, 90),
-                    block(24, 70),
+                    Container(width: 26, height: 26, decoration: BoxDecoration(color: c.surfaceSunken, shape: BoxShape.circle)),
+                    const SizedBox(width: SeenSpace.s3),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [block(16, 160), const SizedBox(height: 4), block(12, 100)],
+                    ),
                   ],
                 ),
-                const SizedBox(height: SeenSpace.s3),
-                block(20, 200),
-                const SizedBox(height: SeenSpace.s2),
-                block(14, 240),
               ],
-            ),
-          ),
-          const SizedBox(height: SeenSpace.s6),
-          block(18, 120),
-          const SizedBox(height: SeenSpace.s3),
-          Container(
-            padding: const EdgeInsets.all(SeenSpace.s4),
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: const BorderRadius.all(SeenRadius.md),
-              border: Border.all(color: c.border),
-            ),
-            child: Column(
-              children: [
-                for (var i = 0; i < 3; i++) ...[
-                  if (i > 0) const SizedBox(height: SeenSpace.s4),
-                  Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(color: c.surfaceSunken, shape: BoxShape.circle),
-                      ),
-                      const SizedBox(width: SeenSpace.s3),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          block(16, 160),
-                          const SizedBox(height: 4),
-                          block(12, 100),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
+            ],
+          )),
         ],
       ),
     );

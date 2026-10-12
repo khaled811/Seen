@@ -20,7 +20,8 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
         super(const RequestsInitial()) {
     on<RequestsLoadRequested>(_onLoadRequested, transformer: droppable());
     on<RequestsFilterChanged>(_onFilterChanged);
-    on<RequestsSearchChanged>(_onSearchChanged);
+    // Live search: restartable + debounce, so only the last keystroke of a burst is applied.
+    on<RequestsSearchChanged>(_onSearchChanged, transformer: restartable());
     on<RequestDetailRequested>(_onDetailRequested, transformer: droppable());
     on<RequestDetailAcknowledged>(_onDetailAcknowledged);
     on<RequestCancelSubmitted>(_onCancelSubmitted, transformer: droppable());
@@ -50,7 +51,12 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
     emit(current.copyWith(filter: event.filter));
   }
 
-  void _onSearchChanged(RequestsSearchChanged event, Emitter<RequestsState> emit) {
+  /// How long typing must pause before the search is applied.
+  static const searchDebounce = Duration(milliseconds: 250);
+
+  Future<void> _onSearchChanged(RequestsSearchChanged event, Emitter<RequestsState> emit) async {
+    // A newer event restarts this handler; a cancelled emitter ignores emit().
+    await Future<void>.delayed(searchDebounce);
     final current = state;
     if (current is! RequestsLoaded) return;
     emit(current.copyWith(searchQuery: event.query));

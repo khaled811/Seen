@@ -24,6 +24,7 @@ abstract final class SeenRadius {
   // Figma radii (Mobile App). `lg` (16) is also the Figma M button / input /
   // OTP box radius. Legacy xs/sm/md above are kept so existing widgets keep
   // compiling until they are migrated to these values.
+  static const r12 = Radius.circular(12); // = md; Figma alert tile
   static const r14 = Radius.circular(14); // S button, icon tiles
   static const r18 = Radius.circular(18); // service tiles, stats, banners
   static const r20 = Radius.circular(20); // L button, agent rows

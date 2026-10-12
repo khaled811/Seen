@@ -17,8 +17,11 @@ class SeenStep {
   final String? meta;
 }
 
-/// Vertical status progression. Done = sage dot + check + green connector;
-/// current = accentInk ring + label; upcoming = borderStrong ring, muted label.
+/// Vertical status progression (Figma "Stepper"). Done = violet dot with a
+/// check and a violet-40 connector; current = violet-10 dot with a violet ring
+/// and core, title in Medium, meta in violet; upcoming = hollow strong-line
+/// ring with muted text. A [current] equal to `steps.length` marks every step
+/// as done.
 class SeenStatusStepper extends StatelessWidget {
   const SeenStatusStepper({super.key, required this.steps, required this.current});
 
@@ -27,10 +30,12 @@ class SeenStatusStepper extends StatelessWidget {
   /// 0-based index of the current step.
   final int current;
 
+  static const _dot = 26.0;
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
-    final text = Theme.of(context).textTheme;
+    final type = SeenType.of(context);
     return Column(
       children: [
         for (var i = 0; i < steps.length; i++)
@@ -39,15 +44,19 @@ class SeenStatusStepper extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  width: 24,
+                  width: _dot,
                   child: Column(children: [
-                    _dot(c, i),
+                    _marker(c, i),
                     if (i < steps.length - 1)
                       Expanded(
                         child: Container(
                           width: 2,
-                          margin: const EdgeInsets.only(top: 2, bottom: 2),
-                          color: i < current ? c.successFg : c.border,
+                          margin: const EdgeInsets.only(top: 4),
+                          constraints: const BoxConstraints(minHeight: 30),
+                          decoration: BoxDecoration(
+                            color: i < current ? SeenBrand.violet40 : c.border,
+                            borderRadius: const BorderRadius.all(Radius.circular(1)),
+                          ),
                         ),
                       ),
                   ]),
@@ -55,19 +64,23 @@ class SeenStatusStepper extends StatelessWidget {
                 const SizedBox(width: SeenSpace.s3),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: i < steps.length - 1 ? SeenSpace.s5 : 0),
+                    padding: EdgeInsets.only(top: 2, bottom: i < steps.length - 1 ? SeenSpace.s3 : 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           steps[i].title,
-                          style: text.bodyMedium!.copyWith(
-                            color: i == current ? c.accentInk : (i > current ? c.inkMuted : c.ink),
-                            fontWeight: i == current ? FontWeight.w600 : FontWeight.w500,
-                          ),
+                          style: (i == current ? type.bodyStrong : type.body)
+                              .copyWith(color: i > current ? c.inkMuted : c.ink),
                         ),
                         if (steps[i].meta != null)
-                          Text(steps[i].meta!, style: text.labelSmall!.copyWith(fontFeatures: SeenFonts.tabular)),
+                          Text(
+                            steps[i].meta!,
+                            style: type.caption.copyWith(
+                              color: i == current ? c.primary : c.inkMuted,
+                              fontFeatures: SeenFonts.tabular,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -79,22 +92,40 @@ class SeenStatusStepper extends StatelessWidget {
     );
   }
 
-  Widget _dot(SeenColors c, int i) {
+  Widget _marker(SeenColors c, int i) {
     if (i < current) {
       return Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(color: c.successFg, shape: BoxShape.circle),
-        child: Icon(SeenIcons.check, size: 14, color: c.card),
+        width: _dot,
+        height: _dot,
+        decoration: const BoxDecoration(color: SeenBrand.violet, shape: BoxShape.circle),
+        child: Icon(SeenIcons.check, size: 14, color: c.onPrimary),
+      );
+    }
+    if (i == current) {
+      return Container(
+        width: _dot,
+        height: _dot,
+        decoration: BoxDecoration(
+          color: c.primarySoft,
+          shape: BoxShape.circle,
+          border: Border.all(color: SeenBrand.violet, width: 2),
+        ),
+        child: Center(
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(color: SeenBrand.violet, shape: BoxShape.circle),
+          ),
+        ),
       );
     }
     return Container(
-      width: 24,
-      height: 24,
+      width: _dot,
+      height: _dot,
       decoration: BoxDecoration(
         color: c.card,
         shape: BoxShape.circle,
-        border: Border.all(color: i == current ? c.accentInk : c.borderStrong, width: i == current ? 7 : 2),
+        border: Border.all(color: c.borderStrong, width: 1.5),
       ),
     );
   }

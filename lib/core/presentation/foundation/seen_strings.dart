@@ -105,6 +105,29 @@ class SeenStrings {
   String stepOf(int step, int total) =>
       _t('${numeral(step)} من ${numeral(total)}', '$step of $total');
 
+  /// The five stepper stage names on request tracking (the last one is the
+  /// delivery stage; [requestStep] words it as the issued state for cards).
+  String requestStepTitle(int step) => step == 5 ? _t('التسليم', 'Delivery') : requestStep(step);
+
+  /// Action-required banner headline on the requests dashboard.
+  String actionBannerTitle(int n) {
+    if (isArabic) {
+      return switch (n) {
+        1 => 'طلب بانتظار مستند',
+        2 => 'طلبان بانتظار مستندات',
+        >= 3 && <= 10 => '${numeral(n)} طلبات بانتظار مستندات',
+        _ => '${numeral(n)} طلبًا بانتظار مستندات',
+      };
+    }
+    return n == 1 ? '1 request awaiting documents' : '$n requests awaiting documents';
+  }
+
+  /// Compact remaining time "46:12 س" / "46:12 h".
+  String clockHm(int h, int m) {
+    final text = '$h:${m.toString().padLeft(2, '0')}';
+    return isArabic ? '${toArabicIndicDigits(text)} س' : '$text h';
+  }
+
   // Deadline countdown pill
   String remainingHours(int h) => _t('يتبقى ${numeral(h)} ساعة', '$h h left');
   String remainingMinutes(int m) => _t('يتبقى ${numeral(m)} دقيقة', '$m min left');

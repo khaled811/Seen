@@ -26,6 +26,7 @@ class SeenRequestSummaryCard extends StatelessWidget {
     required this.dateLabel,
     this.iconAsset = SeenVectors.iconRequests,
     this.slaDeadline,
+    this.note,
     this.onTap,
   });
 
@@ -43,6 +44,10 @@ class SeenRequestSummaryCard extends StatelessWidget {
 
   /// When set, the footer shows the live-at-build countdown instead of the date.
   final DateTime? slaDeadline;
+
+  /// What to fix (the backend's rejection / action note), shown under the
+  /// progress label for action-required requests. Real data only.
+  final String? note;
   final VoidCallback? onTap;
 
   static const _barCount = 5;
@@ -123,6 +128,10 @@ class SeenRequestSummaryCard extends StatelessWidget {
                     '${s.requestStep(progress.step)} · ${s.stepOf(progress.step, progress.total)}',
                     style: type.caption.copyWith(color: c.inkSecondary),
                   ),
+                  if (note != null && note!.trim().isNotEmpty) ...[
+                    const SizedBox(height: SeenSpace.s1),
+                    Text(note!, style: type.caption.copyWith(color: SeenRequestStatus.actionRequired.colors.fg)),
+                  ],
                 ],
                 const SizedBox(height: SeenSpace.s3),
                 Divider(height: 1, thickness: 1, color: c.border),
