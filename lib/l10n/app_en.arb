@@ -804,5 +804,82 @@
   "hidePasswordAction": "Hide password",
   "@hidePasswordAction": {
     "description": "Accessible label for the password field's hide-password toggle."
+  },
+  "splashPoweredBy": "Powered by Jubari Travel",
+  "@splashPoweredBy": {
+    "description": "Splash footer (brand text, English in both locales)."
+  },
+  "welcomeTitle": "Welcome to Seen Business",
+  "@welcomeTitle": {
+    "description": "Welcome screen headline."
+  },
+  "welcomeSubtitle": "Submit visa and approval requests for your clients, follow them step by step, and manage your wallet in one place.",
+  "@welcomeSubtitle": {
+    "description": "Welcome screen supporting copy."
+  },
+  "welcomeTerms": "By continuing you agree to the Terms and Privacy Policy",
+  "@welcomeTerms": {
+    "description": "Welcome screen legal line."
+  },
+  "welcomeCreateAgency": "Create an agency account",
+  "@welcomeCreateAgency": {
+    "description": "Welcome screen secondary action."
+  },
+  "loginSubtitle": "Enter the agency phone number and password",
+  "@loginSubtitle": {
+    "description": "Sign-in subtitle."
+  },
+  "loginPhoneLabel": "Phone number",
+  "@loginPhoneLabel": {
+    "description": "Phone field label."
+  },
+  "loginPhoneHelper": "We will send a verification code to this number",
+  "@loginPhoneHelper": {
+    "description": "Phone field helper."
+  },
+  "loginAction": "Sign in",
+  "@loginAction": {
+    "description": "Sign-in submit button."
+  },
+  "loginForgotPassword": "Forgot password?",
+  "@loginForgotPassword": {
+    "description": "Forgot-password link."
+  },
+  "loginNoAccount": "Don't have an account?",
+  "@loginNoAccount": {
+    "description": "Sign-up prompt."
+  },
+  "loginCreateAgency": "Create an agency account",
+  "@loginCreateAgency": {
+    "description": "Sign-up link."
+  },
+  "validationInvalidPhone": "Enter a valid phone number.",
+  "@validationInvalidPhone": {
+    "description": "Phone validation error."
+  },
+  "comingSoon": "This will be available soon.",
+  "@comingSoon": {
+    "description": "Placeholder for flows that are not built yet."
+  },
+  "otpConfirm": "Confirm",
+  "@otpConfirm": {
+    "description": "OTP submit button."
+  },
+  "otpResendPrompt": "Didn't get the code? Resend in",
+  "@otpResendPrompt": {
+    "description": "Label before the resend countdown pill."
+  },
+  "otpDidntReceive": "Didn't get the code?",
+  "@otpDidntReceive": {
+    "description": "Label next to the resend action once the countdown ends."
+  },
+  "otpSentTo": "We sent a 6-digit code to {phone}",
+  "@otpSentTo": {
+    "description": "OTP header: where the code was sent (masked identifier).",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
   }
 }

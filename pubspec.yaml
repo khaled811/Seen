@@ -47,6 +47,11 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   phosphor_flutter: ^2.1.0
+  # Vector brand assets (logos, patterns, Figma icons) under assets/vectors/
+  # and assets/icons/. Phosphor stays as the fallback icon set.
+  # Pinned: flutter_svg >=2.0.10 requires http ^1.0.0, but the network layer
+  # (graphql_client_factory.dart) is on http ^0.13.6. Revisit with an http upgrade.
+  flutter_svg: 2.0.9
   lottie: ^2.7.0
   shared_preferences: 2.2.3
   vibration: ^3.1.8
@@ -95,6 +100,10 @@ flutter:
   assets:
     - assets/motion icons/
     - assets/images/
+    # Figma brand SVGs: logos, background patterns (assets/vectors/) and the
+    # custom icon set (assets/icons/). Render with flutter_svg.
+    - assets/vectors/
+    - assets/icons/
     # Spiritual hub: duas.json (docs/spiritual_feature/05-content.md) and the
     # mock dua audio (a 3 s silent WAV) used until real recitations are added.
     - assets/data/
@@ -144,6 +153,20 @@ flutter:
           weight: 600
         - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
           weight: 700
+    # Official Figma typeface (SeenFonts.sans). IBM Plex Sans Arabic above is
+    # kept as its fontFamilyFallback.
+    - family: Thmanyah Sans
+      fonts:
+        - asset: assets/fonts/thmanyahsans-Light.otf
+          weight: 300
+        - asset: assets/fonts/thmanyahsans-Regular.otf
+          weight: 400
+        - asset: assets/fonts/thmanyahsans-Medium.otf
+          weight: 500
+        - asset: assets/fonts/thmanyahsans-Bold.otf
+          weight: 700
+        - asset: assets/fonts/thmanyahsans-Black.otf
+          weight: 900
   #   - family: IBM Plex Mono
   #     fonts:
   #       - asset: assets/fonts/IBMPlexMono-Medium.ttf

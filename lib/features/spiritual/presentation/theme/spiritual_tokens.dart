@@ -4,8 +4,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/seen_typography.dart';
-
 /// Swappable colour set, exposed as a [ThemeExtension] inside the hub's Theme.
 @immutable
 class SpiritualTokens extends ThemeExtension<SpiritualTokens> {
@@ -216,7 +214,9 @@ abstract final class SpiritualFonts {
   static const ui = 'Tajawal';
 
   /// Used when a glyph is missing from [ui].
-  static const uiFallback = [SeenFonts.sans];
+  /// Pinned to the legacy app font so the hub does not follow the app-wide
+  /// `SeenFonts.sans` (Thmanyah Sans since the Figma migration).
+  static const uiFallback = ['IBM Plex Sans Arabic'];
   static const quran = 'KFGQPC Uthmanic Script HAFS';
 
   /// Whether the bundled Quran font can draw every mark in the dataset. The

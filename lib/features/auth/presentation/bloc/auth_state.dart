@@ -27,13 +27,19 @@ final class AuthOtpRequired extends AuthState {
   const AuthOtpRequired({
     required this.challengeToken,
     required this.resendCooldownSeconds,
+    this.identifier,
   });
 
   final String challengeToken;
   final int resendCooldownSeconds;
 
+  /// The login identifier (phone/email) the code was sent to, so the OTP
+  /// screen can say where it went. Display only (masked by the UI); null when
+  /// unknown.
+  final String? identifier;
+
   @override
-  List<Object?> get props => [challengeToken, resendCooldownSeconds];
+  List<Object?> get props => [challengeToken, resendCooldownSeconds, identifier];
 }
 
 final class AuthAuthenticated extends AuthState {

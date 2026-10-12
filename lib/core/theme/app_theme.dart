@@ -18,9 +18,19 @@ abstract final class AppTheme {
   static ThemeData get light => build(Brightness.light);
   static ThemeData get dark => build(Brightness.dark);
 
-  static ThemeData build(Brightness brightness) {
-    final c = brightness == Brightness.light ? SeenColors.light : SeenColors.dark;
-    final text = seenTextTheme(c);
+  /// Assembles the app theme. The optional parameters let a feature that must
+  /// not follow the app-wide design tokens (the Spiritual hub) build its own
+  /// frozen base from a different palette / text scale / font; the defaults
+  /// are the app's tokens.
+  static ThemeData build(
+    Brightness brightness, {
+    SeenColors? colors,
+    TextTheme? textTheme,
+    String fontFamily = SeenFonts.sans,
+    List<String>? fontFamilyFallback = SeenFonts.sansFallback,
+  }) {
+    final c = colors ?? (brightness == Brightness.light ? SeenColors.light : SeenColors.dark);
+    final text = textTheme ?? seenTextTheme(c);
     final onDanger = brightness == Brightness.light ? const Color(0xFFFFFFFF) : c.surface;
 
     OutlineInputBorder field(Color color, [double width = 1]) => OutlineInputBorder(
@@ -32,7 +42,8 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      fontFamily: SeenFonts.sans,
+      fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       scaffoldBackgroundColor: c.surface,
       canvasColor: c.surface,
       colorScheme: ColorScheme(
@@ -84,7 +95,7 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: true,
         toolbarHeight: SeenSize.appBar,
-        titleTextStyle: seenStyle(16, 22, FontWeight.w600, c.ink),
+        titleTextStyle: seenStyle(16, 22, FontWeight.w600, c.ink, family: fontFamily),
         iconTheme: IconThemeData(color: c.slate, size: 22),
         shape: Border(bottom: BorderSide(color: c.border)),
       ),
@@ -248,7 +259,7 @@ abstract final class AppTheme {
       badgeTheme: BadgeThemeData(
         backgroundColor: c.accent,
         textColor: c.onPrimary,
-        textStyle: seenStyle(11, 18, FontWeight.w600, c.onPrimary),
+        textStyle: seenStyle(11, 18, FontWeight.w600, c.onPrimary, family: fontFamily),
         smallSize: 8,
         largeSize: 18,
       ),

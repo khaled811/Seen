@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'spiritual_base_theme.dart';
 import 'spiritual_tokens.dart';
 
 /// Wraps [child] in the hub's light theme and native RTL. The Manasik hub is
@@ -36,7 +37,8 @@ class SpiritualTheme extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Theme(
-        data: data(Theme.of(context), tokens),
+        // Frozen legacy base, not the app theme: see spiritual_base_theme.dart.
+        data: data(SpiritualBaseTheme.of(Theme.of(context).brightness), tokens),
         child: DefaultTextStyle.merge(
           style: SpiritualType.body.copyWith(color: tokens.inkPrimary),
           child: child,

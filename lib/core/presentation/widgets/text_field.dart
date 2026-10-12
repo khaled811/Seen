@@ -14,8 +14,14 @@ import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
 
-/// Labelled input: label ABOVE the field (never floating), 52px, 16px input text.
-/// Passport data is always [ltr]; numbers use [mono]. Validate on blur, not while typing.
+/// Labelled input bound to the Figma Input component: label ABOVE the field
+/// (never floating), 54px field, radius 16, 1.5px border, 14px body text.
+///
+/// States: default (strong line), focused (violet border), error (error
+/// border + red helper line + trailing alert icon), disabled ([enabled] =
+/// false: violet-05 fill, muted text), read-only (sunken fill, default line).
+/// Passport data is always [ltr]; numbers use [mono]. Validate on blur, not
+/// while typing.
 class SeenTextField extends StatelessWidget {
   const SeenTextField({
     super.key,
@@ -29,9 +35,11 @@ class SeenTextField extends StatelessWidget {
     this.mono = false,
     this.ltr = false,
     this.prefixIcon,
+    this.prefix,
     this.suffixText,
     this.suffix,
     this.readOnly = false,
+    this.enabled = true,
     this.obscureText = false,
     this.keyboardType,
     this.textInputAction,
@@ -39,6 +47,7 @@ class SeenTextField extends StatelessWidget {
     this.inputFormatters,
     this.autofillHints,
     this.onChanged,
+    this.onSubmitted,
     this.onTap,
     this.validator,
     this.focusNode,
@@ -52,11 +61,15 @@ class SeenTextField extends StatelessWidget {
   final String? hint;
   final String? helper;
 
-  /// Replaces the helper line; shown with an alert icon.
+  /// Replaces the helper line; shown in the error color with an alert icon.
   final String? errorText;
   final bool mono;
   final bool ltr;
   final IconData? prefixIcon;
+
+  /// Inline widget before the value, at the reading start (right in Arabic),
+  /// e.g. a country code. Shown even when the field is empty.
+  final Widget? prefix;
 
   /// e.g. "USD"
   final String? suffixText;
@@ -64,6 +77,9 @@ class SeenTextField extends StatelessWidget {
   /// e.g. a "Show" toggle for passwords.
   final Widget? suffix;
   final bool readOnly;
+
+  /// false = Figma "Disabled" state.
+  final bool enabled;
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -71,6 +87,9 @@ class SeenTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onChanged;
+
+  /// Keyboard action (done / search / send) pressed.
+  final ValueChanged<String>? onSubmitted;
   final VoidCallback? onTap;
   final FormFieldValidator<String>? validator;
   final FocusNode? focusNode;
@@ -78,25 +97,39 @@ class SeenTextField extends StatelessWidget {
   /// Extra content under the field, e.g. a validity/strength hint.
   final Widget? below;
 
+  static const double _borderWidth = 1.5;
+
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+        borderRadius: const BorderRadius.all(SeenRadius.lg),
+        borderSide: BorderSide(color: color, width: _borderWidth),
+      );
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
-    final text = Theme.of(context).textTheme;
+    final type = SeenType.of(context);
     final rtlContext = Directionality.of(context) == ui.TextDirection.rtl;
-    final base = mono ? SeenType.of(context).inputMono : text.bodyLarge!;
+    final base = mono ? type.inputMono : type.body;
+    final valueColor = !enabled ? c.inkMuted : (readOnly ? c.inkSecondary : c.ink);
+    final filled = !enabled || readOnly;
+    final restingBorder = readOnly && enabled ? c.border : c.borderStrong;
+    const errorBorder = SeenBrand.inputErrorBorder;
+    final helperStyle = type.caption.copyWith(color: c.inkMuted);
+    final errorStyle = type.caption.copyWith(color: c.dangerFg);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text.rich(TextSpan(children: [
-          TextSpan(text: label, style: text.bodyMedium),
-          if (isRequired) TextSpan(text: ' *', style: text.bodyMedium!.copyWith(color: c.dangerFg)),
+          TextSpan(text: label, style: type.label),
+          if (isRequired) TextSpan(text: ' *', style: type.label.copyWith(color: c.dangerFg)),
         ])),
-        const SizedBox(height: SeenSpace.s2),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           initialValue: controller == null ? initialValue : null,
           focusNode: focusNode,
+          enabled: enabled,
           readOnly: readOnly,
           obscureText: obscureText,
           keyboardType: keyboardType,
@@ -105,31 +138,39 @@ class SeenTextField extends StatelessWidget {
           inputFormatters: inputFormatters,
           autofillHints: autofillHints,
           onChanged: onChanged,
+          onFieldSubmitted: onSubmitted,
           onTap: onTap,
           validator: errorText == null ? validator : null, // an explicit errorText wins
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          style: base.copyWith(color: readOnly ? c.inkSecondary : c.ink),
+          style: base.copyWith(color: valueColor),
           textDirection: ltr ? ui.TextDirection.ltr : null,
           // An LTR value sits at the reading start of the field: right in Arabic, left in English.
           textAlign: ltr ? (rtlContext ? TextAlign.right : TextAlign.left) : TextAlign.start,
           decoration: InputDecoration(
             hintText: hint,
-            fillColor: readOnly ? c.surfaceSunken : c.card,
-            enabledBorder: readOnly
-                ? OutlineInputBorder(borderRadius: const BorderRadius.all(SeenRadius.sm), borderSide: BorderSide(color: c.border))
-                : null,
+            hintStyle: base.copyWith(color: c.inkMuted),
+            filled: true,
+            fillColor: filled ? c.surfaceSunken : c.card,
+            isDense: false,
+            constraints: const BoxConstraints(minHeight: SeenSize.input),
+            contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: SeenSpace.s4, vertical: SeenSpace.s4),
+            border: _border(c.borderStrong),
+            enabledBorder: _border(restingBorder),
+            disabledBorder: _border(c.borderStrong),
+            focusedBorder: _border(c.focus),
+            errorBorder: _border(errorBorder),
+            focusedErrorBorder: _border(errorBorder),
             prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 20),
+            prefix: prefix,
             suffixText: suffixText,
-            suffixIcon: suffix,
+            suffixStyle: base.copyWith(color: c.inkSecondary),
+            suffixIcon: suffix ?? (errorText == null ? null : Icon(SeenIcons.alert, size: 20, color: c.dangerFg)),
             helperText: errorText == null ? helper : null,
+            helperStyle: helperStyle,
             helperMaxLines: 2,
-            error: errorText == null
-                ? null
-                : Row(children: [
-                    Icon(SeenIcons.alert, size: 14, color: c.dangerFg),
-                    const SizedBox(width: SeenSpace.s1),
-                    Expanded(child: Text(errorText!, style: text.bodySmall!.copyWith(color: c.dangerFg))),
-                  ]),
+            errorText: errorText,
+            errorStyle: errorStyle,
+            errorMaxLines: 2,
           ),
         ),
         if (below != null) below!,

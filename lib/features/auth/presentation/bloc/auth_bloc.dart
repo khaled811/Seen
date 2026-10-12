@@ -57,6 +57,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetPersistedSessionUseCase _getPersistedSessionUseCase;
   late final StreamSubscription<AuthSessionEvent> _sessionSubscription;
 
+  /// Identifier of the in-flight login, echoed into [AuthOtpRequired] so the
+  /// OTP screen can show where the code went. Display only.
+  String? _pendingIdentifier;
+
   /// Convenience accessor for gating UI actions off the current session.
   bool hasPermission(String code) {
     final current = state;
@@ -76,6 +80,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
+    _pendingIdentifier = event.identifier;
     final result = await _loginUseCase(
       identifier: event.identifier,
       password: event.password,
@@ -91,6 +96,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             AuthOtpRequired(
               challengeToken: challengeToken,
               resendCooldownSeconds: resendCooldownSeconds,
+              identifier: _pendingIdentifier,
             ),
           AuthSuccess(:final session) => AuthAuthenticated(session),
         },
@@ -140,6 +146,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         (challenge) => AuthOtpRequired(
           challengeToken: challenge.challengeToken,
           resendCooldownSeconds: challenge.resendCooldownSeconds,
+          identifier: _pendingIdentifier,
         ),
       ),
     );

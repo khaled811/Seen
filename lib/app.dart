@@ -8,13 +8,13 @@ import 'core/di/injection_container.dart';
 import 'core/localization/locale_cubit.dart';
 import 'core/presentation/foundation/seen_icons.dart';
 import 'core/presentation/foundation/seen_strings.dart';
-import 'core/presentation/widgets/loader.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_cubit.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
+import 'features/auth/presentation/screens/auth_entry_flow.dart';
 import 'features/auth/presentation/screens/otp_verification_screen.dart';
+import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/home/presentation/screens/agent_shell.dart';
 import 'features/home/presentation/screens/home_screen.dart';
 import 'features/agents/presentation/screens/sub_agents_list_screen.dart';
@@ -97,17 +97,23 @@ List<AgentTab> _agentTabs(BuildContext context) {
 
 /// Picks the visible screen from [AuthState]. Temporary — replace with
 /// proper named routes once real navigation/deep-linking is needed.
+///
+/// `AuthLoading` only shows the splash while the persisted session is being
+/// restored (previous state `AuthInitial`). Later loading states (login, OTP
+/// verify) keep the current screen mounted so its own button spinner shows and
+/// the typed values survive a failed attempt.
 class _AuthGate extends StatelessWidget {
   const _AuthGate();
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
+      buildWhen: (previous, current) => !(current is AuthLoading && previous is! AuthInitial),
       builder: (context, state) {
         return switch (state) {
-          AuthInitial() || AuthLoading() => const _SplashScreen(),
-          AuthOtpRequired(:final resendCooldownSeconds) =>
-            OtpVerificationScreen(resendCooldownSeconds: resendCooldownSeconds),
+          AuthInitial() || AuthLoading() => const SplashScreen(),
+          AuthOtpRequired(:final resendCooldownSeconds, :final identifier) =>
+            OtpVerificationScreen(resendCooldownSeconds: resendCooldownSeconds, identifier: identifier),
           AuthFailure(stage: AuthFailureStage.otp, :final challengeToken)
               when challengeToken != null =>
             const OtpVerificationScreen(resendCooldownSeconds: 0),
@@ -119,18 +125,11 @@ class _AuthGate extends StatelessWidget {
               agentTabs: _agentTabs(context),
               onAccount: showAccountSheet,
             ),
-          AuthUnauthenticated() || AuthFailure() => const LoginScreen(),
+          AuthUnauthenticated() => const AuthEntryFlow(),
+          // A rejected sign-in goes back to Login, not Welcome.
+          AuthFailure() => const AuthEntryFlow(startOnLogin: true),
         };
       },
     );
-  }
-}
-
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: SeenLoader()));
   }
 }

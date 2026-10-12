@@ -1,7 +1,16 @@
 // Seen Booking design system — color tokens.
-// Source: "Seen Booking" design system (tokens.json v1: light + dark).
+// Light: official Figma file "Seen Booking – Mobile App (light)" (Seen Violet,
+// Foundations + Request statuses pages). Dark: legacy values, kept intact —
+// Figma has no dark theme yet.
 //
 // Rule: FILL -> primary / accent.  TEXT, ICON, BORDER, RING -> primaryInk / accentInk.
+// Figma has a single brand hue, so the legacy burgundy `accent*` tokens are
+// aliases of the violet `primary*` tokens in light.
+//
+// Figma-only light tokens that have no dark counterpart (violet ramp,
+// gradients, the 12 request statuses) live in [SeenBrand] and
+// [SeenRequestStatus] at the bottom of this file; semantic [SeenColors]
+// fields stay the theme-aware API for widgets.
 
 import 'package:flutter/material.dart';
 
@@ -84,40 +93,43 @@ class SeenColors extends ThemeExtension<SeenColors> {
   final Color scrim; // Bottom-sheet barrier
   final List<BoxShadow> sheetShadow; // Bottom sheets & sticky ActionBar only
 
+  // Figma light tokens. Legacy tone fields map onto the Figma statuses:
+  // pending = action required, success = completed, danger = rejected,
+  // sla = deadline < 24h. Figma chips have no border, so `*Line` = `*Bg`.
   static const light = SeenColors(
-    surface: Color(0xFFF3FBFC),
-    card: Color(0xFFFFFFFF),
-    surfaceSunken: Color(0xFFE0F7FA),
-    border: Color(0xFFB2EBF2),
-    borderStrong: Color(0xFF80DEEA),
-    ink: Color(0xFF06303A),
-    inkSecondary: Color(0xFF2C5560),
-    inkMuted: Color(0xFF4A6F7A),
-    inkDisabled: Color(0xFF8DB3BB),
-    onPrimary: Color(0xFFFFFFFF),
-    onPrimaryMuted: Color(0xFFD3F4F8),
-    primary: Color(0xFF00838F),
-    primaryHover: Color(0xFF006C77),
-    primarySoft: Color(0xFFE0F7FA),
-    primaryLine: Color(0xFF80DEEA),
-    primaryInk: Color(0xFF00606B),
-    slate: Color(0xFF2C5560),
-    accent: Color(0xFF00838F),
-    accentSoft: Color(0xFFB2EBF2),
-    accentInk: Color(0xFF00606B),
-    focus: Color(0xFF00ACC1),
-    pendingBg: Color(0xFFFBF4E6),
-    pendingFg: Color(0xFF7D5410),
-    pendingLine: Color(0xFFECD9B3),
-    successBg: Color(0xFFEDF4EE),
-    successFg: Color(0xFF2F6A3C),
-    successLine: Color(0xFFCBE0CF),
-    dangerBg: Color(0xFFF9ECE8),
-    dangerFg: Color(0xFF9A3A26),
-    dangerLine: Color(0xFFECCABF),
-    slaBg: Color(0xFFFDEFE3),
-    slaFg: Color(0xFFA8480A),
-    slaSolid: Color(0xFFC2560F),
+    surface: Color(0xFFFFFFFF), // surface/white (screens add SeenBrand.gradientScreen)
+    card: Color(0xFFFFFFFF), // surface/card
+    surfaceSunken: Color(0xFFF8F6FF), // brand/violet-05
+    border: Color(0xFFEEEAF6), // line/default
+    borderStrong: Color(0xFFD5CBF7), // line/strong
+    ink: Color(0xFF1B1530), // text/ink
+    inkSecondary: Color(0xFF5B5280), // text/secondary
+    inkMuted: Color(0xFF8A83A8), // text/muted
+    inkDisabled: Color(0xFFCABAFB), // brand/violet-40 (disabled button label)
+    onPrimary: Color(0xFFFFFFFF), // text/on-brand
+    onPrimaryMuted: Color(0xD9FFFFFF), // white @ 85% (balance-card captions)
+    primary: Color(0xFF7B52F5), // brand/violet
+    primaryHover: Color(0xFF7B52F5), // Pressed = solid violet (default is SeenBrand.gradientCta)
+    primarySoft: Color(0xFFF2EEFE), // brand/violet-10
+    primaryLine: Color(0xFFD5CBF7), // line/strong
+    primaryInk: Color(0xFF6A3FEF), // text/link
+    slate: Color(0xFF6A3FEF), // secondary-button label / icon ink = text/link
+    accent: Color(0xFF7B52F5), // alias of primary (Figma has no second brand hue)
+    accentSoft: Color(0xFFF2EEFE), // alias of primarySoft
+    accentInk: Color(0xFF6A3FEF), // alias of primaryInk
+    focus: Color(0xFF7B52F5), // focused field border; halo = SeenBrand.focusHalo
+    pendingBg: Color(0xFFFFF1D6), // status/action
+    pendingFg: Color(0xFF7A4E00),
+    pendingLine: Color(0xFFFFF1D6),
+    successBg: Color(0xFFE3F4EC), // status/completed
+    successFg: Color(0xFF17694A),
+    successLine: Color(0xFFE3F4EC),
+    dangerBg: Color(0xFFFBE7E9), // status/rejected
+    dangerFg: Color(0xFFA3263A),
+    dangerLine: Color(0xFFFBE7E9),
+    slaBg: Color(0xFFFFE6DA), // status/urgent (deadline < 24h)
+    slaFg: Color(0xFFA33A0C),
+    slaSolid: Color(0xFFA33A0C),
     scrim: Color(0x7A0F172A), // rgba(15,23,42,0.48)
     sheetShadow: [
       BoxShadow(color: Color(0xFFE2E8F0), offset: Offset(0, -1)),
@@ -223,3 +235,126 @@ class SeenColors extends ThemeExtension<SeenColors> {
     );
   }
 }
+
+/// Figma "Seen Violet" brand tokens that have no dark counterpart: the violet
+/// ramp (white-ward only), component fills, progress colors and gradients.
+/// Prefer the semantic [SeenColors] fields in widgets; use these where Figma
+/// names a ramp step or gradient explicitly.
+abstract final class SeenBrand {
+  // brand/violet ramp
+  static const violet05 = Color(0xFFF8F6FF);
+  static const violet10 = Color(0xFFF2EEFE);
+  static const violet20 = Color(0xFFE5DCFD);
+  static const violet40 = Color(0xFFCABAFB);
+  static const violet60 = Color(0xFFB097F9);
+  static const violet80 = Color(0xFF9575F7);
+  static const violet = Color(0xFF7B52F5);
+  static const violetLight = Color(0xFF9B7DF8); // gradient/cta end
+  static const violetSoft = Color(0xFFC3B0FC); // gradient/card end
+
+  // Component fills (Figma Button / Input / Chip variants)
+  static const buttonSecondaryBg = Color(0xFFF3F0FD);
+  static const buttonOutlineBorder = Color(0xFFB9A5FF);
+  static const buttonDarkBg = Color(0xFF1B1530); // = text/ink
+  static const buttonDisabledBg = violet20;
+  static const buttonDisabledFg = violet40;
+  static const buttonDestructiveBg = Color(0xFFFBE7E9);
+  static const buttonDestructiveFg = Color(0xFFA3263A);
+  static const buttonDarkPressedBg = Color(0xFF332B4D);
+  static const buttonDestructivePressedBg = Color(0xFFF6D3D7);
+  static const buttonDestructiveDisabledBg = Color(0x80FBE7E9); // #FBE7E9 @ 50%
+  static const buttonDestructiveDisabledFg = Color(0xFFD7A1A9);
+  static const inputErrorBorder = Color(0xFFA3263A);
+  static const focusHalo = Color(0x297B52F5); // violet @ 16%
+
+  // Progress segments (request cards, wallet usage bar)
+  static const progressTodo = Color(0xFFECEAF3);
+  static const progressWaiting = Color(0xFFE8B54A);
+  static const progressDone = violet;
+
+  // Gradients. Figma exports the horizontal ones as "to left" in an RTL
+  // layout, i.e. start (right) -> end (left). Directional alignment keeps that
+  // look in RTL and mirrors it for LTR.
+  static const _start = AlignmentDirectional.centerStart;
+  static const _end = AlignmentDirectional.centerEnd;
+
+  /// Primary buttons, selected segments and chips.
+  static const gradientCta = LinearGradient(begin: _start, end: _end, colors: [violet, violetLight]);
+
+  /// Balance card, ticket header, bank-details card.
+  static const gradientCard = LinearGradient(begin: _start, end: _end, colors: [violet, violetSoft]);
+
+  /// Soft screen wash behind status bar + header (top 340px, violet 10% -> transparent).
+  static const gradientScreen = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0x1A7B52F5), Color(0x00FFFFFF)],
+  );
+
+  /// Splash background. Direction not specified in Figma (vertical assumed).
+  static const gradientSplash = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [violet, Color(0xFFFFFFFF)],
+  );
+
+  /// Promo banner, form stepper, profile card.
+  static const gradientPromo = LinearGradient(begin: _start, end: _end, colors: [violet20, Color(0xFFFFFFFF)]);
+
+  /// Soft info panels: deadline, help, pending top-up, unread notification.
+  static const gradientSoft = LinearGradient(begin: _start, end: _end, colors: [violet10, Color(0xFFFFFFFF)]);
+
+  /// Wallet-hold panel on the review screen.
+  static const gradientWalletHold =
+      LinearGradient(begin: _start, end: _end, colors: [Color(0xFFDBCDFF), Color(0xFFF5EBFF)]);
+}
+
+/// Foreground / background pair of a request status chip.
+@immutable
+class SeenStatusColors {
+  const SeenStatusColors({required this.fg, required this.bg});
+  final Color fg;
+  final Color bg;
+}
+
+/// The 12 request statuses of the Figma "Request statuses" page. Presentation
+/// only; deliberately separate from the legacy 5-member [SeenTone] so its
+/// exhaustive switches keep compiling.
+///
+/// Mapping rules (applied by view-models, not here):
+///  * [deadlineUnder24h] and [expired] are client-computed from the 72h SLA
+///    timestamp, not backend states.
+///  * [withAuthority] and [confirmed] have no backend enum value; map them
+///    from `RequestStatus.underReview` / `RequestStatus.processing`.
+enum SeenRequestStatus {
+  newRequest,
+  submitted,
+  underReview,
+  processing,
+  withAuthority,
+  actionRequired,
+  deadlineUnder24h,
+  completed,
+  confirmed,
+  rejected,
+  cancelled,
+  expired;
+
+  /// Chip colors (≥ 4.5:1). Identical in light and dark: Figma has no dark spec.
+  SeenStatusColors get colors => _seenRequestStatusColors[this]!;
+}
+
+const Map<SeenRequestStatus, SeenStatusColors> _seenRequestStatusColors = {
+  SeenRequestStatus.newRequest: SeenStatusColors(fg: Color(0xFF3D3650), bg: Color(0xFFF5F3FA)),
+  SeenRequestStatus.submitted: SeenStatusColors(fg: Color(0xFF3F4BC8), bg: Color(0xFFECEEFE)),
+  SeenRequestStatus.underReview: SeenStatusColors(fg: Color(0xFF5A33B6), bg: Color(0xFFEDE7FE)),
+  SeenRequestStatus.processing: SeenStatusColors(fg: Color(0xFF4A2FA8), bg: Color(0xFFE8E1FE)),
+  SeenRequestStatus.withAuthority: SeenStatusColors(fg: Color(0xFF0A6080), bg: Color(0xFFE1F3FA)),
+  SeenRequestStatus.actionRequired: SeenStatusColors(fg: Color(0xFF7A4E00), bg: Color(0xFFFFF1D6)),
+  SeenRequestStatus.deadlineUnder24h: SeenStatusColors(fg: Color(0xFFA33A0C), bg: Color(0xFFFFE6DA)),
+  SeenRequestStatus.completed: SeenStatusColors(fg: Color(0xFF17694A), bg: Color(0xFFE3F4EC)),
+  SeenRequestStatus.confirmed: SeenStatusColors(fg: Color(0xFF0F6157), bg: Color(0xFFE2F5F2)),
+  SeenRequestStatus.rejected: SeenStatusColors(fg: Color(0xFFA3263A), bg: Color(0xFFFBE7E9)),
+  SeenRequestStatus.cancelled: SeenStatusColors(fg: Color(0xFF4E5462), bg: Color(0xFFEEF0F3)),
+  SeenRequestStatus.expired: SeenStatusColors(fg: Color(0xFFFFFFFF), bg: Color(0xFFA3263A)),
+};

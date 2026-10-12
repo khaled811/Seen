@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/seen_colors.dart';
+import '../../utils/latin_digits.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
@@ -74,7 +75,8 @@ class _SeenOtpInputState extends State<SeenOtpInput> {
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final value = _controller.text;
-    final digit = seenStyle(22, 28, FontWeight.w500, c.ink, family: SeenFonts.mono);
+    // Figma OTP box digit: 18/28 Medium.
+    final digit = seenStyle(18, 28, FontWeight.w500, c.ink).copyWith(fontFeatures: SeenFonts.tabular);
 
     return Semantics(
       label: SeenStrings.of(context).otpLabel,
@@ -92,7 +94,7 @@ class _SeenOtpInputState extends State<SeenOtpInput> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   for (var i = 0; i < widget.length; i++) ...[
-                    if (i > 0) const SizedBox(width: SeenSpace.s2),
+                    if (i > 0) const SizedBox(width: 10), // Figma gap
                     _cell(c, digit, i < value.length ? value[i] : '',
                         active: _focus.hasFocus && !widget.error && i == value.length),
                   ],
@@ -112,7 +114,8 @@ class _SeenOtpInputState extends State<SeenOtpInput> {
                     maxLength: widget.length,
                     showCursor: false,
                     enableInteractiveSelection: false,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    // Latin digits only, even from an Arabic keyboard.
+                    inputFormatters: [const LatinDigitsFormatter(), FilteringTextInputFormatter.digitsOnly],
                     decoration: const InputDecoration(
                       counterText: '',
                       border: InputBorder.none,
@@ -131,15 +134,19 @@ class _SeenOtpInputState extends State<SeenOtpInput> {
   }
 
   Widget _cell(SeenColors c, TextStyle digit, String ch, {required bool active}) {
-    final Color border = widget.error ? c.dangerFg : (active ? c.focus : c.borderStrong);
+    // Figma OTP box: 48x56, r16, 1.5px border. Empty = white / strong line,
+    // filled = violet-05 fill, active = white / violet border. A Figma halo
+    // is specified with zero size, so there is no focus elevation.
+    final Color border = widget.error ? SeenBrand.inputErrorBorder : (active ? c.focus : c.borderStrong);
+    final filled = ch.isNotEmpty;
     return Container(
       width: 48,
       height: 56,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: const BorderRadius.all(SeenRadius.sm),
-        border: Border.all(color: border, width: active || widget.error ? 2 : 1),
+        color: filled && !widget.error ? c.surfaceSunken : c.card,
+        borderRadius: const BorderRadius.all(SeenRadius.lg),
+        border: Border.all(color: border, width: 1.5),
       ),
       child: ch.isNotEmpty
           ? Text(ch, style: digit)

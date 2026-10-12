@@ -3,23 +3,33 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/feedback.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
+import '../../../../core/theme/seen_typography.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../utils/phone_identifier.dart';
 
 const int _otpLength = 6;
 
+/// Screen 04 · OTP verification (Figma 4:295).
+///
 /// [resendCooldownSeconds] seeds the local countdown; a fresh value from a
-/// new [AuthOtpRequired] state (after a resend) restarts it.
+/// new [AuthOtpRequired] state (after a resend) restarts it. [identifier] is
+/// the phone/email the code went to (shown masked); once known it is kept
+/// across rebuilds that do not carry it (e.g. after a failed attempt).
 class OtpVerificationScreen extends StatefulWidget {
-  const OtpVerificationScreen({super.key, required this.resendCooldownSeconds});
+  const OtpVerificationScreen({super.key, required this.resendCooldownSeconds, this.identifier});
 
   final int resendCooldownSeconds;
+  final String? identifier;
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -32,10 +42,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   // Owned here: started in initState/didUpdateWidget, cancelled in dispose.
   Timer? _countdownTimer;
   late int _secondsRemaining;
+  String? _identifier;
 
   @override
   void initState() {
     super.initState();
+    _identifier = widget.identifier;
     _secondsRemaining = widget.resendCooldownSeconds;
     _startCountdown();
     _codeController.addListener(_clearError);
@@ -44,6 +56,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   void didUpdateWidget(covariant OtpVerificationScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.identifier != null) _identifier = widget.identifier;
     if (oldWidget.resendCooldownSeconds != widget.resendCooldownSeconds) {
       setState(() => _secondsRemaining = widget.resendCooldownSeconds);
       _startCountdown();
@@ -87,62 +100,153 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
-    final text = Theme.of(context).textTheme;
+    final type = SeenType.of(context);
+    final identifier = _identifier;
     return Scaffold(
-      backgroundColor: c.surface,
+      backgroundColor: c.card,
       body: BlocListener<AuthBloc, AuthState>(
-        listenWhen: (previous, current) =>
-            current is AuthFailure && current.stage == AuthFailureStage.otp,
+        listenWhen: (previous, current) => current is AuthFailure && current.stage == AuthFailureStage.otp,
         listener: (context, state) {
           setState(() => _hasError = true);
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text((state as AuthFailure).message)));
         },
-        child: SafeArea(
-          child: Center(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(gradient: SeenBrand.gradientScreen),
+          child: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(SeenSpace.s6),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l10n.otpTitle, style: text.headlineSmall, textAlign: TextAlign.center),
-                    const SizedBox(height: SeenSpace.s3),
-                    Text(l10n.otpInstructions, style: text.bodyMedium, textAlign: TextAlign.center),
-                    const SizedBox(height: SeenSpace.s6),
-                    SeenOtpInput(
-                      length: _otpLength,
-                      controller: _codeController,
-                      error: _hasError,
-                      onCompleted: _submit,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: ExcludeSemantics(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: c.primarySoft,
+                                borderRadius: const BorderRadius.all(SeenRadius.r20),
+                              ),
+                              child: SizedBox(
+                                width: 64,
+                                height: 64,
+                                child: Center(child: SvgPicture.asset(SeenVectors.iconChat, width: 36, height: 36)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Text(l10n.otpTitle, style: type.h1),
+                        const SizedBox(height: SeenSpace.s1),
+                        Text(
+                          identifier == null
+                              ? l10n.otpInstructions
+                              : l10n.otpSentTo(PhoneIdentifier.mask(identifier)),
+                          style: type.body.copyWith(color: c.inkMuted),
+                        ),
+                        const SizedBox(height: 22),
+                        SeenOtpInput(
+                          length: _otpLength,
+                          controller: _codeController,
+                          error: _hasError,
+                          onCompleted: _submit,
+                        ),
+                        const SizedBox(height: 22),
+                        _ResendRow(secondsRemaining: _secondsRemaining, onResend: _resend),
+                        const SizedBox(height: 96),
+                        BlocBuilder<AuthBloc, AuthState>(
+                          buildWhen: (previous, current) => previous is AuthLoading || current is AuthLoading,
+                          builder: (context, state) {
+                            final isLoading = state is AuthLoading;
+                            return SeenButton(
+                              label: isLoading ? l10n.loading : l10n.otpConfirm,
+                              size: SeenButtonSize.large,
+                              expand: true,
+                              loading: isLoading,
+                              onPressed: () => _submit(),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: SeenSpace.s6),
-                    BlocBuilder<AuthBloc, AuthState>(
-                      buildWhen: (previous, current) =>
-                          previous is AuthLoading || current is AuthLoading,
-                      builder: (context, state) {
-                        final isLoading = state is AuthLoading;
-                        return SeenButton(
-                          label: isLoading ? l10n.loading : l10n.submit,
-                          expand: true,
-                          onPressed: isLoading ? null : () => _submit(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: SeenSpace.s3),
-                    SeenButton.ghost(
-                      label: _secondsRemaining > 0
-                          ? l10n.otpResendIn(_secondsRemaining)
-                          : l10n.otpResendAction,
-                      expand: true,
-                      onPressed: _secondsRemaining > 0 ? null : _resend,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Didn't get the code? Resend in [0:42]" while counting down; the resend
+/// link once the cooldown ends.
+class _ResendRow extends StatelessWidget {
+  const _ResendRow({required this.secondsRemaining, required this.onResend});
+
+  final int secondsRemaining;
+  final VoidCallback onResend;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
+    final type = SeenType.of(context);
+    final waiting = secondsRemaining > 0;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            waiting ? l10n.otpResendPrompt : l10n.otpDidntReceive,
+            style: type.label.copyWith(color: c.inkMuted),
+          ),
+        ),
+        if (waiting)
+          _CountdownPill(seconds: secondsRemaining)
+        else
+          SeenTextLink(label: l10n.otpResendAction, onTap: onResend),
+      ],
+    );
+  }
+}
+
+/// Figma "Countdown pill · Warm": action-required colors, clock + m:ss in
+/// Latin digits.
+class _CountdownPill extends StatelessWidget {
+  const _CountdownPill({required this.seconds});
+
+  final int seconds;
+
+  @override
+  Widget build(BuildContext context) {
+    final type = SeenType.of(context);
+    final colors = SeenRequestStatus.actionRequired.colors;
+    final label = '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+    return Semantics(
+      label: AppLocalizations.of(context)!.otpResendIn(seconds),
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: colors.bg, borderRadius: const BorderRadius.all(SeenRadius.full)),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(start: 12, end: 10, top: 5, bottom: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(SeenIcons.clock, size: 16, color: colors.fg),
+              const SizedBox(width: 6),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text(label, style: type.label.copyWith(color: colors.fg, fontFeatures: SeenFonts.tabular)),
+              ),
+            ],
           ),
         ),
       ),
