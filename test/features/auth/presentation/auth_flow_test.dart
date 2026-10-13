@@ -31,9 +31,11 @@ void main() {
   Future<void> boot(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(const App());
+    await tester.pumpWidget(const App(splashMinDuration: Duration.zero));
     await tester.pumpAndSettle();
   }
+
+  splashHoldTests();
 
   testWidgets('boots to Welcome; Sign in opens Login; back returns to Welcome', (tester) async {
     await boot(tester);
@@ -120,5 +122,21 @@ void main() {
 
     // Dispose the screen so its countdown timer is cancelled before the test ends.
     await tester.pumpWidget(const SizedBox());
+  });
+}
+
+void splashHoldTests() {
+  testWidgets('cold start holds the splash for its minimum time, then shows Welcome', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(const App(splashMinDuration: Duration(milliseconds: 1500)));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump(const Duration(milliseconds: 1000));
+    expect(find.text('مشغّل بواسطة جباري للسفريات'), findsOneWidget);
+    expect(find.text('أهلًا بك في سين أعمال'), findsNothing);
+
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+    expect(find.text('أهلًا بك في سين أعمال'), findsOneWidget);
   });
 }

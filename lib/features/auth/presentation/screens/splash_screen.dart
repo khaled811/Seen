@@ -46,12 +46,10 @@ class SplashScreen extends StatelessWidget {
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
-                child: Directionality(
-                  textDirection: TextDirection.ltr, // brand line is English in both locales
-                  child: Text(
-                    AppLocalizations.of(context)!.splashPoweredBy,
-                    style: type.body.copyWith(color: c.inkMuted),
-                  ),
+                child: Text(
+                  AppLocalizations.of(context)!.splashPoweredBy,
+                  textAlign: TextAlign.center,
+                  style: type.body.copyWith(color: c.inkMuted),
                 ),
               ),
             ),

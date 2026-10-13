@@ -25,7 +25,7 @@ void main() {
   });
 
   testWidgets('App boots and shows the login screen', (tester) async {
-    await tester.pumpWidget(const App());
+    await tester.pumpWidget(const App(splashMinDuration: Duration.zero));
     await tester.pumpAndSettle();
 
     expect(find.text('تسجيل الدخول'), findsOneWidget);

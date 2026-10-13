@@ -33,63 +33,75 @@ class WelcomeScreen extends StatelessWidget {
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
 
+    // Figma 4:217: hero card top edge 80px from the screen top (never inside
+    // the status bar), 20px side margins, copy centered under the card, and the
+    // actions pinned to the bottom (24-32px above the screen edge).
+    final safeTop = MediaQuery.paddingOf(context).top;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+
     return Scaffold(
       backgroundColor: c.card,
       body: SeenScreenBackground(
-        child: SafeArea(
-          child: LayoutBuilder(builder: (context, box) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: box.maxHeight),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        // Hero on top, copy + actions pinned to the bottom;
-                        // on short screens the page scrolls instead.
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const ExcludeSemantics(child: _HeroCard()),
-                          const SizedBox(height: SeenSpace.s6),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(l10n.welcomeTitle, style: type.display),
-                              const SizedBox(height: SeenSpace.s4),
-                              Text(l10n.welcomeSubtitle, style: type.body.copyWith(color: c.inkSecondary)),
-                              const SizedBox(height: SeenSpace.s8),
-                              SeenButton(
-                                label: l10n.loginTitle,
-                                size: SeenButtonSize.large,
-                                expand: true,
-                                onPressed: onSignIn,
-                              ),
-                              const SizedBox(height: SeenSpace.s3),
-                              SeenButton.outline(
-                                label: l10n.welcomeCreateAgency,
-                                expand: true,
-                                onPressed: onCreateAccount,
-                              ),
-                              const SizedBox(height: SeenSpace.s4),
-                              Text(
-                                l10n.welcomeTerms,
-                                textAlign: TextAlign.center,
-                                style: type.caption.copyWith(color: c.inkMuted),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+        child: LayoutBuilder(builder: (context, box) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: box.maxHeight),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(20, safeTop > 80 ? safeTop : 80, 20, 28 + safeBottom),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const ExcludeSemantics(child: _HeroCard()),
+                            const SizedBox(height: 40),
+                            Text(l10n.welcomeTitle, textAlign: TextAlign.center, style: type.display),
+                            const SizedBox(height: 14),
+                            Text(
+                              l10n.welcomeSubtitle,
+                              textAlign: TextAlign.center,
+                              style: type.body.copyWith(color: c.inkSecondary),
+                            ),
+                            const SizedBox(height: SeenSpace.s8),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SeenButton(
+                              label: l10n.loginTitle,
+                              size: SeenButtonSize.large,
+                              expand: true,
+                              onPressed: onSignIn,
+                            ),
+                            const SizedBox(height: 12),
+                            SeenButton.outline(
+                              label: l10n.welcomeCreateAgency,
+                              size: SeenButtonSize.large,
+                              expand: true,
+                              onPressed: onCreateAccount,
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              l10n.welcomeTerms,
+                              textAlign: TextAlign.center,
+                              style: type.caption.copyWith(color: c.inkMuted),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            );
-          }),
-        ),
+            ),
+          );
+        }),
       ),
     );
   }

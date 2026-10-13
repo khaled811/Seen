@@ -32,7 +32,7 @@ void main() {
   Future<void> boot(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(const App());
+    await tester.pumpWidget(const App(splashMinDuration: Duration.zero));
     await tester.pumpAndSettle();
   }
 

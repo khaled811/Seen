@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -23,10 +25,17 @@ import 'features/spiritual/presentation/shell/agent_tab.dart';
 import 'features/spiritual/presentation/shell/mode_shell.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 
+/// Minimum cold-start splash time (Figma 01 is a brand moment, not a spinner).
+const kSplashMinDuration = Duration(milliseconds: 1800);
+
 /// App root: owns the top-level [LocaleCubit], [ThemeModeCubit] and
 /// [AuthBloc] and wires them into [MaterialApp].
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({super.key, this.splashMinDuration = kSplashMinDuration});
+
+  /// How long the splash stays up on a cold start even if the session is
+  /// restored sooner. Tests pass [Duration.zero].
+  final Duration splashMinDuration;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +65,7 @@ class App extends StatelessWidget {
                 darkTheme: AppTheme.dark,
                 themeMode: themeMode,
                 debugShowCheckedModeBanner: false,
-                home: const _AuthGate(),
+                home: _AuthGate(splashMinDuration: splashMinDuration),
               );
             },
           );
@@ -102,11 +111,39 @@ List<AgentTab> _agentTabs(BuildContext context) {
 /// restored (previous state `AuthInitial`). Later loading states (login, OTP
 /// verify) keep the current screen mounted so its own button spinner shows and
 /// the typed values survive a failed attempt.
-class _AuthGate extends StatelessWidget {
-  const _AuthGate();
+class _AuthGate extends StatefulWidget {
+  const _AuthGate({required this.splashMinDuration});
+
+  final Duration splashMinDuration;
+
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  // Owned here, cancelled in dispose().
+  Timer? _splashTimer;
+  late bool _splashHeld = widget.splashMinDuration > Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_splashHeld) {
+      _splashTimer = Timer(widget.splashMinDuration, () {
+        if (mounted) setState(() => _splashHeld = false);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _splashTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_splashHeld) return const SplashScreen();
     return BlocBuilder<AuthBloc, AuthState>(
       buildWhen: (previous, current) => !(current is AuthLoading && previous is! AuthInitial),
       builder: (context, state) {
