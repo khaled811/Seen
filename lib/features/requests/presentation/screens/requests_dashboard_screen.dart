@@ -13,7 +13,7 @@ import '../../../../core/presentation/widgets/filters.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/stat_card.dart';
 import '../../../../core/presentation/widgets/status.dart';
-import '../../../../core/presentation/widgets/text_field.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
@@ -69,45 +69,38 @@ Future<void> _openCatalog(BuildContext context) async {
   context.read<RequestsBloc>().add(const RequestsLoadRequested());
 }
 
-/// Title row: back (when pushed), title, optional search toggle, new request.
+/// Figma 06 header: the title at the start and a violet "new request" button
+/// at the end.
 class _Header extends StatelessWidget {
-  const _Header({this.onSearch, this.searchOpen = false});
-
-  final VoidCallback? onSearch;
-  final bool searchOpen;
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
     final type = SeenType.of(context);
-    final canPop = Navigator.of(context).canPop();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s3, _gutter, SeenSpace.s3),
+      padding: const EdgeInsets.fromLTRB(_gutter, 12, _gutter, 12),
       child: Row(
         children: [
-          if (canPop) ...[
-            SeenRoundIconButton(
-              icon: SeenIcons.back(context),
-              semanticLabel: SeenStrings.of(context).back,
-              tonal: true,
-              onPressed: () => Navigator.of(context).maybePop(),
-            ),
-            const SizedBox(width: SeenSpace.s3),
-          ],
           Expanded(child: Text(l10n.requestsDashboardTitle, style: type.h1)),
-          if (onSearch != null) ...[
-            SeenRoundIconButton(
-              icon: searchOpen ? SeenIcons.x : SeenIcons.search,
-              semanticLabel: l10n.requestsSearchAction,
-              onPressed: onSearch,
+          Semantics(
+            button: true,
+            label: l10n.requestsBookNewAction,
+            excludeSemantics: true,
+            child: Material(
+              color: SeenBrand.violet10,
+              shape: const CircleBorder(),
+              child: InkWell(
+                onTap: () => _openCatalog(context),
+                customBorder: const CircleBorder(),
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(child: SeenSvgIcon(SeenVectors.requestsPlus, size: 22, color: c.primary)),
+                ),
+              ),
             ),
-            const SizedBox(width: SeenSpace.s2),
-          ],
-          SeenRoundIconButton(
-            icon: SeenIcons.plus,
-            semanticLabel: l10n.requestsBookNewAction,
-            tonal: true,
-            onPressed: () => _openCatalog(context),
           ),
         ],
       ),
@@ -226,17 +219,10 @@ class _SkeletonCard extends StatelessWidget {
   }
 }
 
-class _DashboardBody extends StatefulWidget {
+class _DashboardBody extends StatelessWidget {
   const _DashboardBody({required this.state});
 
   final RequestsLoaded state;
-
-  @override
-  State<_DashboardBody> createState() => _DashboardBodyState();
-}
-
-class _DashboardBodyState extends State<_DashboardBody> {
-  bool _searchOpen = false;
 
   /// Chip order from Figma (the enum order is the bloc's concern).
   static const _filterOrder = [
@@ -258,7 +244,6 @@ class _DashboardBodyState extends State<_DashboardBody> {
     final l10n = AppLocalizations.of(context)!;
     final s = SeenStrings.of(context);
     final c = SeenColors.of(context);
-    final state = widget.state;
     final requests = state.filteredRequests;
 
     final all = state.requests;
@@ -295,28 +280,11 @@ class _DashboardBodyState extends State<_DashboardBody> {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          SliverToBoxAdapter(
-            child: _Header(
-              onSearch: noData ? null : () => setState(() => _searchOpen = !_searchOpen),
-              searchOpen: _searchOpen,
-            ),
-          ),
-          if (_searchOpen && !noData)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, SeenSpace.s3),
-                child: SeenTextField(
-                  label: l10n.requestsSearchAction,
-                  hint: l10n.requestsSearchHint,
-                  prefixIcon: SeenIcons.search,
-                  onChanged: (value) => context.read<RequestsBloc>().add(RequestsSearchChanged(value)),
-                ),
-              ),
-            ),
+          const SliverToBoxAdapter(child: _Header()),
           if (!noData) ...[
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, SeenSpace.s3),
+                padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, 18),
                 child: Row(
                   children: [
                     Expanded(
@@ -351,7 +319,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 padding: const EdgeInsets.symmetric(horizontal: _gutter),
                 items: [
                   for (final f in _filterOrder)
-                    SeenSegment(label: _filterLabel(l10n, f), count: countOf(f), alert: f == RequestsDashboardFilter.actionRequired),
+                    SeenSegment(label: _filterLabel(l10n, f), count: countOf(f)),
                 ],
                 selectedIndex: _filterOrder.indexOf(state.filter),
                 onSelected: (i) => context.read<RequestsBloc>().add(RequestsFilterChanged(_filterOrder[i])),
@@ -360,11 +328,11 @@ class _DashboardBodyState extends State<_DashboardBody> {
             if (actionRequired.isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s3, _gutter, 0),
+                  padding: const EdgeInsets.fromLTRB(_gutter, 18, _gutter, 0),
                   child: _ActionBanner(count: actionRequired.length, earliestDeadline: earliest),
                 ),
               ),
-            const SliverToBoxAdapter(child: SizedBox(height: SeenSpace.s3)),
+            const SliverToBoxAdapter(child: SizedBox(height: 18)),
           ],
           if (requests.isEmpty)
             SliverFillRemaining(
@@ -395,7 +363,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
               padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, SeenSpace.s6),
               sliver: SliverList.separated(
                 itemCount: requests.length,
-                separatorBuilder: (_, __) => const SizedBox(height: SeenSpace.s3),
+                separatorBuilder: (_, __) => const SizedBox(height: 18),
                 itemBuilder: (context, index) => _RequestCard(request: requests[index]),
               ),
             ),
