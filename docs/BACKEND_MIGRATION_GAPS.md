@@ -248,3 +248,76 @@ app does instead; nothing is invented on the client.
 - **Create agent** mutation, **edit credit limit** mutation, and commission data.
 - **Approvals entry point:** the pending-approvals screen exists but is no longer
   linked from the sub-agents screen (Figma has no entry); decide where it lives.
+
+---
+
+## 7. Per-screen backend requirements (Figma 01–04, 15–18)
+
+Same format as section 6.
+
+### 01 · Splash
+- Nothing screen-specific. Session restore at launch depends on the session
+  payload of gap 3 (agent status, agency identity).
+
+### 02 · Welcome
+- **Terms and Privacy:** URLs (per language) for the two documents; the line is
+  plain text today.
+- **Self-registration:** see gap 2 (the "Create agency account" button leads to a
+  form that sends nothing).
+
+### 03 · Login
+- **Forgot password:** request a reset code and set a new password. Today the link
+  says "coming soon".
+- **Login errors:** distinct error codes (wrong credentials, account suspended or
+  pending review, too many attempts with the lockout time).
+- **Account status** in the login result, so a pending agency is routed to the
+  pending screen (gap 3).
+- **Phone format:** confirm E.164 and the accepted countries; the +967 prefix is a
+  fixed default in the app.
+- **OTP after every login:** the helper text promises a verification code, so
+  every sign-in needs the OTP step (or the copy has to change).
+
+### 04 · OTP
+- **Masked destination** (phone or email) returned with the "code sent" response
+  instead of rebuilt on the client.
+- **Resend cooldown** in seconds from the server (the countdown seeds from it).
+- **Error codes:** wrong code, expired code, attempts exhausted (with the lockout
+  time).
+
+### 15 · Create agency account
+- **`registerAgency` mutation** (unauthenticated, rate-limited): agency name,
+  manager name, phone, email, city, license number, commercial-register file
+  reference; returns a request id. Handle duplicates (phone, email, license).
+  See gap 2.
+- **Phone verification:** the form says "we will send a verification code to this
+  number", so registration needs an OTP send and confirm step.
+- **Commercial-register upload** without a session (gap 4).
+- **Cities** as data (the field is free text).
+- **Manager name:** confirm it is part of the registration payload and its format
+  (three-part name).
+
+### 16 · Pending approval
+- **Registration status** (received, documents under review, activated, rejected
+  with a reason) to drive the three-step card; today the second step is always
+  "current".
+- **Routing:** return the agent status at sign-in so a pending agent lands here.
+- **Review time promise** ("within one business day") must match a real SLA, or the
+  backend returns the expected time.
+- **Activation notice** (message or push) when the account is activated.
+- **Support channel before sign-in** (phone, email or chat) for the "Contact
+  support" button.
+
+### 17 · Notifications
+- **Ready-to-show text** in the user's language and a stable event key per event
+  (visa issued, document required, top-up accepted, status change, new agent).
+- **Push notifications** (FCM / APNs) with device-token registration.
+- **`markAllRead`** and the **unread count** from the server (the screen no longer
+  has a mark-all button because Figma has none; decide where it should live).
+- **Pagination** for the feed.
+- **Deep-link target** (request, wallet, agent), not only a request id.
+
+### 18 · Requests, empty
+- **Total request count** returned with the query, to tell "the agency has no
+  requests" (this screen) from "the filter matches nothing".
+- **Empty vs. failed:** a response that distinguishes an empty list from a
+  connection error, so an error never shows "no requests yet".
