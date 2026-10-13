@@ -14,6 +14,8 @@ import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
+import '../../domain/entities/traveler_info.dart';
 import '../bloc/service_booking_bloc.dart';
 import '../bloc/service_booking_event.dart';
 import '../bloc/service_booking_state.dart';
@@ -147,6 +149,66 @@ class _TravelerCard extends StatelessWidget {
 
   final ServiceBookingInProgress state;
 
+  /// Figma 09 puts these field pairs side by side (nationality | passport
+  /// expiry; birth date | passport issue). A pair is only drawn as a row when
+  /// both of its fields exist in the service's form.
+  static const _pairs = {
+    'nationality': 'passportExpiryDate',
+    'birthDate': 'passportIssueDate',
+  };
+
+  Widget _field(BuildContext context, DynamicFormField field, TravelerInfo traveler, Map<String, String> errors) =>
+      SeenDynamicField(
+        key: ValueKey('${traveler.id}-${field.key}'),
+        field: field,
+        value: traveler.fieldValues[field.key],
+        errorText: errors[field.key],
+        ltr: _ltrFieldKeys.contains(field.key),
+        onChanged: (value) => context.read<ServiceBookingBloc>().add(
+              TravelerFieldChanged(
+                travelerIndex: state.activeTravelerIndex,
+                fieldKey: field.key,
+                value: value,
+              ),
+            ),
+      );
+
+  List<Widget> _fieldWidgets(
+    BuildContext context,
+    ServiceBookingInProgress state,
+    TravelerInfo traveler,
+    Map<String, String> errors,
+    Object? expiry,
+  ) {
+    final byKey = {for (final f in state.travelerFields) f.key: f};
+    final secondOfPair = {
+      for (final e in _pairs.entries)
+        if (byKey.containsKey(e.key) && byKey.containsKey(e.value)) e.value,
+    };
+    final out = <Widget>[];
+    for (final field in state.travelerFields) {
+      if (secondOfPair.contains(field.key)) continue;
+      final partner = secondOfPair.contains(_pairs[field.key]) ? byKey[_pairs[field.key]] : null;
+      if (partner == null) {
+        out.add(_field(context, field, traveler, errors));
+      } else {
+        out.add(Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _field(context, field, traveler, errors)),
+            const SizedBox(width: 8),
+            Expanded(child: _field(context, partner, traveler, errors)),
+          ],
+        ));
+      }
+      if ((field.key == _passportExpiryFieldKey || partner?.key == _passportExpiryFieldKey) && expiry is DateTime) {
+        out.add(SeenValidityHint.fromDates(expiry: expiry, travelDate: DateTime.now()));
+      }
+      out.add(const SizedBox(height: 14));
+    }
+    return out;
+  }
+
   /// Every required field has a value (a UX hint; the validator decides).
   bool _isComplete(Map<String, Object?> values) => state.travelerFields.where((f) => f.required).every((f) {
         final v = values[f.key];
@@ -190,25 +252,7 @@ class _TravelerCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            for (final field in state.travelerFields) ...[
-              SeenDynamicField(
-                key: ValueKey('${traveler.id}-${field.key}'),
-                field: field,
-                value: traveler.fieldValues[field.key],
-                errorText: errors[field.key],
-                ltr: _ltrFieldKeys.contains(field.key),
-                onChanged: (value) => context.read<ServiceBookingBloc>().add(
-                      TravelerFieldChanged(
-                        travelerIndex: state.activeTravelerIndex,
-                        fieldKey: field.key,
-                        value: value,
-                      ),
-                    ),
-              ),
-              if (field.key == _passportExpiryFieldKey && expiry is DateTime)
-                SeenValidityHint.fromDates(expiry: expiry, travelDate: DateTime.now()),
-              const SizedBox(height: 14),
-            ],
+            ..._fieldWidgets(context, state, traveler, errors, expiry),
             // No file-picker / upload API yet: the slot is visual only and
             // says so, rather than faking an attachment.
             SeenDropzone(

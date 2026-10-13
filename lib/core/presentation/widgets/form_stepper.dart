@@ -29,7 +29,7 @@ class SeenFormStepper extends StatelessWidget {
     Widget marker(int i) {
       if (i < current) {
         return DecoratedBox(
-          decoration: const BoxDecoration(color: SeenBrand.violet, shape: BoxShape.circle),
+          decoration: const BoxDecoration(gradient: SeenBrand.gradientCta, shape: BoxShape.circle),
           child: SizedBox(width: _dot, height: _dot, child: Icon(SeenIcons.check, size: 14, color: c.onPrimary)),
         );
       }
