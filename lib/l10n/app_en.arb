@@ -1625,11 +1625,11 @@
   "@agencySubmitAction": {
     "description": "Account / onboarding copy."
   },
-  "agencyPendingTitle": "Your request is under review",
+  "agencyPendingTitle": "Your account is under review",
   "@agencyPendingTitle": {
     "description": "Account / onboarding copy."
   },
-  "agencyPendingBody": "The Jubari operations team is reviewing your agency details. We will get back to you within 24 hours.",
+  "agencyPendingBody": "We received your agency registration. The Jubari team will review it within one business day and notify you once it is activated.",
   "@agencyPendingBody": {
     "description": "Account / onboarding copy."
   },
@@ -1639,10 +1639,6 @@
   },
   "agencyPendingSupportNote": "You can contact support from inside the app once you sign in.",
   "@agencyPendingSupportNote": {
-    "description": "Account / onboarding copy."
-  },
-  "agencyPendingBackAction": "Back to sign in",
-  "@agencyPendingBackAction": {
     "description": "Account / onboarding copy."
   },
   "accountSectionAgency": "Agency",
@@ -1705,5 +1701,17 @@
   "agencyPhoneHelper": "We will send a verification code to this number",
   "@agencyPhoneHelper": {
     "description": "Create agency account copy."
+  },
+  "agencyPendingStepReceived": "Request received",
+  "@agencyPendingStepReceived": {
+    "description": "Pending approval copy."
+  },
+  "agencyPendingStepReview": "Documents review",
+  "@agencyPendingStepReview": {
+    "description": "Pending approval copy."
+  },
+  "agencyPendingStepActivate": "Account activation",
+  "@agencyPendingStepActivate": {
+    "description": "Pending approval copy."
   }
 }

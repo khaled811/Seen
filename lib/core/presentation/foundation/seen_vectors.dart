@@ -63,6 +63,7 @@ abstract final class SeenVectors {
   static const requestsPlus = 'assets/icons/requests/plus.svg';
 
   // Create agency account (Figma 15 · node 20:594).
+  static const authClock = 'assets/icons/auth/clock.svg';
   static const authUpload = 'assets/icons/auth/upload.svg';
 
   // Sub-agents screen (Figma 13 · node 18:722).

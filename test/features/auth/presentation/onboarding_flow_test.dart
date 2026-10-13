@@ -47,10 +47,10 @@ void main() {
       await tester.tap(find.text('متابعة'));
       await tester.pumpAndSettle();
       expect(find.text('هذا الحقل مطلوب.'), findsWidgets);
-      expect(find.text('طلبك قيد المراجعة'), findsNothing);
+      expect(find.text('حسابك قيد المراجعة'), findsNothing);
     });
 
-    testWidgets('a valid form moves to pending approval; Back to sign in opens Login', (tester) async {
+    testWidgets('a valid form moves to pending approval; system back leaves it', (tester) async {
       await boot(tester);
       await tester.ensureVisible(find.text('إنشاء حساب وكالة'));
       await tester.pumpAndSettle();
@@ -67,11 +67,13 @@ void main() {
       await tester.tap(find.text('متابعة'));
       await tester.pumpAndSettle();
 
-      expect(find.text('طلبك قيد المراجعة'), findsOneWidget);
+      expect(find.text('حسابك قيد المراجعة'), findsOneWidget);
+      expect(find.text('مراجعة المستندات'), findsOneWidget);
 
-      await tester.tap(find.text('العودة لتسجيل الدخول'));
+      // The system back gesture leaves the pending screen (back to Welcome).
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('رقم الجوال أو البريد الإلكتروني'), findsOneWidget);
+      expect(find.text('حسابك قيد المراجعة'), findsNothing);
     });
   });
 

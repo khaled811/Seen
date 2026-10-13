@@ -366,11 +366,10 @@
   "agencyCrUploadTitle": "أرفق السجل التجاري",
   "agencyCrUploadCaption": "الإرفاق غير متاح بعد",
   "agencySubmitAction": "متابعة",
-  "agencyPendingTitle": "طلبك قيد المراجعة",
-  "agencyPendingBody": "يراجع فريق عمليات جبري بيانات وكالتك. سنبلغك خلال ٢٤ ساعة.",
+  "agencyPendingTitle": "حسابك قيد المراجعة",
+  "agencyPendingBody": "استلمنا طلب تسجيل وكالتك، وسيراجعه فريق جُباري خلال يوم عمل واحد. سنبلغك فور التفعيل.",
   "agencyPendingSupportAction": "تواصل مع الدعم",
   "agencyPendingSupportNote": "يمكنك التواصل مع الدعم من داخل التطبيق بعد تسجيل الدخول.",
-  "agencyPendingBackAction": "العودة لتسجيل الدخول",
   "accountSectionAgency": "الوكالة",
   "accountSectionApp": "التطبيق",
   "accountItemMargin": "هامش الربح",
@@ -384,5 +383,8 @@
   "agencyContactNameLabel": "اسم المسؤول",
   "agencyContactNameHint": "الاسم الثلاثي",
   "agencyCityHint": "صنعاء",
-  "agencyPhoneHelper": "سنرسل رمز تحقق إلى هذا الرقم"
+  "agencyPhoneHelper": "سنرسل رمز تحقق إلى هذا الرقم",
+  "agencyPendingStepReceived": "استلام الطلب",
+  "agencyPendingStepReview": "مراجعة المستندات",
+  "agencyPendingStepActivate": "تفعيل الحساب"
 }

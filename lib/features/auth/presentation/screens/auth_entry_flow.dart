@@ -60,10 +60,7 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
               onBack: () => _go(_EntryStep.welcome),
               onSubmitted: () => _go(_EntryStep.pendingApproval),
             ),
-          _EntryStep.pendingApproval => AgencyPendingApprovalScreen(
-              key: const ValueKey('auth-pending'),
-              onBackToLogin: () => _go(_EntryStep.login),
-            ),
+          _EntryStep.pendingApproval => const AgencyPendingApprovalScreen(key: ValueKey('auth-pending')),
         },
       ),
     );
