@@ -6,7 +6,6 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
-import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/extended_fab.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -22,8 +21,6 @@ import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
 import '../widgets/fund_sub_agent_sheet.dart';
 import '../widgets/seen_sub_agent_card.dart';
-import '../widgets/sub_agent_approval_tile.dart';
-import 'sub_agent_approval_screen.dart';
 
 /// Sub-agent network (Figma 13, node 18:722): title with a search button, two
 /// overview tiles, an All / Active / Suspended control, the agent cards and an
@@ -41,18 +38,6 @@ class SubAgentsListScreen extends StatelessWidget {
       child: const SubAgentsView(),
     );
   }
-}
-
-/// A route pushed via Navigator is not a descendant of this screen's
-/// BlocProvider (it attaches to the Navigator's Overlay), so the same Bloc
-/// instance must be forwarded explicitly.
-void _openApprovals(BuildContext context) {
-  final bloc = context.read<AgentsBloc>();
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => BlocProvider.value(value: bloc, child: const SubAgentApprovalScreen()),
-    ),
-  );
 }
 
 /// The screen body, split from [SubAgentsListScreen] so tests can provide
@@ -181,10 +166,6 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-/// Quick preview cap on the list screen: the full, unbounded list lives on
-/// [SubAgentApprovalScreen] behind the "See all" link.
-const _pendingPreviewLimit = 3;
-
 enum _AgentFilter { all, active, suspended }
 
 class _LoadedView extends StatefulWidget {
@@ -207,7 +188,6 @@ class _LoadedViewState extends State<_LoadedView> {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final state = widget.state;
-    final preview = state.pendingRequests.take(_pendingPreviewLimit).toList();
     final all = state.subAgents;
     final activeCount = all.where((a) => a.isActive).length;
     final distributed = all.fold<int>(0, (sum, a) => sum + a.balanceCents) / 100;
@@ -243,24 +223,6 @@ class _LoadedViewState extends State<_LoadedView> {
             ],
           ),
           const SizedBox(height: 18),
-          if (preview.isNotEmpty) ...[
-            SeenSectionHeader(
-              title: l10n.subAgentApprovalsTitle,
-              count: state.pendingRequests.length,
-              actionLabel: l10n.homeSeeAllAction,
-              onAction: () => _openApprovals(context),
-            ),
-            for (final request in preview)
-              Padding(
-                padding: const EdgeInsets.only(bottom: SeenSpace.s3),
-                child: SubAgentApprovalTile(
-                  request: request,
-                  isActing: state.approvalActionStatus == ApprovalActionStatus.submitting &&
-                      state.approvalActionRequestId == request.id,
-                ),
-              ),
-            const SizedBox(height: 6),
-          ],
           SeenSegmentedControl(
             labels: [l10n.walletFilterAll, l10n.agentsFilterActive, l10n.agentsFilterSuspended],
             selectedIndex: _AgentFilter.values.indexOf(_filter),
