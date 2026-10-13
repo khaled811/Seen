@@ -112,6 +112,7 @@ flutter:
     - assets/icons/review/
     - assets/icons/requests/
     - assets/icons/auth/
+    - assets/icons/notifications/
     # Spiritual hub: duas.json (docs/spiritual_feature/05-content.md) and the
     # mock dua audio (a 3 s silent WAV) used until real recitations are added.
     - assets/data/

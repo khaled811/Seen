@@ -54,6 +54,37 @@ class SeenStrings {
     return '${numeral(d.day)} ${(isArabic ? ar : en)[d.month - 1]}';
   }
 
+  /// "٣ غير مقروءة" / "3 unread" (the notifications header caption).
+  String unreadCount(int n) => _t('${numeral(n)} غير مقروءة', '$n unread');
+
+  /// "قبل ١٠ دقائق" / "10 min ago" for the last day, "أمس" for yesterday and a
+  /// day-month for anything older. [now] is injectable for tests.
+  String timeAgo(DateTime at, {DateTime? now}) {
+    final n = now ?? DateTime.now();
+    final diff = n.difference(at);
+    if (diff.inMinutes < 1) return _t('الآن', 'Just now');
+    if (diff.inMinutes < 60) {
+      final m = diff.inMinutes;
+      return _t('قبل ${_arUnit(m, 'دقيقة', 'دقيقتين', 'دقائق')}', '$m min ago');
+    }
+    final today = DateTime(n.year, n.month, n.day);
+    final day = DateTime(at.year, at.month, at.day);
+    final days = today.difference(day).inDays;
+    if (days <= 0) {
+      final h = diff.inHours;
+      return _t('قبل ${_arUnit(h, 'ساعة', 'ساعتين', 'ساعات')}', '$h h ago');
+    }
+    if (days == 1) return _t('أمس', 'Yesterday');
+    return dayMonth(at);
+  }
+
+  String _arUnit(int n, String one, String two, String few) => switch (n) {
+        1 => one,
+        2 => two,
+        >= 3 && <= 10 => '${numeral(n)} $few',
+        _ => '${numeral(n)} $one',
+      };
+
   /// Home greeting line: how many requests need follow-up today.
   String attentionSummary(int n) {
     if (isArabic) {

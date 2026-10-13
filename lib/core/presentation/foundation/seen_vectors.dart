@@ -66,6 +66,13 @@ abstract final class SeenVectors {
   static const authClock = 'assets/icons/auth/clock.svg';
   static const authUpload = 'assets/icons/auth/upload.svg';
 
+  // Notifications (Figma 17 · node 20:697).
+  static const notifCheck = 'assets/icons/notifications/check.svg';
+  static const notifAlert = 'assets/icons/notifications/alert.svg';
+  static const notifWallet = 'assets/icons/notifications/wallet.svg';
+  static const notifReview = 'assets/icons/notifications/review.svg';
+  static const notifAgents = 'assets/icons/notifications/agents.svg';
+
   // Sub-agents screen (Figma 13 · node 18:722).
   static const agentsSearch = 'assets/icons/agents/search.svg';
   static const agentsPlus = 'assets/icons/agents/plus.svg';
