@@ -22,13 +22,15 @@ class SplashScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Figma "Soft violet glow": violet fading to nothing from the top.
+          // Figma "Soft violet glow": a 438 px blurred violet disc centred at
+          // (195, 143). flutter_svg ignores SVG blur filters, so the same glow
+          // is a radial gradient (about 18 % violet fading to nothing).
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
-                center: Alignment(0, -1.15),
-                radius: 0.9,
-                colors: [Color(0x337B52F5), Color(0x00FFFFFF)],
+                center: Alignment(0, -0.66),
+                radius: 0.8,
+                colors: [Color(0x2E7B52F5), Color(0x00FFFFFF)],
               ),
             ),
           ),
@@ -45,11 +47,15 @@ class SplashScreen extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: Text(
-                  AppLocalizations.of(context)!.splashPoweredBy,
-                  textAlign: TextAlign.center,
-                  style: type.body.copyWith(color: c.inkMuted),
+                padding: const EdgeInsets.only(bottom: 21),
+                // The brand line is English in both locales, as drawn.
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    AppLocalizations.of(context)!.splashPoweredBy,
+                    textAlign: TextAlign.center,
+                    style: type.body.copyWith(color: c.inkMuted),
+                  ),
                 ),
               ),
             ),

@@ -146,7 +146,7 @@ void splashHoldTests() {
     await tester
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await tester.pump(const Duration(milliseconds: 1000));
-    expect(find.text('مشغّل بواسطة جباري للسفريات'), findsOneWidget);
+    expect(find.text('Powered by Jubari Travel'), findsOneWidget);
     expect(find.text('أهـلًا بـك في سيــــن أعمـــال'), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 600));
