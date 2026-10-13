@@ -43,7 +43,7 @@ import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../../wallet/presentation/bloc/wallet_bloc.dart';
 import '../../../wallet/presentation/bloc/wallet_event.dart';
 import '../../../wallet/presentation/bloc/wallet_state.dart';
-import '../../../wallet/presentation/widgets/top_up_request_sheet.dart';
+import '../../../wallet/presentation/screens/top_up_request_screen.dart';
 
 /// Home dashboard (Figma 05): header, greeting, balance card, primary actions,
 /// promo banner, services grid and the latest requests. Owns fresh
@@ -322,7 +322,7 @@ class _BalanceSection extends StatelessWidget {
             showSemanticLabel: l10n.balanceHiddenLabel,
             hideSemanticLabel: l10n.balanceShownLabel,
             // Top-up stays one tap away (Figma has no dedicated button on Home).
-            onTap: () => showTopUpRequestSheet(context),
+            onTap: () => Navigator.of(context).push(TopUpRequestScreen.route(context.read<WalletBloc>())),
           ),
       },
     );

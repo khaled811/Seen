@@ -1376,5 +1376,145 @@
   "reviewSubmitAction": "Confirm and submit request",
   "@reviewSubmitAction": {
     "description": "Booking flow copy."
+  },
+  "walletStatementAction": "Statement",
+  "@walletStatementAction": {
+    "description": "Wallet / agents copy."
+  },
+  "walletStatementSoonBody": "Statement export is not available yet. Contact support for a copy.",
+  "@walletStatementSoonBody": {
+    "description": "Wallet / agents copy."
+  },
+  "walletTransferToAgent": "Transfer to agent",
+  "@walletTransferToAgent": {
+    "description": "Wallet / agents copy."
+  },
+  "walletUsageHeldLabel": "Held for requests",
+  "@walletUsageHeldLabel": {
+    "description": "Wallet / agents copy."
+  },
+  "walletUsageAvailableLabel": "Available to use",
+  "@walletUsageAvailableLabel": {
+    "description": "Wallet / agents copy."
+  },
+  "walletUsageHeldValue": "Held {amount}",
+  "@walletUsageHeldValue": {
+    "description": "Wallet / agents copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walletUsageAvailableValue": "Available {amount}",
+  "@walletUsageAvailableValue": {
+    "description": "Wallet / agents copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walletPendingTopUpTitle": "Top-up {amount}",
+  "@walletPendingTopUpTitle": {
+    "description": "Wallet / agents copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walletPendingTopUpSent": "Sent {date}",
+  "@walletPendingTopUpSent": {
+    "description": "Wallet / agents copy.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walletLedgerTitle": "Activity",
+  "@walletLedgerTitle": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpScreenTitle": "Top up balance",
+  "@topUpScreenTitle": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpScreenSubtitle": "Balance is added after the receipt is reviewed",
+  "@topUpScreenSubtitle": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpIbanLabel": "Account number (IBAN)",
+  "@topUpIbanLabel": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpBeneficiaryLabel": "Beneficiary",
+  "@topUpBeneficiaryLabel": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpCurrencyLabel": "Currency",
+  "@topUpCurrencyLabel": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpCopyAction": "Copy",
+  "@topUpCopyAction": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpCopiedMessage": "Copied.",
+  "@topUpCopiedMessage": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpBankDetailsUnavailable": "Support will send you the bank account details once top-up is enabled.",
+  "@topUpBankDetailsUnavailable": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpAmountSection": "Amount",
+  "@topUpAmountSection": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpReceiptSection": "Transfer receipt",
+  "@topUpReceiptSection": {
+    "description": "Wallet / agents copy."
+  },
+  "topUpSubmitAction": "Submit top-up request",
+  "@topUpSubmitAction": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsSearchHint": "Search an agent",
+  "@agentsSearchHint": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsFilterActive": "Active",
+  "@agentsFilterActive": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsFilterSuspended": "Suspended",
+  "@agentsFilterSuspended": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsStatActive": "Active agents",
+  "@agentsStatActive": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsStatDistributed": "Total agent balances · USD",
+  "@agentsStatDistributed": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsAddAction": "Add agent",
+  "@agentsAddAction": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsAddSoon": "Adding a new agent is not available yet.",
+  "@agentsAddSoon": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsNoMatch": "No matching agents",
+  "@agentsNoMatch": {
+    "description": "Wallet / agents copy."
+  },
+  "agentsStatusSuspended": "Suspended",
+  "@agentsStatusSuspended": {
+    "description": "Wallet / agents copy."
   }
 }
