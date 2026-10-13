@@ -35,73 +35,74 @@ class WelcomeScreen extends StatelessWidget {
 
     // Figma 4:217: hero card top edge 80px from the screen top (never inside
     // the status bar), 20px side margins, copy centered under the card, and the
-    // actions pinned to the bottom (24-32px above the screen edge).
-    final safeTop = MediaQuery.paddingOf(context).top;
-    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    // actions pinned to the bottom.
+    final mq = MediaQuery.of(context);
+    final top = mq.padding.top > 80 ? mq.padding.top : 80.0;
 
     return Scaffold(
       backgroundColor: c.card,
       body: SeenScreenBackground(
-        child: LayoutBuilder(builder: (context, box) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: box.maxHeight),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(20, safeTop > 80 ? safeTop : 80, 20, 28 + safeBottom),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const ExcludeSemantics(child: _HeroCard()),
-                            const SizedBox(height: 40),
-                            Text(l10n.welcomeTitle, textAlign: TextAlign.center, style: type.display),
-                            const SizedBox(height: 14),
-                            Text(
-                              l10n.welcomeSubtitle,
-                              textAlign: TextAlign.center,
-                              style: type.body.copyWith(color: c.inkSecondary),
-                            ),
-                            const SizedBox(height: SeenSpace.s8),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SeenButton(
-                              label: l10n.loginTitle,
-                              size: SeenButtonSize.large,
-                              expand: true,
-                              onPressed: onSignIn,
-                            ),
-                            const SizedBox(height: 12),
-                            SeenButton.outline(
-                              label: l10n.welcomeCreateAgency,
-                              size: SeenButtonSize.large,
-                              expand: true,
-                              onPressed: onCreateAccount,
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              l10n.welcomeTerms,
-                              textAlign: TextAlign.center,
-                              style: type.caption.copyWith(color: c.inkMuted),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+        // The minimum height pins the actions to the bottom of tall screens;
+        // short screens scroll instead.
+        child: LayoutBuilder(
+          builder: (context, box) {
+            // Keeps a 440 px column on wide screens.
+            final side = box.maxWidth > 480 ? (box.maxWidth - 440) / 2 : 20.0;
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: box.maxHeight),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(side, top, side, 24 + mq.padding.bottom),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const ExcludeSemantics(child: _HeroCard()),
+                          const SizedBox(height: 40),
+                          Text(l10n.welcomeTitle, textAlign: TextAlign.center, style: type.display),
+                          const SizedBox(height: 14),
+                          Text(
+                            l10n.welcomeSubtitle,
+                            textAlign: TextAlign.center,
+                            style: type.body.copyWith(color: c.inkSecondary),
+                          ),
+                          const SizedBox(height: SeenSpace.s8),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SeenButton(
+                            label: l10n.loginTitle,
+                            size: SeenButtonSize.large,
+                            expand: true,
+                            onPressed: onSignIn,
+                          ),
+                          const SizedBox(height: 12),
+                          SeenButton.outline(
+                            label: l10n.welcomeCreateAgency,
+                            size: SeenButtonSize.large,
+                            expand: true,
+                            onPressed: onCreateAccount,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.welcomeTerms,
+                            textAlign: TextAlign.center,
+                            style: type.caption.copyWith(color: c.inkMuted),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
       ),
     );
   }
