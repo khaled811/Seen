@@ -1517,68 +1517,152 @@
   "@agentsStatusSuspended": {
     "description": "Wallet / agents copy."
   },
-  "accountTitle": "Account",
-  "@accountTitle": {"description": "Account / onboarding copy."},
+  "accountTitle": "My account",
+  "@accountTitle": {
+    "description": "Account / onboarding copy."
+  },
   "accountAgencyFallback": "Agency account",
-  "@accountAgencyFallback": {"description": "Account / onboarding copy."},
+  "@accountAgencyFallback": {
+    "description": "Account / onboarding copy."
+  },
   "accountRoleOwner": "Agency owner",
-  "@accountRoleOwner": {"description": "Account / onboarding copy."},
+  "@accountRoleOwner": {
+    "description": "Account / onboarding copy."
+  },
   "accountRoleBranchManager": "Branch manager",
-  "@accountRoleBranchManager": {"description": "Account / onboarding copy."},
+  "@accountRoleBranchManager": {
+    "description": "Account / onboarding copy."
+  },
   "accountRoleStaff": "Staff",
-  "@accountRoleStaff": {"description": "Account / onboarding copy."},
-  "accountAgencyDetails": "Agency details & commercial register",
-  "@accountAgencyDetails": {"description": "Account / onboarding copy."},
+  "@accountRoleStaff": {
+    "description": "Account / onboarding copy."
+  },
+  "accountAgencyDetails": "Agency details",
+  "@accountAgencyDetails": {
+    "description": "Account / onboarding copy."
+  },
   "accountAgencyDetailsSoonBody": "Viewing agency and commercial register details is not available yet. Contact support to update them.",
-  "@accountAgencyDetailsSoonBody": {"description": "Account / onboarding copy."},
+  "@accountAgencyDetailsSoonBody": {
+    "description": "Account / onboarding copy."
+  },
   "accountLanguageTitle": "Language",
-  "@accountLanguageTitle": {"description": "Account / onboarding copy."},
+  "@accountLanguageTitle": {
+    "description": "Account / onboarding copy."
+  },
   "accountLanguageName": "English",
-  "@accountLanguageName": {"description": "Account / onboarding copy."},
+  "@accountLanguageName": {
+    "description": "Account / onboarding copy."
+  },
   "accountThemeTitle": "Appearance",
-  "@accountThemeTitle": {"description": "Account / onboarding copy."},
-  "accountSupportTitle": "Support & help",
-  "@accountSupportTitle": {"description": "Account / onboarding copy."},
+  "@accountThemeTitle": {
+    "description": "Account / onboarding copy."
+  },
+  "accountSupportTitle": "Help & support",
+  "@accountSupportTitle": {
+    "description": "Account / onboarding copy."
+  },
   "accountSignOutConfirmTitle": "Sign out?",
-  "@accountSignOutConfirmTitle": {"description": "Account / onboarding copy."},
+  "@accountSignOutConfirmTitle": {
+    "description": "Account / onboarding copy."
+  },
   "accountSignOutConfirmBody": "You will need to sign in again to access your account.",
-  "@accountSignOutConfirmBody": {"description": "Account / onboarding copy."},
+  "@accountSignOutConfirmBody": {
+    "description": "Account / onboarding copy."
+  },
   "notificationsGroupToday": "Today",
-  "@notificationsGroupToday": {"description": "Account / onboarding copy."},
+  "@notificationsGroupToday": {
+    "description": "Account / onboarding copy."
+  },
   "notificationsGroupYesterday": "Yesterday",
-  "@notificationsGroupYesterday": {"description": "Account / onboarding copy."},
+  "@notificationsGroupYesterday": {
+    "description": "Account / onboarding copy."
+  },
   "notificationsGroupEarlier": "Earlier",
-  "@notificationsGroupEarlier": {"description": "Account / onboarding copy."},
+  "@notificationsGroupEarlier": {
+    "description": "Account / onboarding copy."
+  },
   "notificationsEmptyTitle": "No notifications",
-  "@notificationsEmptyTitle": {"description": "Account / onboarding copy."},
+  "@notificationsEmptyTitle": {
+    "description": "Account / onboarding copy."
+  },
   "agencyCreateTitle": "Create an agency account",
-  "@agencyCreateTitle": {"description": "Account / onboarding copy."},
+  "@agencyCreateTitle": {
+    "description": "Account / onboarding copy."
+  },
   "agencyCreateSubtitle": "Enter your agency details and we will review them within 24 hours",
-  "@agencyCreateSubtitle": {"description": "Account / onboarding copy."},
+  "@agencyCreateSubtitle": {
+    "description": "Account / onboarding copy."
+  },
   "agencyNameLabel": "Agency name",
-  "@agencyNameLabel": {"description": "Account / onboarding copy."},
+  "@agencyNameLabel": {
+    "description": "Account / onboarding copy."
+  },
   "agencyCrLabel": "Commercial registration number",
-  "@agencyCrLabel": {"description": "Account / onboarding copy."},
+  "@agencyCrLabel": {
+    "description": "Account / onboarding copy."
+  },
   "agencyCityLabel": "City / region",
-  "@agencyCityLabel": {"description": "Account / onboarding copy."},
+  "@agencyCityLabel": {
+    "description": "Account / onboarding copy."
+  },
   "agencyPhoneLabel": "Contact phone",
-  "@agencyPhoneLabel": {"description": "Account / onboarding copy."},
+  "@agencyPhoneLabel": {
+    "description": "Account / onboarding copy."
+  },
   "agencyEmailLabel": "Email",
-  "@agencyEmailLabel": {"description": "Account / onboarding copy."},
+  "@agencyEmailLabel": {
+    "description": "Account / onboarding copy."
+  },
   "agencyCrUploadTitle": "Commercial register copy",
-  "@agencyCrUploadTitle": {"description": "Account / onboarding copy."},
+  "@agencyCrUploadTitle": {
+    "description": "Account / onboarding copy."
+  },
   "agencyCrUploadCaption": "Attachments are not available yet",
-  "@agencyCrUploadCaption": {"description": "Account / onboarding copy."},
+  "@agencyCrUploadCaption": {
+    "description": "Account / onboarding copy."
+  },
   "agencySubmitAction": "Create agency account",
-  "@agencySubmitAction": {"description": "Account / onboarding copy."},
+  "@agencySubmitAction": {
+    "description": "Account / onboarding copy."
+  },
   "agencyPendingTitle": "Your request is under review",
-  "@agencyPendingTitle": {"description": "Account / onboarding copy."},
+  "@agencyPendingTitle": {
+    "description": "Account / onboarding copy."
+  },
   "agencyPendingBody": "The Jubari operations team is reviewing your agency details. We will get back to you within 24 hours.",
-  "@agencyPendingBody": {"description": "Account / onboarding copy."},
+  "@agencyPendingBody": {
+    "description": "Account / onboarding copy."
+  },
   "agencyPendingSupportAction": "Contact support",
-  "@agencyPendingSupportAction": {"description": "Account / onboarding copy."},
+  "@agencyPendingSupportAction": {
+    "description": "Account / onboarding copy."
+  },
   "agencyPendingSupportNote": "You can contact support from inside the app once you sign in.",
-  "@agencyPendingSupportNote": {"description": "Account / onboarding copy."},
+  "@agencyPendingSupportNote": {
+    "description": "Account / onboarding copy."
+  },
   "agencyPendingBackAction": "Back to sign in",
-  "@agencyPendingBackAction": {"description": "Account / onboarding copy."}
+  "@agencyPendingBackAction": {
+    "description": "Account / onboarding copy."
+  },
+  "accountSectionAgency": "Agency",
+  "@accountSectionAgency": {
+    "description": "Account copy."
+  },
+  "accountSectionApp": "App",
+  "@accountSectionApp": {
+    "description": "Account copy."
+  },
+  "accountItemMargin": "Profit margin",
+  "@accountItemMargin": {
+    "description": "Account copy."
+  },
+  "accountItemUsers": "Users & permissions",
+  "@accountItemUsers": {
+    "description": "Account copy."
+  },
+  "accountItemSettings": "Settings",
+  "@accountItemSettings": {
+    "description": "Account copy."
+  }
 }

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/localization/locale_cubit.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
-import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
@@ -17,15 +19,57 @@ import '../../../../core/theme/theme_mode_cubit.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../support/presentation/screens/notifications_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 
-/// Figma 14 — account hub: profile header, agency details, language, theme,
-/// support and a confirmed sign-out. Opened from the shell's account tab and
-/// the Home avatar.
+/// Figma 14 — account hub (node 18:835): title + bell, profile card, the
+/// "Agency" and "App" menus, a sign-out block. Lives as the fifth tab of
+/// [AgentShell] (`embedded: true`, bottom bar stays) and can also be pushed
+/// standalone from the Home avatar.
 class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key});
+  const AccountScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const AccountScreen());
+
+  void _comingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.comingSoon)));
+  }
+
+  void _push(BuildContext context, Widget page) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+
+  void _openSettings(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final s = SeenStrings.of(context);
+    final localeCubit = context.read<LocaleCubit>();
+    final themeCubit = context.read<ThemeModeCubit>();
+    showSeenSheet<void>(
+      context: context,
+      title: l10n.accountItemSettings,
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SeenButton.secondary(
+            label: '${l10n.accountLanguageTitle} · ${s.languageLabel}',
+            icon: SeenIcons.globe,
+            expand: true,
+            onPressed: localeCubit.toggleLocale,
+          ),
+          const SizedBox(height: SeenSpace.s2),
+          SeenButton.secondary(
+            label: l10n.accountThemeTitle,
+            icon: PhosphorIconsRegular.circleHalf,
+            expand: true,
+            onPressed: themeCubit.toggleThemeMode,
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _confirmSignOut(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -51,7 +95,6 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final authState = context.read<AuthBloc>().state;
     final role = authState is AuthAuthenticated
@@ -66,94 +109,59 @@ class AccountScreen extends StatelessWidget {
     return Scaffold(
       body: SeenScreenBackground(
         child: SafeArea(
-          child: Column(
+          bottom: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
             children: [
-              SeenScreenHeader(title: l10n.accountTitle),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, SeenSpace.s2, 20, 32),
-                  children: [
-                    // Identity: the session carries no agency or agent name yet,
-                    // so the header shows the account kind and the user's role.
-                    Column(
-                      children: [
-                        DecoratedBox(
-                          decoration: const BoxDecoration(gradient: SeenBrand.gradientCta, shape: BoxShape.circle),
-                          child: SizedBox(
-                            width: 72,
-                            height: 72,
-                            child: Icon(SeenIcons.building, size: 32, color: c.onPrimary),
-                          ),
-                        ),
-                        const SizedBox(height: SeenSpace.s3),
-                        Text(l10n.accountAgencyFallback, style: t.h1),
-                        if (role != null) ...[
-                          const SizedBox(height: 2),
-                          Text(role, style: t.body.copyWith(color: c.inkMuted)),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: SeenSpace.s6),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: c.card,
-                        borderRadius: const BorderRadius.all(SeenRadius.r22),
-                        border: Border.all(color: c.border),
-                        boxShadow: SeenShadows.card,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.all(SeenRadius.r22),
-                        child: Column(
-                          children: [
-                            _MenuRow(
-                              icon: SeenIcons.building,
-                              title: l10n.accountAgencyDetails,
-                              onTap: () => showSeenSheet<void>(
-                                context: context,
-                                title: l10n.accountAgencyDetails,
-                                builder: (_) => Text(l10n.accountAgencyDetailsSoonBody),
-                              ),
-                            ),
-                            Divider(height: 1, color: c.border),
-                            _MenuRow(
-                              icon: SeenIcons.globe,
-                              title: l10n.accountLanguageTitle,
-                              trailingText: l10n.accountLanguageName,
-                              onTap: context.read<LocaleCubit>().toggleLocale,
-                            ),
-                            Divider(height: 1, color: c.border),
-                            BlocBuilder<ThemeModeCubit, ThemeMode>(
-                              builder: (context, mode) => _MenuRow(
-                                icon: switch (mode) {
-                                  ThemeMode.light => PhosphorIconsRegular.sun,
-                                  ThemeMode.dark => PhosphorIconsRegular.moon,
-                                  ThemeMode.system => PhosphorIconsRegular.circleHalf,
-                                },
-                                title: l10n.accountThemeTitle,
-                                onTap: context.read<ThemeModeCubit>().toggleThemeMode,
-                              ),
-                            ),
-                            Divider(height: 1, color: c.border),
-                            _MenuRow(
-                              icon: SeenIcons.headset,
-                              title: l10n.accountSupportTitle,
-                              onTap: () => Navigator.of(context)
-                                  .push(MaterialPageRoute<void>(builder: (_) => const SupportTicketsScreen())),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: SeenSpace.s5),
-                    SeenButton.dangerOutline(
-                      label: l10n.accountSignOutAction,
-                      icon: SeenIcons.x,
-                      expand: true,
-                      onPressed: () => _confirmSignOut(context),
-                    ),
-                  ],
-                ),
+              // Header: title at the start, bell at the end.
+              Row(
+                children: [
+                  Expanded(child: Text(l10n.accountTitle, style: t.h1)),
+                  SeenRoundIconButton(
+                    icon: SeenIcons.bell,
+                    semanticLabel: l10n.notificationsTitle,
+                    tonal: true,
+                    onPressed: () => _push(context, const NotificationsScreen()),
+                  ),
+                ],
               ),
+              const SizedBox(height: SeenSpace.s5),
+              _ProfileCard(title: l10n.accountAgencyFallback, subtitle: role),
+              _SectionLabel(l10n.accountSectionAgency),
+              _MenuCard(items: [
+                _MenuItem(
+                  icon: SeenIcons.file,
+                  title: l10n.accountAgencyDetails,
+                  onTap: () => showSeenSheet<void>(
+                    context: context,
+                    title: l10n.accountAgencyDetails,
+                    builder: (_) => Text(l10n.accountAgencyDetailsSoonBody),
+                  ),
+                ),
+                _MenuItem(icon: SeenIcons.cash, title: l10n.accountItemMargin, onTap: () => _comingSoon(context)),
+                _MenuItem(icon: SeenIcons.users, title: l10n.accountItemUsers, onTap: () => _comingSoon(context)),
+              ]),
+              _SectionLabel(l10n.accountSectionApp),
+              _MenuCard(items: [
+                _MenuItem(
+                  icon: SeenIcons.bell,
+                  title: l10n.notificationsTitle,
+                  onTap: () => _push(context, const NotificationsScreen()),
+                ),
+                _MenuItem(
+                  icon: PhosphorIconsRegular.gearSix,
+                  title: l10n.accountItemSettings,
+                  onTap: () => _openSettings(context),
+                ),
+                _MenuItem(
+                  icon: PhosphorIconsRegular.chatCircleDots,
+                  title: l10n.accountSupportTitle,
+                  onTap: () => _push(context, const SupportTicketsScreen()),
+                ),
+              ]),
+              const SizedBox(height: 18),
+              _SignOutBlock(label: l10n.accountSignOutAction, onTap: () => _confirmSignOut(context)),
+              SizedBox(height: embedded ? 0 : MediaQuery.paddingOf(context).bottom),
             ],
           ),
         ),
@@ -162,40 +170,186 @@ class AccountScreen extends StatelessWidget {
   }
 }
 
-class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.icon, required this.title, this.trailingText, this.onTap});
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.title, this.subtitle});
 
-  final IconData icon;
   final String title;
-  final String? trailingText;
-  final VoidCallback? onTap;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
+    const radius = BorderRadius.all(SeenRadius.r22);
+    // The session has no agency / agent name yet, so the card shows the
+    // account kind and role; the avatar carries a building glyph, not initials.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: SeenBrand.gradientPromo,
+        borderRadius: radius,
+        border: Border.all(color: c.border),
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Stack(
+          children: [
+            Positioned(
+              left: -40,
+              top: -120,
+              width: 261.9,
+              height: 377.1,
+              child: ExcludeSemantics(child: SvgPicture.asset(SeenVectors.patternGridPromo, fit: BoxFit.fill)),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 25),
+              child: Row(
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: c.card,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: SeenBrand.violet40, width: 2),
+                    ),
+                    child: SizedBox(width: 64, height: 64, child: Icon(SeenIcons.building, size: 28, color: c.primary)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.title),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 4),
+                          Text(subtitle!, style: t.caption.copyWith(color: c.inkSecondary)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 18, 4, 12),
+      child: Text(text, style: SeenType.of(context).label.copyWith(color: c.inkMuted)),
+    );
+  }
+}
+
+class _MenuItem {
+  const _MenuItem({required this.icon, required this.title, required this.onTap});
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+}
+
+class _MenuCard extends StatelessWidget {
+  const _MenuCard({required this.items});
+
+  final List<_MenuItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    final t = SeenType.of(context);
+    const radius = BorderRadius.all(SeenRadius.r22);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: radius,
+        border: Border.all(color: c.border),
+        boxShadow: SeenShadows.card,
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Column(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0) Divider(height: 1, color: c.border),
+              Semantics(
+                button: true,
+                label: items[i].title,
+                excludeSemantics: true,
+                child: InkWell(
+                  onTap: items[i].onTap,
+                  child: SizedBox(
+                    height: 64,
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          DecoratedBox(
+                            decoration: const BoxDecoration(
+                              color: SeenBrand.violet10,
+                              borderRadius: BorderRadius.all(SeenRadius.r12),
+                            ),
+                            child: SizedBox(width: 36, height: 36, child: Icon(items[i].icon, size: 20, color: c.primary)),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(child: Text(items[i].title, style: t.bodyStrong)),
+                          Icon(SeenIcons.forward(context), size: 16, color: c.inkMuted),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SignOutBlock extends StatelessWidget {
+  const _SignOutBlock({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = SeenType.of(context);
+    final colors = SeenRequestStatus.rejected.colors;
+    const radius = BorderRadius.all(SeenRadius.r18);
     return Semantics(
       button: true,
-      label: trailingText == null ? title : '$title, $trailingText',
+      label: label,
       excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: 14),
-          child: Row(
-            children: [
-              DecoratedBox(
-                decoration: const BoxDecoration(color: SeenBrand.violet05, borderRadius: BorderRadius.all(SeenRadius.r12)),
-                child: SizedBox(width: 36, height: 36, child: Icon(icon, size: 20, color: c.primary)),
+      child: Material(
+        color: colors.bg,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: SizedBox(
+            height: 50,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 18),
+              child: Row(
+                children: [
+                  Icon(PhosphorIconsRegular.signOut, size: 20, color: colors.fg),
+                  const SizedBox(width: 10),
+                  Text(label, style: t.bodyStrong.copyWith(color: colors.fg)),
+                ],
               ),
-              const SizedBox(width: SeenSpace.s3),
-              Expanded(child: Text(title, style: t.bodyStrong)),
-              if (trailingText != null) ...[
-                Text(trailingText!, style: t.body.copyWith(color: c.inkMuted)),
-                const SizedBox(width: SeenSpace.s2),
-              ],
-              Icon(SeenIcons.forward(context), size: 18, color: c.inkMuted),
-            ],
+            ),
           ),
         ),
       ),

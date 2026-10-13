@@ -104,7 +104,7 @@ void main() {
     await tester.tap(find.text('إلغاء'));
     await tester.pumpAndSettle();
     expect(find.text('تسجيل الخروج؟'), findsNothing);
-    expect(find.text('الحساب'), findsOneWidget);
+    expect(find.text('حسابي'), findsOneWidget);
     expect(auth.state, before);
     expect(auth.state, isNot(isA<AuthLoading>()));
   });

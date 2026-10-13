@@ -13,7 +13,8 @@ import '../../../../core/theme/seen_typography.dart';
 /// card, headline, a primary "sign in" and an outline "create agency account".
 /// Navigation is delegated to the caller ([onSignIn], [onCreateAccount]).
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key, required this.onSignIn, required this.onCreateAccount});
+  const WelcomeScreen(
+      {super.key, required this.onSignIn, required this.onCreateAccount});
 
   final VoidCallback onSignIn;
   final VoidCallback onCreateAccount;
@@ -52,7 +53,8 @@ class WelcomeScreen extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: box.maxHeight),
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(side, top, side, 24 + mq.padding.bottom),
+                  padding: EdgeInsets.fromLTRB(
+                      side, top, side, 24 + mq.padding.bottom),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,7 +64,8 @@ class WelcomeScreen extends StatelessWidget {
                         children: [
                           const ExcludeSemantics(child: _HeroCard()),
                           const SizedBox(height: 40),
-                          Text(l10n.welcomeTitle, textAlign: TextAlign.center, style: type.display),
+                          Text(l10n.welcomeTitle,
+                              textAlign: TextAlign.center, style: type.display),
                           const SizedBox(height: 14),
                           Text(
                             l10n.welcomeSubtitle,
@@ -116,7 +119,8 @@ class _HeroCard extends StatelessWidget {
     return AspectRatio(
       aspectRatio: WelcomeScreen._cardW / WelcomeScreen._cardH,
       child: LayoutBuilder(builder: (context, box) {
-        final k = box.maxWidth / WelcomeScreen._cardW; // scale card -> available width
+        final k = box.maxWidth /
+            WelcomeScreen._cardW; // scale card -> available width
         return Stack(
           clipBehavior: Clip.none,
           children: [
@@ -134,7 +138,8 @@ class _HeroCard extends StatelessWidget {
               top: -WelcomeScreen._canvasDy * k,
               width: WelcomeScreen._canvasW * k,
               height: WelcomeScreen._canvasH * k,
-              child: SvgPicture.asset(SeenVectors.welcomeHero, fit: BoxFit.fill),
+              child:
+                  SvgPicture.asset(SeenVectors.welcomeHero, fit: BoxFit.fill),
             ),
           ],
         );

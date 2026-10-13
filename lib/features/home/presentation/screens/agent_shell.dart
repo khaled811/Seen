@@ -5,11 +5,11 @@ import '../../../agents/presentation/screens/sub_agents_list_screen.dart';
 import '../../../auth/domain/entities/user_session.dart';
 import '../../../requests/presentation/screens/requests_dashboard_screen.dart';
 import '../../../wallet/presentation/screens/wallet_screen.dart';
+import 'account_screen.dart';
 import 'home_screen.dart';
 
 /// The agent workspace's frame: [HomeScreen] plus requests, wallet and
-/// sub-agents as tabs of a bottom navigation bar; the fifth tab opens the
-/// account sheet.
+/// sub-agents and the account hub as the five tabs of a bottom navigation bar.
 ///
 /// A tab is built the first time it is opened and then kept alive (scroll
 /// position and loaded data survive); hidden tabs have their tickers paused.
@@ -19,28 +19,21 @@ class AgentShell extends StatefulWidget {
     super.key,
     required this.session,
     this.pageBuilders,
-    this.onAccount,
   });
 
   final UserSession session;
 
-  /// Replaces the four pages (home, requests, wallet, sub-agents); tests use
+  /// Replaces the five pages (home, requests, wallet, sub-agents, account); tests use
   /// stubs because the real screens talk to the network.
   @visibleForTesting
   final List<WidgetBuilder>? pageBuilders;
-
-  /// Replaces opening the account sheet (tests).
-  @visibleForTesting
-  final void Function(BuildContext context)? onAccount;
 
   @override
   State<AgentShell> createState() => _AgentShellState();
 }
 
 class _AgentShellState extends State<AgentShell> {
-  static const _account = 4;
-
-  /// 0 home, 1 requests, 2 wallet, 3 sub-agents.
+  /// 0 home, 1 requests, 2 wallet, 3 sub-agents, 4 account.
   int _index = 0;
   final _opened = <int>{0};
 
@@ -52,14 +45,11 @@ class _AgentShellState extends State<AgentShell> {
         0 => HomeScreen(session: widget.session),
         1 => const RequestsDashboardScreen(),
         2 => const WalletScreen(embedded: true),
-        _ => const SubAgentsListScreen(embedded: true),
+        3 => const SubAgentsListScreen(embedded: true),
+        _ => const AccountScreen(embedded: true),
       };
 
   void _select(int i) {
-    if (i == _account) {
-      (widget.onAccount ?? showAccountSheet)(context);
-      return;
-    }
     setState(() {
       _index = i;
       _opened.add(i);
@@ -77,7 +67,7 @@ class _AgentShellState extends State<AgentShell> {
         body: IndexedStack(
           index: _index,
           children: [
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
               TickerMode(
                 enabled: i == _index,
                 child: _opened.contains(i) ? _page(i) : const SizedBox.shrink(),

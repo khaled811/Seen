@@ -17,7 +17,8 @@ import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:seen_booking/features/auth/presentation/screens/otp_verification_screen.dart';
 
-const _secureStorageChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+const _secureStorageChannel =
+    MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,8 @@ void main() {
 
   splashHoldTests();
 
-  testWidgets('boots to Welcome; Sign in opens Login; back returns to Welcome', (tester) async {
+  testWidgets('boots to Welcome; Sign in opens Login; back returns to Welcome',
+      (tester) async {
     await boot(tester);
     expect(find.text('أهلًا بك في سين أعمال'), findsOneWidget);
 
@@ -51,7 +53,9 @@ void main() {
     expect(find.text('أهلًا بك في سين أعمال'), findsOneWidget);
   });
 
-  testWidgets('Login: empty submit shows required errors, bad phone shows the phone error', (tester) async {
+  testWidgets(
+      'Login: empty submit shows required errors, bad phone shows the phone error',
+      (tester) async {
     await boot(tester);
     await tester.tap(find.text('تسجيل الدخول'));
     await tester.pumpAndSettle();
@@ -67,7 +71,9 @@ void main() {
     expect(find.text('أدخل رقم جوال صحيحًا.'), findsOneWidget);
   });
 
-  testWidgets('Login: an email hides the phone prefix and gets the email error when malformed', (tester) async {
+  testWidgets(
+      'Login: an email hides the phone prefix and gets the email error when malformed',
+      (tester) async {
     await boot(tester);
     await tester.tap(find.text('تسجيل الدخول'));
     await tester.pumpAndSettle();
@@ -83,7 +89,8 @@ void main() {
     expect(find.text('أدخل بريدًا إلكترونيًا صالحًا.'), findsOneWidget);
   });
 
-  testWidgets('Login: Arabic-Indic digits are converted to Latin as typed', (tester) async {
+  testWidgets('Login: Arabic-Indic digits are converted to Latin as typed',
+      (tester) async {
     await boot(tester);
     await tester.tap(find.text('تسجيل الدخول'));
     await tester.pumpAndSettle();
@@ -94,7 +101,8 @@ void main() {
     expect(find.text('+967'), findsOneWidget); // country context prefix
   });
 
-  testWidgets('OTP header names the masked phone and shows the m:ss countdown', (tester) async {
+  testWidgets('OTP header names the masked phone and shows the m:ss countdown',
+      (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -110,14 +118,16 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           theme: AppTheme.light,
-          home: const OtpVerificationScreen(resendCooldownSeconds: 42, identifier: '+967771234567'),
+          home: const OtpVerificationScreen(
+              resendCooldownSeconds: 42, identifier: '+967771234567'),
         ),
       ),
     );
     await tester.pump();
 
     expect(find.text('رمز التحقق'), findsOneWidget);
-    expect(find.text('أرسلنا رمزًا من ٦ أرقام إلى +96777 ••• 4567'), findsOneWidget);
+    expect(find.text('أرسلنا رمزًا من ٦ أرقام إلى +96777 ••• 4567'),
+        findsOneWidget);
     expect(find.text('0:42'), findsOneWidget);
 
     // Dispose the screen so its countdown timer is cancelled before the test ends.
@@ -126,11 +136,15 @@ void main() {
 }
 
 void splashHoldTests() {
-  testWidgets('cold start holds the splash for its minimum time, then shows Welcome', (tester) async {
+  testWidgets(
+      'cold start holds the splash for its minimum time, then shows Welcome',
+      (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(const App(splashMinDuration: Duration(milliseconds: 1500)));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester
+        .pumpWidget(const App(splashMinDuration: Duration(milliseconds: 1500)));
+    await tester
+        .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await tester.pump(const Duration(milliseconds: 1000));
     expect(find.text('مشغّل بواسطة جباري للسفريات'), findsOneWidget);
     expect(find.text('أهلًا بك في سين أعمال'), findsNothing);

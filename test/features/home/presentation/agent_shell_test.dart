@@ -14,13 +14,12 @@ const _session = UserSession(
   permissionCodes: {},
 );
 
-Widget _app({void Function(BuildContext)? onAccount}) => MaterialApp(
+Widget _app() => MaterialApp(
       theme: AppTheme.light,
       home: AgentShell(
         session: _session,
-        onAccount: onAccount,
         pageBuilders: [
-          for (final n in ['HOME', 'REQUESTS', 'WALLET', 'AGENTS'])
+          for (final n in ['HOME', 'REQUESTS', 'WALLET', 'AGENTS', 'ACCOUNT'])
             (_) => Center(child: Text(n)),
         ],
       ),
@@ -55,16 +54,16 @@ void main() {
     expect(find.text('AGENTS').hitTestable(), findsOneWidget);
   });
 
-  testWidgets('the account tab runs its action and keeps the page', (tester) async {
-    var opened = 0;
-    await tester.pumpWidget(_app(onAccount: (_) => opened++));
+  testWidgets('the account tab switches in place and keeps the bar', (tester) async {
+    await tester.pumpWidget(_app());
     await tester.tap(find.descendant(
       of: find.byType(NavigationBar),
       matching: find.byType(NavigationDestination),
     ).at(4));
     await tester.pumpAndSettle();
-    expect(opened, 1);
-    expect(find.text('HOME').hitTestable(), findsOneWidget);
+    expect(find.text('ACCOUNT').hitTestable(), findsOneWidget);
+    expect(find.text('HOME').hitTestable(), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
   });
 
   testWidgets('system back from another tab returns home', (tester) async {
