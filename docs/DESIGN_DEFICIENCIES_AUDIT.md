@@ -332,3 +332,80 @@ list is in `BACKEND_MIGRATION_GAPS.md`.
   2. **17 Notifications:** "Mark all as read" is kept in the header.
   3. **02 Welcome:** the headline and subtitle are centred (the frame aligns them to
      the start edge).
+
+---
+
+## 8. Master list of missing frames (found by crawling the app's navigation)
+
+Method: every route, bottom sheet, dialog and "coming soon" stub in the code was
+listed and checked against the 18 frames; enums that drive UI states (request
+status, ticket status / category / priority, notification event type, field type,
+agent position) were checked for states the frames never draw. Items marked
+**(designer found)** were reported by the design team's own review.
+
+### A. Auth and onboarding
+- [ ] **Forgot password** (designer found): request (phone / email) → OTP → new password → success; wrong / expired code; rate limit.
+- [ ] **Create account** (designer found): frame 15 exists, but the *rest* of registration does not: password creation, phone OTP, terms consent, and the real "Step 2".
+- [ ] Terms of use and Privacy policy readers.
+- [ ] Login failure variants: wrong credentials, account suspended, account pending review, locked (timer).
+- [ ] Session expired (401) dialog / screen. Logout confirmation dialog.
+- [ ] Change password and change phone (Account), if supported.
+
+### B. Requests
+- [ ] **Drafts** (designer found, "show drafts"): the backend has a `draft` status. Needed: a drafts list (or a filter / section on 06), a draft card (the chip set has no `draft` chip; it is currently drawn as "new request"), resume, delete, and a **"Save as draft"** action in the booking form (09 / 10).
+- [ ] **Upload the missing document** for "awaiting document" requests (P0).
+- [ ] Request statuses with no frame: **pending agent approval** and **pending management approval** (they exist in the API; the 12-chip set is a different vocabulary), rejected (reason + resubmit), cancelled, expired.
+- [ ] Cancel-request confirmation with a reason.
+- [ ] Document viewer / list of issued documents; per-traveler download.
+- [ ] Search and filter results (reference / traveler), recent searches, no results.
+
+### C. Booking
+- [ ] Traveler switcher, add and remove traveler (frame says "Traveler 1 of 3" with no control).
+- [ ] Pickers: nationality (searchable), date picker sheet, select sheet, attachment sheet (camera / gallery / files), crop, upload progress, file errors.
+- [ ] Form **field types** the API can return and the library does not cover: `select`, `textarea`, `number`, `phone`, `email` (only text and date are drawn).
+- [ ] Review with **insufficient balance** (blocked submit, "top up" shortcut). The app already flags this state.
+- [ ] Booking success / receipt (P0). "Coming soon" service tap (hotels).
+
+### D. Wallet
+- [ ] **Transaction detail** (tap on a ledger row).
+- [ ] **Pending top-up detail / status** (tap on the pending card), rejected top-up with the reason.
+- [ ] **Top-up history** (all top-ups, not only the pending one).
+- [ ] Top-up confirmation after submit.
+- [ ] **Statement export** (period, format, result).
+- [ ] **Transfer to agent** flow (the "تحويل لوكيل" button on 11 has no screen), low-balance / over-limit states.
+
+### E. Sub-agents
+- [ ] **Add agent** and **edit limit** (P0); suspend / reactivate confirmation.
+- [ ] **Agent profile / detail** (the card tap currently opens only a fund sheet): balance history, requests, limit, status, actions.
+- [ ] Fund-agent sheet (exists in code), approvals list and approve / reject sheet (exist in code, no longer linked).
+- [ ] Empty list, search with no result, segment with no result.
+
+### F. Support (designer found: tickets and chat)
+- [ ] **Support tickets list** with open / closed, unread reply marker, empty state.
+- [ ] **Create ticket**: category (`general`, `financial correction`), priority (low … high), subject, description, attachments, success.
+- [ ] **Support chat / ticket thread**: message bubbles (agent / support), timestamps, attachments, sending / failed / retry, closed ticket (read-only, reopen), long messages.
+- [ ] Help centre / FAQ entry point (the Account row is named "Help & support").
+- [ ] Contact-support options before sign-in (phone, email, chat).
+
+### G. Account
+- [ ] Agency details and commercial register (view, status, documents).
+- [ ] Profit margin screen. **Users and permissions** (roles owner / branch manager / staff, invite, edit role, deactivate).
+- [ ] Settings: language, appearance (the app also supports a dark theme), notification preferences.
+- [ ] About / version, legal links.
+
+### H. Notifications
+- [ ] Empty state (engineering reused the requests art).
+- [ ] Designs for each of the **8 event types** (new request, status update, info required, rejected, SLA breach, top-up, new agent signup, ticket update), each with icon tone and deep-link target.
+- [ ] Push permission prompt and rationale; notification settings.
+
+### I. System and cross-cutting
+- [ ] Offline banner, inline error + retry, server-error sheet, 403 "not allowed", maintenance, force update.
+- [ ] Skeletons for balance, request cards, ledger, agents, notifications, catalog.
+- [ ] **Role-based views:** the session carries a role (owner / branch manager / staff) and permission codes, but no frame shows what a staff member without wallet or sub-agent permission sees (hidden tabs? disabled actions? "no permission" screen).
+- [ ] Camera / photos permission prompts. Language switch confirmation (RTL ↔ LTR).
+- [ ] English / LTR versions of the key frames; dark theme.
+
+### Counting
+
+About **60 distinct frames or sheets** are missing, of which roughly **25 are P0 / P1
+flows** (A, B, D, E, F above) and the rest are states and cross-cutting patterns.
