@@ -129,7 +129,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 440),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                      // Figma 4:295: the body starts 72 px from the screen top.
+                      padding:
+                          EdgeInsets.fromLTRB(20, (72 - MediaQuery.paddingOf(context).top).clamp(16.0, 72.0), 20, 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -177,7 +179,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                           const SizedBox(height: 22),
                           _ResendRow(secondsRemaining: _secondsRemaining, onResend: _resend),
-                          const SizedBox(height: 96),
+                          // Figma: a 160 px spacer between two 22 px gaps.
+                          const SizedBox(height: 204),
                           BlocBuilder<AuthBloc, AuthState>(
                             buildWhen: (previous, current) => previous is AuthLoading || current is AuthLoading,
                             builder: (context, state) {

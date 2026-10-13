@@ -58,13 +58,16 @@ class HomeScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => InjectionContainer.instance.createWalletBloc()..add(const WalletLoadRequested()),
+          create: (_) => InjectionContainer.instance.createWalletBloc()
+            ..add(const WalletLoadRequested()),
         ),
         BlocProvider(
-          create: (_) => InjectionContainer.instance.createNotificationsBloc()..add(const NotificationsLoadRequested()),
+          create: (_) => InjectionContainer.instance.createNotificationsBloc()
+            ..add(const NotificationsLoadRequested()),
         ),
         BlocProvider(
-          create: (_) => InjectionContainer.instance.createRequestsBloc()..add(const RequestsLoadRequested()),
+          create: (_) => InjectionContainer.instance.createRequestsBloc()
+            ..add(const RequestsLoadRequested()),
         ),
       ],
       child: _HomeView(session: session),
@@ -78,14 +81,16 @@ const _gutter = 14.0;
 const _sectionPadding = EdgeInsets.symmetric(vertical: 22);
 
 Future<void> _openServices(BuildContext context) async {
-  await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ServiceSelectionScreen()));
+  await Navigator.of(context)
+      .push(MaterialPageRoute(builder: (_) => const ServiceSelectionScreen()));
   if (!context.mounted) return;
   context.read<RequestsBloc>().add(const RequestsLoadRequested());
   context.read<WalletBloc>().add(const WalletLoadRequested());
 }
 
 Future<void> _openRequests(BuildContext context) async {
-  await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RequestsDashboardScreen()));
+  await Navigator.of(context)
+      .push(MaterialPageRoute(builder: (_) => const RequestsDashboardScreen()));
   if (!context.mounted) return;
   context.read<RequestsBloc>().add(const RequestsLoadRequested());
 }
@@ -107,11 +112,14 @@ class _HomeView extends StatelessWidget {
           child: RefreshIndicator(
             onRefresh: () async {
               context.read<WalletBloc>().add(const WalletLoadRequested());
-              context.read<NotificationsBloc>().add(const NotificationsLoadRequested());
+              context
+                  .read<NotificationsBloc>()
+                  .add(const NotificationsLoadRequested());
               context.read<RequestsBloc>().add(const RequestsLoadRequested());
             },
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s3, _gutter, SeenSpace.s6),
+              padding: const EdgeInsets.fromLTRB(
+                  _gutter, SeenSpace.s3, _gutter, SeenSpace.s6),
               children: [
                 const _HomeHeader(),
                 const SizedBox(height: 16),
@@ -189,30 +197,38 @@ class _HomeHeader extends StatelessWidget {
             child: InkWell(
               onTap: () => showAccountSheet(context),
               customBorder: const CircleBorder(),
-              child: SizedBox(width: 44, height: 44, child: Icon(SeenIcons.user, size: 22, color: c.primary)),
+              child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(SeenIcons.user, size: 22, color: c.primary)),
             ),
           ),
         ),
         const SizedBox(width: SeenSpace.s2),
-        Expanded(child: _SearchPill(hint: l10n.homeSearchHint, onTap: () => _openRequests(context))),
+        Expanded(
+            child: _SearchPill(
+                hint: l10n.homeSearchHint,
+                onTap: () => _openRequests(context))),
         const SizedBox(width: SeenSpace.s2),
         Semantics(
           button: true,
           label: l10n.homeQuickActionSupport,
           excludeSemantics: true,
           child: DecoratedBox(
-            decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: SeenShadows.card),
+            decoration: const BoxDecoration(
+                shape: BoxShape.circle, boxShadow: SeenShadows.card),
             child: Material(
               color: c.card,
               shape: CircleBorder(side: BorderSide(color: c.border)),
               child: InkWell(
-                onTap: () =>
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const SupportTicketsScreen())),
                 customBorder: const CircleBorder(),
                 child: const SizedBox(
                   width: 44,
                   height: 44,
-                  child: Center(child: SeenSvgIcon(SeenVectors.iconChat, size: 22)),
+                  child: Center(
+                      child: SeenSvgIcon(SeenVectors.iconChat, size: 22)),
                 ),
               ),
             ),
@@ -240,7 +256,9 @@ class _SearchPill extends StatelessWidget {
       label: hint,
       excludeSemantics: true,
       child: DecoratedBox(
-        decoration: const BoxDecoration(borderRadius: BorderRadius.all(SeenRadius.full), boxShadow: SeenShadows.card),
+        decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(SeenRadius.full),
+            boxShadow: SeenShadows.card),
         child: Material(
           color: c.card,
           shape: StadiumBorder(side: BorderSide(color: c.border)),
@@ -250,13 +268,17 @@ class _SearchPill extends StatelessWidget {
             child: SizedBox(
               height: 44,
               child: Padding(
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: SeenSpace.s4),
+                padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: SeenSpace.s4),
                 child: Row(
                   children: [
                     const SeenSvgIcon(SeenVectors.catalogSearch, size: 20),
                     const SizedBox(width: SeenSpace.s2),
                     Expanded(
-                      child: Text(hint, maxLines: 1, overflow: TextOverflow.ellipsis, style: type.body.copyWith(color: c.inkMuted)),
+                      child: Text(hint,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: type.body.copyWith(color: c.inkMuted)),
                     ),
                   ],
                 ),
@@ -291,7 +313,9 @@ class _Greeting extends StatelessWidget {
           buildWhen: (previous, current) => current is RequestsLoaded,
           builder: (context, state) {
             if (state is! RequestsLoaded) return const SizedBox.shrink();
-            final needAttention = state.requests.where((r) => r.status == RequestStatus.infoRequired).length;
+            final needAttention = state.requests
+                .where((r) => r.status == RequestStatus.infoRequired)
+                .length;
             return Text(
               SeenStrings.of(context).attentionSummary(needAttention),
               style: type.body.copyWith(color: c.inkSecondary),
@@ -311,10 +335,13 @@ class _BalanceSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<WalletBloc, WalletState>(
       builder: (context, state) => switch (state) {
-        WalletInitial() || WalletLoading() => const SizedBox(height: 196, child: Center(child: SeenLoader())),
+        WalletInitial() ||
+        WalletLoading() =>
+          const SizedBox(height: 196, child: Center(child: SeenLoader())),
         WalletFailure(:final message) => _InlineError(
             message: message,
-            onRetry: () => context.read<WalletBloc>().add(const WalletLoadRequested()),
+            onRetry: () =>
+                context.read<WalletBloc>().add(const WalletLoadRequested()),
           ),
         WalletLoaded(:final balance) => SeenBalanceCard(
             available: balance.availableCents / 100,
@@ -326,7 +353,8 @@ class _BalanceSection extends StatelessWidget {
             showSemanticLabel: l10n.balanceHiddenLabel,
             hideSemanticLabel: l10n.balanceShownLabel,
             // Top-up stays one tap away (Figma has no dedicated button on Home).
-            onTap: () => Navigator.of(context).push(TopUpRequestScreen.route(context.read<WalletBloc>())),
+            onTap: () => Navigator.of(context)
+                .push(TopUpRequestScreen.route(context.read<WalletBloc>())),
           ),
       },
     );
@@ -343,10 +371,26 @@ class _ServicesGrid extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final tiles = <({String label, String icon, bool soon})>[
       (label: l10n.serviceFlights, icon: SeenVectors.iconFlight, soon: false),
-      (label: l10n.serviceEgyptEntry, icon: SeenVectors.iconEgyptEntry, soon: false),
-      (label: l10n.serviceSaudiVisa, icon: SeenVectors.iconSaudiVisa, soon: false),
-      (label: l10n.serviceIndiaVisa, icon: SeenVectors.iconIndiaVisa, soon: false),
-      (label: l10n.serviceSecurityApproval, icon: SeenVectors.iconJordanSecurity, soon: false),
+      (
+        label: l10n.serviceEgyptEntry,
+        icon: SeenVectors.iconEgyptEntry,
+        soon: false
+      ),
+      (
+        label: l10n.serviceSaudiVisa,
+        icon: SeenVectors.iconSaudiVisa,
+        soon: false
+      ),
+      (
+        label: l10n.serviceIndiaVisa,
+        icon: SeenVectors.iconIndiaVisa,
+        soon: false
+      ),
+      (
+        label: l10n.serviceSecurityApproval,
+        icon: SeenVectors.iconJordanSecurity,
+        soon: false
+      ),
       (label: l10n.serviceHotels, icon: SeenVectors.iconHotel, soon: true),
     ];
     Widget row(int from) => Row(
@@ -384,7 +428,9 @@ class _RecentRequests extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: SeenSpace.s6),
             child: _InlineError(
               message: message,
-              onRetry: () => context.read<RequestsBloc>().add(const RequestsLoadRequested()),
+              onRetry: () => context
+                  .read<RequestsBloc>()
+                  .add(const RequestsLoadRequested()),
             ),
           ),
         RequestsLoaded(:final requests) => _RequestsFeed(requests: requests),
@@ -409,7 +455,8 @@ class _RequestsFeed extends StatelessWidget {
         return b.submittedAt.compareTo(a.submittedAt);
       });
     final top = sorted.take(5).toList();
-    final urgentCount = requests.where((r) => r.status == RequestStatus.infoRequired).length;
+    final urgentCount =
+        requests.where((r) => r.status == RequestStatus.infoRequired).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -432,18 +479,23 @@ class _RequestsFeed extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: SeenSpace.s3),
               child: SeenRequestSummaryCard(
                 title: request.serviceName,
-                subtitle: SeenStrings.of(context).travelerCount(request.travelerCount),
-                status: request.status.toSeenRequestStatus(slaDeadline: request.slaDeadline),
+                subtitle: SeenStrings.of(context)
+                    .travelerCount(request.travelerCount),
+                status: request.status
+                    .toSeenRequestStatus(slaDeadline: request.slaDeadline),
                 progress: request.status.progress,
                 reference: request.referenceId,
                 dateLabel: SeenFormat.date(request.submittedAt),
-                slaDeadline: request.status == RequestStatus.infoRequired ? request.slaDeadline : null,
+                slaDeadline: request.status == RequestStatus.infoRequired
+                    ? request.slaDeadline
+                    : null,
                 onTap: () {
                   final bloc = context.read<RequestsBloc>();
                   bloc.add(RequestDetailRequested(request.id));
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => BlocProvider.value(value: bloc, child: const RequestDetailScreen()),
+                      builder: (_) => BlocProvider.value(
+                          value: bloc, child: const RequestDetailScreen()),
                     ),
                   );
                 },
@@ -469,7 +521,10 @@ class _InlineError extends StatelessWidget {
         children: [
           Text(message, textAlign: TextAlign.center),
           const SizedBox(height: SeenSpace.s3),
-          SeenButton.secondary(label: l10n.retry, size: SeenButtonSize.small, onPressed: onRetry),
+          SeenButton.secondary(
+              label: l10n.retry,
+              size: SeenButtonSize.small,
+              onPressed: onRetry),
         ],
       ),
     );
