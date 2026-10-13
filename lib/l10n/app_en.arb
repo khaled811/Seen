@@ -1673,5 +1673,13 @@
         "type": "String"
       }
     }
+  },
+  "agentsTitle": "Agents",
+  "@agentsTitle": {
+    "description": "Title of the sub-agents screen."
+  },
+  "agentsSearchAction": "Search",
+  "@agentsSearchAction": {
+    "description": "Accessible name of the sub-agents search button."
   }
 }

@@ -5,16 +5,17 @@ import 'package:flutter/material.dart';
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
-import '../foundation/seen_icons.dart';
+import '../foundation/seen_vectors.dart';
+import 'svg_icon.dart';
 
 class SeenExtendedFab extends StatelessWidget {
-  const SeenExtendedFab({super.key, required this.label, required this.onPressed, this.icon});
+  const SeenExtendedFab({super.key, required this.label, required this.onPressed, this.iconAsset = SeenVectors.agentsPlus});
 
   final String label;
   final VoidCallback? onPressed;
 
-  /// Defaults to a plus.
-  final IconData? icon;
+  /// The exported Figma plus by default.
+  final String iconAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class SeenExtendedFab extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(icon ?? SeenIcons.plus, size: 22, color: c.onPrimary),
+                      SeenSvgIcon(iconAsset, size: 22, color: c.onPrimary),
                       const SizedBox(width: SeenSpace.s2),
                       Text(label, style: type.bodyStrong.copyWith(color: c.onPrimary)),
                     ],

@@ -3,17 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/extended_fab.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
-import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/search_field.dart';
 import '../../../../core/presentation/widgets/segmented_control.dart';
-import '../../../../core/presentation/widgets/stat_card.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
@@ -26,8 +25,9 @@ import '../widgets/seen_sub_agent_card.dart';
 import '../widgets/sub_agent_approval_tile.dart';
 import 'sub_agent_approval_screen.dart';
 
-/// Sub-agent network (Figma 13): overview metrics, a quick pending-approvals
-/// preview, then the searchable / filterable branch directory.
+/// Sub-agent network (Figma 13, node 18:722): title with a search button, two
+/// overview tiles, an All / Active / Suspended control, the agent cards and an
+/// extended "add agent" FAB. A tap on a card opens the fund sheet.
 class SubAgentsListScreen extends StatelessWidget {
   const SubAgentsListScreen({super.key, this.embedded = false});
 
@@ -38,15 +38,14 @@ class SubAgentsListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => InjectionContainer.instance.createAgentsBloc()..add(const AgentsLoadRequested()),
-      child: _SubAgentsView(embedded: embedded),
+      child: const SubAgentsView(),
     );
   }
 }
 
 /// A route pushed via Navigator is not a descendant of this screen's
 /// BlocProvider (it attaches to the Navigator's Overlay), so the same Bloc
-/// instance must be forwarded explicitly. Shared by the header badge button
-/// and the pending-approvals section's "See all" link.
+/// instance must be forwarded explicitly.
 void _openApprovals(BuildContext context) {
   final bloc = context.read<AgentsBloc>();
   Navigator.of(context).push(
@@ -56,14 +55,43 @@ void _openApprovals(BuildContext context) {
   );
 }
 
-class _SubAgentsView extends StatelessWidget {
-  const _SubAgentsView({required this.embedded});
+/// The screen body, split from [SubAgentsListScreen] so tests can provide
+/// their own [AgentsBloc].
+class SubAgentsView extends StatefulWidget {
+  const SubAgentsView({super.key});
 
-  final bool embedded;
+  @override
+  State<SubAgentsView> createState() => _SubAgentsViewState();
+}
+
+class _SubAgentsViewState extends State<SubAgentsView> {
+  // Owned here, disposed in dispose(). The search is a local, presentation-only
+  // refinement of the loaded directory, opened by the header's search button.
+  final _search = TextEditingController();
+  bool _searching = false;
+  String _query = '';
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _searching = !_searching;
+      if (!_searching) {
+        _search.clear();
+        _query = '';
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
+    final t = SeenType.of(context);
     return Scaffold(
       // No create-agent mutation exists on the backend yet: say so, don't fake it.
       floatingActionButton: SeenExtendedFab(
@@ -74,30 +102,50 @@ class _SubAgentsView extends StatelessWidget {
       ),
       body: SeenScreenBackground(
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
-              SeenScreenHeader(
-                title: l10n.subAgentsTitle,
-                showBack: !embedded,
-                trailing: BlocBuilder<AgentsBloc, AgentsState>(
-                  buildWhen: (previous, current) => current is AgentsLoaded,
-                  builder: (context, state) {
-                    final pendingCount = state is AgentsLoaded ? state.pendingRequests.length : 0;
-                    return SeenIconButton(
-                      icon: SeenIcons.file,
-                      semanticLabel: l10n.subAgentApprovalsTitle,
-                      badge: pendingCount,
-                      onPressed: () => _openApprovals(context),
-                    );
-                  },
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(l10n.agentsTitle, style: t.h1)),
+                    Semantics(
+                      button: true,
+                      label: l10n.agentsSearchAction,
+                      excludeSemantics: true,
+                      child: Material(
+                        color: SeenBrand.violet10,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          onTap: _toggleSearch,
+                          customBorder: const CircleBorder(),
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Center(child: SeenSvgIcon(SeenVectors.agentsSearch, size: 22, color: c.primary)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (_searching)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                  child: SeenSearchField(
+                    hint: l10n.agentsSearchHint,
+                    controller: _search,
+                    onChanged: (v) => setState(() => _query = v),
+                  ),
+                ),
               Expanded(
                 child: BlocBuilder<AgentsBloc, AgentsState>(
                   builder: (context, state) => switch (state) {
                     AgentsInitial() || AgentsLoading() => const Center(child: SeenLoader()),
                     AgentsFailure(:final message) => _ErrorView(message: message),
-                    AgentsLoaded() => _LoadedView(state: state),
+                    AgentsLoaded() => _LoadedView(state: state, query: _query),
                   },
                 ),
               ),
@@ -134,32 +182,23 @@ class _ErrorView extends StatelessWidget {
 }
 
 /// Quick preview cap on the list screen: the full, unbounded list lives on
-/// [SubAgentApprovalScreen] behind the "See all" link and the header badge.
+/// [SubAgentApprovalScreen] behind the "See all" link.
 const _pendingPreviewLimit = 3;
 
 enum _AgentFilter { all, active, suspended }
 
 class _LoadedView extends StatefulWidget {
-  const _LoadedView({required this.state});
+  const _LoadedView({required this.state, required this.query});
 
   final AgentsLoaded state;
+  final String query;
 
   @override
   State<_LoadedView> createState() => _LoadedViewState();
 }
 
 class _LoadedViewState extends State<_LoadedView> {
-  // Owned here, disposed in dispose(). Search and filter are local,
-  // presentation-only refinements of the already loaded directory.
-  final _search = TextEditingController();
   _AgentFilter _filter = _AgentFilter.all;
-  String _query = '';
-
-  @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +211,7 @@ class _LoadedViewState extends State<_LoadedView> {
     final all = state.subAgents;
     final activeCount = all.where((a) => a.isActive).length;
     final distributed = all.fold<int>(0, (sum, a) => sum + a.balanceCents) / 100;
-    final needle = _query.trim().toLowerCase();
+    final needle = widget.query.trim().toLowerCase();
     final visible = all.where((a) {
       final byFilter = switch (_filter) {
         _AgentFilter.all => true,
@@ -189,29 +228,26 @@ class _LoadedViewState extends State<_LoadedView> {
         await bloc.stream.firstWhere((x) => x is! AgentsLoading);
       },
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, SeenSpace.s2, 20, 96),
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 96),
         children: [
+          // The active-agents tile leads (right in RTL), as in Figma.
           Row(
             children: [
+              Expanded(child: SeenAgentStatTile(label: l10n.agentsStatActive, value: s.numeral(activeCount))),
               Expanded(
-                child: SeenStatCard(label: l10n.agentsStatActive, value: s.numeral(activeCount), dotColor: c.successFg),
-              ),
-              const SizedBox(width: SeenSpace.s3),
-              Expanded(
-                child: SeenStatCard(
+                child: SeenAgentStatTile(
                   label: l10n.agentsStatDistributed,
                   value: SeenFormat.isolate(SeenFormat.money(distributed)),
-                  dotColor: c.primary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: SeenSpace.s4),
+          const SizedBox(height: 18),
           if (preview.isNotEmpty) ...[
             SeenSectionHeader(
               title: l10n.subAgentApprovalsTitle,
               count: state.pendingRequests.length,
-              actionLabel: state.pendingRequests.length > _pendingPreviewLimit ? l10n.homeSeeAllAction : null,
+              actionLabel: l10n.homeSeeAllAction,
               onAction: () => _openApprovals(context),
             ),
             for (final request in preview)
@@ -223,20 +259,14 @@ class _LoadedViewState extends State<_LoadedView> {
                       state.approvalActionRequestId == request.id,
                 ),
               ),
-            const SizedBox(height: SeenSpace.s3),
+            const SizedBox(height: 6),
           ],
-          SeenSearchField(
-            hint: l10n.agentsSearchHint,
-            controller: _search,
-            onChanged: (v) => setState(() => _query = v),
-          ),
-          const SizedBox(height: SeenSpace.s3),
           SeenSegmentedControl(
             labels: [l10n.walletFilterAll, l10n.agentsFilterActive, l10n.agentsFilterSuspended],
             selectedIndex: _AgentFilter.values.indexOf(_filter),
             onSelected: (i) => setState(() => _filter = _AgentFilter.values[i]),
           ),
-          const SizedBox(height: SeenSpace.s4),
+          const SizedBox(height: 18),
           if (visible.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 48),
@@ -245,16 +275,14 @@ class _LoadedViewState extends State<_LoadedView> {
           else
             for (final agent in visible)
               Padding(
-                padding: const EdgeInsets.only(bottom: SeenSpace.s3),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: SeenSubAgentCard(
                   name: agent.name,
-                  code: agent.code,
+                  caption: agent.code,
                   balance: agent.balanceCents / 100,
                   suspended: !agent.isActive,
                   statusLabel: agent.isActive ? l10n.agentsFilterActive : l10n.agentsStatusSuspended,
-                  balanceLabel: s.balance,
-                  fundLabel: l10n.subAgentFundAction,
-                  onFund: () => showFundSubAgentSheet(
+                  onTap: () => showFundSubAgentSheet(
                     context,
                     subAgent: agent,
                     masterAvailableBalanceCents: state.masterWalletBalance?.availableCents ?? 0,

@@ -41,6 +41,10 @@ abstract final class SeenVectors {
   static const accountSupport = 'assets/icons/account/support.svg';
   static const accountLogout = 'assets/icons/account/logout.svg';
 
+  // Sub-agents screen (Figma 13 · node 18:722).
+  static const agentsSearch = 'assets/icons/agents/search.svg';
+  static const agentsPlus = 'assets/icons/agents/plus.svg';
+
   // Service icons (violet tiles with a knocked-out glyph).
   static const iconFlight = 'assets/icons/icon_flight.svg';
   static const iconSaudiVisa = 'assets/icons/icon_saudi_visa.svg';

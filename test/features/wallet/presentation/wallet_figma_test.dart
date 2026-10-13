@@ -186,26 +186,32 @@ void main() {
   });
 
   group('SeenSubAgentCard', () {
-    testWidgets('shows name, code, balance and fires Fund', (tester) async {
-      var funded = 0;
+    testWidgets('shows initial, name, code, status and balance; a tap fires', (tester) async {
+      var taps = 0;
       await _pumpCard(
         tester,
         SeenSubAgentCard(
           name: 'فرع جدة',
-          code: 'JED-01',
+          caption: 'JED-01',
           balance: 1250,
           suspended: false,
           statusLabel: 'نشط',
-          balanceLabel: 'الرصيد',
-          fundLabel: 'تمويل',
-          onFund: () => funded++,
+          onTap: () => taps++,
         ),
       );
       expect(find.text('فرع جدة'), findsOneWidget);
+      expect(find.text('ف'), findsOneWidget);
       expect(find.text('نشط'), findsOneWidget);
+      expect(find.textContaining('JED-01'), findsOneWidget);
       expect(find.textContaining('1,250.00 USD'), findsOneWidget);
-      await tester.tap(find.text('تمويل'));
-      expect(funded, 1);
+      await tester.tap(find.text('فرع جدة'));
+      expect(taps, 1);
+    });
+
+    testWidgets('the stat tile shows its caption and value', (tester) async {
+      await _pumpCard(tester, const SeenAgentStatTile(label: 'وكيل نشط', value: '١٢'));
+      expect(find.text('وكيل نشط'), findsOneWidget);
+      expect(find.text('١٢'), findsOneWidget);
     });
   });
 

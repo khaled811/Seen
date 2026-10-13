@@ -376,5 +376,7 @@
   "accountItemMargin": "هامش الربح",
   "accountItemUsers": "المستخدمون والصلاحيات",
   "accountItemSettings": "الإعدادات",
-  "accountVersion": "الإصدار {version}"
+  "accountVersion": "الإصدار {version}",
+  "agentsTitle": "الوكلاء",
+  "agentsSearchAction": "بحث"
 }
