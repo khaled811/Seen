@@ -1,0 +1,136 @@
+# Backend Migration Gaps
+
+Backend capabilities the Figma migration (screens 01–18) needs but the API does
+not expose yet. Each gap lists what the app does today, what it needs, and where
+the client code waits for it. The client never fakes these: unavailable actions
+show an informational state.
+
+Status: open. Last updated with Phase 3F (commit `ea9e596`).
+
+---
+
+## 1. Company bank account (top-up destination)
+
+**Screen:** 12, Top-up. `lib/features/wallet/presentation/screens/top_up_request_screen.dart`
+
+**Today:** the bank details card (`SeenBankDetailsCard`, model `TopUpBankDetails`)
+has nothing to show. Release builds show "support will send you the bank
+account details". Debug builds (`kDebugMode`) show an obvious placeholder. The
+Figma sample IBAN is never shipped.
+
+**Needed:** a read query returning the account an agent wires money to.
+
+| Field | Type | Notes |
+|---|---|---|
+| `bankName` | String | |
+| `beneficiary` / `accountName` | String | |
+| `iban` | String | shown LTR, copyable |
+| `currency` | String | now fixed to `USD` in the UI |
+
+Open questions for the backend: one account or one per currency / method? Does
+cash or exchange-house need a different destination or instructions? Is there a
+minimum top-up amount (the UI enforces none)?
+
+**Client wiring:** pass the result to `TopUpRequestScreen(bankDetails: ...)`
+through the wallet feature (a new use case and data source). No UI change.
+
+---
+
+## 2. Agency self-registration
+
+**Screens:** 15, Create agency account, and 16, Pending approval.
+`lib/features/auth/presentation/screens/create_agency_account_screen.dart`,
+`auth_entry_flow.dart`
+
+**Today:** a valid form is validated locally and goes straight to the pending
+screen. Nothing is sent or stored, so the screen-16 promise ("within 24 hours")
+is not backed by a real request.
+
+**Needed:** an unauthenticated mutation, for example `registerAgency`.
+
+| Input | Type | Notes |
+|---|---|---|
+| `agencyName` | String | required |
+| `commercialRegistrationNumber` | String | required, LTR |
+| `city` | String | required (city / region) |
+| `contactPhone` | String | E.164 (the form already validates it as a phone) |
+| `email` | String | required |
+| `commercialRegisterDocument` | upload reference | see gap 4 |
+
+Result: a request id or a status the app can show on screen 16. Also needed:
+duplicate CR / phone / email handling, rate limiting (the call is
+unauthenticated), and the ops-side review flow behind "within 24 hours".
+
+**Client wiring:** `CreateAgencyAccountScreen.onSubmitted` should call a use case
+and only advance on success; the failure and offline states need copy.
+
+---
+
+## 3. Session metadata (agency name, agent name, verification)
+
+**Screens:** 14, Account, plus the greeting on 05, Home.
+`lib/features/home/presentation/screens/account_screen.dart`,
+`lib/features/auth/domain/entities/user_session.dart`
+
+**Today:** `UserSession` carries `userId`, `userType`, `positionRaw`, `branchId`
+and `permissionCodes` only. The account header shows "Agency account" and the
+user's role. No name and no verified badge are shown, because nothing real backs
+them.
+
+**Needed** in the login / session payload (or a `me` query):
+
+| Field | Used for |
+|---|---|
+| `agencyName` | account header, agency details |
+| `agentDisplayName` | account header, home greeting |
+| `agentStatus` (`pending` / `active` / `suspended`) | verified badge; gate routing |
+| `commercialRegistration` (number, city, status) | "Agency details & commercial register" row |
+
+`AgentStatus` already exists in `core/constants/enums.dart` but is not delivered
+by auth. Once it is, the auth gate should route `pending` to
+`AgencyPendingApprovalScreen`, and `suspended` to a dedicated state.
+
+**Client wiring:** extend `UserSession` and its DTO mapping, then replace the
+fallback text in `AccountScreen`.
+
+---
+
+## 4. Document attachment / upload contracts
+
+**Screens:** 09, Travelers (passport and documents); 12, Top-up (receipt);
+15, Create agency (commercial register copy).
+
+**Today:** each slot is a visual `SeenDropzone` that says attachments are not
+available yet. No picker is opened and no fake attachment is created.
+
+**Needed:** one upload contract the three flows share:
+
+- Upload mechanism: pre-signed URL, multipart GraphQL upload, or a REST endpoint,
+  with the returned file reference.
+- Constraints: allowed types (image / PDF), max size, max files per slot.
+- Authorization: the agency-registration upload runs before login, so it needs
+  its own unauthenticated, rate-limited path.
+- Linking: how a file reference attaches to a traveler, a top-up request
+  (`requestTopUp` has no attachment argument today) and a registration.
+- Lifecycle: virus scanning, retention, and how the client previews or
+  re-downloads a file.
+
+**Client wiring:** add a picker dependency (decide it then; none is added now),
+an upload use case with progress and retry, and the new argument on the
+mutations above.
+
+---
+
+## Other gaps found during migration
+
+Smaller items, listed so they are not lost:
+
+- **Statement export** (screen 11): no API, so the button opens an informational
+  sheet. Needs an export query or a download URL.
+- **Create sub-agent** (screen 13): no mutation, so "Add agent" says it is coming
+  soon.
+- **Sub-agent model** (screen 13): only `isActive` exists. Edit limit, a Pending
+  agent state and commission totals need backend data (credit limit, a status
+  enum, commission amounts).
+- **Support contact** (screen 16): no phone, email or chat target to link to
+  before sign-in.
