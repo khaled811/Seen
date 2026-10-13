@@ -39,6 +39,8 @@ void main() {
   group('create agency account', () {
     testWidgets('empty submit shows validation and stays on the form', (tester) async {
       await boot(tester);
+      await tester.ensureVisible(find.text('إنشاء حساب وكالة'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('إنشاء حساب وكالة'));
       await tester.pumpAndSettle();
 
@@ -50,6 +52,8 @@ void main() {
 
     testWidgets('a valid form moves to pending approval; Back to sign in opens Login', (tester) async {
       await boot(tester);
+      await tester.ensureVisible(find.text('إنشاء حساب وكالة'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('إنشاء حساب وكالة'));
       await tester.pumpAndSettle();
 

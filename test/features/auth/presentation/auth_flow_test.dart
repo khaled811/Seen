@@ -41,16 +41,16 @@ void main() {
   testWidgets('boots to Welcome; Sign in opens Login; back returns to Welcome',
       (tester) async {
     await boot(tester);
-    expect(find.text('أهلًا بك في سين أعمال'), findsOneWidget);
+    expect(find.text('أهـلًا بـك في سيــــن أعمـــال'), findsOneWidget);
 
     await tester.tap(find.text('تسجيل الدخول'));
     await tester.pumpAndSettle();
     expect(find.text('رقم الجوال أو البريد الإلكتروني'), findsOneWidget);
-    expect(find.text('أهلًا بك في سين أعمال'), findsNothing);
+    expect(find.text('أهـلًا بـك في سيــــن أعمـــال'), findsNothing);
 
     await tester.tap(find.byType(SeenRoundIconButton));
     await tester.pumpAndSettle();
-    expect(find.text('أهلًا بك في سين أعمال'), findsOneWidget);
+    expect(find.text('أهـلًا بـك في سيــــن أعمـــال'), findsOneWidget);
   });
 
   testWidgets(
@@ -147,10 +147,10 @@ void splashHoldTests() {
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await tester.pump(const Duration(milliseconds: 1000));
     expect(find.text('مشغّل بواسطة جباري للسفريات'), findsOneWidget);
-    expect(find.text('أهلًا بك في سين أعمال'), findsNothing);
+    expect(find.text('أهـلًا بـك في سيــــن أعمـــال'), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
-    expect(find.text('أهلًا بك في سين أعمال'), findsOneWidget);
+    expect(find.text('أهـلًا بـك في سيــــن أعمـــال'), findsOneWidget);
   });
 }
