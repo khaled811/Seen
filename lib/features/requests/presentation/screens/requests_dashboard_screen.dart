@@ -347,6 +347,7 @@ class _DashboardBody extends StatelessWidget {
                         message: l10n.requestsEmptyBody,
                         actionLabel: l10n.homeRequestServiceAction,
                         onAction: () => _openCatalog(context),
+                        topInset: 104,
                       )
                     // Filter / search produced nothing.
                     : SeenEmptyState(
