@@ -6,7 +6,6 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
-import '../../../../core/presentation/widgets/filters.dart';
 import '../../../../core/presentation/widgets/help_card.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -15,7 +14,6 @@ import '../../../../core/presentation/widgets/search_field.dart';
 import '../../../../core/presentation/widgets/service_tile.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
-import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../dynamic_forms/domain/validators/dynamic_field_validator.dart';
 import '../../../dynamic_forms/domain/validators/form_validation_messages.dart';
@@ -145,8 +143,9 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-/// The catalog body: search, group chips, service tiles and the support card.
-/// Needs a [ServiceBookingBloc] above it (tapping a tile selects the service).
+/// The catalog body (Figma 08): search, one section of service tiles (three
+/// per row) and the support card. Needs a [ServiceBookingBloc] above it
+/// (tapping a tile selects the service).
 class ServiceCatalogView extends StatefulWidget {
   const ServiceCatalogView({super.key, required this.services});
 
@@ -160,7 +159,6 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
   // Owned here: created with the view, disposed in dispose().
   final _search = TextEditingController();
   String _query = '';
-  ServiceGroup? _group; // null = all groups
 
   @override
   void dispose() {
@@ -168,52 +166,28 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
     super.dispose();
   }
 
-  String _groupLabel(AppLocalizations l10n, ServiceGroup g) => switch (g) {
-        ServiceGroup.approvals => l10n.servicesGroupApprovals,
-        ServiceGroup.travel => l10n.servicesGroupTravel,
-        ServiceGroup.other => l10n.servicesGroupOther,
-      };
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
+    const gap = SizedBox(height: 18);
 
-    // Groups that actually have services, in a stable order.
-    final present = [
-      for (final g in ServiceGroup.values)
-        if (widget.services.any((s) => s.category.group == g)) g,
-    ];
     final query = _query.trim().toLowerCase();
     final visible = [
       for (final s in widget.services)
-        if ((_group == null || s.category.group == _group) &&
-            (query.isEmpty || s.name.toLowerCase().contains(query) || s.description.toLowerCase().contains(query)))
-          s,
+        if (query.isEmpty || s.name.toLowerCase().contains(query) || s.description.toLowerCase().contains(query)) s,
     ];
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s1, _gutter, SeenSpace.s8),
+      padding: const EdgeInsets.fromLTRB(_gutter, 8, _gutter, SeenSpace.s8),
       children: [
         SeenSearchField(
           hint: l10n.servicesSearchHint,
           controller: _search,
           onChanged: (v) => setState(() => _query = v),
         ),
-        if (present.length > 1) ...[
-          const SizedBox(height: SeenSpace.s3),
-          SeenSegmentChips(
-            padding: EdgeInsets.zero,
-            items: [
-              SeenSegment(label: l10n.requestsFilterAll),
-              for (final g in present) SeenSegment(label: _groupLabel(l10n, g)),
-            ],
-            selectedIndex: _group == null ? 0 : present.indexOf(_group!) + 1,
-            onSelected: (i) => setState(() => _group = i == 0 ? null : present[i - 1]),
-          ),
-        ],
-        const SizedBox(height: SeenSpace.s4),
+        gap,
         if (widget.services.isEmpty)
           SizedBox(
             height: 320,
@@ -232,17 +206,14 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
               message: l10n.servicesNoResultsHint,
             ),
           )
-        else
-          for (final g in ServiceGroup.values)
-            if (visible.any((s) => s.category.group == g)) ...[
-              Padding(
-                padding: const EdgeInsets.only(bottom: SeenSpace.s3, top: SeenSpace.s2),
-                child: Text(_groupLabel(l10n, g), style: type.h2.copyWith(color: c.ink)),
-              ),
-              _ServiceGrid(services: [for (final s in visible) if (s.category.group == g) s]),
-              const SizedBox(height: SeenSpace.s4),
-            ],
-        const SizedBox(height: SeenSpace.s2),
+        else ...[
+          // The backend has no visa services yet; every service it returns is an
+          // approval or a travel service, so they share Figma's second section.
+          Text(l10n.servicesSectionApprovalsTravel, style: type.h2.copyWith(color: c.ink)),
+          gap,
+          _ServiceGrid(services: visible),
+          gap,
+        ],
         SeenHelpCard(
           title: l10n.servicesHelpTitle,
           subtitle: l10n.servicesHelpSubtitle,
@@ -255,8 +226,8 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
   }
 }
 
-/// Two tiles per row (service names are long; Figma's three-up grid would
-/// truncate them).
+/// Three tiles per row, 8 px apart; a row is as tall as its tallest tile
+/// (104 px minimum) so wrapped names still fit.
 class _ServiceGrid extends StatelessWidget {
   const _ServiceGrid({required this.services});
 
@@ -264,20 +235,23 @@ class _ServiceGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const columns = 2;
+    const columns = 3;
     final rows = <Widget>[];
     for (var i = 0; i < services.length; i += columns) {
-      rows.add(Row(
-        children: [
-          for (var j = i; j < i + columns; j++) ...[
-            if (j > i) const SizedBox(width: 10),
-            Expanded(
-              child: j < services.length ? _ServiceTile(service: services[j]) : const SizedBox.shrink(),
-            ),
+      rows.add(IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var j = i; j < i + columns; j++) ...[
+              if (j > i) const SizedBox(width: 8),
+              Expanded(
+                child: j < services.length ? _ServiceTile(service: services[j]) : const SizedBox.shrink(),
+              ),
+            ],
           ],
-        ],
+        ),
       ));
-      if (i + columns < services.length) rows.add(const SizedBox(height: 10));
+      if (i + columns < services.length) rows.add(const SizedBox(height: 8));
     }
     return Column(children: rows);
   }
@@ -295,8 +269,6 @@ class _ServiceTile extends StatelessWidget {
     return SeenServiceTile(
       label: service.name,
       iconAsset: facts.iconAsset,
-      caption: '${SeenFormat.usd(service.perPersonPriceCents / 100)} · ${l10n.servicesPerTraveler}',
-      height: 148,
       labelLines: 2,
       soon: !service.isBookable,
       soonLabel: service.isBookable ? null : l10n.serviceComingSoonBadge,

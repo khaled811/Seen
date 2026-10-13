@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
-import '../foundation/seen_icons.dart';
+import '../foundation/seen_vectors.dart';
+import 'svg_icon.dart';
 
 class SeenSearchField extends StatelessWidget {
   const SeenSearchField({
@@ -36,7 +37,7 @@ class SeenSearchField extends StatelessWidget {
             padding: const EdgeInsetsDirectional.symmetric(horizontal: SeenSpace.s4),
             child: Row(
               children: [
-                Icon(SeenIcons.search, size: 20, color: c.inkMuted),
+                const SeenSvgIcon(SeenVectors.catalogSearch, size: 20),
                 const SizedBox(width: SeenSpace.s2),
                 Expanded(
                   child: Semantics(

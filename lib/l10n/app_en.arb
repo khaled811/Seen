@@ -1681,5 +1681,9 @@
   "agentsSearchAction": "Search",
   "@agentsSearchAction": {
     "description": "Accessible name of the sub-agents search button."
+  },
+  "servicesSectionApprovalsTravel": "Approvals & travel",
+  "@servicesSectionApprovalsTravel": {
+    "description": "Catalog section title (Figma 08)."
   }
 }

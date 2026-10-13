@@ -31,6 +31,7 @@ class SeenServiceTile extends StatelessWidget {
 
   /// Optional small line under the label (e.g. the price).
   final String? caption;
+  /// Minimum height; the tile grows when the label wraps.
   final double height;
   final int labelLines;
 
@@ -43,6 +44,7 @@ class SeenServiceTile extends StatelessWidget {
     final content = Padding(
       padding: const EdgeInsets.fromLTRB(8, 14, 8, 12),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SeenSvgIcon(iconAsset, size: 40, color: soon ? SeenBrand.violet40 : null),
@@ -74,8 +76,8 @@ class SeenServiceTile extends StatelessWidget {
       enabled: !soon,
       label: soon && soonLabel != null ? '$label, $soonLabel' : label,
       excludeSemantics: true,
-      child: SizedBox(
-        height: height,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: height),
         child: soon
             ? SeenDashedBorder(
                 color: c.borderStrong,
@@ -84,11 +86,11 @@ class SeenServiceTile extends StatelessWidget {
                   decoration: BoxDecoration(color: c.card, borderRadius: radius),
                   child: Stack(
                     children: [
-                      Positioned.fill(child: content),
+                      SizedBox(width: double.infinity, child: content),
                       if (soonLabel != null)
-                        PositionedDirectional(
+                        Positioned(
                           top: 6.5,
-                          start: 6.5,
+                          left: 6.5,
                           child: DecoratedBox(
                             decoration: BoxDecoration(color: c.primarySoft, borderRadius: const BorderRadius.all(SeenRadius.full)),
                             child: Padding(

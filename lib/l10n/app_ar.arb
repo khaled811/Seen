@@ -378,5 +378,6 @@
   "accountItemSettings": "الإعدادات",
   "accountVersion": "الإصدار {version}",
   "agentsTitle": "الوكلاء",
-  "agentsSearchAction": "بحث"
+  "agentsSearchAction": "بحث",
+  "servicesSectionApprovalsTravel": "الموافقات والسفر"
 }

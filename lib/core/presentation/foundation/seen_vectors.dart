@@ -48,6 +48,9 @@ abstract final class SeenVectors {
   static const walletCheck = 'assets/icons/wallet/check.svg';
   static const walletPatternGrid = 'assets/icons/wallet/pattern_grid.svg';
 
+  // Search field icon (Figma 08 · node 16:392).
+  static const catalogSearch = 'assets/icons/catalog/search.svg';
+
   // Sub-agents screen (Figma 13 · node 18:722).
   static const agentsSearch = 'assets/icons/agents/search.svg';
   static const agentsPlus = 'assets/icons/agents/plus.svg';

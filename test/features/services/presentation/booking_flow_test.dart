@@ -146,10 +146,11 @@ void main() {
       return made.bloc;
     }
 
-    testWidgets('groups services, marks the unavailable one as soon, and shows the support card', (tester) async {
+    testWidgets('lists every service under one section, marks the unavailable one as soon, shows the support card',
+        (tester) async {
       await pumpCatalog(tester);
-      expect(find.text('الموافقات'), findsWidgets); // chip + section header
-      expect(find.text('السفر'), findsWidgets);
+      expect(find.text('الموافقات والسفر'), findsOneWidget);
+      expect(find.text('تعميم شركات الطيران'), findsOneWidget);
       expect(find.text('موافقة الأمن الوطني'), findsOneWidget);
       expect(find.text('قريبًا'), findsOneWidget);
       expect(find.text('لم تجد الخدمة؟'), findsOneWidget);
@@ -165,14 +166,6 @@ void main() {
       await tester.enterText(find.byType(TextField), 'zzz');
       await tester.pump();
       expect(find.text('لا توجد خدمات مطابقة'), findsOneWidget);
-    });
-
-    testWidgets('a group chip narrows the list', (tester) async {
-      await pumpCatalog(tester);
-      await tester.tap(find.widgetWithText(InkWell, 'السفر').first);
-      await tester.pump();
-      expect(find.text('تعميم شركات الطيران'), findsOneWidget);
-      expect(find.text('موافقة الأمن الوطني'), findsNothing);
     });
 
     testWidgets('tapping a bookable tile starts a booking; the soon tile does nothing', (tester) async {
