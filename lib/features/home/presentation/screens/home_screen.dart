@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/config/feature_flags.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/localization/locale_cubit.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
@@ -17,15 +15,11 @@ import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/promo_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/service_tile.dart';
-import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
-import '../../../../core/theme/theme_mode_cubit.dart';
 import '../../../auth/domain/entities/user_session.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../requests/domain/entities/request_summary.dart';
 import '../../../requests/presentation/bloc/requests_bloc.dart';
 import '../../../requests/presentation/bloc/requests_event.dart';
@@ -44,6 +38,7 @@ import '../../../wallet/presentation/bloc/wallet_bloc.dart';
 import '../../../wallet/presentation/bloc/wallet_event.dart';
 import '../../../wallet/presentation/bloc/wallet_state.dart';
 import '../../../wallet/presentation/screens/top_up_request_screen.dart';
+import 'account_screen.dart';
 
 /// Home dashboard (Figma 05): header, greeting, balance card, primary actions,
 /// promo banner, services grid and the latest requests. Owns fresh
@@ -471,45 +466,7 @@ class _InlineError extends StatelessWidget {
   }
 }
 
-/// The account sheet: language, theme and sign-out. Public so the shell's
-/// bottom bar can open it too. (Language and theme used to live in the old
-/// Home top bar; Figma's Home header has no room for them.)
-void showAccountSheet(BuildContext context) {
-  final l10n = AppLocalizations.of(context)!;
-  final s = SeenStrings.of(context);
-  final authBloc = context.read<AuthBloc>();
-  final localeCubit = context.read<LocaleCubit>();
-  final themeCubit = context.read<ThemeModeCubit>();
-  showSeenSheet<void>(
-    context: context,
-    title: l10n.homeQuickActionAccount,
-    builder: (sheetContext) => Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SeenButton.secondary(
-          label: s.languageLabel,
-          icon: SeenIcons.globe,
-          expand: true,
-          onPressed: localeCubit.toggleLocale,
-        ),
-        const SizedBox(height: SeenSpace.s2),
-        SeenButton.secondary(
-          label: l10n.homeThemeToggleLabel,
-          icon: PhosphorIconsRegular.circleHalf,
-          expand: true,
-          onPressed: themeCubit.toggleThemeMode,
-        ),
-        const SizedBox(height: SeenSpace.s2),
-        SeenButton.dangerOutline(
-          label: l10n.accountSignOutAction,
-          icon: SeenIcons.x,
-          expand: true,
-          onPressed: () {
-            authBloc.add(const AuthLogoutRequested());
-            Navigator.of(sheetContext).maybePop();
-          },
-        ),
-      ],
-    ),
-  );
-}
+/// Opens the account hub (Figma 14). Public so the shell's bottom bar can
+/// open it too; the name predates the move from a sheet to a full page.
+void showAccountSheet(BuildContext context) =>
+    Navigator.of(context).push(AccountScreen.route());

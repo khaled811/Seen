@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'agency_pending_approval_screen.dart';
+import 'create_agency_account_screen.dart';
 import 'login_screen.dart';
 import 'welcome_screen.dart';
 
-/// Unauthenticated entry: Welcome (02) → Login (03). Owns only the "which of
-/// the two is showing" UI state; every auth outcome still comes from `AuthBloc`
-/// through the app's auth gate.
+enum _EntryStep { welcome, login, createAgency, pendingApproval }
+
+/// Unauthenticated entry: Welcome (02) → Login (03), or Welcome → Create agency
+/// account (15) → Pending approval (16). Owns only the "which step is showing"
+/// UI state; every auth outcome still comes from `AuthBloc` through the app's
+/// auth gate.
 ///
 /// [startOnLogin] opens straight on Login (used after a failed sign-in, so a
 /// rejected password does not bounce the user back to Welcome). The system back
-/// gesture on Login returns to Welcome.
+/// gesture returns one step toward Welcome.
 class AuthEntryFlow extends StatefulWidget {
   const AuthEntryFlow({super.key, this.startOnLogin = false});
 
@@ -21,40 +25,46 @@ class AuthEntryFlow extends StatefulWidget {
 }
 
 class _AuthEntryFlowState extends State<AuthEntryFlow> {
-  late bool _showLogin = widget.startOnLogin;
+  late _EntryStep _step = widget.startOnLogin ? _EntryStep.login : _EntryStep.welcome;
 
   @override
   void didUpdateWidget(covariant AuthEntryFlow oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.startOnLogin && !oldWidget.startOnLogin) _showLogin = true;
+    if (widget.startOnLogin && !oldWidget.startOnLogin) _step = _EntryStep.login;
   }
 
-  void _comingSoon() {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.comingSoon)));
-  }
+  void _go(_EntryStep step) => setState(() => _step = step);
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_showLogin,
+      canPop: _step == _EntryStep.welcome,
       onPopInvoked: (didPop) {
-        if (!didPop) setState(() => _showLogin = false);
+        if (!didPop) _go(_EntryStep.welcome);
       },
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
-        child: _showLogin
-            ? LoginScreen(
-                key: const ValueKey('auth-login'),
-                onBack: () => setState(() => _showLogin = false),
-                onCreateAccount: _comingSoon,
-              )
-            : WelcomeScreen(
-                key: const ValueKey('auth-welcome'),
-                onSignIn: () => setState(() => _showLogin = true),
-                onCreateAccount: _comingSoon,
-              ),
+        child: switch (_step) {
+          _EntryStep.welcome => WelcomeScreen(
+              key: const ValueKey('auth-welcome'),
+              onSignIn: () => _go(_EntryStep.login),
+              onCreateAccount: () => _go(_EntryStep.createAgency),
+            ),
+          _EntryStep.login => LoginScreen(
+              key: const ValueKey('auth-login'),
+              onBack: () => _go(_EntryStep.welcome),
+              onCreateAccount: () => _go(_EntryStep.createAgency),
+            ),
+          _EntryStep.createAgency => CreateAgencyAccountScreen(
+              key: const ValueKey('auth-create-agency'),
+              onBack: () => _go(_EntryStep.welcome),
+              onSubmitted: () => _go(_EntryStep.pendingApproval),
+            ),
+          _EntryStep.pendingApproval => AgencyPendingApprovalScreen(
+              key: const ValueKey('auth-pending'),
+              onBackToLogin: () => _go(_EntryStep.login),
+            ),
+        },
       ),
     );
   }
