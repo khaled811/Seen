@@ -58,6 +58,14 @@ class NotificationsView extends StatelessWidget {
                   return SeenScreenHeader(
                     title: l10n.notificationsTitle,
                     subtitle: unread > 0 ? SeenStrings.of(context).unreadCount(unread) : null,
+                    // Product decision: keep "Mark all as read" (not drawn in Figma).
+                    trailing: SeenButton.ghost(
+                      label: l10n.notificationsMarkAllReadAction,
+                      size: SeenButtonSize.small,
+                      onPressed: unread > 0
+                          ? () => context.read<NotificationsBloc>().add(const NotificationsMarkAllReadRequested())
+                          : null,
+                    ),
                   );
                 },
               ),

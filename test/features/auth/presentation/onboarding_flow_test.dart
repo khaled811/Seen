@@ -77,6 +77,14 @@ void main() {
     });
   });
 
+  testWidgets('welcome headline and subtitle are centred', (tester) async {
+    await boot(tester);
+    final title = tester.widget<Text>(find.text('أهـلًا بـك في سيــــن أعمـــال'));
+    expect(title.textAlign, TextAlign.center);
+    final subtitle = tester.widget<Text>(find.textContaining('قدّم طلبات التأشيرات'));
+    expect(subtitle.textAlign, TextAlign.center);
+  });
+
   testWidgets('account screen: sign out asks first and cancel keeps the screen', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));

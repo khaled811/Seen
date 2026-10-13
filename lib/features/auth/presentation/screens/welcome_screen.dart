@@ -62,11 +62,13 @@ class WelcomeScreen extends StatelessWidget {
                         children: [
                           const ExcludeSemantics(child: _HeroCard()),
                           const SizedBox(height: 40),
-                          // Figma 4:217 aligns the copy to the start edge.
-                          Text(l10n.welcomeTitle, style: type.display),
+                          // Product decision: the headline and subtitle are centred
+                          // (Figma draws them at the start edge).
+                          Text(l10n.welcomeTitle, textAlign: TextAlign.center, style: type.display),
                           const SizedBox(height: 16),
                           Text(
                             l10n.welcomeSubtitle,
+                            textAlign: TextAlign.center,
                             style: type.body.copyWith(color: c.inkSecondary),
                           ),
                           // 16 + a 120 px spacer + 16 down to the buttons.

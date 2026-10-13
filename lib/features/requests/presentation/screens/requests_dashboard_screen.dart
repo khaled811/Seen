@@ -13,6 +13,7 @@ import '../../../../core/presentation/widgets/filters.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/stat_card.dart';
 import '../../../../core/presentation/widgets/status.dart';
+import '../../../../core/presentation/widgets/search_field.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
@@ -72,7 +73,11 @@ Future<void> _openCatalog(BuildContext context) async {
 /// Figma 06 header: the title at the start and a violet "new request" button
 /// at the end.
 class _Header extends StatelessWidget {
-  const _Header();
+  const _Header({this.onSearch, this.searchOpen = false});
+
+  /// null hides the search button (loading, error, or nothing to search yet).
+  final VoidCallback? onSearch;
+  final bool searchOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +89,36 @@ class _Header extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(l10n.requestsDashboardTitle, style: type.h1)),
+          // Product decision: reference / traveler search stays available
+          // (the Figma header has only the plus button).
+          if (onSearch != null) ...[
+            Semantics(
+              button: true,
+              label: l10n.requestsSearchAction,
+              excludeSemantics: true,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: SeenShadows.card),
+                child: Material(
+                  color: c.card,
+                  shape: CircleBorder(side: BorderSide(color: c.border)),
+                  child: InkWell(
+                    onTap: onSearch,
+                    customBorder: const CircleBorder(),
+                    child: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: Center(
+                        child: searchOpen
+                            ? Icon(SeenIcons.x, size: 20, color: c.primary)
+                            : SeenSvgIcon(SeenVectors.agentsSearch, size: 22, color: c.primary),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: SeenSpace.s2),
+          ],
           Semantics(
             button: true,
             label: l10n.requestsBookNewAction,
@@ -219,10 +254,34 @@ class _SkeletonCard extends StatelessWidget {
   }
 }
 
-class _DashboardBody extends StatelessWidget {
+class _DashboardBody extends StatefulWidget {
   const _DashboardBody({required this.state});
 
   final RequestsLoaded state;
+
+  @override
+  State<_DashboardBody> createState() => _DashboardBodyState();
+}
+
+class _DashboardBodyState extends State<_DashboardBody> {
+  // Owned here, disposed in dispose(). Typing dispatches the bloc's debounced
+  // search event; closing the field clears the query.
+  final _search = TextEditingController();
+  bool _searchOpen = false;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() => _searchOpen = !_searchOpen);
+    if (!_searchOpen) {
+      _search.clear();
+      context.read<RequestsBloc>().add(const RequestsSearchChanged(''));
+    }
+  }
 
   /// Chip order from Figma (the enum order is the bloc's concern).
   static const _filterOrder = [
@@ -244,6 +303,7 @@ class _DashboardBody extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final s = SeenStrings.of(context);
     final c = SeenColors.of(context);
+    final state = widget.state;
     final requests = state.filteredRequests;
 
     final all = state.requests;
@@ -280,7 +340,20 @@ class _DashboardBody extends StatelessWidget {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          const SliverToBoxAdapter(child: _Header()),
+          SliverToBoxAdapter(
+            child: _Header(onSearch: noData ? null : _toggleSearch, searchOpen: _searchOpen),
+          ),
+          if (_searchOpen && !noData)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, 18),
+                child: SeenSearchField(
+                  hint: l10n.requestsSearchHint,
+                  controller: _search,
+                  onChanged: (value) => context.read<RequestsBloc>().add(RequestsSearchChanged(value)),
+                ),
+              ),
+            ),
           if (!noData) ...[
             SliverToBoxAdapter(
               child: Padding(

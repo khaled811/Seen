@@ -325,7 +325,10 @@ list is in `BACKEND_MIGRATION_GAPS.md`.
 - Where a frame contradicts the data model, the app shows the real data and not the
   mock (for example total agent balances instead of "monthly profits", no fabricated
   IBAN in release builds).
-- The 18 frames were implemented as drawn, including start-aligned copy on 02 and
-  the removal of the search button on 06 and of the mark-all-read button on 17, even
-  where that removed behaviour the app already had. Those three are listed above as
-  decisions to confirm.
+- The 18 frames were implemented as drawn. Three product decisions then overrode
+  the frames, and the designer should draw them:
+  1. **06 Requests:** the debounced reference / traveler search is kept (a search
+     button next to the plus button opens a search field).
+  2. **17 Notifications:** "Mark all as read" is kept in the header.
+  3. **02 Welcome:** the headline and subtitle are centred (the frame aligns them to
+     the start edge).
