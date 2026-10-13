@@ -1664,5 +1664,14 @@
   "accountItemSettings": "Settings",
   "@accountItemSettings": {
     "description": "Account copy."
+  },
+  "accountVersion": "Version {version}",
+  "@accountVersion": {
+    "description": "App version line at the bottom of the account screen.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
   }
 }

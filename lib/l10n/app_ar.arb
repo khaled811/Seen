@@ -375,5 +375,6 @@
   "accountSectionApp": "التطبيق",
   "accountItemMargin": "هامش الربح",
   "accountItemUsers": "المستخدمون والصلاحيات",
-  "accountItemSettings": "الإعدادات"
+  "accountItemSettings": "الإعدادات",
+  "accountVersion": "الإصدار {version}"
 }

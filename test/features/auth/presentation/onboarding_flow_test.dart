@@ -91,11 +91,13 @@ void main() {
           GlobalCupertinoLocalizations.delegate,
         ],
         theme: AppTheme.light,
-        home: const AccountScreen(),
+        home: AccountScreen(versionLoader: () async => '2.4.0'),
       ),
     ));
     await tester.pumpAndSettle();
     final before = auth.state;
+    expect(find.textContaining('2.4.0'), findsOneWidget);
+    expect(find.textContaining('الإصدار'), findsOneWidget);
 
     await tester.tap(find.text('تسجيل الخروج'));
     await tester.pumpAndSettle();

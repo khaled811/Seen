@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/constants/enums.dart';
@@ -14,6 +15,7 @@ import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
+import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/theme/theme_mode_cubit.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -27,9 +29,14 @@ import '../../../support/presentation/screens/support_tickets_screen.dart';
 /// [AgentShell] (`embedded: true`, bottom bar stays) and can also be pushed
 /// standalone from the Home avatar.
 class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key, this.embedded = false});
+  const AccountScreen({super.key, this.embedded = false, this.versionLoader = _loadVersion});
 
   final bool embedded;
+
+  /// Resolves the app version string; tests pass a stub.
+  final Future<String> Function() versionLoader;
+
+  static Future<String> _loadVersion() async => (await PackageInfo.fromPlatform()).version;
 
   static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const AccountScreen());
 
@@ -161,6 +168,8 @@ class AccountScreen extends StatelessWidget {
               ]),
               const SizedBox(height: 18),
               _SignOutBlock(label: l10n.accountSignOutAction, onTap: () => _confirmSignOut(context)),
+              const SizedBox(height: 18),
+              _VersionLine(loader: versionLoader),
               SizedBox(height: embedded ? 0 : MediaQuery.paddingOf(context).bottom),
             ],
           ),
@@ -353,6 +362,39 @@ class _SignOutBlock extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Version x.y.z" under the sign-out block. The future is created once and
+/// the line stays hidden while loading or if the platform call fails.
+class _VersionLine extends StatefulWidget {
+  const _VersionLine({required this.loader});
+
+  final Future<String> Function() loader;
+
+  @override
+  State<_VersionLine> createState() => _VersionLineState();
+}
+
+class _VersionLineState extends State<_VersionLine> {
+  late final Future<String> _version = widget.loader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
+    return FutureBuilder<String>(
+      future: _version,
+      builder: (context, snapshot) {
+        final version = snapshot.data;
+        if (version == null || version.isEmpty) return const SizedBox.shrink();
+        return Text(
+          l10n.accountVersion(SeenFormat.isolate(version)),
+          textAlign: TextAlign.center,
+          style: SeenType.of(context).caption.copyWith(color: c.inkMuted),
+        );
+      },
     );
   }
 }
