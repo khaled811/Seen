@@ -47,6 +47,13 @@ class SeenStrings {
     return isArabic ? toArabicIndicDigits(latin) : latin;
   }
 
+  /// "١٢ نوفمبر" / "12 Nov": day and month name; digits follow [numeral].
+  String dayMonth(DateTime d) {
+    const ar = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${numeral(d.day)} ${(isArabic ? ar : en)[d.month - 1]}';
+  }
+
   /// Home greeting line: how many requests need follow-up today.
   String attentionSummary(int n) {
     if (isArabic) {

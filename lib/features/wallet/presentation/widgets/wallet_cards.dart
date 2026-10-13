@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
+import '../../../../core/presentation/widgets/status.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
@@ -18,7 +19,8 @@ BoxDecoration _cardDecoration(SeenColors c) => BoxDecoration(
       boxShadow: SeenShadows.card,
     );
 
-/// Held vs. available split of the credit balance, drawn as a two-part bar.
+/// Figma "Usage" card (node 18:488): held / available labels, a two-segment bar
+/// (held in amber, available in the CTA gradient) and a two-item legend.
 class SeenWalletUsageCard extends StatelessWidget {
   const SeenWalletUsageCard({
     super.key,
@@ -41,10 +43,22 @@ class SeenWalletUsageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
+    final t = SeenType.of(context);
     final total = available + hold;
     final heldFlex = total <= 0 ? 0 : (hold / total * 1000).round().clamp(0, 1000);
     final heldText = SeenFormat.usd(hold);
     final availableText = SeenFormat.usd(available);
+    const segment = BorderRadius.all(Radius.circular(4));
+
+    Widget legend(Color color, String label) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DecoratedBox(decoration: BoxDecoration(color: color, shape: BoxShape.circle), child: const SizedBox(width: 8, height: 8)),
+            const SizedBox(width: 6),
+            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.caption.copyWith(color: c.inkMuted))),
+          ],
+        );
+
     return Semantics(
       container: true,
       label: '${heldValue(heldText)} ${availableValue(availableText)}',
@@ -54,27 +68,64 @@ class SeenWalletUsageCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(SeenSpace.s4),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.all(SeenRadius.full),
-                child: SizedBox(
-                  height: 8,
-                  child: Row(
-                    children: [
-                      if (heldFlex > 0) Expanded(flex: heldFlex, child: const ColoredBox(color: SeenBrand.violet80)),
-                      if (heldFlex < 1000)
-                        Expanded(flex: 1000 - heldFlex, child: const ColoredBox(color: SeenBrand.violet20)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: SeenSpace.s3),
+              // Available leads (start edge), held trails, as drawn.
               Row(
                 children: [
-                  Expanded(child: _Legend(color: SeenBrand.violet80, label: heldLabel, value: heldText)),
-                  const SizedBox(width: SeenSpace.s3),
-                  Expanded(child: _Legend(color: SeenBrand.violet20, label: availableLabel, value: availableText)),
+                  Expanded(
+                    child: Text(
+                      availableValue(availableText),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.end,
+                      style: t.label.copyWith(color: c.ink),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      heldValue(heldText),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textDirection: TextDirection.ltr,
+                      style: t.label.copyWith(color: c.inkSecondary),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 8,
+                child: Row(
+                  children: [
+                    if (heldFlex < 1000)
+                      Expanded(
+                        flex: 1000 - heldFlex,
+                        child: const DecoratedBox(
+                          decoration: BoxDecoration(gradient: SeenBrand.gradientCta, borderRadius: segment),
+                          child: SizedBox.expand(),
+                        ),
+                      ),
+                    if (heldFlex > 0 && heldFlex < 1000) const SizedBox(width: 3),
+                    if (heldFlex > 0)
+                      Expanded(
+                        flex: heldFlex,
+                        child: const DecoratedBox(
+                          decoration: BoxDecoration(color: SeenBrand.progressWaiting, borderRadius: segment),
+                          child: SizedBox.expand(),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Flexible(child: legend(SeenBrand.violet, availableLabel)),
+                  const SizedBox(width: 14),
+                  Flexible(child: legend(SeenBrand.progressWaiting, heldLabel)),
                 ],
               ),
             ],
@@ -85,33 +136,8 @@ class SeenWalletUsageCard extends StatelessWidget {
   }
 }
 
-class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.label, required this.value});
-
-  final Color color;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SeenColors.of(context);
-    final t = SeenType.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [
-          DecoratedBox(decoration: BoxDecoration(color: color, shape: BoxShape.circle), child: const SizedBox(width: 8, height: 8)),
-          const SizedBox(width: 6),
-          Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.caption.copyWith(color: c.inkMuted))),
-        ]),
-        const SizedBox(height: 2),
-        Text(value, textDirection: TextDirection.ltr, style: t.bodyStrong.copyWith(fontFeatures: SeenFonts.tabular)),
-      ],
-    );
-  }
-}
-
-/// A top-up that is still waiting for review.
+/// Figma "Pending top-up" (node 18:507): soft violet gradient, a white clock
+/// tile, the amount and when it was sent, and the review chip at the far end.
 class SeenPendingTopUpCard extends StatelessWidget {
   const SeenPendingTopUpCard({super.key, required this.title, required this.subtitle, required this.statusLabel});
 
@@ -125,26 +151,35 @@ class SeenPendingTopUpCard extends StatelessWidget {
     final t = SeenType.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: SeenBrand.violet05,
+        gradient: SeenBrand.gradientSoft,
         borderRadius: const BorderRadius.all(SeenRadius.r18),
         border: Border.all(color: c.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(SeenSpace.s3),
+        padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Icon(SeenIcons.clock, size: 20, color: c.primary),
-            const SizedBox(width: SeenSpace.s3),
+            DecoratedBox(
+              decoration: BoxDecoration(color: c.card, borderRadius: const BorderRadius.all(SeenRadius.r12)),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(child: SeenSvgIcon(SeenVectors.walletClock, size: 22)),
+              ),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, textDirection: TextDirection.ltr, style: t.bodyStrong),
-                  Text(subtitle, style: t.caption.copyWith(color: c.inkMuted)),
+                  Text(title, textDirection: TextDirection.ltr, style: t.bodyStrong.copyWith(color: c.ink)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: t.caption.copyWith(color: c.inkSecondary)),
                 ],
               ),
             ),
-            Text(statusLabel, style: t.chipS.copyWith(color: c.primary)),
+            const SizedBox(width: 8),
+            SeenStatusChip(status: SeenRequestStatus.underReview, label: statusLabel),
           ],
         ),
       ),

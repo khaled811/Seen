@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/error/failure.dart';
+import 'package:seen_booking/core/presentation/foundation/seen_vectors.dart';
+import 'package:seen_booking/core/presentation/widgets/status.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/core/theme/seen_colors.dart';
 import 'package:seen_booking/features/agents/presentation/widgets/seen_sub_agent_card.dart';
@@ -101,29 +103,36 @@ Future<void> _settle(WidgetTester tester) async {
 
 void main() {
   group('SeenLedgerRow', () {
-    testWidgets('credit shows an explicit +amount USD in a left-to-right run', (tester) async {
+    testWidgets('credit shows +amount over USD in a left-to-right run, with its meta line', (tester) async {
       await _pumpCard(
         tester,
-        const SeenLedgerRow(type: SeenLedgerType.credit, title: 'شحن رصيد', reference: 'REF-1', time: '10:30', amount: 500),
+        const SeenLedgerRow(
+          type: SeenLedgerType.credit,
+          title: 'شحن رصيد · REF-1',
+          meta: '١٠ نوفمبر · 14:02',
+          amount: 1000,
+          iconAsset: SeenVectors.walletTxnBank,
+        ),
       );
-      expect(find.textContaining('+500.00 USD'), findsOneWidget);
-      expect(find.text('شحن رصيد'), findsOneWidget);
+      expect(find.text('+1,000.00'), findsOneWidget);
+      expect(find.text('USD'), findsOneWidget);
+      expect(find.text('شحن رصيد · REF-1'), findsOneWidget);
+      expect(find.text('١٠ نوفمبر · 14:02'), findsOneWidget);
     });
 
-    testWidgets('debit uses the minus sign and a status chip when flagged', (tester) async {
+    testWidgets('debit uses the minus sign and can carry a status chip', (tester) async {
       await _pumpCard(
         tester,
         const SeenLedgerRow(
           type: SeenLedgerType.debit,
           title: 'حجز',
-          reference: '',
-          time: '10:30',
+          meta: '٩ نوفمبر · 09:30',
           amount: 85.5,
-          status: SeenRequestStatus.underReview,
-          statusLabel: 'قيد المراجعة',
+          iconAsset: SeenVectors.iconRequests,
+          statusChip: SeenStatusChip(status: SeenRequestStatus.underReview, label: 'قيد المراجعة'),
         ),
       );
-      expect(find.textContaining('−85.50 USD'), findsOneWidget);
+      expect(find.text('−85.50'), findsOneWidget);
       expect(find.text('قيد المراجعة'), findsOneWidget);
     });
   });

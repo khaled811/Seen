@@ -46,6 +46,9 @@ abstract final class SeenVectors {
   static const walletCash = 'assets/icons/wallet/cash.svg';
   static const walletBank = 'assets/icons/wallet/bank.svg';
   static const walletCheck = 'assets/icons/wallet/check.svg';
+  static const walletClock = 'assets/icons/wallet/clock.svg';
+  static const walletTxnBank = 'assets/icons/wallet/txn_bank.svg';
+  static const walletTxnTransfer = 'assets/icons/wallet/txn_transfer.svg';
   static const walletPatternGrid = 'assets/icons/wallet/pattern_grid.svg';
 
   // Search field icon (Figma 08 · node 16:392).
