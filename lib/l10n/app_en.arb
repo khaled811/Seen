@@ -1597,11 +1597,11 @@
   "@agencyNameLabel": {
     "description": "Account / onboarding copy."
   },
-  "agencyCrLabel": "Commercial registration number",
+  "agencyCrLabel": "License number",
   "@agencyCrLabel": {
     "description": "Account / onboarding copy."
   },
-  "agencyCityLabel": "City / region",
+  "agencyCityLabel": "City",
   "@agencyCityLabel": {
     "description": "Account / onboarding copy."
   },
@@ -1613,7 +1613,7 @@
   "@agencyEmailLabel": {
     "description": "Account / onboarding copy."
   },
-  "agencyCrUploadTitle": "Commercial register copy",
+  "agencyCrUploadTitle": "Attach the commercial register",
   "@agencyCrUploadTitle": {
     "description": "Account / onboarding copy."
   },
@@ -1621,7 +1621,7 @@
   "@agencyCrUploadCaption": {
     "description": "Account / onboarding copy."
   },
-  "agencySubmitAction": "Create agency account",
+  "agencySubmitAction": "Continue",
   "@agencySubmitAction": {
     "description": "Account / onboarding copy."
   },
@@ -1689,5 +1689,21 @@
   "servicesSectionVisas": "Visas",
   "@servicesSectionVisas": {
     "description": "Catalog visas section title (Figma 08)."
+  },
+  "agencyContactNameLabel": "Manager name",
+  "@agencyContactNameLabel": {
+    "description": "Create agency account copy."
+  },
+  "agencyContactNameHint": "Full name",
+  "@agencyContactNameHint": {
+    "description": "Create agency account copy."
+  },
+  "agencyCityHint": "Sana'a",
+  "@agencyCityHint": {
+    "description": "Create agency account copy."
+  },
+  "agencyPhoneHelper": "We will send a verification code to this number",
+  "@agencyPhoneHelper": {
+    "description": "Create agency account copy."
   }
 }

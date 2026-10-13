@@ -359,13 +359,13 @@
   "agencyCreateTitle": "إنشاء حساب وكالة",
   "agencyCreateSubtitle": "أدخل بيانات وكالتك وسنراجعها خلال ٢٤ ساعة",
   "agencyNameLabel": "اسم الوكالة",
-  "agencyCrLabel": "رقم السجل التجاري",
-  "agencyCityLabel": "المدينة / المنطقة",
+  "agencyCrLabel": "رقم الترخيص",
+  "agencyCityLabel": "المدينة",
   "agencyPhoneLabel": "هاتف التواصل",
   "agencyEmailLabel": "البريد الإلكتروني",
-  "agencyCrUploadTitle": "نسخة السجل التجاري",
+  "agencyCrUploadTitle": "أرفق السجل التجاري",
   "agencyCrUploadCaption": "الإرفاق غير متاح بعد",
-  "agencySubmitAction": "إنشاء حساب الوكالة",
+  "agencySubmitAction": "متابعة",
   "agencyPendingTitle": "طلبك قيد المراجعة",
   "agencyPendingBody": "يراجع فريق عمليات جبري بيانات وكالتك. سنبلغك خلال ٢٤ ساعة.",
   "agencyPendingSupportAction": "تواصل مع الدعم",
@@ -380,5 +380,9 @@
   "agentsTitle": "الوكلاء",
   "agentsSearchAction": "بحث",
   "servicesSectionApprovalsTravel": "الموافقات والسفر",
-  "servicesSectionVisas": "التأشيرات"
+  "servicesSectionVisas": "التأشيرات",
+  "agencyContactNameLabel": "اسم المسؤول",
+  "agencyContactNameHint": "الاسم الثلاثي",
+  "agencyCityHint": "صنعاء",
+  "agencyPhoneHelper": "سنرسل رمز تحقق إلى هذا الرقم"
 }

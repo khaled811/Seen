@@ -44,7 +44,7 @@ void main() {
       await tester.tap(find.text('إنشاء حساب وكالة'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('إنشاء حساب الوكالة'));
+      await tester.tap(find.text('متابعة'));
       await tester.pumpAndSettle();
       expect(find.text('هذا الحقل مطلوب.'), findsWidgets);
       expect(find.text('طلبك قيد المراجعة'), findsNothing);
@@ -59,11 +59,12 @@ void main() {
 
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'وكالة النور');
-      await tester.enterText(fields.at(1), 'CR-12345');
-      await tester.enterText(fields.at(2), 'صنعاء');
-      await tester.enterText(fields.at(3), '771234567');
-      await tester.enterText(fields.at(4), 'agency@example.com');
-      await tester.tap(find.text('إنشاء حساب الوكالة'));
+      await tester.enterText(fields.at(1), 'أحمد محمد علي');
+      await tester.enterText(fields.at(2), '771234567');
+      await tester.enterText(fields.at(3), 'agency@example.com');
+      await tester.enterText(fields.at(4), 'صنعاء');
+      await tester.enterText(fields.at(5), 'CR-12345');
+      await tester.tap(find.text('متابعة'));
       await tester.pumpAndSettle();
 
       expect(find.text('طلبك قيد المراجعة'), findsOneWidget);
