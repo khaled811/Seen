@@ -122,7 +122,7 @@ class _ReviewBodyState extends State<_ReviewBody> {
     final navigator = Navigator.of(context);
 
     Widget sectionHeader(String title, {VoidCallback? onEdit}) => Padding(
-          padding: const EdgeInsets.only(top: SeenSpace.s5, bottom: SeenSpace.s3),
+          padding: const EdgeInsets.only(top: 18, bottom: 18),
           child: Row(
             children: [
               Expanded(child: Text(title, style: type.h2)),
@@ -156,7 +156,7 @@ class _ReviewBodyState extends State<_ReviewBody> {
                 perTravelerPrice: state.service.perPersonPriceCents / 100,
                 totalLabel: l10n.reviewTotal,
               ),
-              const SizedBox(height: SeenSpace.s4),
+              const SizedBox(height: 18),
               SeenWalletHoldCard(
                 charge: totalPrice,
                 available: balance == null ? null : balance.availableCents / 100,
@@ -165,7 +165,7 @@ class _ReviewBodyState extends State<_ReviewBody> {
                 note: l10n.reviewHoldNote,
                 afterLabel: l10n.reviewAvailableAfter,
               ),
-              const SizedBox(height: SeenSpace.s3),
+              const SizedBox(height: 18),
               SeenConfirmCheck(
                 value: _confirmed,
                 label: l10n.reviewConfirmTerms,

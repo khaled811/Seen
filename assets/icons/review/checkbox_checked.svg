@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Checkbox">
+<rect width="22" height="22" rx="6" fill="url(#paint0_linear_0_19)"/>
+<path id="Vector" d="M6 10.75L9.5 14.25L16 7.75" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_19" x1="22" y1="11" x2="0" y2="11" gradientUnits="userSpaceOnUse">
+<stop stop-color="#7B52F5"/>
+<stop offset="1" stop-color="#9B7DF8"/>
+</linearGradient>
+</defs>
+</svg>

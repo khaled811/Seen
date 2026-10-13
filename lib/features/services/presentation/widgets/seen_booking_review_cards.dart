@@ -2,9 +2,10 @@
 // fee breakdown, wallet-hold panel and the confirmation checkbox. Presentation
 // only: amounts and counts are passed in; nothing here talks to the bloc.
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
@@ -228,7 +229,20 @@ class SeenWalletHoldCard extends StatelessWidget {
     return _card(
       c,
       gradient: SeenBrand.gradientWalletHold,
-      Padding(
+      ClipRRect(
+        borderRadius: const BorderRadius.all(SeenRadius.r22),
+        child: Stack(
+          children: [
+            Positioned(
+              left: -151,
+              top: -111,
+              width: 304.8,
+              height: 218.4,
+              child: ExcludeSemantics(
+                child: SvgPicture.asset(SeenVectors.reviewPatternIsometric, fit: BoxFit.fill),
+              ),
+            ),
+            Padding(
         padding: const EdgeInsets.all(SeenSpace.s4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -237,7 +251,7 @@ class SeenWalletHoldCard extends StatelessWidget {
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(color: c.card, borderRadius: const BorderRadius.all(SeenRadius.r12)),
-                  child: SizedBox(width: 40, height: 40, child: Icon(SeenIcons.wallet, size: 22, color: c.primary)),
+                  child: const SizedBox(width: 40, height: 40, child: Center(child: SeenSvgIcon(SeenVectors.reviewWallet, size: 22))),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -297,6 +311,9 @@ class SeenWalletHoldCard extends StatelessWidget {
           ],
         ),
       ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -325,17 +342,17 @@ class SeenConfirmCheck extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: SeenSize.touchMin),
           child: Row(
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: value ? SeenBrand.violet : c.card,
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
-                  border: Border.all(color: value ? SeenBrand.violet : c.borderStrong, width: 1.5),
-                ),
-                child: value ? Icon(SeenIcons.check, size: 14, color: c.onPrimary) : null,
-              ),
+              // Checked: the exported Figma checkbox (gradient with a white tick).
+              value
+                  ? SvgPicture.asset(SeenVectors.reviewCheckboxChecked, width: 22, height: 22, excludeFromSemantics: true)
+                  : DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: c.card,
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
+                        border: Border.all(color: c.borderStrong, width: 1.5),
+                      ),
+                      child: const SizedBox(width: 22, height: 22),
+                    ),
               const SizedBox(width: 10),
               Expanded(child: Text(label, style: type.label.copyWith(color: c.inkSecondary))),
             ],

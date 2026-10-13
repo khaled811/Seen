@@ -51,6 +51,11 @@ abstract final class SeenVectors {
   // Search field icon (Figma 08 · node 16:392).
   static const catalogSearch = 'assets/icons/catalog/search.svg';
 
+  // Booking review (Figma 10 · node 16:545).
+  static const reviewPatternIsometric = 'assets/icons/review/pattern_isometric.svg';
+  static const reviewWallet = 'assets/icons/review/wallet.svg';
+  static const reviewCheckboxChecked = 'assets/icons/review/checkbox_checked.svg';
+
   // Sub-agents screen (Figma 13 · node 18:722).
   static const agentsSearch = 'assets/icons/agents/search.svg';
   static const agentsPlus = 'assets/icons/agents/plus.svg';
