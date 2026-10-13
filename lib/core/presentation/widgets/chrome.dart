@@ -278,19 +278,29 @@ class SeenActionBar extends StatelessWidget {
 /// Section label with an optional urgent count (terracotta pill) and trailing link.
 /// Spacing: space-6 above, space-3 below.
 class SeenSectionHeader extends StatelessWidget {
-  const SeenSectionHeader({super.key, required this.title, this.count, this.actionLabel, this.onAction});
+  const SeenSectionHeader({
+    super.key,
+    required this.title,
+    this.count,
+    this.actionLabel,
+    this.onAction,
+    this.padding = const EdgeInsets.only(top: SeenSpace.s6, bottom: SeenSpace.s3),
+  });
 
   final String title;
   final int? count;
   final String? actionLabel;
   final VoidCallback? onAction;
 
+  /// Space around the row (24 above / 12 below by default).
+  final EdgeInsetsGeometry padding;
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final text = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.only(top: SeenSpace.s6, bottom: SeenSpace.s3),
+      padding: padding,
       child: Row(
         children: [
           Flexible(child: Text(title, style: SeenType.of(context).h2)),

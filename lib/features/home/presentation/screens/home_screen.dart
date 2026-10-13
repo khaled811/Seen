@@ -15,6 +15,7 @@ import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/promo_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/service_tile.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
@@ -31,8 +32,6 @@ import '../../../requests/presentation/widgets/seen_request_summary_card.dart';
 import '../../../services/presentation/screens/service_selection_screen.dart';
 import '../../../support/presentation/bloc/notifications_bloc.dart';
 import '../../../support/presentation/bloc/notifications_event.dart';
-import '../../../support/presentation/bloc/notifications_state.dart';
-import '../../../support/presentation/screens/notifications_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../../wallet/presentation/bloc/wallet_bloc.dart';
 import '../../../wallet/presentation/bloc/wallet_event.dart';
@@ -75,6 +74,9 @@ class HomeScreen extends StatelessWidget {
 
 const _gutter = 14.0;
 
+/// Figma 05: 22 px above and below a section title.
+const _sectionPadding = EdgeInsets.symmetric(vertical: 22);
+
 Future<void> _openServices(BuildContext context) async {
   await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ServiceSelectionScreen()));
   if (!context.mounted) return;
@@ -112,11 +114,11 @@ class _HomeView extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s3, _gutter, SeenSpace.s6),
               children: [
                 const _HomeHeader(),
-                const SizedBox(height: SeenSpace.s4),
+                const SizedBox(height: 16),
                 const _Greeting(),
-                const SizedBox(height: SeenSpace.s5),
+                const SizedBox(height: 24),
                 const _BalanceSection(),
-                const SizedBox(height: SeenSpace.s4),
+                const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
@@ -137,7 +139,7 @@ class _HomeView extends StatelessWidget {
                   ],
                 ),
                 if (kShowHomePromoBanner) ...[
-                  const SizedBox(height: SeenSpace.s4),
+                  const SizedBox(height: 22),
                   SeenPromoBanner(
                     badge: l10n.promoBadge,
                     title: l10n.promoTitle,
@@ -150,6 +152,7 @@ class _HomeView extends StatelessWidget {
                   title: l10n.homeServicesTitle,
                   actionLabel: l10n.homeSeeAllAction,
                   onAction: () => _openServices(context),
+                  padding: _sectionPadding,
                 ),
                 const _ServicesGrid(),
                 const _RecentRequests(),
@@ -162,8 +165,8 @@ class _HomeView extends StatelessWidget {
   }
 }
 
-/// Avatar · search · notifications · support. Figma shows avatar, search and
-/// chat; the bell with its unread badge is added per product decision.
+/// Figma 05 "Top bar": avatar, search pill and a chat (support) button. The
+/// bell that used to sit here is gone: notifications live in the Account tab.
 class _HomeHeader extends StatelessWidget {
   const _HomeHeader();
 
@@ -171,43 +174,49 @@ class _HomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final s = SeenStrings.of(context);
+    final c = SeenColors.of(context);
     return Row(
       children: [
-        SeenRoundIconButton(
-          icon: SeenIcons.user,
-          semanticLabel: s.nav[4],
-          tonal: true,
-          onPressed: () => showAccountSheet(context),
+        // The session has no agency name, so the avatar carries a person glyph
+        // instead of the initials Figma shows.
+        Semantics(
+          button: true,
+          label: s.nav[4],
+          excludeSemantics: true,
+          child: Material(
+            color: SeenBrand.violet10,
+            shape: CircleBorder(side: BorderSide(color: c.borderStrong)),
+            child: InkWell(
+              onTap: () => showAccountSheet(context),
+              customBorder: const CircleBorder(),
+              child: SizedBox(width: 44, height: 44, child: Icon(SeenIcons.user, size: 22, color: c.primary)),
+            ),
+          ),
         ),
         const SizedBox(width: SeenSpace.s2),
         Expanded(child: _SearchPill(hint: l10n.homeSearchHint, onTap: () => _openRequests(context))),
         const SizedBox(width: SeenSpace.s2),
-        BlocBuilder<NotificationsBloc, NotificationsState>(
-          buildWhen: (previous, current) => current is NotificationsLoaded,
-          builder: (context, state) {
-            final unread = state is NotificationsLoaded ? state.unreadCount : 0;
-            return Badge(
-              isLabelVisible: unread > 0,
-              label: Text(unread > 99 ? '99+' : s.numeral(unread)),
-              offset: const Offset(-4, 2),
-              child: SeenRoundIconButton(
-                icon: SeenIcons.bell,
-                semanticLabel: unread > 0 ? '${s.notifications} (${s.numeral(unread)})' : s.notifications,
-                onPressed: () async {
-                  await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
-                  if (!context.mounted) return;
-                  context.read<NotificationsBloc>().add(const NotificationsLoadRequested());
-                },
+        Semantics(
+          button: true,
+          label: l10n.homeQuickActionSupport,
+          excludeSemantics: true,
+          child: DecoratedBox(
+            decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: SeenShadows.card),
+            child: Material(
+              color: c.card,
+              shape: CircleBorder(side: BorderSide(color: c.border)),
+              child: InkWell(
+                onTap: () =>
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
+                customBorder: const CircleBorder(),
+                child: const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(child: SeenSvgIcon(SeenVectors.iconChat, size: 22)),
+                ),
               ),
-            );
-          },
-        ),
-        const SizedBox(width: SeenSpace.s2),
-        SeenRoundIconButton(
-          icon: SeenIcons.headset,
-          semanticLabel: l10n.homeQuickActionSupport,
-          onPressed: () =>
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
+            ),
+          ),
         ),
       ],
     );
@@ -244,7 +253,7 @@ class _SearchPill extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.symmetric(horizontal: SeenSpace.s4),
                 child: Row(
                   children: [
-                    Icon(SeenIcons.search, size: 20, color: c.inkMuted),
+                    const SeenSvgIcon(SeenVectors.catalogSearch, size: 20),
                     const SizedBox(width: SeenSpace.s2),
                     Expanded(
                       child: Text(hint, maxLines: 1, overflow: TextOverflow.ellipsis, style: type.body.copyWith(color: c.inkMuted)),
@@ -410,6 +419,7 @@ class _RequestsFeed extends StatelessWidget {
           count: urgentCount > 0 ? urgentCount : null,
           actionLabel: l10n.homeSeeAllAction,
           onAction: () => _openRequests(context),
+          padding: _sectionPadding,
         ),
         if (top.isEmpty)
           Padding(
