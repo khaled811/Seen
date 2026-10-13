@@ -55,18 +55,12 @@ abstract final class ServiceCardCopy {
       };
 }
 
-/// Catalog grouping (presentation only). The backend taxonomy is still a
-/// placeholder (see [ServiceCategory]), so groups are derived from it and only
-/// the ones that actually contain services are shown.
-enum ServiceGroup { approvals, travel, other }
+/// Catalog sections of Figma 08 (presentation only). The backend has no
+/// section field and no visa categories yet, so every category it knows lands
+/// in [approvalsTravel]; [visas] stays empty (and hidden) until a visa
+/// category exists. See docs/BACKEND_MIGRATION_GAPS.md.
+enum ServiceGroup { visas, approvalsTravel }
 
 extension ServiceCategoryGroup on ServiceCategory {
-  ServiceGroup get group => switch (this) {
-        ServiceCategory.egyptNationalSecurity ||
-        ServiceCategory.egyptMilitaryIntelligence ||
-        ServiceCategory.jordanApprovals =>
-          ServiceGroup.approvals,
-        ServiceCategory.egyptAirlineCircular => ServiceGroup.travel,
-        ServiceCategory.unknown => ServiceGroup.other,
-      };
+  ServiceGroup get group => ServiceGroup.approvalsTravel;
 }

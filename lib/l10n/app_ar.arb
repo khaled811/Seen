@@ -379,5 +379,6 @@
   "accountVersion": "الإصدار {version}",
   "agentsTitle": "الوكلاء",
   "agentsSearchAction": "بحث",
-  "servicesSectionApprovalsTravel": "الموافقات والسفر"
+  "servicesSectionApprovalsTravel": "الموافقات والسفر",
+  "servicesSectionVisas": "التأشيرات"
 }

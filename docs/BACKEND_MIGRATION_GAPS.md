@@ -134,3 +134,41 @@ Smaller items, listed so they are not lost:
   enum, commission amounts).
 - **Support contact** (screen 16): no phone, email or chat target to link to
   before sign-in.
+
+---
+
+## 5. Service catalog (Figma 08) and top-up (Figma 12) data
+
+**Screens:** 08, New request · Catalog (`service_selection_screen.dart`,
+`service_card_copy.dart`), and 12, Top-up.
+
+**Today:** Figma 08 has two sections, "Visas" (India, Egypt entry, Saudi) and
+"Approvals & travel" (hotels as coming soon, security approval, flight). The
+backend only knows approval / airline categories, so the app draws one
+"Approvals & travel" section. The Visas section is built but stays hidden until
+a service lands in it. Section, icon and label are all derived on the client
+from `ServiceCategory`.
+
+**The backend should provide**, per service in the catalog query:
+
+| Field | Why |
+|---|---|
+| Visa services (India, Saudi, Egypt entry) as real services | the Visas section |
+| `section` / `group` (`visas`, `approvals_travel`) | the client should not infer the section from the category |
+| `iconKey` (or an icon URL) | icons are chosen by category today; new services would show a generic one |
+| `sortOrder` | Figma orders the tiles (visas first; hotels last) |
+| `shortName` (localized, ar / en) | three tiles per row fit about 14 characters on one line; long names wrap |
+| `availability` incl. "coming soon" entries (e.g. Hotels) | the dashed tile with the "Soon" tag |
+| localized `name` / `description` | today a single string is returned |
+| `perPersonPrice` | not shown on the tiles (Figma has none) but needed on the traveler and review screens |
+
+**Top-up (12), in addition to gap 1:**
+- Payment methods as data (code, localized label, icon key, enabled). Figma shows
+  Bank transfer, Cash deposit and **Electronic wallet**; the API only has bank
+  transfer, cash and exchange house, so the third card is labelled "Exchange house".
+- A minimum top-up amount (Figma shows "Minimum 50.00 USD"; the app shows none
+  because none is defined) and the validation error it returns.
+- Whether the bank's transfer reference is required (the API requires it; Figma
+  has no field, so the screen asks for it).
+- Receipt upload with progress (gap 4): Figma shows an uploading state with a
+  file name, size and percentage.

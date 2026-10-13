@@ -1685,5 +1685,9 @@
   "servicesSectionApprovalsTravel": "Approvals & travel",
   "@servicesSectionApprovalsTravel": {
     "description": "Catalog section title (Figma 08)."
+  },
+  "servicesSectionVisas": "Visas",
+  "@servicesSectionVisas": {
+    "description": "Catalog visas section title (Figma 08)."
   }
 }

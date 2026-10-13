@@ -207,12 +207,18 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
             ),
           )
         else ...[
-          // The backend has no visa services yet; every service it returns is an
-          // approval or a travel service, so they share Figma's second section.
-          Text(l10n.servicesSectionApprovalsTravel, style: type.h2.copyWith(color: c.ink)),
-          gap,
-          _ServiceGrid(services: visible),
-          gap,
+          // Figma order: visas first, then approvals and travel. A section with no
+          // services is not drawn.
+          for (final g in ServiceGroup.values)
+            if (visible.any((s) => s.category.group == g)) ...[
+              Text(
+                g == ServiceGroup.visas ? l10n.servicesSectionVisas : l10n.servicesSectionApprovalsTravel,
+                style: type.h2.copyWith(color: c.ink),
+              ),
+              gap,
+              _ServiceGrid(services: [for (final s in visible) if (s.category.group == g) s]),
+              gap,
+            ],
         ],
         SeenHelpCard(
           title: l10n.servicesHelpTitle,
