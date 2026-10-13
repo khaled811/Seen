@@ -172,3 +172,79 @@ from `ServiceCategory`.
   has no field, so the screen asks for it).
 - Receipt upload with progress (gap 4): Figma shows an uploading state with a
   file name, size and percentage.
+
+---
+
+## 6. Per-screen backend requirements (Figma 05–13)
+
+What each migrated screen still needs from the backend. "Today" says what the
+app does instead; nothing is invented on the client.
+
+### 05 · Home
+- **Agency identity:** agency name and agent display name (greeting, avatar
+  initials). Today: greeting without a name, a person glyph as the avatar.
+- **Request summary fields:** first traveler name, destination / service type,
+  service icon key and the current step text ("لدى الجهة المختصة · ٣ من ٥") with
+  the step count. Today: service name and traveler count.
+- **Banners:** an announcements API for the promo banner (title, subtitle, CTA,
+  badge, expiry). Today: static copy behind `kShowHomePromoBanner`.
+- **Search:** a search endpoint for requests and travelers. Today: the search pill
+  opens the requests list.
+- **"Needs follow-up" count:** returned by the server instead of computed from
+  the loaded requests.
+
+### 06 · Requests
+- Same summary fields as Home (traveler name, destination, service icon, step text).
+- **Counts:** totals for all / processing / awaiting action / completed from the
+  server; the loaded page may be only part of the data.
+- **Pagination and server-side filter / search** (status, text, date).
+- **72 h window:** the deadline of every request waiting for documents (drives the
+  banner and the countdown pill).
+- **Search by reference or traveler name.** Today: the search UI is not shown (not
+  in Figma); the bloc still supports it.
+
+### 07 · Request tracking
+- **Stage timeline from the server:** stage names and count, per-stage timestamps,
+  the active stage with "started N hours ago", and expected durations for future
+  stages ("expected within 48 h"; "right after issue"). Today: five stages derived
+  on the client from the status.
+- **Authority-response deadline:** the "remaining time for the authority's reply"
+  counter in Figma is shown while the request is at the authority; today only the
+  documents deadline (action required) is shown. Needs a deadline and its reason
+  (`deadlineKind`: documents / authority) per request.
+- **Ticket data:** lead traveler, destination, fee total and request date (present),
+  plus the service icon key.
+- **Documents:** list and download of the request's documents (issued approval,
+  receipts), per traveler. Today: a documents sheet with no real files.
+- **Cancellation rules:** whether a request can be cancelled, and why not.
+
+### 08 · Catalog / 09 · Form / 10 · Review (see also gap 5)
+- **09:** form definitions per service (fields, order, which fields sit side by
+  side, passport number length and helper text); passport / document upload
+  (gap 4); server-side passport validation (expiry, number format) with a result
+  per field; the list of nationalities.
+- **10:** fee breakdown lines (service fee, authority fee, any margin), service
+  details line ("Umrah · single entry · 90 days") and processing time, and the
+  wallet hold done by the backend, returning the balance after the hold.
+
+### 11 · Wallet
+- **Ledger rows:** the service name and its icon key, and the request reference
+  for charges. Today: the transaction type plus the reference, one generic icon.
+- **Pending top-up:** the payment method (bank transfer, cash, exchange house).
+- **Statement export** (PDF / Excel, by period). Today: an informational sheet.
+- **Server-side ledger filter** (direction, date) with pagination.
+- **Rejection reason** for rejected top-ups and charges.
+
+### 12 · Top-up
+- See gaps 1, 4 and 5: company bank account, payment methods as data (incl. the
+  electronic wallet method Figma shows), a minimum amount, whether the transfer
+  reference is required, and receipt upload with progress.
+
+### 13 · Sub-agents
+- **Overview:** monthly profit total for the agent network (Figma shows "monthly
+  profits"; the app shows the total of agent balances instead).
+- **Agent card:** city and request count per agent; a pending / suspended / active
+  status enum (today only `isActive`).
+- **Create agent** mutation, **edit credit limit** mutation, and commission data.
+- **Approvals entry point:** the pending-approvals screen exists but is no longer
+  linked from the sub-agents screen (Figma has no entry); decide where it lives.

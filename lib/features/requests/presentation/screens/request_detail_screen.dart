@@ -7,6 +7,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_motion_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/motion_icon.dart';
@@ -14,6 +15,7 @@ import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/presentation/widgets/steppers.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
@@ -98,6 +100,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final type = SeenType.of(context);
+    final c = SeenColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s3, _gutter, SeenSpace.s3),
       child: Row(
@@ -108,10 +111,26 @@ class _Header extends StatelessWidget {
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           Expanded(child: Text(l10n.requestTrackingTitle, textAlign: TextAlign.center, style: type.title)),
-          SeenRoundIconButton(
-            icon: SeenIcons.headset,
-            semanticLabel: l10n.requestDetailContactSupportAction,
-            onPressed: () => _openSupport(context),
+          Semantics(
+            button: true,
+            label: l10n.requestDetailContactSupportAction,
+            excludeSemantics: true,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: SeenShadows.card),
+              child: Material(
+                color: c.card,
+                shape: CircleBorder(side: BorderSide(color: c.border)),
+                child: InkWell(
+                  onTap: () => _openSupport(context),
+                  customBorder: const CircleBorder(),
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(child: SeenSvgIcon(SeenVectors.accountSupport, size: 22, color: c.primary)),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -245,7 +264,10 @@ class _DetailBody extends StatelessWidget {
         const SizedBox(height: 18),
         _StagesCard(detail: detail),
         if (detail.travelers.isNotEmpty) ...[
-          SeenSectionHeader(title: l10n.requestDetailTravelersSection),
+          SeenSectionHeader(
+            title: l10n.requestDetailTravelersSection,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+          ),
           _TravelersCard(travelers: detail.travelers),
         ],
         if (detail.isCancellable) ...[
