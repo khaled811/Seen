@@ -90,7 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 440),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                    // Figma 4:248: the body starts 72 px from the screen top.
+                    padding:
+                        EdgeInsets.fromLTRB(20, (72 - MediaQuery.paddingOf(context).top).clamp(16.0, 72.0), 20, 20),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -180,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) => FormValidators.required(value, message: l10n.validationRequired),
                           ),
-                          const SizedBox(height: SeenSpace.s2),
+                          const SizedBox(height: SeenSpace.s5),
                           Align(
                             alignment: AlignmentDirectional.centerStart,
                             child: SeenTextLink(
@@ -188,7 +190,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: widget.onForgotPassword ?? _comingSoon,
                             ),
                           ),
-                          const SizedBox(height: 56),
+                          // Figma: a 90 px spacer between two 20 px gaps.
+                          const SizedBox(height: 130),
                           BlocBuilder<AuthBloc, AuthState>(
                             buildWhen: (previous, current) => previous is AuthLoading || current is AuthLoading,
                             builder: (context, state) {
@@ -202,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             },
                           ),
-                          const SizedBox(height: SeenSpace.s3),
+                          const SizedBox(height: SeenSpace.s5),
                           Wrap(
                             alignment: WrapAlignment.center,
                             crossAxisAlignment: WrapCrossAlignment.center,
