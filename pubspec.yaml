@@ -105,6 +105,7 @@ flutter:
     # custom icon set (assets/icons/). Render with flutter_svg.
     - assets/vectors/
     - assets/icons/
+    - assets/icons/account/
     # Spiritual hub: duas.json (docs/spiritual_feature/05-content.md) and the
     # mock dua audio (a 3 s silent WAV) used until real recitations are added.
     - assets/data/

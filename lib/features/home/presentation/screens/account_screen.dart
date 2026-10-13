@@ -12,6 +12,7 @@ import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
@@ -124,11 +125,9 @@ class AccountScreen extends StatelessWidget {
               Row(
                 children: [
                   Expanded(child: Text(l10n.accountTitle, style: t.h1)),
-                  SeenRoundIconButton(
-                    icon: SeenIcons.bell,
-                    semanticLabel: l10n.notificationsTitle,
-                    tonal: true,
-                    onPressed: () => _push(context, const NotificationsScreen()),
+                  _BellButton(
+                    label: l10n.notificationsTitle,
+                    onTap: () => _push(context, const NotificationsScreen()),
                   ),
                 ],
               ),
@@ -137,7 +136,7 @@ class AccountScreen extends StatelessWidget {
               _SectionLabel(l10n.accountSectionAgency),
               _MenuCard(items: [
                 _MenuItem(
-                  icon: SeenIcons.file,
+                  asset: SeenVectors.accountDocument,
                   title: l10n.accountAgencyDetails,
                   onTap: () => showSeenSheet<void>(
                     context: context,
@@ -145,23 +144,23 @@ class AccountScreen extends StatelessWidget {
                     builder: (_) => Text(l10n.accountAgencyDetailsSoonBody),
                   ),
                 ),
-                _MenuItem(icon: SeenIcons.cash, title: l10n.accountItemMargin, onTap: () => _comingSoon(context)),
-                _MenuItem(icon: SeenIcons.users, title: l10n.accountItemUsers, onTap: () => _comingSoon(context)),
+                _MenuItem(asset: SeenVectors.accountCash, title: l10n.accountItemMargin, onTap: () => _comingSoon(context)),
+                _MenuItem(asset: SeenVectors.accountAgents, title: l10n.accountItemUsers, onTap: () => _comingSoon(context)),
               ]),
               _SectionLabel(l10n.accountSectionApp),
               _MenuCard(items: [
                 _MenuItem(
-                  icon: SeenIcons.bell,
+                  asset: SeenVectors.accountBell,
                   title: l10n.notificationsTitle,
                   onTap: () => _push(context, const NotificationsScreen()),
                 ),
                 _MenuItem(
-                  icon: PhosphorIconsRegular.gearSix,
+                  asset: SeenVectors.accountSettings,
                   title: l10n.accountItemSettings,
                   onTap: () => _openSettings(context),
                 ),
                 _MenuItem(
-                  icon: PhosphorIconsRegular.chatCircleDots,
+                  asset: SeenVectors.accountSupport,
                   title: l10n.accountSupportTitle,
                   onTap: () => _push(context, const SupportTicketsScreen()),
                 ),
@@ -260,9 +259,9 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _MenuItem {
-  const _MenuItem({required this.icon, required this.title, required this.onTap});
+  const _MenuItem({required this.asset, required this.title, required this.onTap});
 
-  final IconData icon;
+  final String asset;
   final String title;
   final VoidCallback onTap;
 }
@@ -307,11 +306,15 @@ class _MenuCard extends StatelessWidget {
                               color: SeenBrand.violet10,
                               borderRadius: BorderRadius.all(SeenRadius.r12),
                             ),
-                            child: SizedBox(width: 36, height: 36, child: Icon(items[i].icon, size: 20, color: c.primary)),
+                            child: SizedBox(
+                              width: 36,
+                              height: 36,
+                              child: Center(child: SeenSvgIcon(items[i].asset, size: 20, color: c.primary)),
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(child: Text(items[i].title, style: t.bodyStrong)),
-                          Icon(SeenIcons.forward(context), size: 16, color: c.inkMuted),
+                          _Chevron(color: c.inkMuted),
                         ],
                       ),
                     ),
@@ -353,7 +356,7 @@ class _SignOutBlock extends StatelessWidget {
               padding: const EdgeInsetsDirectional.symmetric(horizontal: 18),
               child: Row(
                 children: [
-                  Icon(PhosphorIconsRegular.signOut, size: 20, color: colors.fg),
+                  SeenSvgIcon(SeenVectors.accountLogout, size: 20, color: colors.fg),
                   const SizedBox(width: 10),
                   Text(label, style: t.bodyStrong.copyWith(color: colors.fg)),
                 ],
@@ -395,6 +398,60 @@ class _VersionLineState extends State<_VersionLine> {
           style: SeenType.of(context).caption.copyWith(color: c.inkMuted),
         );
       },
+    );
+  }
+}
+
+/// The exported Figma chevron points left, which is "forward" in RTL; it is
+/// mirrored in left-to-right locales.
+class _Chevron extends StatelessWidget {
+  const _Chevron({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final ltr = Directionality.of(context) == TextDirection.ltr;
+    return Transform.flip(
+      flipX: ltr,
+      child: SvgPicture.asset(
+        SeenVectors.accountChevron,
+        width: 6.8,
+        height: 11.8,
+        excludeFromSemantics: true,
+        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      ),
+    );
+  }
+}
+
+/// Header bell: 44 px circle (Figma "Icon button · bell") with the exported icon.
+class _BellButton extends StatelessWidget {
+  const _BellButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: SeenBrand.violet10,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(child: SeenSvgIcon(SeenVectors.accountBell, size: 22, color: c.primary)),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -31,6 +31,16 @@ abstract final class SeenVectors {
   static const iconAgents = 'assets/icons/icon_agents.svg';
   static const iconAccount = 'assets/icons/icon_account.svg';
 
+  // Account screen (Figma 14 · node 18:835), exported from the Figma icon set.
+  static const accountChevron = 'assets/icons/account/chevron.svg';
+  static const accountDocument = 'assets/icons/account/document.svg';
+  static const accountCash = 'assets/icons/account/cash.svg';
+  static const accountAgents = 'assets/icons/account/agents.svg';
+  static const accountBell = 'assets/icons/account/bell.svg';
+  static const accountSettings = 'assets/icons/account/settings.svg';
+  static const accountSupport = 'assets/icons/account/support.svg';
+  static const accountLogout = 'assets/icons/account/logout.svg';
+
   // Service icons (violet tiles with a knocked-out glyph).
   static const iconFlight = 'assets/icons/icon_flight.svg';
   static const iconSaudiVisa = 'assets/icons/icon_saudi_visa.svg';
