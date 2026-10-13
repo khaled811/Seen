@@ -2,8 +2,10 @@
 // details card with one-tap copy.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
@@ -161,6 +163,8 @@ class TopUpBankDetails {
   final String currency;
 }
 
+/// Figma "Bank details card" (node 18:654): violet gradient, grid pattern, the
+/// white logo, bank name, IBAN with a copy pill, currency and beneficiary.
 class SeenBankDetailsCard extends StatelessWidget {
   const SeenBankDetailsCard({
     super.key,
@@ -191,50 +195,116 @@ class SeenBankDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    Widget row(String label, String value, {bool ltr = false, bool copy = false}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: SeenSpace.s2),
-          child: Row(
+    final white = c.onPrimary;
+    final dim = t.caption.copyWith(color: white.withOpacity(0.8));
+    const radius = BorderRadius.all(SeenRadius.r24);
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(color: Color(0x1A2C186A), blurRadius: 16, spreadRadius: -6, offset: Offset(0, 8)),
+          BoxShadow(color: Color(0x4D5B36DA), blurRadius: 48, spreadRadius: -12, offset: Offset(0, 24)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: AlignmentDirectional.centerStart,
+              end: AlignmentDirectional.centerEnd,
+              colors: [SeenBrand.violet, Color(0xFFC3B0FC)],
+            ),
+          ),
+          child: Stack(
             children: [
-              Expanded(
+              Positioned(
+                left: -40,
+                top: -110,
+                width: 291,
+                height: 419,
+                child: ExcludeSemantics(
+                  child: SvgPicture.asset(SeenVectors.walletPatternGrid, fit: BoxFit.fill),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(label, style: t.caption.copyWith(color: c.inkMuted)),
+                    Row(
+                      children: [
+                        Expanded(child: Text(details.bankName, style: t.title.copyWith(color: white))),
+                        ExcludeSemantics(
+                          child: SvgPicture.asset(SeenVectors.logoWhite, width: 69.9, height: 35.2),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(ibanLabel, style: dim),
                     const SizedBox(height: 2),
-                    Text(value, textDirection: ltr ? TextDirection.ltr : null, style: t.bodyStrong),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            details.iban,
+                            textDirection: TextDirection.ltr,
+                            textAlign: TextAlign.end,
+                            style: t.title.copyWith(color: white, fontFeatures: SeenFonts.tabular),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Semantics(
+                          button: true,
+                          label: copyLabel,
+                          excludeSemantics: true,
+                          child: Material(
+                            color: white.withOpacity(0.22),
+                            shape: const StadiumBorder(),
+                            child: InkWell(
+                              onTap: () => _copy(context, details.iban),
+                              customBorder: const StadiumBorder(),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                child: Text(copyLabel, style: t.caption.copyWith(color: white)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(beneficiaryLabel, style: dim),
+                              const SizedBox(height: 2),
+                              Text(details.accountName, style: t.bodyStrong.copyWith(color: white)),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(currencyLabel, style: dim),
+                            const SizedBox(height: 2),
+                            Text(
+                              details.currency,
+                              textDirection: TextDirection.ltr,
+                              style: t.bodyStrong.copyWith(color: white),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              if (copy)
-                Semantics(
-                  button: true,
-                  label: copyLabel,
-                  excludeSemantics: true,
-                  child: InkWell(
-                    onTap: () => _copy(context, value),
-                    borderRadius: const BorderRadius.all(SeenRadius.full),
-                    child: Padding(
-                      padding: const EdgeInsets.all(SeenSpace.s2),
-                      child: Icon(SeenIcons.copy, size: 20, color: c.primary),
-                    ),
-                  ),
-                ),
             ],
           ),
-        );
-
-    return DecoratedBox(
-      decoration: _cardDecoration(c),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: SeenSpace.s2),
-        child: Column(
-          children: [
-            row(details.bankName, details.accountName),
-            Divider(height: 1, color: c.border),
-            row(ibanLabel, details.iban, ltr: true, copy: true),
-            Divider(height: 1, color: c.border),
-            row(currencyLabel, details.currency, ltr: true),
-          ],
         ),
       ),
     );

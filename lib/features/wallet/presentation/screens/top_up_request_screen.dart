@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/dropzone.dart';
@@ -12,20 +12,20 @@ import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
-import '../../../../core/theme/seen_dimensions.dart';
-import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/money.dart';
 import '../../../../core/validators/form_validators.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
-import '../widgets/method_selector.dart';
+import '../widgets/topup_widgets.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
 
-/// Figma 12 — full-page top-up request. The wallet screen owns the
-/// [WalletBloc]; this route re-provides it with `BlocProvider.value`.
+/// Figma 12 (node 18:619) — full-page top-up request: payment method cards,
+/// the bank details card, the amount with preset chips, the receipt slot and a
+/// sticky submit bar. The wallet screen owns the [WalletBloc]; this route
+/// re-provides it with `BlocProvider.value`.
 class TopUpRequestScreen extends StatefulWidget {
   const TopUpRequestScreen({super.key, this.bankDetails});
 
@@ -49,32 +49,35 @@ class TopUpRequestScreen extends StatefulWidget {
 }
 
 class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
-  static const _presets = [100, 500, 1000, 5000];
+  // Figma lists the chips 100 · 250 · 500 · 1,000 (first at the start edge).
+  static const _presets = [100, 250, 500, 1000];
+  static const _presetLabels = ['100', '250', '500', '1,000'];
 
   // Owned here, disposed in dispose().
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _referenceController = TextEditingController();
-  final _notesController = TextEditingController();
   TopUpMethod _method = TopUpMethod.bankTransfer;
 
   @override
   void dispose() {
     _amountController.dispose();
     _referenceController.dispose();
-    _notesController.dispose();
     super.dispose();
+  }
+
+  int get _selectedPreset {
+    final value = num.tryParse(_amountController.text.trim());
+    return value == null ? -1 : _presets.indexOf(value.toInt() == value ? value.toInt() : -1);
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final notes = _notesController.text.trim();
     context.read<WalletBloc>().add(
           WalletTopUpSubmitted(
             amountCents: MoneyParser.centsFromDecimalString(_amountController.text.trim()),
             method: _method,
             referenceNumber: _referenceController.text.trim(),
-            notes: notes.isEmpty ? null : notes,
           ),
         );
   }
@@ -89,6 +92,7 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final bank = widget.bankDetails ?? (kDebugMode ? TopUpRequestScreen._debugSample : null);
+    const gap = SizedBox(height: 18);
 
     return BlocListener<WalletBloc, WalletState>(
       listenWhen: (previous, current) => current is WalletLoaded && current.topUpStatus != TopUpSubmissionStatus.idle,
@@ -118,63 +122,33 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                   child: Form(
                     key: _formKey,
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, SeenSpace.s2, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                       children: [
-                        Text(l10n.topUpAmountSection, style: t.h2),
-                        const SizedBox(height: SeenSpace.s3),
-                        SeenTextField(
-                          label: l10n.topUpAmountLabel,
-                          isRequired: true,
-                          controller: _amountController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          mono: true,
-                          ltr: true,
-                          suffixText: 'USD',
-                          validator: (v) => FormValidators.positiveAmount(v, message: l10n.validationInvalidAmount),
-                        ),
-                        const SizedBox(height: SeenSpace.s2),
-                        Wrap(
-                          spacing: SeenSpace.s2,
-                          runSpacing: SeenSpace.s2,
-                          children: [
-                            for (final p in _presets)
-                              _PresetChip(
-                                label: SeenFormat.usd(p),
-                                onTap: () => _amountController.text = p.toStringAsFixed(2),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: SeenSpace.s5),
                         Text(l10n.topUpPaymentMethodLabel, style: t.h2),
-                        const SizedBox(height: SeenSpace.s3),
-                        SeenMethodSelector<TopUpMethod>(
+                        gap,
+                        SeenMethodCards<TopUpMethod>(
                           value: _method,
                           onChanged: (v) => setState(() => _method = v),
                           options: [
-                            SeenMethodOption(
+                            SeenMethodCardOption(
                               value: TopUpMethod.bankTransfer,
-                              icon: SeenIcons.bank,
+                              iconAsset: SeenVectors.walletBank,
                               label: WalletLabels.topUpMethod(l10n, TopUpMethod.bankTransfer),
-                              caption: l10n.topUpMethodBankTransferCaption,
                             ),
-                            SeenMethodOption(
+                            SeenMethodCardOption(
                               value: TopUpMethod.cash,
-                              icon: SeenIcons.cash,
+                              iconAsset: SeenVectors.walletCash,
                               label: WalletLabels.topUpMethod(l10n, TopUpMethod.cash),
-                              caption: l10n.topUpMethodCashCaption,
                             ),
-                            SeenMethodOption(
+                            SeenMethodCardOption(
                               value: TopUpMethod.exchangeHouse,
-                              icon: SeenIcons.exchange,
+                              iconAsset: SeenVectors.walletIcon,
                               label: WalletLabels.topUpMethod(l10n, TopUpMethod.exchangeHouse),
-                              caption: l10n.topUpMethodExchangeHouseCaption,
                             ),
                           ],
                         ),
                         if (_method == TopUpMethod.bankTransfer) ...[
-                          const SizedBox(height: SeenSpace.s5),
-                          Text(l10n.topUpMethodBankTransfer, style: t.h2),
-                          const SizedBox(height: SeenSpace.s3),
+                          gap,
                           if (bank != null)
                             SeenBankDetailsCard(
                               details: bank,
@@ -187,7 +161,28 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                           else
                             Text(l10n.topUpBankDetailsUnavailable, style: t.body.copyWith(color: c.inkSecondary)),
                         ],
-                        const SizedBox(height: SeenSpace.s5),
+                        gap,
+                        Text(l10n.topUpAmountSection, style: t.h2),
+                        gap,
+                        SeenTextField(
+                          label: l10n.topUpAmountLabel,
+                          isRequired: true,
+                          controller: _amountController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          mono: true,
+                          ltr: true,
+                          suffixText: 'USD',
+                          onChanged: (_) => setState(() {}),
+                          validator: (v) => FormValidators.positiveAmount(v, message: l10n.validationInvalidAmount),
+                        ),
+                        gap,
+                        SeenAmountChips(
+                          labels: _presetLabels,
+                          selectedIndex: _selectedPreset,
+                          onSelected: (i) => setState(() => _amountController.text = _presets[i].toStringAsFixed(2)),
+                        ),
+                        gap,
+                        // The API requires the bank's transfer reference; Figma has no field for it.
                         SeenTextField(
                           label: l10n.topUpReferenceNumberLabel,
                           isRequired: true,
@@ -196,11 +191,9 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                           ltr: true,
                           validator: (v) => FormValidators.required(v, message: l10n.validationRequired),
                         ),
-                        const SizedBox(height: SeenSpace.s4),
-                        SeenTextField(label: l10n.topUpNotesLabel, controller: _notesController, maxLines: 3),
-                        const SizedBox(height: SeenSpace.s5),
+                        gap,
                         Text(l10n.topUpReceiptSection, style: t.h2),
-                        const SizedBox(height: SeenSpace.s3),
+                        gap,
                         // No picker or upload API yet: say so, never fake an attachment.
                         SeenDropzone(
                           title: l10n.topUpReceiptLabel,
@@ -212,8 +205,7 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                   ),
                 ),
                 BlocBuilder<WalletBloc, WalletState>(
-                  buildWhen: (p, c) =>
-                      c is WalletLoaded && (p is! WalletLoaded || p.topUpStatus != c.topUpStatus),
+                  buildWhen: (p, c) => c is WalletLoaded && (p is! WalletLoaded || p.topUpStatus != c.topUpStatus),
                   builder: (context, state) {
                     final submitting = state is WalletLoaded && state.topUpStatus == TopUpSubmissionStatus.submitting;
                     return SeenActionBar(
@@ -231,31 +223,6 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PresetChip extends StatelessWidget {
-  const _PresetChip({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SeenColors.of(context);
-    final t = SeenType.of(context);
-    return Material(
-      color: SeenBrand.violet05,
-      shape: StadiumBorder(side: BorderSide(color: c.border)),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const StadiumBorder(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Text(label, textDirection: TextDirection.ltr, style: t.chipM.copyWith(color: c.primary)),
         ),
       ),
     );

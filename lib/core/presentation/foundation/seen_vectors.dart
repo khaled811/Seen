@@ -41,6 +41,13 @@ abstract final class SeenVectors {
   static const accountSupport = 'assets/icons/account/support.svg';
   static const accountLogout = 'assets/icons/account/logout.svg';
 
+  // Wallet top-up (Figma 12 · node 18:619).
+  static const walletIcon = 'assets/icons/wallet/wallet.svg';
+  static const walletCash = 'assets/icons/wallet/cash.svg';
+  static const walletBank = 'assets/icons/wallet/bank.svg';
+  static const walletCheck = 'assets/icons/wallet/check.svg';
+  static const walletPatternGrid = 'assets/icons/wallet/pattern_grid.svg';
+
   // Sub-agents screen (Figma 13 · node 18:722).
   static const agentsSearch = 'assets/icons/agents/search.svg';
   static const agentsPlus = 'assets/icons/agents/plus.svg';

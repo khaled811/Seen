@@ -251,7 +251,7 @@ void main() {
 
     testWidgets('a preset chip fills the amount and a valid form submits then closes', (tester) async {
       await open(tester);
-      await tester.tap(find.textContaining('500.00 USD'));
+      await tester.tap(find.text('500'));
       await tester.pump();
       await tester.enterText(find.byType(TextFormField).at(1), 'TRX-77');
       await tester.tap(find.text('إرسال طلب الشحن'));
@@ -274,7 +274,7 @@ void main() {
     testWidgets('a failed submission keeps the screen open', (tester) async {
       repo.result = const Left(ServerFailure('رفض الخادم'));
       await open(tester);
-      await tester.tap(find.textContaining('100.00 USD'));
+      await tester.tap(find.text('100'));
       await tester.pump();
       await tester.enterText(find.byType(TextFormField).at(1), 'TRX-1');
       await tester.tap(find.text('إرسال طلب الشحن'));
