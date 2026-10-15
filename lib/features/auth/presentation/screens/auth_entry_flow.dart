@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../domain/entities/agency_registration.dart';
 import 'agency_pending_approval_screen.dart';
+import 'agency_registration_flow.dart';
 import 'create_agency_account_screen.dart';
 import 'forgot_password_flow.dart';
 import 'login_screen.dart';
 import 'welcome_screen.dart';
 
-enum _EntryStep { welcome, login, createAgency, pendingApproval, forgotPassword }
+enum _EntryStep { welcome, login, createAgency, registration, pendingApproval, forgotPassword }
 
 /// Unauthenticated entry: Welcome (02) → Login (03), or Welcome → Create agency
 /// account (15) → Pending approval (16). Owns only the "which step is showing"
@@ -29,6 +31,10 @@ class AuthEntryFlow extends StatefulWidget {
 class _AuthEntryFlowState extends State<AuthEntryFlow> {
   late _EntryStep _step = widget.startOnLogin ? _EntryStep.login : _EntryStep.welcome;
 
+  /// The agency form, kept while the registration steps run so "back" and
+  /// "edit number" return to a filled form. Held in memory only.
+  AgencyRegistrationDraft? _draft;
+
   @override
   void didUpdateWidget(covariant AuthEntryFlow oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -47,8 +53,9 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
     return PopScope(
       canPop: _step == _EntryStep.welcome,
       onPopInvoked: (didPop) {
-        // The forgot-password flow handles its own back steps.
-        if (!didPop && _step != _EntryStep.forgotPassword) _go(_EntryStep.welcome);
+        // The forgot-password and registration flows handle their own back steps.
+        if (didPop || _step == _EntryStep.forgotPassword || _step == _EntryStep.registration) return;
+        _go(_EntryStep.welcome);
       },
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
@@ -73,7 +80,21 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
           _EntryStep.createAgency => CreateAgencyAccountScreen(
               key: const ValueKey('auth-create-agency'),
               onBack: () => _go(_EntryStep.welcome),
-              onSubmitted: () => _go(_EntryStep.pendingApproval),
+              initial: _draft,
+              onSubmitted: (draft) {
+                _draft = draft;
+                _go(_EntryStep.registration);
+              },
+            ),
+          _EntryStep.registration => AgencyRegistrationFlow(
+              key: const ValueKey('auth-registration'),
+              draft: _draft!,
+              onExit: () => _go(_EntryStep.createAgency),
+              onCompleted: () {
+                _draft = null;
+                _go(_EntryStep.pendingApproval);
+              },
+              onSignIn: () => _go(_EntryStep.login),
             ),
           _EntryStep.pendingApproval => const AgencyPendingApprovalScreen(key: ValueKey('auth-pending')),
         },

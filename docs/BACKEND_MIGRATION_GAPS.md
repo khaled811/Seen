@@ -357,3 +357,48 @@ Error codes (GraphQL `extensions.code`, with `extensions` details) the app maps:
 Also needed from the backend: the code is 6 digits and valid for 10 minutes (the
 helper text says so); the reset ends the user's other sessions (the success screen
 says so); the password policy above is enforced server-side as well.
+
+## 9. Agency registration after the form (Figma AUTH-05 … AUTH-07)
+
+The "Create agency account" form (step 1 of 4) no longer jumps straight to the
+pending screen: it continues with a password (2/4), a phone code (3/4) and the
+terms consent (4/4), then the pending-approval screen. None of this exists on the
+backend yet. The app calls the placeholders below
+(`agency_registration_remote_data_source.dart`); debug builds fall back to canned
+answers when the real call fails, **release builds call the real mutations and
+fail until these exist**.
+
+```graphql
+mutation StartAgencyRegistration($input: AgencyRegistrationInput!)
+  # input: agencyName managerName phone(E.164) email city licenseNumber password
+  -> { challengeToken maskedPhone resendCooldownSeconds }   # stores a PENDING registration, texts the code
+mutation ResendRegistrationCode($challengeToken: String!)
+  -> { challengeToken maskedPhone resendCooldownSeconds }
+mutation VerifyRegistrationPhone($challengeToken: String!, $code: String!)
+  -> { verificationToken }
+mutation CompleteAgencyRegistration($verificationToken: String!, $consent: RegistrationConsentInput!)
+  # consent: acceptedTerms acceptedPrivacy marketing
+  -> { success }                                            # creates the account in "pending review"
+```
+
+| Code | Details | Screen state |
+|---|---|---|
+| `PHONE_ALREADY_REGISTERED` | none | AUTH-06 red banner "linked to another account" + Sign in |
+| `RATE_LIMITED` | `retryAfterSeconds` | amber banner |
+| `OTP_INVALID` | `attemptsLeft` | red cells + "N attempts left" |
+| `OTP_EXPIRED` | none | amber banner |
+| `OTP_ATTEMPTS_EXHAUSTED` | `lockoutMinutes` | red banner |
+| `PASSWORD_WEAK` | none | red banner on AUTH-05 |
+
+Also needed from the backend:
+- Duplicate **email** and **license number** checks (Figma AUTH-08 shows field
+  errors; not built until that frame is approved). Today only the phone is
+  reported, and only when the code is verified.
+- Store the consent with a timestamp and the document versions accepted
+  (terms / privacy); the app sends only the three flags.
+- The commercial-register upload on the form is still not sent anywhere (section 3).
+- Terms and privacy texts (AUTH-09 / 10 readers) — the "Read" links show a
+  "coming soon" snackbar for now.
+- The password is sent once, in `StartAgencyRegistration`, and is never kept in
+  app state; the backend must hash it and discard the pending registration after a
+  timeout.

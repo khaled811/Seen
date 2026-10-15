@@ -1900,5 +1900,147 @@
   "recoveryBackToLogin": "Back to sign in",
   "@recoveryBackToLogin": {
     "description": "Forgot-password flow copy."
+  },
+  "registrationStepOf": "Step {step} of {total}",
+  "@registrationStepOf": {
+    "description": "Agency registration flow copy.",
+    "placeholders": {
+      "step": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "registrationPasswordHeading": "Create a password for your account",
+  "@registrationPasswordHeading": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationPasswordLabel": "Password",
+  "@registrationPasswordLabel": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationPasswordShown": "Visible · tap the eye to hide it",
+  "@registrationPasswordShown": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationPasswordHidden": "Hidden · tap the eye to show it",
+  "@registrationPasswordHidden": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationRuleDigitOrSymbol": "A digit or a symbol",
+  "@registrationRuleDigitOrSymbol": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationStrengthVeryStrong": "Very strong",
+  "@registrationStrengthVeryStrong": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationStrengthGood": "Good",
+  "@registrationStrengthGood": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationVerifyTitle": "Verify phone",
+  "@registrationVerifyTitle": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationVerifyHeading": "Verify your phone number",
+  "@registrationVerifyHeading": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationVerifySent": "We sent a code to {phone}.",
+  "@registrationVerifySent": {
+    "description": "Agency registration flow copy.",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "registrationWrongNumber": "Wrong number?",
+  "@registrationWrongNumber": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationEditNumber": "Edit it",
+  "@registrationEditNumber": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationResendQuestion": "Didn't get the code?",
+  "@registrationResendQuestion": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationResend": "Resend",
+  "@registrationResend": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationResendIn": "Resend in {time}",
+  "@registrationResendIn": {
+    "description": "Agency registration flow copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "registrationVerifyAction": "Verify and continue",
+  "@registrationVerifyAction": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationPhoneTaken": "This number is linked to another account. Sign in or reset your password.",
+  "@registrationPhoneTaken": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationTermsTitle": "Accept the terms",
+  "@registrationTermsTitle": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationTermsHeading": "Before creating the account",
+  "@registrationTermsHeading": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationTermsPoint1": "The agency is responsible for the accuracy of travellers' data and documents.",
+  "@registrationTermsPoint1": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationTermsPoint2": "Request fees are held from the wallet on submission and charged on completion.",
+  "@registrationTermsPoint2": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationTermsPoint3": "Jubari reviews the registration request within one business day.",
+  "@registrationTermsPoint3": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationConsentTerms": "I agree to the terms and conditions",
+  "@registrationConsentTerms": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationConsentPrivacy": "I agree to the privacy policy",
+  "@registrationConsentPrivacy": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationConsentMarketing": "I would like to receive offers and updates (optional)",
+  "@registrationConsentMarketing": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationRead": "Read",
+  "@registrationRead": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationReadSoon": "The document text will be available here soon.",
+  "@registrationReadSoon": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationConsentNote": "Accepting the terms and the privacy policy is required to create the account. You can go back without creating one.",
+  "@registrationConsentNote": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationBack": "Back",
+  "@registrationBack": {
+    "description": "Agency registration flow copy."
+  },
+  "registrationCreate": "Create account",
+  "@registrationCreate": {
+    "description": "Agency registration flow copy."
   }
 }

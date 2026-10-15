@@ -3,9 +3,9 @@ AUTH-01,AUTH,Flow,P0,استعادة كلمة المرور: طلب الرمز,For
 AUTH-02,AUTH,Screen,P0,استعادة كلمة المرور: إدخال الرمز,Forgot password: enter OTP,After request code,Wrong code; expired code; resend cooldown; attempts exhausted,Designed - Implemented (Flutter)
 AUTH-03,AUTH,Screen,P0,كلمة مرور جديدة,Set new password,After valid OTP,Password rules and strength; mismatch; reuse of old password,Designed - Implemented (Flutter)
 AUTH-04,AUTH,Screen,P0,تم تغيير كلمة المرور,Password changed (success),After new password,Back to login; session invalidated elsewhere,Designed - Implemented (Flutter)
-AUTH-05,AUTH,Screen,P0,إنشاء حساب: كلمة المرور,Registration: create password,Create agency (15) > Continue,Password rules; mismatch; show/hide,Pending Design
-AUTH-06,AUTH,Screen,P0,إنشاء حساب: تحقق الجوال,Registration: verify phone (OTP),After registration password,Wrong/expired code; resend; phone already used,Pending Design
-AUTH-07,AUTH,Screen,P0,إنشاء حساب: الموافقة على الشروط,Registration: terms consent,Registration form,Checkbox required; link to terms; decline,Pending Design
+AUTH-05,AUTH,Screen,P0,إنشاء حساب: كلمة المرور,Registration: create password,Create agency (15) > Continue,Password rules; mismatch; show/hide,Designed - Implemented (Flutter)
+AUTH-06,AUTH,Screen,P0,إنشاء حساب: تحقق الجوال,Registration: verify phone (OTP),After registration password,Wrong/expired code; resend; phone already used,Designed - Implemented (Flutter)
+AUTH-07,AUTH,Screen,P0,إنشاء حساب: الموافقة على الشروط,Registration: terms consent,Registration form,Checkbox required; link to terms; decline,Designed - Implemented (Flutter)
 AUTH-08,AUTH,State,P1,إنشاء حساب: أخطاء النموذج,Registration: field errors,Create agency (15),Duplicate phone/email/license; invalid email; invalid license; file too large,Pending Design
 AUTH-09,AUTH,Screen,P1,الشروط والأحكام,Terms of use,"Welcome (02), Registration",Long text; language switch; offline,Pending Design
 AUTH-10,AUTH,Screen,P1,سياسة الخصوصية,Privacy policy,"Welcome (02), Registration",Long text; language switch; offline,Pending Design

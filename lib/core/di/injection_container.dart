@@ -1,5 +1,12 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../features/auth/data/datasources/agency_registration_remote_data_source.dart';
+import '../../features/auth/data/datasources/agency_registration_remote_data_source_debug_fallback.dart';
+import '../../features/auth/data/repositories/agency_registration_repository_impl.dart';
+import '../../features/auth/domain/entities/agency_registration.dart';
+import '../../features/auth/domain/repositories/agency_registration_repository.dart';
+import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
+import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
 import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
@@ -100,6 +107,12 @@ class InjectionContainer {
   late final VerifyPasswordResetCodeUseCase verifyPasswordResetCodeUseCase;
   late final ResetPasswordUseCase resetPasswordUseCase;
 
+  late final AgencyRegistrationRepository agencyRegistrationRepository;
+  late final StartAgencyRegistrationUseCase startAgencyRegistrationUseCase;
+  late final ResendRegistrationCodeUseCase resendRegistrationCodeUseCase;
+  late final VerifyRegistrationPhoneUseCase verifyRegistrationPhoneUseCase;
+  late final CompleteAgencyRegistrationUseCase completeAgencyRegistrationUseCase;
+
   late final WalletRemoteDataSource walletRemoteDataSource;
   late final WalletRepository walletRepository;
   late final GetWalletBalanceUseCase getWalletBalanceUseCase;
@@ -167,6 +180,16 @@ class InjectionContainer {
     resendPasswordResetCodeUseCase = ResendPasswordResetCodeUseCase(passwordRecoveryRepository);
     verifyPasswordResetCodeUseCase = VerifyPasswordResetCodeUseCase(passwordRecoveryRepository);
     resetPasswordUseCase = ResetPasswordUseCase(passwordRecoveryRepository);
+
+    agencyRegistrationRepository = AgencyRegistrationRepositoryImpl(
+      remote: DebugFallbackAgencyRegistrationRemoteDataSource(
+        AgencyRegistrationRemoteDataSourceImpl(graphQLService: graphQLService),
+      ),
+    );
+    startAgencyRegistrationUseCase = StartAgencyRegistrationUseCase(agencyRegistrationRepository);
+    resendRegistrationCodeUseCase = ResendRegistrationCodeUseCase(agencyRegistrationRepository);
+    verifyRegistrationPhoneUseCase = VerifyRegistrationPhoneUseCase(agencyRegistrationRepository);
+    completeAgencyRegistrationUseCase = CompleteAgencyRegistrationUseCase(agencyRegistrationRepository);
 
     loginUseCase = LoginUseCase(authRepository);
     verifyOtpUseCase = VerifyOtpUseCase(authRepository);
@@ -248,6 +271,15 @@ class InjectionContainer {
         resendCode: resendPasswordResetCodeUseCase,
         verifyCode: verifyPasswordResetCodeUseCase,
         resetPassword: resetPasswordUseCase,
+      );
+
+  /// Builds a fresh [AgencyRegistrationBloc]; the registration flow owns it.
+  AgencyRegistrationBloc createAgencyRegistrationBloc(AgencyRegistrationDraft draft) => AgencyRegistrationBloc(
+        draft: draft,
+        start: startAgencyRegistrationUseCase,
+        resendCode: resendRegistrationCodeUseCase,
+        verifyPhone: verifyRegistrationPhoneUseCase,
+        complete: completeAgencyRegistrationUseCase,
       );
 
   /// Builds a fresh [WalletBloc]. The caller (the wallet screen's own

@@ -14,17 +14,19 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/validators/form_validators.dart';
+import '../../domain/entities/agency_registration.dart';
 import '../utils/phone_identifier.dart';
 
-/// Figma 15 (node 20:594) — create agency account, step 1 of 2. The backend
-/// exposes no self-registration mutation yet, so a valid form is not sent
-/// anywhere: [onSubmitted] just moves the flow to the pending-approval screen
-/// (step 2). Nothing is stored or faked.
+/// Figma 15 (node 20:594) — create agency account, step 1 of 4. A valid form
+/// is handed to [onSubmitted] as a draft; the registration flow (password,
+/// phone code, terms) sends it. [initial] restores the form when the user comes
+/// back from a later step.
 class CreateAgencyAccountScreen extends StatefulWidget {
-  const CreateAgencyAccountScreen({super.key, required this.onBack, required this.onSubmitted});
+  const CreateAgencyAccountScreen({super.key, required this.onBack, required this.onSubmitted, this.initial});
 
   final VoidCallback onBack;
-  final VoidCallback onSubmitted;
+  final ValueChanged<AgencyRegistrationDraft> onSubmitted;
+  final AgencyRegistrationDraft? initial;
 
   @override
   State<CreateAgencyAccountScreen> createState() => _CreateAgencyAccountScreenState();
@@ -33,12 +35,20 @@ class CreateAgencyAccountScreen extends StatefulWidget {
 class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
   // Owned here, disposed in dispose().
   final _formKey = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  final _manager = TextEditingController();
-  final _phone = TextEditingController();
-  final _email = TextEditingController();
-  final _license = TextEditingController();
-  final _city = TextEditingController();
+  late final _name = TextEditingController(text: widget.initial?.agencyName);
+  late final _manager = TextEditingController(text: widget.initial?.managerName);
+  late final _phone = TextEditingController(text: _initialLocalPhone());
+  late final _email = TextEditingController(text: widget.initial?.email);
+  late final _license = TextEditingController(text: widget.initial?.licenseNumber);
+  late final _city = TextEditingController(text: widget.initial?.city);
+
+  String? _initialLocalPhone() {
+    final phone = widget.initial?.phone;
+    if (phone == null) return null;
+    return phone.startsWith(PhoneIdentifier.defaultCountryCode)
+        ? phone.substring(PhoneIdentifier.defaultCountryCode.length)
+        : phone;
+  }
 
   @override
   void dispose() {
@@ -53,7 +63,14 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    widget.onSubmitted();
+    widget.onSubmitted(AgencyRegistrationDraft(
+      agencyName: _name.text.trim(),
+      managerName: _manager.text.trim(),
+      phone: PhoneIdentifier.toIdentifier(_phone.text),
+      email: _email.text.trim(),
+      city: _city.text.trim(),
+      licenseNumber: _license.text.trim(),
+    ));
   }
 
   @override
@@ -71,7 +88,7 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
             children: [
               SeenScreenHeader(
                 title: l10n.agencyCreateTitle,
-                subtitle: SeenStrings.of(context).stepOf(1, 2),
+                subtitle: l10n.registrationStepOf(SeenStrings.of(context).numeral(1), SeenStrings.of(context).numeral(4)),
                 onBack: widget.onBack,
               ),
               Expanded(
