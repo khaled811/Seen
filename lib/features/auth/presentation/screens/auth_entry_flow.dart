@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'agency_pending_approval_screen.dart';
 import 'create_agency_account_screen.dart';
+import 'forgot_password_flow.dart';
 import 'login_screen.dart';
 import 'welcome_screen.dart';
 
-enum _EntryStep { welcome, login, createAgency, pendingApproval }
+enum _EntryStep { welcome, login, createAgency, pendingApproval, forgotPassword }
 
 /// Unauthenticated entry: Welcome (02) → Login (03), or Welcome → Create agency
 /// account (15) → Pending approval (16). Owns only the "which step is showing"
@@ -35,12 +37,18 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
 
   void _go(_EntryStep step) => setState(() => _step = step);
 
+  // No support channel exists before sign-in (see BACKEND_MIGRATION_GAPS.md).
+  void _contactSupportSoon() => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.agencyPendingSupportNote)));
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: _step == _EntryStep.welcome,
       onPopInvoked: (didPop) {
-        if (!didPop) _go(_EntryStep.welcome);
+        // The forgot-password flow handles its own back steps.
+        if (!didPop && _step != _EntryStep.forgotPassword) _go(_EntryStep.welcome);
       },
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
@@ -53,7 +61,14 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
           _EntryStep.login => LoginScreen(
               key: const ValueKey('auth-login'),
               onBack: () => _go(_EntryStep.welcome),
+              onForgotPassword: () => _go(_EntryStep.forgotPassword),
               onCreateAccount: () => _go(_EntryStep.createAgency),
+            ),
+          _EntryStep.forgotPassword => ForgotPasswordFlow(
+              key: const ValueKey('auth-forgot'),
+              onExit: () => _go(_EntryStep.login),
+              onCreateAccount: () => _go(_EntryStep.createAgency),
+              onContactSupport: _contactSupportSoon,
             ),
           _EntryStep.createAgency => CreateAgencyAccountScreen(
               key: const ValueKey('auth-create-agency'),

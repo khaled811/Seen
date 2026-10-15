@@ -1,5 +1,11 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
+import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
+import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
+import '../../features/auth/domain/repositories/password_recovery_repository.dart';
+import '../../features/auth/domain/usecases/password_recovery_usecases.dart';
+import '../../features/auth/presentation/bloc/password_recovery_bloc.dart';
 import '../../features/auth/data/datasources/auth_local_data_source.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -88,6 +94,12 @@ class InjectionContainer {
   late final LogoutUseCase logoutUseCase;
   late final GetPersistedSessionUseCase getPersistedSessionUseCase;
 
+  late final PasswordRecoveryRepository passwordRecoveryRepository;
+  late final RequestPasswordResetCodeUseCase requestPasswordResetCodeUseCase;
+  late final ResendPasswordResetCodeUseCase resendPasswordResetCodeUseCase;
+  late final VerifyPasswordResetCodeUseCase verifyPasswordResetCodeUseCase;
+  late final ResetPasswordUseCase resetPasswordUseCase;
+
   late final WalletRemoteDataSource walletRemoteDataSource;
   late final WalletRepository walletRepository;
   late final GetWalletBalanceUseCase getWalletBalanceUseCase;
@@ -144,6 +156,17 @@ class InjectionContainer {
       remote: authRemoteDataSource,
       local: authLocalDataSource,
     );
+
+    // Inert in release builds: the fallback is gated on `kDebugMode`.
+    passwordRecoveryRepository = PasswordRecoveryRepositoryImpl(
+      remote: DebugFallbackPasswordRecoveryRemoteDataSource(
+        PasswordRecoveryRemoteDataSourceImpl(graphQLService: graphQLService),
+      ),
+    );
+    requestPasswordResetCodeUseCase = RequestPasswordResetCodeUseCase(passwordRecoveryRepository);
+    resendPasswordResetCodeUseCase = ResendPasswordResetCodeUseCase(passwordRecoveryRepository);
+    verifyPasswordResetCodeUseCase = VerifyPasswordResetCodeUseCase(passwordRecoveryRepository);
+    resetPasswordUseCase = ResetPasswordUseCase(passwordRecoveryRepository);
 
     loginUseCase = LoginUseCase(authRepository);
     verifyOtpUseCase = VerifyOtpUseCase(authRepository);
@@ -218,6 +241,14 @@ class InjectionContainer {
         getPersistedSessionUseCase: getPersistedSessionUseCase,
         authSessionController: authSessionController,
       )..add(const AuthCheckRequested());
+
+  /// Builds a fresh [PasswordRecoveryBloc]; the forgot-password flow owns it.
+  PasswordRecoveryBloc createPasswordRecoveryBloc() => PasswordRecoveryBloc(
+        requestCode: requestPasswordResetCodeUseCase,
+        resendCode: resendPasswordResetCodeUseCase,
+        verifyCode: verifyPasswordResetCodeUseCase,
+        resetPassword: resetPasswordUseCase,
+      );
 
   /// Builds a fresh [WalletBloc]. The caller (the wallet screen's own
   /// `BlocProvider`) owns its lifetime from here on.

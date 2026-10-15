@@ -16,15 +16,19 @@ sealed class Failure extends Equatable {
 
 /// Backend returned an error response (5xx, GraphQL errors, malformed payload).
 final class ServerFailure extends Failure {
-  const ServerFailure(super.message, {this.statusCode, this.code});
+  const ServerFailure(super.message, {this.statusCode, this.code, this.details = const {}});
 
   final int? statusCode;
 
   /// Backend-specific error code (e.g. GraphQL `extensions.code`).
   final String? code;
 
+  /// Structured extras that go with [code] (e.g. `retryAfterSeconds`,
+  /// `attemptsLeft`), usually from GraphQL `extensions`.
+  final Map<String, Object?> details;
+
   @override
-  List<Object?> get props => [message, statusCode, code];
+  List<Object?> get props => [message, statusCode, code, details];
 }
 
 /// No connectivity or the request timed out.

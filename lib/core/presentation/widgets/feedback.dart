@@ -20,6 +20,7 @@ class SeenOtpInput extends StatefulWidget {
     this.onChanged,
     this.error = false,
     this.autofocus = true,
+    this.compact = false,
   });
 
   final int length;
@@ -32,6 +33,9 @@ class SeenOtpInput extends StatefulWidget {
   /// Outlines every cell in dangerFg; show the reason as text below.
   final bool error;
   final bool autofocus;
+
+  /// Password-recovery variant of the cell (Figma AUTH-02): 46 x 54, r14.
+  final bool compact;
 
   @override
   State<SeenOtpInput> createState() => _SeenOtpInputState();
@@ -139,17 +143,19 @@ class _SeenOtpInputState extends State<SeenOtpInput> {
     // is specified with zero size, so there is no focus elevation.
     final Color border = widget.error ? SeenBrand.inputErrorBorder : (active ? c.focus : c.borderStrong);
     final filled = ch.isNotEmpty;
+    final errorColors = SeenRequestStatus.rejected.colors;
     return Container(
-      width: 48,
-      height: 56,
+      width: widget.compact ? 46 : 48,
+      height: widget.compact ? 54 : 56,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: filled && !widget.error ? c.surfaceSunken : c.card,
-        borderRadius: const BorderRadius.all(SeenRadius.lg),
+        // Error: every cell takes the rejected tint and red digits (Figma AUTH-02b).
+        color: widget.error ? errorColors.bg : (filled ? c.surfaceSunken : c.card),
+        borderRadius: BorderRadius.all(widget.compact ? const Radius.circular(14) : SeenRadius.lg),
         border: Border.all(color: border, width: 1.5),
       ),
       child: ch.isNotEmpty
-          ? Text(ch, style: digit)
+          ? Text(ch, style: widget.error ? digit.copyWith(color: errorColors.fg) : digit)
           : (active ? Container(width: 2, height: 24, color: c.focus) : null),
     );
   }

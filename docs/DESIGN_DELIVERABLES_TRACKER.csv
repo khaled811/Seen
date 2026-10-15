@@ -1,8 +1,8 @@
 ﻿ID,Module,Type,Priority,Screen_Name_AR,Screen_Name_EN,Trigger_Or_Route,Key_Edge_Cases,Status
-AUTH-01,AUTH,Flow,P0,استعادة كلمة المرور: طلب الرمز,Forgot password: request code,"Login (03) > ""نسيت كلمة المرور؟""",Phone or email; unknown account; rate limit with timer; offline,Pending Design
-AUTH-02,AUTH,Screen,P0,استعادة كلمة المرور: إدخال الرمز,Forgot password: enter OTP,After request code,Wrong code; expired code; resend cooldown; attempts exhausted,Pending Design
-AUTH-03,AUTH,Screen,P0,كلمة مرور جديدة,Set new password,After valid OTP,Password rules and strength; mismatch; reuse of old password,Pending Design
-AUTH-04,AUTH,Screen,P0,تم تغيير كلمة المرور,Password changed (success),After new password,Back to login; session invalidated elsewhere,Pending Design
+AUTH-01,AUTH,Flow,P0,استعادة كلمة المرور: طلب الرمز,Forgot password: request code,"Login (03) > ""نسيت كلمة المرور؟""",Phone or email; unknown account; rate limit with timer; offline,Designed - Implemented (Flutter)
+AUTH-02,AUTH,Screen,P0,استعادة كلمة المرور: إدخال الرمز,Forgot password: enter OTP,After request code,Wrong code; expired code; resend cooldown; attempts exhausted,Designed - Implemented (Flutter)
+AUTH-03,AUTH,Screen,P0,كلمة مرور جديدة,Set new password,After valid OTP,Password rules and strength; mismatch; reuse of old password,Designed - Implemented (Flutter)
+AUTH-04,AUTH,Screen,P0,تم تغيير كلمة المرور,Password changed (success),After new password,Back to login; session invalidated elsewhere,Designed - Implemented (Flutter)
 AUTH-05,AUTH,Screen,P0,إنشاء حساب: كلمة المرور,Registration: create password,Create agency (15) > Continue,Password rules; mismatch; show/hide,Pending Design
 AUTH-06,AUTH,Screen,P0,إنشاء حساب: تحقق الجوال,Registration: verify phone (OTP),After registration password,Wrong/expired code; resend; phone already used,Pending Design
 AUTH-07,AUTH,Screen,P0,إنشاء حساب: الموافقة على الشروط,Registration: terms consent,Registration form,Checkbox required; link to terms; decline,Pending Design
@@ -10,7 +10,7 @@ AUTH-08,AUTH,State,P1,إنشاء حساب: أخطاء النموذج,Registratio
 AUTH-09,AUTH,Screen,P1,الشروط والأحكام,Terms of use,"Welcome (02), Registration",Long text; language switch; offline,Pending Design
 AUTH-10,AUTH,Screen,P1,سياسة الخصوصية,Privacy policy,"Welcome (02), Registration",Long text; language switch; offline,Pending Design
 AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,Login (03),Wrong credentials; suspended account; pending account; locked with timer,Pending Design
-AUTH-12,AUTH,State,P1,رمز التحقق: خطأ,OTP: error state,OTP (04),Error boxes + message; expired; verifying/disabled,Pending Design
+AUTH-12,AUTH,State,P1,رمز التحقق: خطأ,OTP: error state,OTP (04),Error boxes + message; expired; verifying/disabled,Designed (as AUTH-02b) - Implemented (Flutter)
 AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call returning 401,Where the user lands; unsaved form data; background refresh,Pending Design
 AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Pending Design
 AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Pending Design

@@ -321,3 +321,39 @@ Same format as section 6.
   requests" (this screen) from "the filter matches nothing".
 - **Empty vs. failed:** a response that distinguishes an empty list from a
   connection error, so an error never shows "no requests yet".
+
+---
+
+## 8. Assumed contract: forgot password (implemented in the app, awaiting the backend)
+
+The Flutter side of the recovery flow (Figma AUTH-01 … AUTH-04) is built against
+the placeholder below (`password_recovery_remote_data_source.dart`). In debug
+builds a fallback answers when the real call fails; **release builds call the
+real mutations, so they fail until these exist**.
+
+```graphql
+mutation RequestPasswordReset($identifier: String!)   # E.164 phone or email
+  -> { challengeToken maskedDestination resendCooldownSeconds }
+mutation ResendPasswordReset($challengeToken: String!)
+  -> { challengeToken maskedDestination resendCooldownSeconds }
+mutation VerifyPasswordReset($challengeToken: String!, $code: String!)
+  -> { resetToken }
+mutation ResetPassword($resetToken: String!, $newPassword: String!)
+  -> { success }
+```
+
+Error codes (GraphQL `extensions.code`, with `extensions` details) the app maps:
+
+| Code | Details | Screen state |
+|---|---|---|
+| `ACCOUNT_NOT_FOUND` | none | AUTH-01b red field message + links |
+| `RATE_LIMITED` | `retryAfterSeconds` | AUTH-01b amber banner with a countdown |
+| `OTP_INVALID` | `attemptsLeft` | AUTH-02b red cells + "N attempts left" |
+| `OTP_EXPIRED` | none | AUTH-02b amber banner with Send |
+| `OTP_ATTEMPTS_EXHAUSTED` | `lockoutMinutes` | AUTH-02b red banner, resend disabled |
+| `PASSWORD_REUSED` | none | AUTH-03 rule "not a previous password" fails |
+| `PASSWORD_WEAK` | none | AUTH-03 banner (client rules: 8+ chars, upper + lower, a digit) |
+
+Also needed from the backend: the code is 6 digits and valid for 10 minutes (the
+helper text says so); the reset ends the user's other sessions (the success screen
+says so); the password policy above is enforced server-side as well.

@@ -85,6 +85,20 @@ class SeenStrings {
         _ => '${numeral(n)} $one',
       };
 
+  /// "تبقّت محاولتان" / "2 attempts left" for the wrong-code message.
+  String attemptsLeft(int n) {
+    if (!isArabic) return n == 1 ? '1 attempt left' : '$n attempts left';
+    return switch (n) {
+      1 => 'تبقّت محاولة واحدة',
+      2 => 'تبقّت محاولتان',
+      >= 3 && <= 10 => 'تبقّت ${numeral(n)} محاولات',
+      _ => 'تبقّت ${numeral(n)} محاولة',
+    };
+  }
+
+  /// m:ss for a countdown; digits stay Latin like other clock values.
+  String clockMs(int seconds) => '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
   /// Home greeting line: how many requests need follow-up today.
   String attentionSummary(int n) {
     if (isArabic) {

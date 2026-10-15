@@ -1713,5 +1713,192 @@
   "agencyPendingStepActivate": "Account activation",
   "@agencyPendingStepActivate": {
     "description": "Pending approval copy."
+  },
+  "recoveryTitle": "Reset password",
+  "@recoveryTitle": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryForgotHeading": "Forgot your password?",
+  "@recoveryForgotHeading": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRequestBody": "Enter the phone number or email you registered with and we will send a verification code to reset your password.",
+  "@recoveryRequestBody": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryMethodPhone": "Phone number",
+  "@recoveryMethodPhone": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryMethodEmail": "Email",
+  "@recoveryMethodEmail": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRequestHelper": "We will send a 6-digit code valid for 10 minutes",
+  "@recoveryRequestHelper": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoverySendCode": "Send code",
+  "@recoverySendCode": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryUnknownPhone": "No account is registered with this number. Check the number or create an agency account.",
+  "@recoveryUnknownPhone": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryUnknownEmail": "No account is registered with this email. Check the address or create an agency account.",
+  "@recoveryUnknownEmail": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRateLimited": "Too many attempts. You can request a new code in {time}",
+  "@recoveryRateLimited": {
+    "description": "Forgot-password flow copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "recoveryOffline": "No internet connection. Check your connection and try again.",
+  "@recoveryOffline": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRetry": "Retry",
+  "@recoveryRetry": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryServerError": "We could not complete the request. Try again in a moment.",
+  "@recoveryServerError": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryContactSupport": "Contact support",
+  "@recoveryContactSupport": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryOtpTitle": "Verification code",
+  "@recoveryOtpTitle": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryOtpHeading": "Enter the code we sent",
+  "@recoveryOtpHeading": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryOtpSent": "We sent a 6-digit code to {destination}",
+  "@recoveryOtpSent": {
+    "description": "Forgot-password flow copy.",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "recoveryResendAfter": "Resend available in",
+  "@recoveryResendAfter": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryVerify": "Verify",
+  "@recoveryVerify": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryResendNow": "Send a new code",
+  "@recoveryResendNow": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryResendAction": "Send",
+  "@recoveryResendAction": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryWrongCodeHeading": "Wrong code",
+  "@recoveryWrongCodeHeading": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryExpired": "The code has expired. Request a new one.",
+  "@recoveryExpired": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryExhausted": "No attempts left. Try again in {minutes} minutes or contact support.",
+  "@recoveryExhausted": {
+    "description": "Forgot-password flow copy.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "recoveryNewPasswordTitle": "New password",
+  "@recoveryNewPasswordTitle": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryNewPasswordHeading": "Choose a new password",
+  "@recoveryNewPasswordHeading": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryNewPasswordLabel": "New password",
+  "@recoveryNewPasswordLabel": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryConfirmLabel": "Confirm password",
+  "@recoveryConfirmLabel": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryMismatch": "The passwords do not match",
+  "@recoveryMismatch": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryStrengthWeak": "Weak",
+  "@recoveryStrengthWeak": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryStrengthFair": "Fair",
+  "@recoveryStrengthFair": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryStrengthGood": "Good",
+  "@recoveryStrengthGood": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryStrengthStrong": "Strong",
+  "@recoveryStrengthStrong": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRuleLength": "At least 8 characters",
+  "@recoveryRuleLength": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRuleCase": "An uppercase and a lowercase letter",
+  "@recoveryRuleCase": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRuleDigit": "At least one digit",
+  "@recoveryRuleDigit": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryRuleNotReused": "Not a previous password",
+  "@recoveryRuleNotReused": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoverySavePassword": "Save password",
+  "@recoverySavePassword": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryPasswordReused": "This password was used before. Choose a different one.",
+  "@recoveryPasswordReused": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryPasswordWeak": "The password does not meet the requirements.",
+  "@recoveryPasswordWeak": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryDoneTitle": "Password changed",
+  "@recoveryDoneTitle": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryDoneBody": "Sign in with your new password. We ended your sessions on other devices to protect your account.",
+  "@recoveryDoneBody": {
+    "description": "Forgot-password flow copy."
+  },
+  "recoveryBackToLogin": "Back to sign in",
+  "@recoveryBackToLogin": {
+    "description": "Forgot-password flow copy."
   }
 }
