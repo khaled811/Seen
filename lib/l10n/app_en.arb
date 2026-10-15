@@ -2227,5 +2227,17 @@
   "bookingFollowRequest": "Follow request",
   "@bookingFollowRequest": {
     "description": "Booking success / receipt copy."
+  },
+  "sessionExpiredTitle": "Session expired",
+  "@sessionExpiredTitle": {
+    "description": "Session expired dialog copy."
+  },
+  "sessionExpiredBody": "To protect your account, sign in again.",
+  "@sessionExpiredBody": {
+    "description": "Session expired dialog copy."
+  },
+  "sessionExpiredAction": "Sign in",
+  "@sessionExpiredAction": {
+    "description": "Session expired dialog copy."
   }
 }

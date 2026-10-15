@@ -13,6 +13,8 @@ import 'core/presentation/foundation/seen_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_cubit.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
+import 'features/auth/presentation/screens/session_expired_dialog.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/screens/auth_entry_flow.dart';
 import 'features/auth/presentation/screens/otp_verification_screen.dart';
@@ -144,29 +146,50 @@ class _AuthGateState extends State<_AuthGate> {
   @override
   Widget build(BuildContext context) {
     if (_splashHeld) return const SplashScreen();
-    return BlocBuilder<AuthBloc, AuthState>(
-      buildWhen: (previous, current) => !(current is AuthLoading && previous is! AuthInitial),
-      builder: (context, state) {
-        return switch (state) {
-          AuthInitial() || AuthLoading() => const SplashScreen(),
-          AuthOtpRequired(:final resendCooldownSeconds, :final identifier) =>
-            OtpVerificationScreen(resendCooldownSeconds: resendCooldownSeconds, identifier: identifier),
-          AuthFailure(stage: AuthFailureStage.otp, :final challengeToken)
-              when challengeToken != null =>
-            const OtpVerificationScreen(resendCooldownSeconds: 0),
-          AuthAuthenticated(:final session) when !kEnableSpiritualHub =>
-            AgentShell(session: session),
-          AuthAuthenticated(:final session) =>
-            ModeShell(
-              agentHome: HomeScreen(session: session),
-              agentTabs: _agentTabs(context),
-              onAccount: showAccountSheet,
-            ),
-          AuthUnauthenticated(:final startOnLogin) => AuthEntryFlow(startOnLogin: startOnLogin),
-          // A rejected sign-in goes back to Login, not Welcome.
-          AuthFailure() => const AuthEntryFlow(startOnLogin: true),
-        };
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (previous, current) =>
+          previous is! AuthSessionExpired && current is AuthSessionExpired,
+      listener: (context, state) async {
+        final bloc = context.read<AuthBloc>();
+        await showSessionExpiredDialog(context);
+        // Screens pushed above the gate would outlive the session: drop them,
+        // then let the bloc clear the session and show Login.
+        if (context.mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+        bloc.add(const AuthSessionExpiredAcknowledged());
       },
+      child: BlocBuilder<AuthBloc, AuthState>(
+        buildWhen: (previous, current) =>
+            !(current is AuthLoading && previous is! AuthInitial),
+        builder: (context, state) {
+          return switch (state) {
+            AuthInitial() || AuthLoading() => const SplashScreen(),
+            AuthOtpRequired(:final resendCooldownSeconds, :final identifier) =>
+              OtpVerificationScreen(
+                  resendCooldownSeconds: resendCooldownSeconds,
+                  identifier: identifier),
+            AuthFailure(stage: AuthFailureStage.otp, :final challengeToken)
+                when challengeToken != null =>
+              const OtpVerificationScreen(resendCooldownSeconds: 0),
+            // Expired keeps the same shell under the dialog (AUTH-13).
+            AuthAuthenticated(:final session) ||
+            AuthSessionExpired(:final session) when !kEnableSpiritualHub =>
+              AgentShell(session: session),
+            AuthAuthenticated(:final session) ||
+            AuthSessionExpired(:final session) =>
+              ModeShell(
+                agentHome: HomeScreen(session: session),
+                agentTabs: _agentTabs(context),
+                onAccount: showAccountSheet,
+              ),
+            AuthUnauthenticated(:final startOnLogin) =>
+              AuthEntryFlow(startOnLogin: startOnLogin),
+            // A rejected sign-in goes back to Login, not Welcome.
+            AuthFailure() => const AuthEntryFlow(startOnLogin: true),
+          };
+        },
+      ),
     );
   }
 }

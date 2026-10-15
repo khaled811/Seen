@@ -52,6 +52,12 @@ final class AuthSessionInvalidated extends AuthEvent {
   const AuthSessionInvalidated();
 }
 
+/// The user acknowledged the "session expired" dialog: clear the stored
+/// session and go to Login.
+final class AuthSessionExpiredAcknowledged extends AuthEvent {
+  const AuthSessionExpiredAcknowledged();
+}
+
 /// DEBUG ONLY — bypasses the real login/OTP flow with a mock, fully
 /// permissioned session, so screens can be exercised without a live
 /// backend. The bloc no-ops this outside a debug build (see `AuthBloc`);

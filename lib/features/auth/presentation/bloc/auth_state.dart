@@ -53,6 +53,19 @@ final class AuthAuthenticated extends AuthState {
   List<Object?> get props => [session];
 }
 
+/// A request came back 401 while signed in (Figma AUTH-13). The session is
+/// already dead, but the app keeps the current screen under a blocking dialog
+/// until the user acknowledges it; only then is the stored session cleared and
+/// Login shown.
+final class AuthSessionExpired extends AuthState {
+  const AuthSessionExpired(this.session);
+
+  final UserSession session;
+
+  @override
+  List<Object?> get props => [session];
+}
+
 final class AuthUnauthenticated extends AuthState {
   const AuthUnauthenticated({this.startOnLogin = false});
 

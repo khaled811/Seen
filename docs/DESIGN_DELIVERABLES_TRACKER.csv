@@ -11,7 +11,7 @@ AUTH-09,AUTH,Screen,P1,الشروط والأحكام,Terms of use,"Welcome (02),
 AUTH-10,AUTH,Screen,P1,سياسة الخصوصية,Privacy policy,"Welcome (02), Registration",Long text; language switch; offline,Pending Design
 AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,Login (03),Wrong credentials; suspended account; pending account; locked with timer,Pending Design
 AUTH-12,AUTH,State,P1,رمز التحقق: خطأ,OTP: error state,OTP (04),Error boxes + message; expired; verifying/disabled,Designed (as AUTH-02b) - Implemented (Flutter)
-AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call returning 401,Where the user lands; unsaved form data; background refresh,Pending Design
+AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call returning 401,Where the user lands; unsaved form data; background refresh,Designed - Implemented (Flutter)
 AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Pending Design
 AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Pending Design
 AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Pending Design

@@ -61,6 +61,7 @@ abstract final class SeenVectors {
 
   // Requests header (Figma 06 · node 11:241).
   static const requestsPlus = 'assets/icons/requests/plus.svg';
+  static const sessionClock = 'assets/icons/requests/session_clock.svg';
   static const successCheck = 'assets/icons/requests/success_check.svg';
   static const infoReview = 'assets/icons/requests/info_review.svg';
   static const missingDocTile = 'assets/icons/requests/missing_doc_tile.svg';

@@ -38,6 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthOtpCancelled>(_onOtpCancelled);
     on<AuthLogoutRequested>(_onLogoutRequested, transformer: droppable());
     on<AuthSessionInvalidated>(_onSessionInvalidated);
+    on<AuthSessionExpiredAcknowledged>(_onSessionExpiredAcknowledged, transformer: droppable());
     on<AuthDebugBypassRequested>(_onDebugBypassRequested);
 
     // Owned here: subscribed in the constructor, cancelled in close().
@@ -172,7 +173,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSessionInvalidated event,
     Emitter<AuthState> emit,
   ) {
+    final current = state;
+    // Several in-flight calls can all come back 401; the dialog shows once.
+    if (current is AuthSessionExpired) return;
+    // Signed in: keep the screen and let the user acknowledge (AUTH-13).
+    if (current is AuthAuthenticated) {
+      emit(AuthSessionExpired(current.session));
+      return;
+    }
     emit(const AuthUnauthenticated());
+  }
+
+  Future<void> _onSessionExpiredAcknowledged(
+    AuthSessionExpiredAcknowledged event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state is! AuthSessionExpired) return;
+    // The token is dead: clear it so a relaunch does not restore it.
+    await _logoutUseCase();
+    emit(const AuthUnauthenticated(startOnLogin: true));
   }
 
   /// DEBUG ONLY. Deliberately does not call the repository/use cases, so a

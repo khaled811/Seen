@@ -467,3 +467,22 @@ Needed from the backend:
   library and rendering the receipt on the device. Decision needed.
 - **Copy promise:** "held, not charged; charged when the visa is issued, returned
   if rejected" must match the wallet hold rules (section on wallet holds).
+
+## 12. Session expired (Figma AUTH-13)
+
+Any request answered 401 while signed in now keeps the current screen under a
+blocking "Session expired" dialog; "Sign in" clears the stored session and opens
+Login. (Before, the screen was dropped immediately and the stored token was left in
+secure storage, so a relaunch restored a dead session.)
+
+Needed from the backend / product:
+- **Drafts:** the design says "we saved your form as a draft and you will return
+  to it after signing in". The app has no drafts (no storage, no restore flow, and
+  the "show drafts" screen is still undesigned), so that line is **not shown**.
+  Decide: server-side drafts (`saveBookingDraft` / `bookingDrafts`) or local
+  encrypted storage; then the dialog can show the banner and Login can restore.
+- **Refresh token:** a silent refresh before showing the dialog would avoid most
+  expiries; the backend must say whether refresh tokens exist (the app has none).
+- **401 must mean "expired", never "wrong permission"** (403) or "wrong password"
+  (login errors are normal failures): the dialog appears on every 401.
+- Return the user to where they were after sign-in: not done (Login opens fresh).

@@ -500,5 +500,8 @@
   "bookingReceiptDownload": "تنزيل PDF",
   "bookingReceiptSoon": "مشاركة الإيصال وتنزيله بصيغة PDF ستتوفر قريبًا.",
   "bookingNewRequest": "طلب جديد",
-  "bookingFollowRequest": "متابعة الطلب"
+  "bookingFollowRequest": "متابعة الطلب",
+  "sessionExpiredTitle": "انتهت الجلسة",
+  "sessionExpiredBody": "لحماية حسابك، سجّل الدخول مجددًا.",
+  "sessionExpiredAction": "تسجيل الدخول"
 }
