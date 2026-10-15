@@ -15,6 +15,15 @@ import '../../features/requests/domain/repositories/missing_document_repository.
 import '../../features/requests/domain/services/document_picker.dart';
 import '../../features/requests/domain/usecases/missing_document_usecases.dart';
 import '../../features/requests/presentation/bloc/missing_document_bloc.dart';
+import '../../features/requests/data/datasources/document_file_remote_data_source.dart';
+import '../../features/requests/data/datasources/document_file_remote_data_source_debug_fallback.dart';
+import '../../features/requests/data/repositories/document_file_repository_impl.dart';
+import '../../features/requests/data/services/plugin_document_exporter.dart';
+import '../../features/requests/domain/repositories/document_file_repository.dart';
+import '../../features/requests/domain/services/document_exporter.dart';
+import '../../features/requests/domain/services/pdf_page_renderer.dart';
+import '../../features/requests/domain/usecases/request_document_usecases.dart';
+import '../../features/requests/presentation/bloc/document_viewer_bloc.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
 import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
@@ -139,6 +148,11 @@ class InjectionContainer {
   late final CancelRequestUseCase cancelRequestUseCase;
   late final MissingDocumentRepository missingDocumentRepository;
   late final DocumentPicker documentPicker;
+  late final DocumentFileRepository documentFileRepository;
+  late final DocumentExporter documentExporter;
+  late final FetchDocumentFileUseCase fetchDocumentFileUseCase;
+  late final SaveDocumentUseCase saveDocumentUseCase;
+  late final ShareDocumentUseCase shareDocumentUseCase;
   late final GetMissingDocumentUseCase getMissingDocumentUseCase;
   late final UploadMissingDocumentUseCase uploadMissingDocumentUseCase;
   late final PickDocumentUseCase pickDocumentUseCase;
@@ -247,6 +261,13 @@ class InjectionContainer {
     getMissingDocumentUseCase = GetMissingDocumentUseCase(missingDocumentRepository);
     uploadMissingDocumentUseCase = UploadMissingDocumentUseCase(missingDocumentRepository);
     pickDocumentUseCase = PickDocumentUseCase(documentPicker);
+    documentFileRepository = DocumentFileRepositoryImpl(
+      remote: DebugFallbackDocumentFileRemoteDataSource(DocumentFileRemoteDataSourceImpl()),
+    );
+    documentExporter = PluginDocumentExporter();
+    fetchDocumentFileUseCase = FetchDocumentFileUseCase(documentFileRepository);
+    saveDocumentUseCase = SaveDocumentUseCase(documentExporter);
+    shareDocumentUseCase = ShareDocumentUseCase(documentExporter);
 
     // Same reasoning as the other feature fallbacks above: inert in release
     // builds.
@@ -323,6 +344,18 @@ class InjectionContainer {
         submitBookingUseCase: submitBookingUseCase,
         getWalletBalanceUseCase: getWalletBalanceUseCase,
         validator: validator,
+      );
+
+  /// The PDF engine for the document viewer. No PDF plugin is installed yet, so
+  /// this is null and PDFs fall back to the download / share card; wire an
+  /// adapter over a PDF plugin here (docs/BACKEND_MIGRATION_GAPS.md, section 13).
+  PdfPageRenderer Function()? get createPdfPageRenderer => null;
+
+  /// Builds a fresh [DocumentViewerBloc]; the viewer screen owns it.
+  DocumentViewerBloc createDocumentViewerBloc() => DocumentViewerBloc(
+        fetchDocument: fetchDocumentFileUseCase,
+        saveDocument: saveDocumentUseCase,
+        shareDocument: shareDocumentUseCase,
       );
 
   /// Builds a fresh [MissingDocumentBloc]; the upload screen owns it.

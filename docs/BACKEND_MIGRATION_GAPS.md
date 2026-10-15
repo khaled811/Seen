@@ -486,3 +486,39 @@ Needed from the backend / product:
 - **401 must mean "expired", never "wrong permission"** (403) or "wrong password"
   (login errors are normal failures): the dialog appears on every 401.
 - Return the user to where they were after sign-in: not done (Login opens fresh).
+
+## 13. Document viewer (Figma REQ-11 / REQ-11b)
+
+"View documents" on the tracking screen now opens a viewer: pages with zoom
+(− 100% +, pinch) and thumbnails, Share and Download; "not ready yet" (with where
+the request is) when the request has no document; "could not open" with Retry /
+Report to support when the download fails.
+
+**Client gap (decision needed): no PDF engine is installed.** Rendering a PDF
+needs a native plugin; `pdfx` is the candidate, but it pulls `photo_view` (~23 MB
+package) and could not be downloaded on this machine's connection, so it was not
+added. Today: images render fully; a PDF shows "PDF preview is not available yet"
+with Download / Share working. To finish, add the plugin and implement
+`PdfPageRenderer` (3 methods: open → page count, renderPage, close) and return it
+from `InjectionContainer.createPdfPageRenderer`. The pages / thumbnails / zoom UI
+is already built and tested against a fake renderer.
+
+Needed from the backend:
+- **A fetchable document URL.** The app does a plain HTTPS GET of
+  `outputDocumentUrl` (30 s timeout, no auth header), so it must be a pre-signed,
+  time-limited URL. If it needs the session token instead, say so and the app adds
+  the header.
+- **Several documents per request.** The API gives at most one `outputDocumentUrl`
+  and only once the request is `completed`. Figma's viewer is multi-page and the
+  tracker lists several documents (approval, receipt, traveler files): the request
+  detail should return a list `[{ id, title, fileName, mimeType, sizeBytes, url }]`.
+- **Content type** (`application/pdf` / image) so the app does not guess from the
+  file extension.
+- **Copy promise:** "we will notify you as soon as the document is issued" needs a
+  push / in-app notification when a document becomes available.
+- **Expired URL:** the app shows the generic "could not open" card; a distinct code
+  (e.g. 403 / `LINK_EXPIRED`) would let it refetch the request and retry itself.
+
+Client side: adds `path_provider` as a direct dependency (temp file for sharing);
+saving uses the system save dialog (`file_picker`), sharing uses `share_plus`
+(already a dependency).

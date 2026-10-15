@@ -25,7 +25,7 @@ REQ-07,REQ,State,P1,حالة: بانتظار موافقة الإدارة,Status:
 REQ-08,REQ,Screen,P1,طلب مرفوض,Rejected request detail,Tracking (07) of a rejected request,Reason text; resubmit; contact support; refund of hold,Pending Design
 REQ-09,REQ,State,P1,طلب ملغى / منتهي,Cancelled / expired request detail,Tracking (07),Who cancelled; refund; expired SLA,Pending Design
 REQ-10,REQ,Sheet,P1,إلغاء الطلب,Cancel request (with reason),Tracking (07) > Cancel,Reason required; not cancellable; refund info; failure,Pending Design
-REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) > View documents,PDF/image zoom; multi-page; download; share; not ready; failed to load,Pending Design
+REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) > View documents,PDF/image zoom; multi-page; download; share; not ready; failed to load,Designed - Implemented (Flutter; PDF preview pending engine)
 REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Pending Design
 REQ-13,REQ,Screen,P1,نتائج البحث عن الطلبات,Requests search results,Requests (06) search; Home search pill,Recent searches; by reference or traveler; no results,Pending Design
 BOOK-01,BOOK,Screen,P0,نجاح الحجز / الإيصال,Booking success / receipt,After Review (10) submit,Request number copy; held amount; balance after; share/download receipt,Designed - Implemented (Flutter)

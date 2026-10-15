@@ -2239,5 +2239,65 @@
   "sessionExpiredAction": "Sign in",
   "@sessionExpiredAction": {
     "description": "Session expired dialog copy."
+  },
+  "viewerPageOf": "Page {page} of {total}",
+  "@viewerPageOf": {
+    "description": "Document viewer copy.",
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "viewerShare": "Share",
+  "@viewerShare": {
+    "description": "Document viewer copy."
+  },
+  "viewerDownload": "Download",
+  "@viewerDownload": {
+    "description": "Document viewer copy."
+  },
+  "viewerSaved": "File saved.",
+  "@viewerSaved": {
+    "description": "Document viewer copy."
+  },
+  "viewerSaveFailed": "The file could not be saved.",
+  "@viewerSaveFailed": {
+    "description": "Document viewer copy."
+  },
+  "viewerShareFailed": "Sharing failed.",
+  "@viewerShareFailed": {
+    "description": "Document viewer copy."
+  },
+  "viewerNotReadyTitle": "The document is not ready yet",
+  "@viewerNotReadyTitle": {
+    "description": "Document viewer copy."
+  },
+  "viewerNotReadyBody": "We will notify you as soon as the document is issued.",
+  "@viewerNotReadyBody": {
+    "description": "Document viewer copy."
+  },
+  "viewerFailedTitle": "The document could not be opened",
+  "@viewerFailedTitle": {
+    "description": "Document viewer copy."
+  },
+  "viewerFailedBody": "The connection may be weak or the file damaged.",
+  "@viewerFailedBody": {
+    "description": "Document viewer copy."
+  },
+  "viewerReportSupport": "Report to support",
+  "@viewerReportSupport": {
+    "description": "Document viewer copy."
+  },
+  "viewerPdfUnavailableTitle": "PDF preview is not available yet",
+  "@viewerPdfUnavailableTitle": {
+    "description": "Document viewer copy."
+  },
+  "viewerPdfUnavailableBody": "Download or share the file to open it in a PDF reader on your device.",
+  "@viewerPdfUnavailableBody": {
+    "description": "Document viewer copy."
   }
 }

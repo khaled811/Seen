@@ -503,5 +503,18 @@
   "bookingFollowRequest": "متابعة الطلب",
   "sessionExpiredTitle": "انتهت الجلسة",
   "sessionExpiredBody": "لحماية حسابك، سجّل الدخول مجددًا.",
-  "sessionExpiredAction": "تسجيل الدخول"
+  "sessionExpiredAction": "تسجيل الدخول",
+  "viewerPageOf": "صفحة {page} من {total}",
+  "viewerShare": "مشاركة",
+  "viewerDownload": "تنزيل",
+  "viewerSaved": "تم حفظ الملف.",
+  "viewerSaveFailed": "تعذّر حفظ الملف.",
+  "viewerShareFailed": "تعذّرت المشاركة.",
+  "viewerNotReadyTitle": "المستند غير جاهز بعد",
+  "viewerNotReadyBody": "سنرسل إشعارًا فور صدور المستند.",
+  "viewerFailedTitle": "تعذّر فتح المستند",
+  "viewerFailedBody": "قد يكون الاتصال ضعيفًا أو الملف تالفًا.",
+  "viewerReportSupport": "إبلاغ الدعم",
+  "viewerPdfUnavailableTitle": "معاينة PDF غير متاحة بعد",
+  "viewerPdfUnavailableBody": "نزّل الملف أو شاركه لفتحه في قارئ PDF على جهازك."
 }

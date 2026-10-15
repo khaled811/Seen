@@ -26,10 +26,10 @@ import '../../domain/entities/request_traveler_status.dart';
 import '../bloc/requests_bloc.dart';
 import '../bloc/requests_event.dart';
 import '../bloc/requests_state.dart';
-import '../widgets/request_documents_sheet.dart';
 import '../widgets/request_status_labels.dart';
 import '../widgets/request_status_seen_mapping.dart';
 import '../widgets/seen_deadline_card.dart';
+import 'request_document_viewer_screen.dart';
 import 'upload_missing_document_screen.dart';
 import '../widgets/seen_request_ticket.dart';
 
@@ -161,7 +161,9 @@ class _ActionsBar extends StatelessWidget {
                 child: SeenButton(
                   label: l10n.requestViewDocumentsAction,
                   expand: true,
-                  onPressed: () => showRequestDocumentsSheet(context, detail),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => RequestDocumentViewerScreen(detail: detail)),
+                  ),
                 ),
               ),
               const SizedBox(width: SeenSpace.s3),
