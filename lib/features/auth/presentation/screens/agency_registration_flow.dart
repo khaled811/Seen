@@ -562,7 +562,6 @@ class _TermsScreenState extends State<_TermsScreen> {
           showProgress: false,
           onBack: widget.onBack,
           actions: [
-            SeenButton.secondary(label: l10n.registrationBack, expand: true, onPressed: state.busy ? null : widget.onBack),
             SeenButton(
               label: state.busy ? l10n.loading : l10n.registrationCreate,
               loading: state.busy,
@@ -573,6 +572,7 @@ class _TermsScreenState extends State<_TermsScreen> {
                         RegistrationConsent(acceptedTerms: _terms, acceptedPrivacy: _privacy, marketing: _marketing),
                       )),
             ),
+            SeenButton.secondary(label: l10n.registrationBack, expand: true, onPressed: state.busy ? null : widget.onBack),
           ],
           children: [
             Text(l10n.registrationTermsHeading, style: t.h1),

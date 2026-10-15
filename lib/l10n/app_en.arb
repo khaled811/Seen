@@ -2175,5 +2175,57 @@
   "uploadFromRequestAction": "Upload the required document",
   "@uploadFromRequestAction": {
     "description": "Upload the missing document copy."
+  },
+  "bookingSuccessSubtitle": "We will notify you of every update. You can follow the request from My requests.",
+  "@bookingSuccessSubtitle": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptRef": "Request number",
+  "@bookingReceiptRef": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptCopy": "Copy",
+  "@bookingReceiptCopy": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptService": "Service",
+  "@bookingReceiptService": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptTravelers": "Travellers",
+  "@bookingReceiptTravelers": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptHeld": "Amount held",
+  "@bookingReceiptHeld": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptBalanceAfter": "Available balance after booking",
+  "@bookingReceiptBalanceAfter": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptHoldNote": "The amount is held, not charged. It is charged when the visa is issued and returned if the request is rejected.",
+  "@bookingReceiptHoldNote": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptShare": "Share receipt",
+  "@bookingReceiptShare": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptDownload": "Download PDF",
+  "@bookingReceiptDownload": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingReceiptSoon": "Sharing the receipt and downloading it as a PDF will be available soon.",
+  "@bookingReceiptSoon": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingNewRequest": "New request",
+  "@bookingNewRequest": {
+    "description": "Booking success / receipt copy."
+  },
+  "bookingFollowRequest": "Follow request",
+  "@bookingFollowRequest": {
+    "description": "Booking success / receipt copy."
   }
 }

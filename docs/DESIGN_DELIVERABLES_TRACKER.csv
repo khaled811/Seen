@@ -28,7 +28,7 @@ REQ-10,REQ,Sheet,P1,إلغاء الطلب,Cancel request (with reason),Tracking 
 REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) > View documents,PDF/image zoom; multi-page; download; share; not ready; failed to load,Pending Design
 REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Pending Design
 REQ-13,REQ,Screen,P1,نتائج البحث عن الطلبات,Requests search results,Requests (06) search; Home search pill,Recent searches; by reference or traveler; no results,Pending Design
-BOOK-01,BOOK,Screen,P0,نجاح الحجز / الإيصال,Booking success / receipt,After Review (10) submit,Request number copy; held amount; balance after; share/download receipt,Pending Design
+BOOK-01,BOOK,Screen,P0,نجاح الحجز / الإيصال,Booking success / receipt,After Review (10) submit,Request number copy; held amount; balance after; share/download receipt,Designed - Implemented (Flutter)
 BOOK-02,BOOK,Component,P1,مبدّل المسافرين (إضافة / حذف),Traveler switcher (add / remove),Form (09),Min 1 traveler; max travelers; unsaved data; error marker per traveler,Pending Design
 BOOK-03,BOOK,Sheet,P1,اختيار الجنسية,Nationality picker,Form (09) nationality field,Search; long list; no match; recent,Pending Design
 BOOK-04,BOOK,Sheet,P1,اختيار التاريخ,Date picker sheet,Form (09) date fields,Min/max dates; passport expiry rule; invalid date,Pending Design

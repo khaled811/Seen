@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seen_booking/core/config/feature_flags.dart';
 import 'package:seen_booking/core/constants/enums.dart';
+import 'package:seen_booking/core/navigation/shell_tab_request.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/auth/domain/entities/user_session.dart';
 import 'package:seen_booking/features/home/presentation/screens/agent_shell.dart';
@@ -35,6 +36,14 @@ void main() {
     expect(find.text('HOME'), findsOneWidget);
     expect(find.byType(NavigationDestination), findsNWidgets(5));
     expect(find.byIcon(Icons.flip), findsNothing);
+  });
+
+  testWidgets('a tab request from a screen above the shell switches tab and resets', (tester) async {
+    await tester.pumpWidget(_app());
+    ShellTabRequest.show(1);
+    await tester.pumpAndSettle();
+    expect(find.text('REQUESTS').hitTestable(), findsOneWidget);
+    expect(ShellTabRequest.notifier.value, isNull);
   });
 
   testWidgets('tabs switch pages, keep the bar, and stay alive', (tester) async {

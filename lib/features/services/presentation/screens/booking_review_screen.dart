@@ -51,11 +51,22 @@ class BookingReviewScreen extends StatelessWidget {
               current is ServiceBookingInProgress &&
               current.submissionStatus == BookingSubmissionStatus.success,
           listener: (context, state) {
-            final requestId = (state as ServiceBookingInProgress).submissionResult?.requestId ?? '';
+            final booking = state as ServiceBookingInProgress;
+            final result = booking.submissionResult;
+            final held = result?.totalPriceCents ?? booking.totalPriceCents;
+            final balance = booking.walletBalance;
             // Terminal screen — replace rather than push, so the completed
             // form can't be navigated back into.
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => BookingSuccessScreen(requestId: requestId)),
+              MaterialPageRoute(
+                builder: (_) => BookingSuccessScreen(
+                  requestId: result?.requestId ?? '',
+                  serviceName: booking.service.name,
+                  travelerCount: booking.travelers.length,
+                  heldCents: held,
+                  balanceAfterCents: balance == null ? null : balance.availableCents - held,
+                ),
+              ),
             );
           },
         ),

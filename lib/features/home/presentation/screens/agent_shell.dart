@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/navigation/shell_tab_request.dart';
+
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../agents/presentation/screens/sub_agents_list_screen.dart';
 import '../../../auth/domain/entities/user_session.dart';
@@ -36,6 +38,26 @@ class _AgentShellState extends State<AgentShell> {
   /// 0 home, 1 requests, 2 wallet, 3 sub-agents, 4 account.
   int _index = 0;
   final _opened = <int>{0};
+
+  @override
+  void initState() {
+    super.initState();
+    ShellTabRequest.notifier.addListener(_onTabRequested);
+  }
+
+  @override
+  void dispose() {
+    ShellTabRequest.notifier.removeListener(_onTabRequested);
+    super.dispose();
+  }
+
+  // A screen above the shell asked for a tab (booking receipt → Requests).
+  void _onTabRequested() {
+    final tab = ShellTabRequest.notifier.value;
+    if (tab == null) return;
+    ShellTabRequest.notifier.value = null;
+    if (tab >= 0 && tab < 5) _select(tab);
+  }
 
   Widget _page(int i) => widget.pageBuilders != null
       ? widget.pageBuilders![i](context)

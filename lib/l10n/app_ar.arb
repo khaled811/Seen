@@ -487,5 +487,18 @@
   "uploadDeadlinePassed": "انتهت المهلة. أُلغي الطلب وأُعيد المبلغ المحجوز إلى رصيدك.",
   "uploadNewRequest": "طلب جديد",
   "uploadDone": "تم إرسال المستند وهو الآن قيد المراجعة.",
-  "uploadFromRequestAction": "رفع المستند المطلوب"
+  "uploadFromRequestAction": "رفع المستند المطلوب",
+  "bookingSuccessSubtitle": "سنبلغك عند كل تحديث. يمكنك متابعة الطلب من طلباتي.",
+  "bookingReceiptRef": "رقم الطلب",
+  "bookingReceiptCopy": "نسخ",
+  "bookingReceiptService": "الخدمة",
+  "bookingReceiptTravelers": "المسافرون",
+  "bookingReceiptHeld": "المبلغ المحجوز",
+  "bookingReceiptBalanceAfter": "الرصيد المتاح بعد الحجز",
+  "bookingReceiptHoldNote": "المبلغ محجوز وليس مخصومًا. يُخصم عند صدور التأشيرة، ويعود إن رُفض الطلب.",
+  "bookingReceiptShare": "مشاركة الإيصال",
+  "bookingReceiptDownload": "تنزيل PDF",
+  "bookingReceiptSoon": "مشاركة الإيصال وتنزيله بصيغة PDF ستتوفر قريبًا.",
+  "bookingNewRequest": "طلب جديد",
+  "bookingFollowRequest": "متابعة الطلب"
 }

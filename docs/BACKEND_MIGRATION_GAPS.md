@@ -448,3 +448,22 @@ Client side: this adds two plugins, `image_picker` (gallery, camera) and
 `file_picker` (PDF / files), behind a `DocumentPicker` interface in the domain.
 iOS `Info.plist` now carries the camera and photo-library usage strings; Android
 needs no manifest permission for either plugin as used here.
+
+## 11. Booking success / receipt (Figma BOOK-01)
+
+The receipt after "Confirm and send" shows the request number, service, traveler
+count, held amount and the balance after the hold, with "Follow request" (Requests
+tab) and "New request" (Home).
+
+Needed from the backend:
+- **Return the receipt data with `submitBooking`:** today the result carries only
+  `requestId`, status, total and `createdAt`. The app computes "available balance
+  after booking" itself (balance read before submitting minus the hold). The
+  mutation should return `heldAmount` and `availableBalanceAfter` (and the
+  service name / traveler count) so the receipt shows what the server did.
+- **Receipt PDF and share:** both buttons say "coming soon". The clean fix is a
+  server-generated receipt (`receiptUrl` on the request, PDF, authenticated) that
+  the app downloads or shares; the alternative is adding `share_plus` and a PDF
+  library and rendering the receipt on the device. Decision needed.
+- **Copy promise:** "held, not charged; charged when the visa is issued, returned
+  if rejected" must match the wallet hold rules (section on wallet holds).
