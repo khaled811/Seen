@@ -19,7 +19,7 @@ REQ-01,REQ,Screen,P1,المسودات,Drafts list,Requests (06) filter/section,E
 REQ-02,REQ,Component,P1,"بطاقة مسودة وشارة ""مسودة""",Draft card and chip,"Drafts list, Requests (06)",Missing data in draft; resume vs delete,Pending Design
 REQ-03,REQ,Dialog,P1,حذف مسودة,Delete draft confirmation,Draft card,Undo; last draft,Pending Design
 REQ-04,REQ,Flow,P1,حفظ كمسودة,Save as draft,Booking form (09) / Review (10),Leave-form prompt; partial traveler data; draft limit,Pending Design
-REQ-05,REQ,Flow,P0,رفع المستند الناقص,Upload the missing document,Request card / 72h banner / Tracking (07) when awaiting document,Which document and why; capture/pick/preview; progress; failure/retry; deadline passed,Pending Design
+REQ-05,REQ,Flow,P0,رفع المستند الناقص,Upload the missing document,Request card / 72h banner / Tracking (07) when awaiting document,Which document and why; capture/pick/preview; progress; failure/retry; deadline passed,Designed - Implemented (Flutter)
 REQ-06,REQ,State,P1,حالة: بانتظار موافقة الوكيل,Status: pending agent approval,"Requests (06), Tracking (07)","Chip, card, stage text, who approves",Pending Design
 REQ-07,REQ,State,P1,حالة: بانتظار موافقة الإدارة,Status: pending management approval,"Requests (06), Tracking (07)","Chip, card, stage text, expected time",Pending Design
 REQ-08,REQ,Screen,P1,طلب مرفوض,Rejected request detail,Tracking (07) of a rejected request,Reason text; resubmit; contact support; refund of hold,Pending Design

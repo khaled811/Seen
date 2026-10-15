@@ -30,6 +30,7 @@ import '../widgets/request_documents_sheet.dart';
 import '../widgets/request_status_labels.dart';
 import '../widgets/request_status_seen_mapping.dart';
 import '../widgets/seen_deadline_card.dart';
+import 'upload_missing_document_screen.dart';
 import '../widgets/seen_request_ticket.dart';
 
 const _gutter = 20.0;
@@ -217,6 +218,17 @@ class _DetailBody extends StatelessWidget {
     }
   }
 
+  Future<void> _openUpload(BuildContext context) async {
+    final bloc = context.read<RequestsBloc>();
+    final sent = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => UploadMissingDocumentScreen(requestId: detail.id, referenceId: detail.referenceId),
+      ),
+    );
+    // The request leaves "info required" once the document is accepted.
+    if (sent == true) bloc.add(RequestDetailRequested(detail.id));
+  }
+
   Future<void> _copyReference(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     await Clipboard.setData(ClipboardData(text: detail.referenceId));
@@ -259,6 +271,12 @@ class _DetailBody extends StatelessWidget {
             title: l10n.requestDeadlineTitle,
             subtitle: l10n.requestDeadlineSubtitle,
             expiredLabel: l10n.requestDeadlineExpired,
+          ),
+          const SizedBox(height: 12),
+          SeenButton(
+            label: l10n.uploadFromRequestAction,
+            expand: true,
+            onPressed: () => _openUpload(context),
           ),
         ],
         const SizedBox(height: 18),

@@ -7,6 +7,14 @@ import '../../features/auth/domain/entities/agency_registration.dart';
 import '../../features/auth/domain/repositories/agency_registration_repository.dart';
 import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
 import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
+import '../../features/requests/data/datasources/missing_document_remote_data_source.dart';
+import '../../features/requests/data/datasources/missing_document_remote_data_source_debug_fallback.dart';
+import '../../features/requests/data/repositories/missing_document_repository_impl.dart';
+import '../../features/requests/data/services/plugin_document_picker.dart';
+import '../../features/requests/domain/repositories/missing_document_repository.dart';
+import '../../features/requests/domain/services/document_picker.dart';
+import '../../features/requests/domain/usecases/missing_document_usecases.dart';
+import '../../features/requests/presentation/bloc/missing_document_bloc.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
 import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
@@ -129,6 +137,11 @@ class InjectionContainer {
   late final GetRequestsUseCase getRequestsUseCase;
   late final GetRequestDetailUseCase getRequestDetailUseCase;
   late final CancelRequestUseCase cancelRequestUseCase;
+  late final MissingDocumentRepository missingDocumentRepository;
+  late final DocumentPicker documentPicker;
+  late final GetMissingDocumentUseCase getMissingDocumentUseCase;
+  late final UploadMissingDocumentUseCase uploadMissingDocumentUseCase;
+  late final PickDocumentUseCase pickDocumentUseCase;
 
   late final AgentsRemoteDataSource agentsRemoteDataSource;
   late final AgentsRepository agentsRepository;
@@ -225,6 +238,15 @@ class InjectionContainer {
     getRequestsUseCase = GetRequestsUseCase(requestsRepository);
     getRequestDetailUseCase = GetRequestDetailUseCase(requestsRepository);
     cancelRequestUseCase = CancelRequestUseCase(requestsRepository);
+    missingDocumentRepository = MissingDocumentRepositoryImpl(
+      remote: DebugFallbackMissingDocumentRemoteDataSource(
+        MissingDocumentRemoteDataSourceImpl(graphQLService: graphQLService),
+      ),
+    );
+    documentPicker = PluginDocumentPicker();
+    getMissingDocumentUseCase = GetMissingDocumentUseCase(missingDocumentRepository);
+    uploadMissingDocumentUseCase = UploadMissingDocumentUseCase(missingDocumentRepository);
+    pickDocumentUseCase = PickDocumentUseCase(documentPicker);
 
     // Same reasoning as the other feature fallbacks above: inert in release
     // builds.
@@ -301,6 +323,13 @@ class InjectionContainer {
         submitBookingUseCase: submitBookingUseCase,
         getWalletBalanceUseCase: getWalletBalanceUseCase,
         validator: validator,
+      );
+
+  /// Builds a fresh [MissingDocumentBloc]; the upload screen owns it.
+  MissingDocumentBloc createMissingDocumentBloc() => MissingDocumentBloc(
+        getMissingDocument: getMissingDocumentUseCase,
+        uploadDocument: uploadMissingDocumentUseCase,
+        pickDocument: pickDocumentUseCase,
       );
 
   /// Builds a fresh [RequestsBloc]. The caller (the dashboard screen's own

@@ -2042,5 +2042,138 @@
   "registrationCreate": "Create account",
   "@registrationCreate": {
     "description": "Agency registration flow copy."
+  },
+  "uploadDocTitle": "Document required",
+  "@uploadDocTitle": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadDeadlineTitle": "Time left to upload",
+  "@uploadDeadlineTitle": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadDeadlineSubtitle": "The request is cancelled automatically when it ends",
+  "@uploadDeadlineSubtitle": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadTraveler": "Traveller: {name}",
+  "@uploadTraveler": {
+    "description": "Upload the missing document copy.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadReason": "Reason from the authority: {reason}",
+  "@uploadReason": {
+    "description": "Upload the missing document copy.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadTipFormats": "{formats}",
+  "@uploadTipFormats": {
+    "description": "Upload the missing document copy.",
+    "placeholders": {
+      "formats": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadTipSize": "Up to {size}MB",
+  "@uploadTipSize": {
+    "description": "Upload the missing document copy.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadTipFullPage": "Full page",
+  "@uploadTipFullPage": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadSourceFile": "File",
+  "@uploadSourceFile": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadSourceGallery": "Gallery",
+  "@uploadSourceGallery": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadSourceCamera": "Camera",
+  "@uploadSourceCamera": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadAction": "Upload document",
+  "@uploadAction": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadSend": "Send document",
+  "@uploadSend": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadReplace": "Replace",
+  "@uploadReplace": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadRemove": "Remove",
+  "@uploadRemove": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadUploading": "Uploading…",
+  "@uploadUploading": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadRetry": "Try again",
+  "@uploadRetry": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadErrOffline": "The file could not be uploaded. Check your connection and try again.",
+  "@uploadErrOffline": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadErrTooLarge": "The file is larger than {size}MB. Choose a smaller file or take a new photo.",
+  "@uploadErrTooLarge": {
+    "description": "Upload the missing document copy.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadErrWrongType": "This file type is not supported. Choose an image or a PDF.",
+  "@uploadErrWrongType": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadErrFailed": "The file was not accepted. Try again or choose another file.",
+  "@uploadErrFailed": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadErrPicker": "The source could not be opened. Check the app permissions.",
+  "@uploadErrPicker": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadErrLoad": "The required document details could not be loaded.",
+  "@uploadErrLoad": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadDeadlinePassed": "The deadline has passed. The request was cancelled and the held amount returned to your balance.",
+  "@uploadDeadlinePassed": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadNewRequest": "New request",
+  "@uploadNewRequest": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadDone": "The document was sent and is now under review.",
+  "@uploadDone": {
+    "description": "Upload the missing document copy."
+  },
+  "uploadFromRequestAction": "Upload the required document",
+  "@uploadFromRequestAction": {
+    "description": "Upload the missing document copy."
   }
 }

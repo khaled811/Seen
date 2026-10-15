@@ -61,6 +61,11 @@ abstract final class SeenVectors {
 
   // Requests header (Figma 06 · node 11:241).
   static const requestsPlus = 'assets/icons/requests/plus.svg';
+  static const missingDocTile = 'assets/icons/requests/missing_doc_tile.svg';
+  static const sourceFile = 'assets/icons/requests/source_file.svg';
+  static const sourceGallery = 'assets/icons/requests/source_gallery.svg';
+  static const sourceCamera = 'assets/icons/requests/source_camera.svg';
+  static const previewDoc = 'assets/icons/requests/preview_doc.svg';
 
   // Create agency account (Figma 15 · node 20:594).
   static const authClock = 'assets/icons/auth/clock.svg';

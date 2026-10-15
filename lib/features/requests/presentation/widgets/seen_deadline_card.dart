@@ -15,6 +15,7 @@ class SeenDeadlineCard extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.expiredLabel,
+    this.amber = false,
     this.clock = DateTime.now,
   });
 
@@ -24,6 +25,9 @@ class SeenDeadlineCard extends StatefulWidget {
 
   /// Shown instead of the counter once the deadline has passed.
   final String expiredLabel;
+
+  /// Figma REQ-05 variant: amber "action required" panel with a smaller counter.
+  final bool amber;
 
   /// Time source; tests inject a controllable clock.
   @visibleForTesting
@@ -69,22 +73,27 @@ class _SeenDeadlineCardState extends State<SeenDeadlineCard> {
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
+    final amberColors = SeenRequestStatus.actionRequired.colors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: SeenBrand.gradientSoft,
+        color: widget.amber ? amberColors.bg : null,
+        gradient: widget.amber ? null : SeenBrand.gradientSoft,
         borderRadius: const BorderRadius.all(SeenRadius.r18),
-        border: Border.all(color: c.border),
+        border: widget.amber ? null : Border.all(color: c.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: widget.amber ? 16 : SeenSpace.s4, vertical: 14),
         child: Row(
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.title, style: type.bodyStrong),
-                  Text(widget.subtitle, style: type.caption.copyWith(color: c.inkSecondary)),
+                  Text(widget.title, style: widget.amber ? type.label.copyWith(color: amberColors.fg) : type.bodyStrong),
+                  Text(
+                    widget.subtitle,
+                    style: type.caption.copyWith(color: widget.amber ? amberColors.fg : c.inkSecondary),
+                  ),
                 ],
               ),
             ),
@@ -94,7 +103,8 @@ class _SeenDeadlineCardState extends State<SeenDeadlineCard> {
               builder: (context, left, _) {
                 final expired = left <= Duration.zero;
                 final urgent = !expired && left.inHours < 24;
-                final color = expired || urgent ? c.slaFg : SeenBrand.violet;
+                final color = widget.amber ? amberColors.fg : (expired || urgent ? c.slaFg : SeenBrand.violet);
+                final style = widget.amber ? type.h2 : type.display;
                 if (expired) return Text(widget.expiredLabel, style: type.h2.copyWith(color: color));
                 return Semantics(
                   label: '${widget.title} ${left.inHours} h ${left.inMinutes.remainder(60)} min',
@@ -103,7 +113,7 @@ class _SeenDeadlineCardState extends State<SeenDeadlineCard> {
                     textDirection: TextDirection.ltr, // "46:12:08" never reorders
                     child: Text(
                       '${_two(left.inHours)}:${_two(left.inMinutes.remainder(60))}:${_two(left.inSeconds.remainder(60))}',
-                      style: type.display.copyWith(color: color, fontFeatures: SeenFonts.tabular),
+                      style: style.copyWith(color: color, fontFeatures: SeenFonts.tabular),
                     ),
                   ),
                 );

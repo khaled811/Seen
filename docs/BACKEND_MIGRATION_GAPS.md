@@ -402,3 +402,49 @@ Also needed from the backend:
 - The password is sent once, in `StartAgencyRegistration`, and is never kept in
   app state; the backend must hash it and discard the pending registration after a
   timeout.
+
+
+## 10. Upload the missing document (Figma REQ-05 / REQ-05b)
+
+A request in "info required" can now be answered from the tracking screen
+("Upload the required document"): the screen shows what is asked and why, the
+deadline, then file / gallery / camera, a preview, and the send with progress.
+The backend contract below is a placeholder
+(`missing_document_remote_data_source.dart`); debug builds fall back to canned
+answers when the real call fails, **release builds call the real operations and
+fail until they exist**.
+
+```graphql
+query MissingDocumentRequest($requestId: ID!)
+  -> { requestId referenceId documentTitle travelerName reason deadline
+       maxBytes allowedExtensions }          # what the authority asked for, and why
+mutation UploadMissingDocument($requestId: ID!, $file: Upload!)   # multipart upload
+  -> { success }
+```
+
+| Code | Screen state |
+|---|---|
+| `DEADLINE_PASSED` | amber banner "deadline passed, request cancelled, held amount returned" + New request |
+| `FILE_TOO_LARGE` | red banner with the limit |
+| `FILE_TYPE_NOT_ALLOWED` | red banner |
+
+Also needed from the backend:
+- **Progress:** a multipart GraphQL call cannot report byte progress, so the bar
+  jumps to 100%. A pre-signed URL upload (then a confirm mutation) gives real
+  progress; decide which one with the shared upload contract (section 4).
+- **The request's `missingDocument` data** must come with the request while it is
+  in "info required" (title, traveler, reason, deadline, limits). The app does not
+  invent the reason text.
+- **Deadline:** the app disables upload locally once `deadline` has passed, but the
+  server stays the authority and answers `DEADLINE_PASSED`.
+- **Copy promises the server must keep:** after the deadline the request is
+  cancelled automatically and the held amount is refunded to the wallet (the
+  banner says so).
+- **After a successful upload** the request must leave "info required" (the detail
+  is reloaded on return) and the document must be visible to the reviewer.
+- Virus scanning / retention of the uploaded file (section 4).
+
+Client side: this adds two plugins, `image_picker` (gallery, camera) and
+`file_picker` (PDF / files), behind a `DocumentPicker` interface in the domain.
+iOS `Info.plist` now carries the camera and photo-library usage strings; Android
+needs no manifest permission for either plugin as used here.

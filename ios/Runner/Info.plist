@@ -43,6 +43,10 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>يُستخدم موقعك لحساب مواقيت الصلاة واتجاه القبلة بدقة. يمكنك رفض الإذن واختيار مدينة يدويًا.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>تُستخدم الكاميرا لتصوير المستندات المطلوبة لطلباتك.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>يُستخدم معرض الصور لاختيار المستندات المطلوبة لطلباتك.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

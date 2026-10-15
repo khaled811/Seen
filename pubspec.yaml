@@ -65,6 +65,8 @@ dependencies:
   flutter_compass: ^0.8.1
   share_plus: 10.1.4
   package_info_plus: ^8.3.1
+  image_picker: ^1.1.2
+  file_picker: ^8.3.2
 
 dev_dependencies:
   flutter_test:
