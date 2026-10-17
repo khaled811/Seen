@@ -19,5 +19,6 @@ class FundSubAgentWalletUseCase {
     required int amountCents,
     String? note,
   }) =>
-      _repository.fundSubAgentWallet(subAgentId: subAgentId, amountCents: amountCents, note: note);
+      _repository.fundSubAgentWallet(
+          subAgentId: subAgentId, amountCents: amountCents, note: note);
 }

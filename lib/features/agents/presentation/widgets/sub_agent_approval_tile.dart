@@ -14,7 +14,8 @@ import 'seen_approval_card.dart';
 /// the wiring (and the request-summary → card field mapping) isn't
 /// duplicated between them.
 class SubAgentApprovalTile extends StatelessWidget {
-  const SubAgentApprovalTile({super.key, required this.request, required this.isActing});
+  const SubAgentApprovalTile(
+      {super.key, required this.request, required this.isActing});
 
   final SubAgentRequestSummary request;
   final bool isActing;
@@ -22,7 +23,8 @@ class SubAgentApprovalTile extends StatelessWidget {
   Future<void> _reject(BuildContext context) async {
     final reason = await showRejectReasonSheet(context);
     if (reason != null && context.mounted) {
-      context.read<AgentsBloc>().add(SubAgentRequestRejectSubmitted(requestId: request.id, reason: reason));
+      context.read<AgentsBloc>().add(SubAgentRequestRejectSubmitted(
+          requestId: request.id, reason: reason));
     }
   }
 
@@ -34,13 +36,16 @@ class SubAgentApprovalTile extends StatelessWidget {
       // reference id (real data) rather than a fabricated branch name.
       agentName: request.subAgentName,
       branch: request.referenceId,
-      timeAgo: SeenFormat.isolate('${SeenFormat.date(request.submittedAt)} ${SeenFormat.time(request.submittedAt)}'),
+      timeAgo: SeenFormat.isolate(
+          '${SeenFormat.date(request.submittedAt)} ${SeenFormat.time(request.submittedAt)}'),
       service: request.serviceName,
       travelers: request.travelerCount,
       amount: request.totalPriceCents / 100,
       onApprove: isActing
           ? null
-          : () => context.read<AgentsBloc>().add(SubAgentRequestApproveSubmitted(request.id)),
+          : () => context
+              .read<AgentsBloc>()
+              .add(SubAgentRequestApproveSubmitted(request.id)),
       onReject: isActing ? null : () => _reject(context),
     );
   }

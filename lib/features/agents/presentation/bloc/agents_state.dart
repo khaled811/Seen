@@ -101,13 +101,18 @@ final class AgentsLoaded extends AgentsState {
         approvalActionRequestId: clearApprovalActionRequestId
             ? null
             : (approvalActionRequestId ?? this.approvalActionRequestId),
-        approvalActionError:
-            clearApprovalActionError ? null : (approvalActionError ?? this.approvalActionError),
+        approvalActionError: clearApprovalActionError
+            ? null
+            : (approvalActionError ?? this.approvalActionError),
         fundingStatus: fundingStatus ?? this.fundingStatus,
-        fundingSubAgentId:
-            clearFundingSubAgentId ? null : (fundingSubAgentId ?? this.fundingSubAgentId),
-        fundingError: clearFundingError ? null : (fundingError ?? this.fundingError),
-        fundingReference: clearFundingError ? null : (fundingReference ?? this.fundingReference),
+        fundingSubAgentId: clearFundingSubAgentId
+            ? null
+            : (fundingSubAgentId ?? this.fundingSubAgentId),
+        fundingError:
+            clearFundingError ? null : (fundingError ?? this.fundingError),
+        fundingReference: clearFundingError
+            ? null
+            : (fundingReference ?? this.fundingReference),
       );
 
   @override

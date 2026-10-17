@@ -20,14 +20,16 @@ class SubAgentApprovalScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return BlocListener<AgentsBloc, AgentsState>(
       listenWhen: (previous, current) =>
-          current is AgentsLoaded && current.approvalActionStatus != ApprovalActionStatus.idle,
+          current is AgentsLoaded &&
+          current.approvalActionStatus != ApprovalActionStatus.idle,
       listener: (context, state) {
         final loaded = state as AgentsLoaded;
         switch (loaded.approvalActionStatus) {
           case ApprovalActionStatus.success:
-            final message = loaded.approvalActionKind == ApprovalActionKind.reject
-                ? l10n.subAgentRejectSuccessMessage
-                : l10n.subAgentApproveSuccessMessage;
+            final message =
+                loaded.approvalActionKind == ApprovalActionKind.reject
+                    ? l10n.subAgentRejectSuccessMessage
+                    : l10n.subAgentApproveSuccessMessage;
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(SnackBar(content: Text(message)));
@@ -35,7 +37,8 @@ class SubAgentApprovalScreen extends StatelessWidget {
           case ApprovalActionStatus.failure:
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(loaded.approvalActionError ?? l10n.error)));
+              ..showSnackBar(SnackBar(
+                  content: Text(loaded.approvalActionError ?? l10n.error)));
             context.read<AgentsBloc>().add(const ApprovalStatusCleared());
           case ApprovalActionStatus.idle:
           case ApprovalActionStatus.submitting:
@@ -59,8 +62,10 @@ class SubAgentApprovalScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: SeenSpace.s3),
                 child: SubAgentApprovalTile(
                   request: state.pendingRequests[index],
-                  isActing: state.approvalActionStatus == ApprovalActionStatus.submitting &&
-                      state.approvalActionRequestId == state.pendingRequests[index].id,
+                  isActing: state.approvalActionStatus ==
+                          ApprovalActionStatus.submitting &&
+                      state.approvalActionRequestId ==
+                          state.pendingRequests[index].id,
                 ),
               ),
             );

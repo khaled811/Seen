@@ -662,3 +662,35 @@ Needed from the backend / product:
   header; nothing is specified for it (edit name / contact details?), so it is not
   built. Needs a design and an `updateSubAgent` mutation.
 - **Request rows** are not tappable yet (no sub-agent-scoped request detail).
+
+## 18. Sub-agent approvals, reject reasons, empty states, funding (Figma AGT-05 … 08)
+
+Built: the approvals list (each request with value, Approve / Reject), the reject
+reason sheet, the agents empty / no-result states, and the fund sheet restyle
+(quick amounts 250 / 500 / 1,000, "From your main balance", success message with the
+agent's new balance). These use the existing approve / reject / fund operations.
+
+Product decisions taken (easy to move):
+- **Entry point of the approvals list** (the designer left it open): a button with a
+  count badge in the Agents header. The product decision earlier was that the Agents
+  screen has **no approvals section**; a header button respects that. Alternatives:
+  an Account menu row, or a badge on the Agents tab.
+- **Reject reason:** the sheet offers three reasons ("value exceeds the agreed limit",
+  "incomplete data", "another reason" which requires a note) plus a note. The mutation
+  takes one `reason` string, so the app sends `"<reason> — <note>"`.
+
+Needed from the backend:
+- **Structured rejection:** accept `reasonCode` (enum) + `note` instead of one free
+  string, so reasons can be localized, counted and shown to the agent in their language.
+  The preset list is a product decision (confirm the three reasons).
+- **Notify the sub-agent** on approve / reject (with the reason and note); the sheet's
+  label says "Note for the agent".
+- **Approvals count:** the badge counts `getPendingApprovalRequests`, loaded with the
+  agents list; a lightweight count (or a push) would keep it fresh without a reload.
+- **Request fields:** each approval shows sub-agent name, service, traveler count and
+  value. The traveler names, documents and the request detail are not reachable from
+  the card (no sub-agent request detail screen); decide whether the master can open the
+  request before approving.
+- **Fund response:** the success message reads the agent's balance from the updated list
+  returned by the mutation; confirm the mutation returns the new balance atomically.
+- **"Search / segment empty" copy** is local; nothing needed.

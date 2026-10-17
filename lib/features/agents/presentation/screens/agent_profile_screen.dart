@@ -31,7 +31,8 @@ import '../widgets/fund_sub_agent_sheet.dart';
 /// requests. Needs the list's [AgentsBloc] above it (the fund sheet uses it).
 /// Owns an [AgentProfileBloc].
 class AgentProfileScreen extends StatelessWidget {
-  const AgentProfileScreen({super.key, required this.subAgent, this.createBloc});
+  const AgentProfileScreen(
+      {super.key, required this.subAgent, this.createBloc});
 
   /// What the list already knows; shown while the profile loads.
   final SubAgent subAgent;
@@ -42,8 +43,9 @@ class AgentProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => (createBloc ?? InjectionContainer.instance.createAgentProfileBloc)()
-        ..add(AgentProfileLoadRequested(subAgent.id)),
+      create: (_) =>
+          (createBloc ?? InjectionContainer.instance.createAgentProfileBloc)()
+            ..add(AgentProfileLoadRequested(subAgent.id)),
       child: _View(initial: subAgent),
     );
   }
@@ -56,7 +58,9 @@ class _View extends StatelessWidget {
 
   int? _masterAvailable(BuildContext context) {
     final state = context.read<AgentsBloc>().state;
-    return state is AgentsLoaded ? state.masterWalletBalance?.availableCents : null;
+    return state is AgentsLoaded
+        ? state.masterWalletBalance?.availableCents
+        : null;
   }
 
   Future<void> _fund(BuildContext context, SubAgent agent) async {
@@ -79,7 +83,8 @@ class _View extends StatelessWidget {
     if (saved == true) bloc.add(AgentProfileLoadRequested(agent.id));
   }
 
-  Future<void> _toggleActive(BuildContext context, SubAgentProfile profile) async {
+  Future<void> _toggleActive(
+      BuildContext context, SubAgentProfile profile) async {
     final bloc = context.read<AgentProfileBloc>();
     final reactivating = !profile.agent.isActive;
     final reason = await showAgentActiveDialog(
@@ -95,7 +100,8 @@ class _View extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return BlocConsumer<AgentProfileBloc, AgentProfileState>(
-      listenWhen: (previous, current) => previous.outcomeSeq != current.outcomeSeq && current.outcome != null,
+      listenWhen: (previous, current) =>
+          previous.outcomeSeq != current.outcomeSeq && current.outcome != null,
       listener: (context, state) {
         final message = switch (state.outcome!) {
           AgentProfileOutcome.suspended => l10n.agentSuspendedDone,
@@ -118,7 +124,8 @@ class _View extends StatelessWidget {
                   SeenScreenHeader(title: l10n.agentProfileTitle),
                   Expanded(
                     child: switch (state.status) {
-                      AgentProfileStatus.loading => const Center(child: SeenLoader()),
+                      AgentProfileStatus.loading =>
+                        const Center(child: SeenLoader()),
                       AgentProfileStatus.failed => Padding(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                           child: Align(
@@ -126,8 +133,9 @@ class _View extends StatelessWidget {
                             child: SeenInlineError(
                               title: l10n.errorSectionLoad,
                               retryLabel: l10n.retry,
-                              onRetry: () =>
-                                  context.read<AgentProfileBloc>().add(AgentProfileLoadRequested(initial.id)),
+                              onRetry: () => context
+                                  .read<AgentProfileBloc>()
+                                  .add(AgentProfileLoadRequested(initial.id)),
                             ),
                           ),
                         ),
@@ -179,27 +187,40 @@ class _Body extends StatelessWidget {
             : (SeenRequestStatus.cancelled, l10n.agentsStatusSuspended);
     final meta = [
       if (profile.city != null) profile.city!,
-      if (profile.memberSince != null) l10n.agentProfileSince(s.monthYear(profile.memberSince!)),
+      if (profile.memberSince != null)
+        l10n.agentProfileSince(s.monthYear(profile.memberSince!)),
     ].join(' · ');
-    final initial = agent.name.trim().isEmpty ? '' : String.fromCharCodes(agent.name.trim().runes.take(1));
+    final initial = agent.name.trim().isEmpty
+        ? ''
+        : String.fromCharCodes(agent.name.trim().runes.take(1));
 
     Widget stat(String label, String value) => Expanded(
           child: DecoratedBox(
-            decoration: const BoxDecoration(color: SeenBrand.violet05, borderRadius: BorderRadius.all(SeenRadius.r14)),
+            decoration: const BoxDecoration(
+                color: SeenBrand.violet05,
+                borderRadius: BorderRadius.all(SeenRadius.r14)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.caption.copyWith(color: c.inkMuted)),
-                  Text(value, maxLines: 1, style: t.bodyStrong.copyWith(fontFeatures: SeenFonts.tabular)),
+                  Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.caption.copyWith(color: c.inkMuted)),
+                  Text(value,
+                      maxLines: 1,
+                      style: t.bodyStrong
+                          .copyWith(fontFeatures: SeenFonts.tabular)),
                 ],
               ),
             ),
           ),
         );
 
-    Widget action(String label, VoidCallback? onTap, {SeenStatusColors? tone}) => Expanded(
+    Widget action(String label, VoidCallback? onTap,
+            {SeenStatusColors? tone}) =>
+        Expanded(
           child: Semantics(
             button: true,
             label: label,
@@ -213,14 +234,19 @@ class _Body extends StatelessWidget {
                 borderRadius: const BorderRadius.all(SeenRadius.r14),
                 child: SizedBox(
                   height: 40,
-                  child: Center(child: Text(label, style: t.label.copyWith(color: tone?.fg ?? SeenBrand.violet))),
+                  child: Center(
+                      child: Text(label,
+                          style: t.label
+                              .copyWith(color: tone?.fg ?? SeenBrand.violet))),
                 ),
               ),
             ),
           ),
         );
 
-    final suspendTone = agent.isActive ? SeenRequestStatus.rejected.colors : SeenRequestStatus.completed.colors;
+    final suspendTone = agent.isActive
+        ? SeenRequestStatus.rejected.colors
+        : SeenRequestStatus.completed.colors;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
@@ -240,18 +266,24 @@ class _Body extends StatelessWidget {
             child: Stack(
               children: [
                 const Positioned.fill(
-                  child: ExcludeSemantics(child: SeenSvgIcon(SeenVectors.patternGridPromo, size: 160)),
+                  child: ExcludeSemantics(
+                      child:
+                          SeenSvgIcon(SeenVectors.patternGridPromo, size: 160)),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
                       DecoratedBox(
-                        decoration: const BoxDecoration(color: SeenBrand.violet10, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(
+                            color: SeenBrand.violet10, shape: BoxShape.circle),
                         child: SizedBox(
                           width: 56,
                           height: 56,
-                          child: Center(child: Text(initial, style: t.label.copyWith(color: SeenBrand.violet))),
+                          child: Center(
+                              child: Text(initial,
+                                  style: t.label
+                                      .copyWith(color: SeenBrand.violet))),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -260,7 +292,9 @@ class _Body extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(agent.name, style: t.title),
-                            if (meta.isNotEmpty) Text(meta, style: t.caption.copyWith(color: c.inkMuted)),
+                            if (meta.isNotEmpty)
+                              Text(meta,
+                                  style: t.caption.copyWith(color: c.inkMuted)),
                             const SizedBox(height: 4),
                             SeenStatusChip(status: chip.$1, label: chip.$2),
                           ],
@@ -276,21 +310,30 @@ class _Body extends StatelessWidget {
         const SizedBox(height: 14),
         Row(
           children: [
-            stat(l10n.agentProfileBalance, SeenFormat.usd(agent.balanceCents / 100)),
+            stat(l10n.agentProfileBalance,
+                SeenFormat.usd(agent.balanceCents / 100)),
             const SizedBox(width: 8),
-            stat(l10n.agentAddCreditLimit,
-                agent.creditLimitCents == null ? '—' : SeenFormat.usd(agent.creditLimitCents! / 100)),
+            stat(
+                l10n.agentAddCreditLimit,
+                agent.creditLimitCents == null
+                    ? '—'
+                    : SeenFormat.usd(agent.creditLimitCents! / 100)),
             const SizedBox(width: 8),
             stat(
               l10n.agentProfileMonthly,
-              profile.monthlyRequestCount == null ? '—' : s.numeral(profile.monthlyRequestCount!),
+              profile.monthlyRequestCount == null
+                  ? '—'
+                  : s.numeral(profile.monthlyRequestCount!),
             ),
           ],
         ),
         const SizedBox(height: 14),
         Row(
           children: [
-            action(agent.isActive ? l10n.agentProfileSuspend : l10n.agentProfileReactivate,
+            action(
+                agent.isActive
+                    ? l10n.agentProfileSuspend
+                    : l10n.agentProfileReactivate,
                 busy ? null : onToggleActive,
                 tone: suspendTone),
             const SizedBox(width: 8),
@@ -305,7 +348,8 @@ class _Body extends StatelessWidget {
         if (profile.ledger.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(l10n.agentProfileLedgerEmpty, style: t.body.copyWith(color: c.inkMuted)),
+            child: Text(l10n.agentProfileLedgerEmpty,
+                style: t.body.copyWith(color: c.inkMuted)),
           )
         else
           DecoratedBox(
@@ -320,16 +364,22 @@ class _Body extends StatelessWidget {
                 for (final (i, e) in profile.ledger.indexed) ...[
                   if (i > 0) Divider(height: 1, color: c.border),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                     child: Row(
                       children: [
                         Expanded(child: Text(e.title, style: t.body)),
                         const SizedBox(width: 8),
                         Text(
-                          SeenFormat.signed(e.amountCents / 100, credit: e.isCredit),
+                          SeenFormat.signed(e.amountCents / 100,
+                              credit: e.isCredit),
                           textDirection: TextDirection.ltr,
                           style: t.label.copyWith(
-                            color: (e.isCredit ? SeenRequestStatus.completed : SeenRequestStatus.rejected).colors.fg,
+                            color: (e.isCredit
+                                    ? SeenRequestStatus.completed
+                                    : SeenRequestStatus.rejected)
+                                .colors
+                                .fg,
                             fontFeatures: SeenFonts.tabular,
                           ),
                         ),
@@ -341,10 +391,14 @@ class _Body extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 14),
-        Text(l10n.agentProfileRequests(s.numeral(profile.inProgressRequestCount)), style: t.title),
+        Text(
+            l10n.agentProfileRequests(
+                s.numeral(profile.inProgressRequestCount)),
+            style: t.title),
         const SizedBox(height: 14),
         if (profile.requests.isEmpty)
-          Text(l10n.agentProfileRequestsEmpty, style: t.body.copyWith(color: c.inkMuted))
+          Text(l10n.agentProfileRequestsEmpty,
+              style: t.body.copyWith(color: c.inkMuted))
         else
           for (final r in profile.requests)
             Padding(
@@ -407,12 +461,14 @@ Future<String?> showAgentActiveDialog(
 }) {
   return showDialog<String>(
     context: context,
-    builder: (_) => _ActiveDialog(reactivate: reactivate, inProgressCount: inProgressCount),
+    builder: (_) =>
+        _ActiveDialog(reactivate: reactivate, inProgressCount: inProgressCount),
   );
 }
 
 class _ActiveDialog extends StatefulWidget {
-  const _ActiveDialog({required this.reactivate, required this.inProgressCount});
+  const _ActiveDialog(
+      {required this.reactivate, required this.inProgressCount});
 
   final bool reactivate;
   final int inProgressCount;
@@ -443,7 +499,9 @@ class _ActiveDialogState extends State<_ActiveDialog> {
     final s = SeenStrings.of(context);
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    final tone = widget.reactivate ? SeenRequestStatus.completed.colors : SeenRequestStatus.rejected.colors;
+    final tone = widget.reactivate
+        ? SeenRequestStatus.completed.colors
+        : SeenRequestStatus.rejected.colors;
     final canConfirm = widget.reactivate || _reason.text.trim().isNotEmpty;
     final body = widget.reactivate
         ? l10n.agentReactivateBody
@@ -459,8 +517,12 @@ class _ActiveDialogState extends State<_ActiveDialog> {
           color: c.card,
           borderRadius: const BorderRadius.all(SeenRadius.r28),
           boxShadow: const [
-            BoxShadow(color: Color(0x142C186A), blurRadius: 16, offset: Offset(0, 8)),
-            BoxShadow(color: Color(0x385B36DA), blurRadius: 48, offset: Offset(0, 24)),
+            BoxShadow(
+                color: Color(0x142C186A), blurRadius: 16, offset: Offset(0, 8)),
+            BoxShadow(
+                color: Color(0x385B36DA),
+                blurRadius: 48,
+                offset: Offset(0, 24)),
           ],
         ),
         child: Padding(
@@ -470,24 +532,33 @@ class _ActiveDialogState extends State<_ActiveDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DecoratedBox(
-                  decoration: BoxDecoration(color: tone.bg, borderRadius: const BorderRadius.all(Radius.circular(17))),
+                  decoration: BoxDecoration(
+                      color: tone.bg,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(17))),
                   child: const SizedBox(
                     width: 56,
                     height: 56,
-                    child: Center(child: SeenSvgIcon(SeenVectors.notifAlert, size: 31)),
+                    child: Center(
+                        child: SeenSvgIcon(SeenVectors.notifAlert, size: 31)),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  widget.reactivate ? l10n.agentReactivateTitle : l10n.agentSuspendTitle,
+                  widget.reactivate
+                      ? l10n.agentReactivateTitle
+                      : l10n.agentSuspendTitle,
                   textAlign: TextAlign.center,
                   style: t.h2,
                 ),
                 const SizedBox(height: 12),
-                Text(body, textAlign: TextAlign.center, style: t.body.copyWith(color: c.inkSecondary)),
+                Text(body,
+                    textAlign: TextAlign.center,
+                    style: t.body.copyWith(color: c.inkSecondary)),
                 if (!widget.reactivate) ...[
                   const SizedBox(height: 12),
-                  SeenTextField(label: l10n.agentSuspendReason, controller: _reason),
+                  SeenTextField(
+                      label: l10n.agentSuspendReason, controller: _reason),
                 ],
                 const SizedBox(height: 20),
                 Row(
@@ -498,20 +569,29 @@ class _ActiveDialogState extends State<_ActiveDialog> {
                         child: Semantics(
                           button: true,
                           enabled: canConfirm,
-                          label: widget.reactivate ? l10n.agentReactivateConfirm : l10n.agentSuspendConfirm,
+                          label: widget.reactivate
+                              ? l10n.agentReactivateConfirm
+                              : l10n.agentSuspendConfirm,
                           excludeSemantics: true,
                           child: Material(
                             color: tone.bg,
                             borderRadius: const BorderRadius.all(SeenRadius.lg),
                             child: InkWell(
-                              onTap: canConfirm ? () => Navigator.of(context).pop(_reason.text.trim()) : null,
-                              borderRadius: const BorderRadius.all(SeenRadius.lg),
+                              onTap: canConfirm
+                                  ? () => Navigator.of(context)
+                                      .pop(_reason.text.trim())
+                                  : null,
+                              borderRadius:
+                                  const BorderRadius.all(SeenRadius.lg),
                               child: SizedBox(
                                 height: 52,
                                 child: Center(
                                   child: Text(
-                                    widget.reactivate ? l10n.agentReactivateConfirm : l10n.agentSuspendConfirm,
-                                    style: t.bodyStrong.copyWith(color: tone.fg),
+                                    widget.reactivate
+                                        ? l10n.agentReactivateConfirm
+                                        : l10n.agentSuspendConfirm,
+                                    style:
+                                        t.bodyStrong.copyWith(color: tone.fg),
                                   ),
                                 ),
                               ),

@@ -17,7 +17,8 @@ import 'agents_state.dart';
 class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
   AgentsBloc({
     required GetSubAgentsUseCase getSubAgentsUseCase,
-    required GetPendingApprovalRequestsUseCase getPendingApprovalRequestsUseCase,
+    required GetPendingApprovalRequestsUseCase
+        getPendingApprovalRequestsUseCase,
     required ApproveSubAgentRequestUseCase approveSubAgentRequestUseCase,
     required RejectSubAgentRequestUseCase rejectSubAgentRequestUseCase,
     required FundSubAgentWalletUseCase fundSubAgentWalletUseCase,
@@ -30,10 +31,13 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
         _getWalletBalanceUseCase = getWalletBalanceUseCase,
         super(const AgentsInitial()) {
     on<AgentsLoadRequested>(_onLoadRequested, transformer: droppable());
-    on<SubAgentRequestApproveSubmitted>(_onApproveSubmitted, transformer: droppable());
-    on<SubAgentRequestRejectSubmitted>(_onRejectSubmitted, transformer: droppable());
+    on<SubAgentRequestApproveSubmitted>(_onApproveSubmitted,
+        transformer: droppable());
+    on<SubAgentRequestRejectSubmitted>(_onRejectSubmitted,
+        transformer: droppable());
     on<ApprovalStatusCleared>(_onApprovalStatusCleared);
-    on<SubAgentWalletFundingSubmitted>(_onFundingSubmitted, transformer: droppable());
+    on<SubAgentWalletFundingSubmitted>(_onFundingSubmitted,
+        transformer: droppable());
     on<FundingStatusCleared>(_onFundingStatusCleared);
   }
 
@@ -112,13 +116,12 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
           approvalActionStatus: ApprovalActionStatus.failure,
           approvalActionError: failure.message,
         ),
-        (_) => latest
-            .copyWith(
-              pendingRequests: latest.pendingRequests
-                  .where((r) => r.id != event.requestId)
-                  .toList(),
-              approvalActionStatus: ApprovalActionStatus.success,
-            ),
+        (_) => latest.copyWith(
+          pendingRequests: latest.pendingRequests
+              .where((r) => r.id != event.requestId)
+              .toList(),
+          approvalActionStatus: ApprovalActionStatus.success,
+        ),
       ),
     );
   }
@@ -152,8 +155,9 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
           approvalActionError: failure.message,
         ),
         (_) => latest.copyWith(
-          pendingRequests:
-              latest.pendingRequests.where((r) => r.id != event.requestId).toList(),
+          pendingRequests: latest.pendingRequests
+              .where((r) => r.id != event.requestId)
+              .toList(),
           approvalActionStatus: ApprovalActionStatus.success,
         ),
       ),
@@ -220,7 +224,10 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
       afterFund.copyWith(
         subAgents: [
           for (final subAgent in afterFund.subAgents)
-            if (subAgent.id == updatedSubAgent.id) updatedSubAgent else subAgent,
+            if (subAgent.id == updatedSubAgent.id)
+              updatedSubAgent
+            else
+              subAgent,
         ],
         masterWalletBalance: balanceResult.match(
           (_) => afterFund.masterWalletBalance,

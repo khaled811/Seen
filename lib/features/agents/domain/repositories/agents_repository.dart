@@ -11,12 +11,14 @@ abstract interface class AgentsRepository {
 
   /// Requests submitted by any sub-agent, currently sitting at the master
   /// agent's approval gate (`RequestStatus.pendingAgentApproval`).
-  Future<Either<Failure, List<SubAgentRequestSummary>>> getPendingApprovalRequests();
+  Future<Either<Failure, List<SubAgentRequestSummary>>>
+      getPendingApprovalRequests();
 
   /// Approves the request, committing it forward to management review.
   Future<Either<Failure, void>> approveRequest(String requestId);
 
-  Future<Either<Failure, void>> rejectRequest(String requestId, {required String reason});
+  Future<Either<Failure, void>> rejectRequest(String requestId,
+      {required String reason});
 
   /// Transfers [amountCents] from the master agent's wallet into
   /// [subAgentId]'s internal balance. Returns the sub-agent's updated
@@ -34,11 +36,13 @@ abstract interface class AgentsRepository {
   Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent);
 
   /// Sets the credit the master agent grants [subAgentId] (Figma AGT-02).
-  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents});
+  Future<Either<Failure, SubAgent>> updateCreditLimit(
+      {required String subAgentId, required int limitCents});
 
   /// The profile of one sub-agent (Figma AGT-04): record, balance history and
   /// the agent's requests.
-  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId);
+  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(
+      String subAgentId);
 
   /// Suspends ([active] false, with a [reason]) or reactivates a sub-agent
   /// (Figma AGT-03). Returns the updated record.

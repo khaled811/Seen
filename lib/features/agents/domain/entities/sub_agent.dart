@@ -36,6 +36,15 @@ class SubAgent extends Equatable {
   final bool invitePending;
 
   @override
-  List<Object?> get props =>
-      [id, name, code, balanceCents, isActive, marginPercent, creditLimitCents, creditUsedCents, invitePending];
+  List<Object?> get props => [
+        id,
+        name,
+        code,
+        balanceCents,
+        isActive,
+        marginPercent,
+        creditLimitCents,
+        creditUsedCents,
+        invitePending
+      ];
 }

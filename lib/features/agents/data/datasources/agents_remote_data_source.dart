@@ -18,7 +18,8 @@ import '../models/sub_agent_request_summary_dto.dart';
 abstract interface class AgentsRemoteDataSource {
   Future<Either<Failure, List<SubAgentDto>>> getSubAgents();
 
-  Future<Either<Failure, List<SubAgentRequestSummaryDto>>> getPendingApprovalRequests();
+  Future<Either<Failure, List<SubAgentRequestSummaryDto>>>
+      getPendingApprovalRequests();
 
   /// Returns `true` on success. Not `void` — `GraphQLService` treats a
   /// `null` parsed result as an empty-response failure, so the parser must
@@ -26,7 +27,8 @@ abstract interface class AgentsRemoteDataSource {
   /// interesting payload.
   Future<Either<Failure, bool>> approveRequest(String requestId);
 
-  Future<Either<Failure, bool>> rejectRequest(String requestId, {required String reason});
+  Future<Either<Failure, bool>> rejectRequest(String requestId,
+      {required String reason});
 
   Future<Either<Failure, SubAgentDto>> fundSubAgentWallet({
     required String subAgentId,
@@ -36,9 +38,11 @@ abstract interface class AgentsRemoteDataSource {
 
   Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent);
 
-  Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents});
+  Future<Either<Failure, SubAgentDto>> updateCreditLimit(
+      {required String subAgentId, required int limitCents});
 
-  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId);
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(
+      String subAgentId);
 
   Future<Either<Failure, SubAgentDto>> setSubAgentActive({
     required String subAgentId,
@@ -122,12 +126,15 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
   }
 
   @override
-  Future<Either<Failure, List<SubAgentRequestSummaryDto>>> getPendingApprovalRequests() {
+  Future<Either<Failure, List<SubAgentRequestSummaryDto>>>
+      getPendingApprovalRequests() {
     return _graphQLService.query<List<SubAgentRequestSummaryDto>>(
       QueryOptions<List<SubAgentRequestSummaryDto>>(
         document: _pendingApprovalRequestsDocument,
-        parserFn: (json) => (json['pendingAgentApprovalRequests'] as List<dynamic>)
-            .map((e) => SubAgentRequestSummaryDto.fromJson(e as Map<String, dynamic>))
+        parserFn: (json) => (json['pendingAgentApprovalRequests']
+                as List<dynamic>)
+            .map((e) =>
+                SubAgentRequestSummaryDto.fromJson(e as Map<String, dynamic>))
             .toList(),
       ),
     );
@@ -140,15 +147,16 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
         document: _approveRequestDocument,
         variables: {'requestId': requestId},
         parserFn: (json) =>
-            (json['approveSubAgentRequest'] as Map<String, dynamic>?)?['success']
-                as bool? ??
+            (json['approveSubAgentRequest']
+                as Map<String, dynamic>?)?['success'] as bool? ??
             true,
       ),
     );
   }
 
   @override
-  Future<Either<Failure, bool>> rejectRequest(String requestId, {required String reason}) {
+  Future<Either<Failure, bool>> rejectRequest(String requestId,
+      {required String reason}) {
     return _graphQLService.mutate<bool>(
       MutationOptions<bool>(
         document: _rejectRequestDocument,
@@ -175,8 +183,8 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
           'amount': MoneyParser.decimalStringFromCents(amountCents),
           if (note != null && note.isNotEmpty) 'note': note,
         },
-        parserFn: (json) =>
-            SubAgentDto.fromJson(json['fundSubAgentWallet'] as Map<String, dynamic>),
+        parserFn: (json) => SubAgentDto.fromJson(
+            json['fundSubAgentWallet'] as Map<String, dynamic>),
       ),
     );
   }
@@ -210,24 +218,32 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
             'managerName': newSubAgent.managerName,
             'phone': newSubAgent.phone,
             if (newSubAgent.email != null) 'email': newSubAgent.email,
-            if (newSubAgent.marginPercent != null) 'marginPercent': newSubAgent.marginPercent,
+            if (newSubAgent.marginPercent != null)
+              'marginPercent': newSubAgent.marginPercent,
             if (newSubAgent.creditLimitCents != null)
-              'creditLimit': MoneyParser.decimalStringFromCents(newSubAgent.creditLimitCents!),
+              'creditLimit': MoneyParser.decimalStringFromCents(
+                  newSubAgent.creditLimitCents!),
             'sendInvite': newSubAgent.sendInvite,
           },
         },
-        parserFn: (json) => SubAgentDto.fromJson(json['createSubAgent'] as Map<String, dynamic>),
+        parserFn: (json) => SubAgentDto.fromJson(
+            json['createSubAgent'] as Map<String, dynamic>),
       ),
     );
   }
 
   @override
-  Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents}) {
+  Future<Either<Failure, SubAgentDto>> updateCreditLimit(
+      {required String subAgentId, required int limitCents}) {
     return _graphQLService.mutate<SubAgentDto>(
       MutationOptions<SubAgentDto>(
         document: _updateCreditLimitDocument,
-        variables: {'subAgentId': subAgentId, 'creditLimit': MoneyParser.decimalStringFromCents(limitCents)},
-        parserFn: (json) => SubAgentDto.fromJson(json['updateSubAgentCreditLimit'] as Map<String, dynamic>),
+        variables: {
+          'subAgentId': subAgentId,
+          'creditLimit': MoneyParser.decimalStringFromCents(limitCents)
+        },
+        parserFn: (json) => SubAgentDto.fromJson(
+            json['updateSubAgentCreditLimit'] as Map<String, dynamic>),
       ),
     );
   }
@@ -256,13 +272,15 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
   ''');
 
   @override
-  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId) {
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(
+      String subAgentId) {
     return _graphQLService.query<SubAgentProfileDto>(
       QueryOptions<SubAgentProfileDto>(
         document: _profileDocument,
         variables: {'subAgentId': subAgentId},
         fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (json) => SubAgentProfileDto.fromJson(json['subAgentProfile'] as Map<String, dynamic>),
+        parserFn: (json) => SubAgentProfileDto.fromJson(
+            json['subAgentProfile'] as Map<String, dynamic>),
       ),
     );
   }
@@ -281,7 +299,8 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
           'active': active,
           if (reason != null && reason.isNotEmpty) 'reason': reason,
         },
-        parserFn: (json) => SubAgentDto.fromJson(json['setSubAgentActive'] as Map<String, dynamic>),
+        parserFn: (json) => SubAgentDto.fromJson(
+            json['setSubAgentActive'] as Map<String, dynamic>),
       ),
     );
   }

@@ -11,7 +11,8 @@ import '../models/sub_agent_dto.dart';
 import '../models/sub_agent_request_summary_dto.dart';
 
 class AgentsRepositoryImpl implements AgentsRepository {
-  AgentsRepositoryImpl({required AgentsRemoteDataSource remote}) : _remote = remote;
+  AgentsRepositoryImpl({required AgentsRemoteDataSource remote})
+      : _remote = remote;
 
   final AgentsRemoteDataSource _remote;
 
@@ -24,10 +25,12 @@ class AgentsRepositoryImpl implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, List<SubAgentRequestSummary>>> getPendingApprovalRequests() async {
+  Future<Either<Failure, List<SubAgentRequestSummary>>>
+      getPendingApprovalRequests() async {
     final result = await _remote.getPendingApprovalRequests();
     if (result case Left(:final value)) return Left(value);
-    final dtos = (result as Right<Failure, List<SubAgentRequestSummaryDto>>).value;
+    final dtos =
+        (result as Right<Failure, List<SubAgentRequestSummaryDto>>).value;
     return Right(dtos.map((dto) => dto.toEntity()).toList());
   }
 
@@ -39,7 +42,8 @@ class AgentsRepositoryImpl implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> rejectRequest(String requestId, {required String reason}) async {
+  Future<Either<Failure, void>> rejectRequest(String requestId,
+      {required String reason}) async {
     final result = await _remote.rejectRequest(requestId, reason: reason);
     if (result case Left(:final value)) return Left(value);
     return const Right(null);
@@ -62,16 +66,22 @@ class AgentsRepositoryImpl implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent) async =>
+  Future<Either<Failure, SubAgent>> createSubAgent(
+          NewSubAgent newSubAgent) async =>
       (await _remote.createSubAgent(newSubAgent)).map((dto) => dto.toEntity());
 
   @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
-      (await _remote.updateCreditLimit(subAgentId: subAgentId, limitCents: limitCents)).map((dto) => dto.toEntity());
+  Future<Either<Failure, SubAgent>> updateCreditLimit(
+          {required String subAgentId, required int limitCents}) async =>
+      (await _remote.updateCreditLimit(
+              subAgentId: subAgentId, limitCents: limitCents))
+          .map((dto) => dto.toEntity());
 
   @override
-  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId) async =>
-      (await _remote.getSubAgentProfile(subAgentId)).map((dto) => dto.toEntity());
+  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(
+          String subAgentId) async =>
+      (await _remote.getSubAgentProfile(subAgentId))
+          .map((dto) => dto.toEntity());
 
   @override
   Future<Either<Failure, SubAgent>> setSubAgentActive({
@@ -79,6 +89,7 @@ class AgentsRepositoryImpl implements AgentsRepository {
     required bool active,
     String? reason,
   }) async =>
-      (await _remote.setSubAgentActive(subAgentId: subAgentId, active: active, reason: reason))
+      (await _remote.setSubAgentActive(
+              subAgentId: subAgentId, active: active, reason: reason))
           .map((dto) => dto.toEntity());
 }

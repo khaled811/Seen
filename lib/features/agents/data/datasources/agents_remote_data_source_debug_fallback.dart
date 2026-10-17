@@ -28,12 +28,15 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
   @override
   Future<Either<Failure, List<SubAgentDto>>> getSubAgents() async {
     final result = await _real.getSubAgents();
-    if (kDebugMode && result.isLeft()) return Right(_mockSubAgents.values.toList());
+    if (kDebugMode && result.isLeft()) {
+      return Right(_mockSubAgents.values.toList());
+    }
     return result;
   }
 
   @override
-  Future<Either<Failure, List<SubAgentRequestSummaryDto>>> getPendingApprovalRequests() async {
+  Future<Either<Failure, List<SubAgentRequestSummaryDto>>>
+      getPendingApprovalRequests() async {
     final result = await _real.getPendingApprovalRequests();
     if (kDebugMode && result.isLeft()) {
       return Right(_mockPendingRequests.values.toList());
@@ -55,7 +58,8 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
   }
 
   @override
-  Future<Either<Failure, bool>> rejectRequest(String requestId, {required String reason}) async {
+  Future<Either<Failure, bool>> rejectRequest(String requestId,
+      {required String reason}) async {
     final result = await _real.rejectRequest(requestId, reason: reason);
     if (kDebugMode && result.isLeft()) {
       if (!_mockPendingRequests.containsKey(requestId)) {
@@ -83,7 +87,9 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
       if (existing == null) {
         return const Left(ServerFailure('Sub-agent not found.'));
       }
-      final updated = existing.copyWith(balanceAmount: _addCentsToAmount(existing.balanceAmount, amountCents));
+      final updated = existing.copyWith(
+          balanceAmount:
+              _addCentsToAmount(existing.balanceAmount, amountCents));
       _mockSubAgents[subAgentId] = updated;
       return Right(updated);
     }
@@ -93,11 +99,13 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
   /// Demo rules: a phone ending `4410` belongs to another agent; the credit
   /// limit cannot go under the mock usage or over 5,000.00.
   @override
-  Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent) async {
+  Future<Either<Failure, SubAgentDto>> createSubAgent(
+      NewSubAgent newSubAgent) async {
     final result = await _real.createSubAgent(newSubAgent);
     if (!(kDebugMode && result.isLeft())) return result;
     if (newSubAgent.phone.endsWith('4410')) {
-      return const Left(ServerFailure('Phone taken', code: SubAgentIssue.phoneTakenCode));
+      return const Left(
+          ServerFailure('Phone taken', code: SubAgentIssue.phoneTakenCode));
     }
     final n = _mockSubAgents.length + 1;
     final dto = SubAgentDto(
@@ -118,28 +126,38 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
   }
 
   @override
-  Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents}) async {
-    final result = await _real.updateCreditLimit(subAgentId: subAgentId, limitCents: limitCents);
+  Future<Either<Failure, SubAgentDto>> updateCreditLimit(
+      {required String subAgentId, required int limitCents}) async {
+    final result = await _real.updateCreditLimit(
+        subAgentId: subAgentId, limitCents: limitCents);
     if (!(kDebugMode && result.isLeft())) return result;
     final existing = _mockSubAgents[subAgentId];
-    if (existing == null) return const Left(ServerFailure('Sub-agent not found.'));
-    final used = existing.creditUsedAmount == null ? 0 : MoneyParser.centsFromDecimalString(existing.creditUsedAmount!);
+    if (existing == null) {
+      return const Left(ServerFailure('Sub-agent not found.'));
+    }
+    final used = existing.creditUsedAmount == null
+        ? 0
+        : MoneyParser.centsFromDecimalString(existing.creditUsedAmount!);
     if (limitCents < used) {
       return Left(ServerFailure('Below usage',
-          code: SubAgentIssue.limitBelowUsageCode, details: {'usedCents': used}));
+          code: SubAgentIssue.limitBelowUsageCode,
+          details: {'usedCents': used}));
     }
     if (limitCents > 500000) {
       return const Left(ServerFailure('Above allowed',
-          code: SubAgentIssue.limitAboveAllowedCode, details: {'maxCents': 500000}));
+          code: SubAgentIssue.limitAboveAllowedCode,
+          details: {'maxCents': 500000}));
     }
-    final updated = existing.copyWith(creditLimitAmount: MoneyParser.decimalStringFromCents(limitCents));
+    final updated = existing.copyWith(
+        creditLimitAmount: MoneyParser.decimalStringFromCents(limitCents));
     _mockSubAgents[subAgentId] = updated;
     return Right(updated);
   }
 
   /// Demo data: the mock agent plus a canned balance history and requests.
   @override
-  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId) async {
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(
+      String subAgentId) async {
     final result = await _real.getSubAgentProfile(subAgentId);
     if (!(kDebugMode && result.isLeft())) return result;
     final agent = _mockSubAgents[subAgentId];
@@ -206,10 +224,13 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
     required bool active,
     String? reason,
   }) async {
-    final result = await _real.setSubAgentActive(subAgentId: subAgentId, active: active, reason: reason);
+    final result = await _real.setSubAgentActive(
+        subAgentId: subAgentId, active: active, reason: reason);
     if (!(kDebugMode && result.isLeft())) return result;
     final existing = _mockSubAgents[subAgentId];
-    if (existing == null) return const Left(ServerFailure('Sub-agent not found.'));
+    if (existing == null) {
+      return const Left(ServerFailure('Sub-agent not found.'));
+    }
     final updated = existing.copyWith(isActive: active);
     _mockSubAgents[subAgentId] = updated;
     return Right(updated);

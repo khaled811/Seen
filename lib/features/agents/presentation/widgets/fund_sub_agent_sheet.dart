@@ -5,7 +5,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
+import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_format.dart';
+import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/money.dart';
 import '../../../../core/validators/form_validators.dart';
 import '../../domain/entities/sub_agent.dart';
@@ -109,9 +111,17 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
         final loaded = state as AgentsLoaded;
         switch (loaded.fundingStatus) {
           case FundingStatus.success:
+            // The agent's balance after the transfer, as the server reports it.
+            final updated =
+                loaded.subAgents.where((a) => a.id == widget.subAgent.id);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(l10n.fundSuccessMessage)));
+              ..showSnackBar(SnackBar(
+                content: Text(updated.isEmpty
+                    ? l10n.fundSuccessMessage
+                    : l10n.fundDoneMessage(
+                        SeenFormat.usd(updated.first.balanceCents / 100))),
+              ));
             context.read<AgentsBloc>().add(const FundingStatusCleared());
             Navigator.of(context).pop();
           case FundingStatus.failure:
@@ -126,8 +136,8 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
         }
       },
       child: SeenSheet(
-        title: l10n.fundSheetTitle(widget.subAgent.name),
-        subtitle: l10n.fundAvailableBalanceLabel(
+        title: l10n.fundAgentTitle,
+        subtitle: l10n.fundFromMainBalance(
             SeenFormat.usd(widget.masterAvailableBalanceCents / 100)),
         footer: BlocBuilder<AgentsBloc, AgentsState>(
           buildWhen: (previous, current) =>
@@ -179,7 +189,56 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
                 },
               ),
             ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                for (final (i, v) in const [250, 500, 1000].indexed) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  Expanded(
+                    child: _QuickAmountChip(
+                      value: v,
+                      onTap: () => _amountController.text = '$v.00',
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickAmountChip extends StatelessWidget {
+  const _QuickAmountChip({required this.value, required this.onTap});
+
+  final int value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    final t = SeenType.of(context);
+    final label = value >= 1000
+        ? '${value ~/ 1000},${(value % 1000).toString().padLeft(3, '0')}'
+        : '$value';
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: c.card,
+        shape: StadiumBorder(side: BorderSide(color: c.border)),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const StadiumBorder(),
+          child: SizedBox(
+            height: 36,
+            child: Center(
+                child: Text(label,
+                    style: t.label.copyWith(color: c.inkSecondary))),
+          ),
         ),
       ),
     );

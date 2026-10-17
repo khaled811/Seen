@@ -27,7 +27,15 @@ class NewSubAgent extends Equatable {
   final bool sendInvite;
 
   @override
-  List<Object?> get props => [agencyName, managerName, phone, email, marginPercent, creditLimitCents, sendInvite];
+  List<Object?> get props => [
+        agencyName,
+        managerName,
+        phone,
+        email,
+        marginPercent,
+        creditLimitCents,
+        sendInvite
+      ];
 }
 
 enum SubAgentIssueKind {
@@ -60,7 +68,9 @@ class SubAgentIssue extends Equatable {
   static const limitAboveAllowedCode = 'CREDIT_LIMIT_ABOVE_ALLOWED';
 
   factory SubAgentIssue.from(Failure failure) {
-    if (failure is NetworkFailure) return const SubAgentIssue(SubAgentIssueKind.offline);
+    if (failure is NetworkFailure) {
+      return const SubAgentIssue(SubAgentIssueKind.offline);
+    }
     if (failure is ServerFailure) {
       int? cents(String key) {
         final v = failure.details[key];
@@ -70,9 +80,11 @@ class SubAgentIssue extends Equatable {
       return switch (failure.code) {
         phoneTakenCode => const SubAgentIssue(SubAgentIssueKind.phoneTaken),
         emailTakenCode => const SubAgentIssue(SubAgentIssueKind.emailTaken),
-        limitBelowUsageCode => SubAgentIssue(SubAgentIssueKind.limitBelowUsage, amountCents: cents('usedCents')),
-        limitAboveAllowedCode =>
-          SubAgentIssue(SubAgentIssueKind.limitAboveAllowed, amountCents: cents('maxCents')),
+        limitBelowUsageCode => SubAgentIssue(SubAgentIssueKind.limitBelowUsage,
+            amountCents: cents('usedCents')),
+        limitAboveAllowedCode => SubAgentIssue(
+            SubAgentIssueKind.limitAboveAllowed,
+            amountCents: cents('maxCents')),
         _ => const SubAgentIssue(SubAgentIssueKind.generic),
       };
     }

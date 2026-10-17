@@ -2731,5 +2731,117 @@
   "agentReactivatedDone": "The agent was reactivated.",
   "@agentReactivatedDone": {
     "description": "Agent profile copy."
+  },
+  "agentApprovalsTitle": "Agent approvals",
+  "@agentApprovalsTitle": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalsWaiting": "{n} waiting for you",
+  "@agentApprovalsWaiting": {
+    "description": "Sub-agent approvals / empty states / funding copy.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "agentApprovalsEmpty": "No requests are waiting for your approval",
+  "@agentApprovalsEmpty": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalWaitingChip": "Waiting for your approval",
+  "@agentApprovalWaitingChip": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalValue": "Value",
+  "@agentApprovalValue": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalApprove": "Approve",
+  "@agentApprovalApprove": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalReject": "Reject",
+  "@agentApprovalReject": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalApproved": "The request was approved.",
+  "@agentApprovalApproved": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentApprovalRejected": "The request was rejected.",
+  "@agentApprovalRejected": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentRejectTitle": "Reason for rejection",
+  "@agentRejectTitle": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentRejectReasonLimit": "The value exceeds the agreed limit",
+  "@agentRejectReasonLimit": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentRejectReasonIncomplete": "Incomplete data",
+  "@agentRejectReasonIncomplete": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentRejectReasonOther": "Another reason",
+  "@agentRejectReasonOther": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentRejectNote": "Note for the agent",
+  "@agentRejectNote": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentRejectConfirm": "Reject request",
+  "@agentRejectConfirm": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentsEmptyTitle": "No sub-agents yet",
+  "@agentsEmptyTitle": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentsEmptyBody": "Add your sub-agents so they can order services from your account, each with a credit limit and a margin.",
+  "@agentsEmptyBody": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentsNoSearchResult": "No agent named ‹{query}›",
+  "@agentsNoSearchResult": {
+    "description": "Sub-agent approvals / empty states / funding copy.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "agentsNoSuspended": "No suspended agents",
+  "@agentsNoSuspended": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "agentsNoActive": "No active agents",
+  "@agentsNoActive": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "fundAgentTitle": "Fund agent",
+  "@fundAgentTitle": {
+    "description": "Sub-agent approvals / empty states / funding copy."
+  },
+  "fundFromMainBalance": "From your main balance {amount}",
+  "@fundFromMainBalance": {
+    "description": "Sub-agent approvals / empty states / funding copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "fundDoneMessage": "Funded · the agent balance is now {balance}",
+  "@fundDoneMessage": {
+    "description": "Sub-agent approvals / empty states / funding copy.",
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
   }
 }

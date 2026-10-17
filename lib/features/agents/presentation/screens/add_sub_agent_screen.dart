@@ -34,7 +34,8 @@ class AddSubAgentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => (createBloc ?? InjectionContainer.instance.createAddSubAgentBloc)(),
+      create: (_) =>
+          (createBloc ?? InjectionContainer.instance.createAddSubAgentBloc)(),
       child: const _View(),
     );
   }
@@ -87,7 +88,8 @@ class _ViewState extends State<_View> {
           phone: PhoneIdentifier.toIdentifier(_phone.text),
           email: _email.text.trim().isEmpty ? null : _email.text.trim(),
           marginPercent: margin.isEmpty ? null : double.parse(margin),
-          creditLimitCents: limit.isEmpty ? null : MoneyParser.centsFromDecimalString(limit),
+          creditLimitCents:
+              limit.isEmpty ? null : MoneyParser.centsFromDecimalString(limit),
           sendInvite: _invite,
         )));
   }
@@ -98,7 +100,8 @@ class _ViewState extends State<_View> {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     return BlocConsumer<AddSubAgentBloc, AddSubAgentState>(
-      listenWhen: (previous, current) => previous.created == null && current.created != null,
+      listenWhen: (previous, current) =>
+          previous.created == null && current.created != null,
       listener: (context, state) => _addedAny = true,
       builder: (context, state) {
         final created = state.created;
@@ -116,9 +119,14 @@ class _ViewState extends State<_View> {
         final issue = state.issue;
         final phoneTaken = issue?.kind == SubAgentIssueKind.phoneTaken;
         final emailTaken = issue?.kind == SubAgentIssueKind.emailTaken;
-        String? required(String? v) => FormValidators.required(v, message: l10n.validationRequired);
+        String? required(String? v) =>
+            FormValidators.required(v, message: l10n.validationRequired);
         void dismiss() {
-          if (issue != null) context.read<AddSubAgentBloc>().add(const AddSubAgentIssueDismissed());
+          if (issue != null) {
+            context
+                .read<AddSubAgentBloc>()
+                .add(const AddSubAgentIssueDismissed());
+          }
         }
 
         return PopScope(
@@ -138,7 +146,8 @@ class _ViewState extends State<_View> {
                       child: Form(
                         key: _formKey,
                         child: ListView(
-                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                           children: [
                             SeenTextField(
@@ -165,9 +174,11 @@ class _ViewState extends State<_View> {
                               keyboardType: TextInputType.phone,
                               inputFormatters: const [LatinDigitsFormatter()],
                               textInputAction: TextInputAction.next,
-                              errorText: phoneTaken ? l10n.agentAddPhoneTaken : null,
+                              errorText:
+                                  phoneTaken ? l10n.agentAddPhoneTaken : null,
                               prefix: Padding(
-                                padding: const EdgeInsetsDirectional.only(end: SeenSpace.s2),
+                                padding: const EdgeInsetsDirectional.only(
+                                    end: SeenSpace.s2),
                                 child: Directionality(
                                   textDirection: TextDirection.ltr,
                                   child: Text(
@@ -177,7 +188,9 @@ class _ViewState extends State<_View> {
                                 ),
                               ),
                               onChanged: (_) => dismiss(),
-                              validator: (v) => PhoneIdentifier.isValid(v ?? '') ? null : l10n.validationInvalidPhone,
+                              validator: (v) => PhoneIdentifier.isValid(v ?? '')
+                                  ? null
+                                  : l10n.validationInvalidPhone,
                             ),
                             const SizedBox(height: 14),
                             SeenTextField(
@@ -186,12 +199,14 @@ class _ViewState extends State<_View> {
                               ltr: true,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
-                              errorText: emailTaken ? l10n.agentAddEmailTaken : null,
+                              errorText:
+                                  emailTaken ? l10n.agentAddEmailTaken : null,
                               onChanged: (_) => dismiss(),
                               validator: (v) {
                                 final value = (v ?? '').trim();
                                 if (value.isEmpty) return null;
-                                return value.contains('@') && PhoneIdentifier.isValidIdentifier(value)
+                                return value.contains('@') &&
+                                        PhoneIdentifier.isValidIdentifier(value)
                                     ? null
                                     : l10n.validationInvalidEmail;
                               },
@@ -205,14 +220,20 @@ class _ViewState extends State<_View> {
                                   child: SeenTextField(
                                     label: l10n.agentAddCreditLimit,
                                     controller: _limit,
-                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                    inputFormatters: const [LatinDigitsFormatter()],
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: const [
+                                      LatinDigitsFormatter()
+                                    ],
                                     mono: true,
                                     ltr: true,
                                     suffixText: 'USD',
                                     validator: (v) => (v ?? '').trim().isEmpty
                                         ? null
-                                        : FormValidators.positiveAmount(v, message: l10n.validationInvalidAmount),
+                                        : FormValidators.positiveAmount(v,
+                                            message:
+                                                l10n.validationInvalidAmount),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -220,8 +241,12 @@ class _ViewState extends State<_View> {
                                   child: SeenTextField(
                                     label: l10n.agentAddMargin,
                                     controller: _margin,
-                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                    inputFormatters: const [LatinDigitsFormatter()],
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: const [
+                                      LatinDigitsFormatter()
+                                    ],
                                     mono: true,
                                     ltr: true,
                                     suffixText: '%',
@@ -229,7 +254,9 @@ class _ViewState extends State<_View> {
                                       final value = (v ?? '').trim();
                                       if (value.isEmpty) return null;
                                       final n = double.tryParse(value);
-                                      return n != null && n >= 0 && n <= 100 ? null : l10n.agentAddMarginInvalid;
+                                      return n != null && n >= 0 && n <= 100
+                                          ? null
+                                          : l10n.agentAddMarginInvalid;
                                     },
                                   ),
                                 ),
@@ -262,7 +289,9 @@ class _ViewState extends State<_View> {
                     SeenActionBar(
                       actions: [
                         SeenButton(
-                          label: state.submitting ? l10n.loading : l10n.agentAddSubmit,
+                          label: state.submitting
+                              ? l10n.loading
+                              : l10n.agentAddSubmit,
                           loading: state.submitting,
                           expand: true,
                           onPressed: state.submitting ? null : _submit,
@@ -281,7 +310,11 @@ class _ViewState extends State<_View> {
 }
 
 class _InviteToggle extends StatelessWidget {
-  const _InviteToggle({required this.value, required this.title, required this.body, required this.onChanged});
+  const _InviteToggle(
+      {required this.value,
+      required this.title,
+      required this.body,
+      required this.onChanged});
 
   final bool value;
   final String title;
@@ -293,7 +326,9 @@ class _InviteToggle extends StatelessWidget {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     return DecoratedBox(
-      decoration: const BoxDecoration(color: SeenBrand.violet05, borderRadius: BorderRadius.all(SeenRadius.lg)),
+      decoration: const BoxDecoration(
+          color: SeenBrand.violet05,
+          borderRadius: BorderRadius.all(SeenRadius.lg)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: MergeSemantics(
@@ -318,7 +353,11 @@ class _InviteToggle extends StatelessWidget {
 }
 
 class _Success extends StatelessWidget {
-  const _Success({required this.agentName, required this.invited, required this.onAnother, required this.onBack});
+  const _Success(
+      {required this.agentName,
+      required this.invited,
+      required this.onAnother,
+      required this.onBack});
 
   final String agentName;
   final bool invited;
@@ -350,7 +389,10 @@ class _Success extends StatelessWidget {
                       children: [
                         ExcludeSemantics(
                           child: DecoratedBox(
-                            decoration: BoxDecoration(color: ok.bg, shape: BoxShape.circle, border: Border.all(color: c.border)),
+                            decoration: BoxDecoration(
+                                color: ok.bg,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: c.border)),
                             child: SizedBox(
                               width: 128,
                               height: 128,
@@ -358,13 +400,17 @@ class _Success extends StatelessWidget {
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
                                     color: c.card,
-                                    borderRadius: const BorderRadius.all(SeenRadius.r20),
+                                    borderRadius:
+                                        const BorderRadius.all(SeenRadius.r20),
                                     boxShadow: SeenShadows.stickyBar,
                                   ),
                                   child: const SizedBox(
                                     width: 64,
                                     height: 64,
-                                    child: Center(child: SeenSvgIcon(SeenVectors.agentAdded, size: 36)),
+                                    child: Center(
+                                        child: SeenSvgIcon(
+                                            SeenVectors.agentAdded,
+                                            size: 36)),
                                   ),
                                 ),
                               ),
@@ -372,16 +418,21 @@ class _Success extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 18),
-                        Text(l10n.agentAddDoneTitle, textAlign: TextAlign.center, style: t.h1),
+                        Text(l10n.agentAddDoneTitle,
+                            textAlign: TextAlign.center, style: t.h1),
                         const SizedBox(height: 12),
                         Text(
-                          invited ? l10n.agentAddDoneInvited(agentName) : l10n.agentAddDoneNoInvite(agentName),
+                          invited
+                              ? l10n.agentAddDoneInvited(agentName)
+                              : l10n.agentAddDoneNoInvite(agentName),
                           textAlign: TextAlign.center,
                           style: t.body.copyWith(color: c.inkSecondary),
                         ),
                         if (invited) ...[
                           const SizedBox(height: 12),
-                          SeenStatusChip(status: SeenRequestStatus.underReview, label: l10n.agentAddPending),
+                          SeenStatusChip(
+                              status: SeenRequestStatus.underReview,
+                              label: l10n.agentAddPending),
                         ],
                       ],
                     ),
@@ -390,8 +441,14 @@ class _Success extends StatelessWidget {
               ),
               SeenActionBar(
                 actions: [
-                  SeenButton(label: l10n.agentAddBackToList, expand: true, onPressed: onBack),
-                  SeenButton.secondary(label: l10n.agentAddAnother, expand: true, onPressed: onAnother),
+                  SeenButton(
+                      label: l10n.agentAddBackToList,
+                      expand: true,
+                      onPressed: onBack),
+                  SeenButton.secondary(
+                      label: l10n.agentAddAnother,
+                      expand: true,
+                      onPressed: onAnother),
                 ],
               ),
             ],

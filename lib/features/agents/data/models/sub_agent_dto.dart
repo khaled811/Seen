@@ -70,8 +70,12 @@ class SubAgentDto {
         balanceCents: MoneyParser.centsFromDecimalString(balanceAmount),
         isActive: isActive,
         marginPercent: marginPercent,
-        creditLimitCents: creditLimitAmount == null ? null : MoneyParser.centsFromDecimalString(creditLimitAmount!),
-        creditUsedCents: creditUsedAmount == null ? null : MoneyParser.centsFromDecimalString(creditUsedAmount!),
+        creditLimitCents: creditLimitAmount == null
+            ? null
+            : MoneyParser.centsFromDecimalString(creditLimitAmount!),
+        creditUsedCents: creditUsedAmount == null
+            ? null
+            : MoneyParser.centsFromDecimalString(creditUsedAmount!),
         invitePending: invitePending,
       );
 }

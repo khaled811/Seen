@@ -10,7 +10,8 @@ import '../../../../core/theme/seen_typography.dart';
 
 /// Overview stat: caption (11, secondary) over a 22 / bold value, r22 card.
 class SeenAgentStatTile extends StatelessWidget {
-  const SeenAgentStatTile({super.key, required this.label, required this.value});
+  const SeenAgentStatTile(
+      {super.key, required this.label, required this.value});
 
   final String label;
 
@@ -38,9 +39,14 @@ class SeenAgentStatTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.caption.copyWith(color: c.inkSecondary)),
+              Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: t.caption.copyWith(color: c.inkSecondary)),
               const SizedBox(height: 4),
-              Text(value, maxLines: 1, style: t.h1.copyWith(fontFeatures: SeenFonts.tabular)),
+              Text(value,
+                  maxLines: 1,
+                  style: t.h1.copyWith(fontFeatures: SeenFonts.tabular)),
             ],
           ),
         ),
@@ -76,7 +82,9 @@ class SeenSubAgentCard extends StatelessWidget {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     const radius = BorderRadius.all(SeenRadius.r20);
-    final initial = name.trim().isEmpty ? '' : String.fromCharCodes(name.trim().runes.take(1));
+    final initial = name.trim().isEmpty
+        ? ''
+        : String.fromCharCodes(name.trim().runes.take(1));
     final balanceText = SeenFormat.usd(balance);
     return Semantics(
       button: onTap != null,
@@ -84,10 +92,12 @@ class SeenSubAgentCard extends StatelessWidget {
       label: '$name $statusLabel $balanceText',
       excludeSemantics: true,
       child: DecoratedBox(
-        decoration: const BoxDecoration(boxShadow: SeenShadows.card, borderRadius: radius),
+        decoration: const BoxDecoration(
+            boxShadow: SeenShadows.card, borderRadius: radius),
         child: Material(
           color: c.card,
-          shape: RoundedRectangleBorder(borderRadius: radius, side: BorderSide(color: c.border)),
+          shape: RoundedRectangleBorder(
+              borderRadius: radius, side: BorderSide(color: c.border)),
           child: InkWell(
             onTap: onTap,
             borderRadius: radius,
@@ -96,11 +106,14 @@ class SeenSubAgentCard extends StatelessWidget {
               child: Row(
                 children: [
                   DecoratedBox(
-                    decoration: const BoxDecoration(color: SeenBrand.violet10, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(
+                        color: SeenBrand.violet10, shape: BoxShape.circle),
                     child: SizedBox(
                       width: 44,
                       height: 44,
-                      child: Center(child: Text(initial, style: t.title.copyWith(color: c.primary))),
+                      child: Center(
+                          child: Text(initial,
+                              style: t.title.copyWith(color: c.primary))),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -108,7 +121,10 @@ class SeenSubAgentCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodyStrong),
+                        Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: t.bodyStrong),
                         const SizedBox(height: 2),
                         Text(
                           SeenFormat.isolate(caption),
@@ -125,14 +141,17 @@ class SeenSubAgentCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SeenStatusChip(
-                        status: suspended ? SeenRequestStatus.cancelled : SeenRequestStatus.completed,
+                        status: suspended
+                            ? SeenRequestStatus.cancelled
+                            : SeenRequestStatus.completed,
                         label: statusLabel,
                       ),
                       const SizedBox(height: 6),
                       Text(
                         balanceText,
                         textDirection: TextDirection.ltr,
-                        style: t.label.copyWith(color: c.ink, fontFeatures: SeenFonts.tabular),
+                        style: t.label.copyWith(
+                            color: c.ink, fontFeatures: SeenFonts.tabular),
                       ),
                     ],
                   ),

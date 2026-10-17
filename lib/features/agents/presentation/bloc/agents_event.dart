@@ -23,7 +23,8 @@ final class SubAgentRequestApproveSubmitted extends AgentsEvent {
 }
 
 final class SubAgentRequestRejectSubmitted extends AgentsEvent {
-  const SubAgentRequestRejectSubmitted({required this.requestId, required this.reason});
+  const SubAgentRequestRejectSubmitted(
+      {required this.requestId, required this.reason});
 
   final String requestId;
   final String reason;

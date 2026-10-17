@@ -31,7 +31,8 @@ import '../bloc/agents_state.dart';
 /// page. Owns an [AgentsBloc] (sub-agents + the master balance + the funding
 /// mutation); the balance on the success page is the refetched one.
 class TransferToAgentScreen extends StatelessWidget {
-  const TransferToAgentScreen({super.key, this.initialAgentId, this.createBloc});
+  const TransferToAgentScreen(
+      {super.key, this.initialAgentId, this.createBloc});
 
   /// Pre-selects this sub-agent (e.g. coming from its card).
   final String? initialAgentId;
@@ -42,7 +43,9 @@ class TransferToAgentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => (createBloc ?? InjectionContainer.instance.createAgentsBloc)()..add(const AgentsLoadRequested()),
+      create: (_) =>
+          (createBloc ?? InjectionContainer.instance.createAgentsBloc)()
+            ..add(const AgentsLoadRequested()),
       child: _View(initialAgentId: initialAgentId),
     );
   }
@@ -144,7 +147,9 @@ class _ViewState extends State<_View> {
           note: _note.text.trim(),
           availableCents: availableCents,
           onSuccess: () {
-            if (mounted) setState(() => _done = _Done(agent: agent, cents: cents));
+            if (mounted) {
+              setState(() => _done = _Done(agent: agent, cents: cents));
+            }
           },
         ),
       ),
@@ -168,10 +173,14 @@ class _ViewState extends State<_View> {
           previous.runtimeType != current.runtimeType ||
           (current is AgentsLoaded &&
               previous is AgentsLoaded &&
-              (previous.subAgents != current.subAgents || previous.masterWalletBalance != current.masterWalletBalance)),
+              (previous.subAgents != current.subAgents ||
+                  previous.masterWalletBalance != current.masterWalletBalance)),
       builder: (context, state) {
         if (_done != null && state is AgentsLoaded) {
-          return _SuccessView(done: _done!, balance: state.masterWalletBalance?.availableCents, onAnother: _another);
+          return _SuccessView(
+              done: _done!,
+              balance: state.masterWalletBalance?.availableCents,
+              onAnother: _another);
         }
         return Scaffold(
           body: SeenScreenBackground(
@@ -201,7 +210,9 @@ class _ViewState extends State<_View> {
                               tone: SeenBannerTone.error,
                               message: state.message,
                               actionLabel: l10n.recoveryRetry,
-                              onAction: () => context.read<AgentsBloc>().add(const AgentsLoadRequested()),
+                              onAction: () => context
+                                  .read<AgentsBloc>()
+                                  .add(const AgentsLoadRequested()),
                             ),
                           ],
                         ),
@@ -246,14 +257,16 @@ class _Form extends StatelessWidget {
   final List<int> chips;
   final VoidCallback onChange;
   final ValueChanged<int> onChip;
-  final Future<void> Function(SubAgent agent, int cents, int? available) onReview;
+  final Future<void> Function(SubAgent agent, int cents, int? available)
+      onReview;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final t = SeenType.of(context);
     final available = state.masterWalletBalance?.availableCents;
-    final insufficient = cents != null && available != null && cents! > available;
+    final insufficient =
+        cents != null && available != null && cents! > available;
     final valid = agent != null && cents != null && !insufficient;
     const gap = SizedBox(height: 14);
     return Column(
@@ -266,18 +279,31 @@ class _Form extends StatelessWidget {
               Text(l10n.transferToLabel, style: t.label),
               const SizedBox(height: 14),
               agent != null
-                  ? _AgentCard(agent: agent!, selected: true, trailingLabel: l10n.transferChange, onTap: onChange)
-                  : _ChooseCard(label: l10n.transferChoose, action: l10n.transferPick, onTap: onChange),
+                  ? _AgentCard(
+                      agent: agent!,
+                      selected: true,
+                      trailingLabel: l10n.transferChange,
+                      onTap: onChange)
+                  : _ChooseCard(
+                      label: l10n.transferChoose,
+                      action: l10n.transferPick,
+                      onTap: onChange),
               gap,
               SeenTextField(
                 label: l10n.transferAmountLabel,
                 controller: amount,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [const LatinDigitsFormatter(), FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  const LatinDigitsFormatter(),
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                ],
                 mono: true,
                 ltr: true,
                 suffixText: 'USD',
-                helper: available == null ? null : l10n.transferAvailable(SeenFormat.usd(available / 100)),
+                helper: available == null
+                    ? null
+                    : l10n.transferAvailable(SeenFormat.usd(available / 100)),
               ),
               gap,
               Row(
@@ -318,7 +344,8 @@ class _Form extends StatelessWidget {
             SeenButton(
               label: l10n.transferReview,
               expand: true,
-              onPressed: valid ? () => onReview(agent!, cents!, available) : null,
+              onPressed:
+                  valid ? () => onReview(agent!, cents!, available) : null,
             ),
           ],
         ),
@@ -328,7 +355,11 @@ class _Form extends StatelessWidget {
 }
 
 class _AgentCard extends StatelessWidget {
-  const _AgentCard({required this.agent, required this.selected, required this.trailingLabel, required this.onTap});
+  const _AgentCard(
+      {required this.agent,
+      required this.selected,
+      required this.trailingLabel,
+      required this.onTap});
 
   final SubAgent agent;
   final bool selected;
@@ -340,7 +371,8 @@ class _AgentCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    final initial = agent.name.trim().isEmpty ? '?' : agent.name.trim().characters.first;
+    final initial =
+        agent.name.trim().isEmpty ? '?' : agent.name.trim().characters.first;
     return Semantics(
       button: true,
       label: agent.name,
@@ -353,17 +385,21 @@ class _AgentCard extends StatelessWidget {
         ),
         child: InkWell(
           onTap: onTap,
-          customBorder: const RoundedRectangleBorder(borderRadius: BorderRadius.all(SeenRadius.r18)),
+          customBorder: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(SeenRadius.r18)),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
                 DecoratedBox(
-                  decoration: const BoxDecoration(color: SeenBrand.violet10, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                      color: SeenBrand.violet10, shape: BoxShape.circle),
                   child: SizedBox(
                     width: 40,
                     height: 40,
-                    child: Center(child: Text(initial, style: t.label.copyWith(color: SeenBrand.violet))),
+                    child: Center(
+                        child: Text(initial,
+                            style: t.label.copyWith(color: SeenBrand.violet))),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -373,13 +409,15 @@ class _AgentCard extends StatelessWidget {
                     children: [
                       Text(agent.name, style: t.label),
                       Text(
-                        l10n.transferAgentMeta(SeenFormat.usd(agent.balanceCents / 100)),
+                        l10n.transferAgentMeta(
+                            SeenFormat.usd(agent.balanceCents / 100)),
                         style: t.caption.copyWith(color: c.inkMuted),
                       ),
                     ],
                   ),
                 ),
-                Text(trailingLabel, style: t.label.copyWith(color: c.primaryInk)),
+                Text(trailingLabel,
+                    style: t.label.copyWith(color: c.primaryInk)),
               ],
             ),
           ),
@@ -390,7 +428,8 @@ class _AgentCard extends StatelessWidget {
 }
 
 class _ChooseCard extends StatelessWidget {
-  const _ChooseCard({required this.label, required this.action, required this.onTap});
+  const _ChooseCard(
+      {required this.label, required this.action, required this.onTap});
 
   final String label;
   final String action;
@@ -412,12 +451,15 @@ class _ChooseCard extends StatelessWidget {
         ),
         child: InkWell(
           onTap: onTap,
-          customBorder: const RoundedRectangleBorder(borderRadius: BorderRadius.all(SeenRadius.r18)),
+          customBorder: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(SeenRadius.r18)),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
             child: Row(
               children: [
-                Expanded(child: Text(label, style: t.label.copyWith(color: c.inkSecondary))),
+                Expanded(
+                    child: Text(label,
+                        style: t.label.copyWith(color: c.inkSecondary))),
                 Text(action, style: t.label.copyWith(color: c.primaryInk)),
               ],
             ),
@@ -429,7 +471,8 @@ class _ChooseCard extends StatelessWidget {
 }
 
 class _AmountChip extends StatelessWidget {
-  const _AmountChip({required this.value, required this.selected, required this.onTap});
+  const _AmountChip(
+      {required this.value, required this.selected, required this.onTap});
 
   final int value;
   final bool selected;
@@ -439,7 +482,9 @@ class _AmountChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    final label = value >= 1000 ? '${value ~/ 1000},${(value % 1000).toString().padLeft(3, '0')}' : '$value';
+    final label = value >= 1000
+        ? '${value ~/ 1000},${(value % 1000).toString().padLeft(3, '0')}'
+        : '$value';
     return Semantics(
       button: true,
       selected: selected,
@@ -447,14 +492,17 @@ class _AmountChip extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         color: selected ? SeenBrand.violet10 : c.card,
-        shape: StadiumBorder(side: BorderSide(color: selected ? SeenBrand.violet : c.border)),
+        shape: StadiumBorder(
+            side: BorderSide(color: selected ? SeenBrand.violet : c.border)),
         child: InkWell(
           onTap: onTap,
           customBorder: const StadiumBorder(),
           child: SizedBox(
             height: 38,
             child: Center(
-              child: Text(label, style: t.label.copyWith(color: selected ? SeenBrand.violet : c.inkSecondary)),
+              child: Text(label,
+                  style: t.label.copyWith(
+                      color: selected ? SeenBrand.violet : c.inkSecondary)),
             ),
           ),
         ),
@@ -489,13 +537,17 @@ class _ConfirmSheet extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(
             children: [
-              Expanded(child: Text(label, style: t.body.copyWith(color: c.inkSecondary))),
+              Expanded(
+                  child: Text(label,
+                      style: t.body.copyWith(color: c.inkSecondary))),
               Text(value, style: t.bodyStrong),
             ],
           ),
         );
     return BlocListener<AgentsBloc, AgentsState>(
-      listenWhen: (previous, current) => current is AgentsLoaded && current.fundingStatus != FundingStatus.idle,
+      listenWhen: (previous, current) =>
+          current is AgentsLoaded &&
+          current.fundingStatus != FundingStatus.idle,
       listener: (context, state) {
         final loaded = state as AgentsLoaded;
         switch (loaded.fundingStatus) {
@@ -504,13 +556,15 @@ class _ConfirmSheet extends StatelessWidget {
             onSuccess();
             Navigator.of(context).pop();
           case FundingStatus.failure:
-            final bloc = context.read<AgentsBloc>()..add(const FundingStatusCleared());
+            final bloc = context.read<AgentsBloc>()
+              ..add(const FundingStatusCleared());
             showSeenErrorSheet(
               context,
               title: l10n.transferFailedTitle,
               detail: [
                 if (loaded.fundingError != null) loaded.fundingError!,
-                if (loaded.fundingReference != null) l10n.errorReference(loaded.fundingReference!),
+                if (loaded.fundingReference != null)
+                  l10n.errorReference(loaded.fundingReference!),
               ].join(' · '),
               retryLabel: l10n.errorTryAgain,
               cancelLabel: l10n.errorCancel,
@@ -533,9 +587,11 @@ class _ConfirmSheet extends StatelessWidget {
         footer: BlocBuilder<AgentsBloc, AgentsState>(
           buildWhen: (previous, current) =>
               current is AgentsLoaded &&
-              (previous is! AgentsLoaded || previous.fundingStatus != current.fundingStatus),
+              (previous is! AgentsLoaded ||
+                  previous.fundingStatus != current.fundingStatus),
           builder: (context, state) {
-            final submitting = state is AgentsLoaded && state.fundingStatus == FundingStatus.submitting;
+            final submitting = state is AgentsLoaded &&
+                state.fundingStatus == FundingStatus.submitting;
             return Row(
               children: [
                 Expanded(
@@ -545,7 +601,9 @@ class _ConfirmSheet extends StatelessWidget {
                     expand: true,
                     onPressed: submitting
                         ? null
-                        : () => context.read<AgentsBloc>().add(SubAgentWalletFundingSubmitted(
+                        : () => context
+                            .read<AgentsBloc>()
+                            .add(SubAgentWalletFundingSubmitted(
                               subAgentId: agent.id,
                               amountCents: cents,
                               note: note.isEmpty ? null : note,
@@ -557,7 +615,8 @@ class _ConfirmSheet extends StatelessWidget {
                   child: SeenButton.secondary(
                     label: l10n.transferCancel,
                     expand: true,
-                    onPressed: submitting ? null : () => Navigator.of(context).pop(),
+                    onPressed:
+                        submitting ? null : () => Navigator.of(context).pop(),
                   ),
                 ),
               ],
@@ -580,8 +639,10 @@ class _ConfirmSheet extends StatelessWidget {
                     row(l10n.transferRowTo, agent.name),
                     row(l10n.transferRowAmount, SeenFormat.usd(cents / 100)),
                     if (availableCents != null)
-                      row(l10n.transferRowMyAfter, SeenFormat.usd((availableCents! - cents) / 100)),
-                    row(l10n.transferRowAgentAfter, SeenFormat.usd((agent.balanceCents + cents) / 100)),
+                      row(l10n.transferRowMyAfter,
+                          SeenFormat.usd((availableCents! - cents) / 100)),
+                    row(l10n.transferRowAgentAfter,
+                        SeenFormat.usd((agent.balanceCents + cents) / 100)),
                   ],
                 ),
               ),
@@ -589,7 +650,8 @@ class _ConfirmSheet extends StatelessWidget {
             const SizedBox(height: 12),
             Align(
               alignment: AlignmentDirectional.centerStart,
-              child: Text(l10n.transferIrreversible, style: t.caption.copyWith(color: c.inkMuted)),
+              child: Text(l10n.transferIrreversible,
+                  style: t.caption.copyWith(color: c.inkMuted)),
             ),
           ],
         ),
@@ -600,7 +662,8 @@ class _ConfirmSheet extends StatelessWidget {
 
 /// WAL-07c: success. The balance shown is the refetched one (never computed).
 class _SuccessView extends StatelessWidget {
-  const _SuccessView({required this.done, required this.balance, required this.onAnother});
+  const _SuccessView(
+      {required this.done, required this.balance, required this.onAnother});
 
   final _Done done;
   final int? balance;
@@ -626,7 +689,10 @@ class _SuccessView extends StatelessWidget {
                     children: [
                       ExcludeSemantics(
                         child: DecoratedBox(
-                          decoration: BoxDecoration(color: ok.bg, shape: BoxShape.circle, border: Border.all(color: c.border)),
+                          decoration: BoxDecoration(
+                              color: ok.bg,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: c.border)),
                           child: SizedBox(
                             width: 128,
                             height: 128,
@@ -634,13 +700,16 @@ class _SuccessView extends StatelessWidget {
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: c.card,
-                                  borderRadius: const BorderRadius.all(SeenRadius.r20),
+                                  borderRadius:
+                                      const BorderRadius.all(SeenRadius.r20),
                                   boxShadow: SeenShadows.stickyBar,
                                 ),
                                 child: const SizedBox(
                                   width: 64,
                                   height: 64,
-                                  child: Center(child: SeenSvgIcon(SeenVectors.notifCheck, size: 36)),
+                                  child: Center(
+                                      child: SeenSvgIcon(SeenVectors.notifCheck,
+                                          size: 36)),
                                 ),
                               ),
                             ),
@@ -648,10 +717,12 @@ class _SuccessView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      Text(l10n.transferDoneTitle, textAlign: TextAlign.center, style: t.h1),
+                      Text(l10n.transferDoneTitle,
+                          textAlign: TextAlign.center, style: t.h1),
                       const SizedBox(height: 12),
                       Text(
-                        l10n.transferDoneBody(SeenFormat.usd(done.cents / 100), done.agent.name),
+                        l10n.transferDoneBody(
+                            SeenFormat.usd(done.cents / 100), done.agent.name),
                         textAlign: TextAlign.center,
                         style: t.body.copyWith(color: c.inkSecondary),
                       ),
@@ -659,8 +730,12 @@ class _SuccessView extends StatelessWidget {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            Expanded(child: Text(l10n.transferRowBalanceNow, style: t.body.copyWith(color: c.inkSecondary))),
-                            Text(SeenFormat.usd(balance! / 100), style: t.bodyStrong),
+                            Expanded(
+                                child: Text(l10n.transferRowBalanceNow,
+                                    style: t.body
+                                        .copyWith(color: c.inkSecondary))),
+                            Text(SeenFormat.usd(balance! / 100),
+                                style: t.bodyStrong),
                           ],
                         ),
                       ],
@@ -676,7 +751,10 @@ class _SuccessView extends StatelessWidget {
                   expand: true,
                   onPressed: () => Navigator.of(context).pop(true),
                 ),
-                SeenButton.secondary(label: l10n.transferAnother, expand: true, onPressed: onAnother),
+                SeenButton.secondary(
+                    label: l10n.transferAnother,
+                    expand: true,
+                    onPressed: onAnother),
               ],
             ),
           ],

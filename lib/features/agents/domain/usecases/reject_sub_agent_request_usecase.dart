@@ -8,6 +8,7 @@ class RejectSubAgentRequestUseCase {
 
   final AgentsRepository _repository;
 
-  Future<Either<Failure, void>> call(String requestId, {required String reason}) =>
+  Future<Either<Failure, void>> call(String requestId,
+          {required String reason}) =>
       _repository.rejectRequest(requestId, reason: reason);
 }

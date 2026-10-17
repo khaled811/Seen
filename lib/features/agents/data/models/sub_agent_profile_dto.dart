@@ -17,10 +17,13 @@ class SubAgentProfileDto {
     this.requests = const [],
   });
 
-  factory SubAgentProfileDto.fromJson(Map<String, dynamic> json) => SubAgentProfileDto(
+  factory SubAgentProfileDto.fromJson(Map<String, dynamic> json) =>
+      SubAgentProfileDto(
         agent: SubAgentDto.fromJson(json['agent'] as Map<String, dynamic>),
         city: json['city'] as String?,
-        memberSince: json['memberSince'] == null ? null : DateTime.parse(json['memberSince'] as String),
+        memberSince: json['memberSince'] == null
+            ? null
+            : DateTime.parse(json['memberSince'] as String),
         monthlyRequestCount: json['monthlyRequestCount'] as int?,
         inProgressRequestCount: json['inProgressRequestCount'] as int? ?? 0,
         ledger: [
@@ -95,7 +98,8 @@ class AgentRequestDto {
     required this.submittedAt,
   });
 
-  factory AgentRequestDto.fromJson(Map<String, dynamic> json) => AgentRequestDto(
+  factory AgentRequestDto.fromJson(Map<String, dynamic> json) =>
+      AgentRequestDto(
         id: json['id'] as String,
         referenceId: json['referenceId'] as String,
         serviceName: json['serviceName'] as String,

@@ -78,7 +78,8 @@ class AgentProfileState extends Equatable {
       );
 
   @override
-  List<Object?> get props => [status, profile, busy, outcome, outcomeSeq, offline];
+  List<Object?> get props =>
+      [status, profile, busy, outcome, outcomeSeq, offline];
 }
 
 class AgentProfileBloc extends Bloc<AgentProfileEvent, AgentProfileState> {
@@ -95,7 +96,8 @@ class AgentProfileBloc extends Bloc<AgentProfileEvent, AgentProfileState> {
   final GetSubAgentProfileUseCase _get;
   final SetSubAgentActiveUseCase _setActive;
 
-  Future<void> _onLoad(AgentProfileLoadRequested event, Emitter<AgentProfileState> emit) async {
+  Future<void> _onLoad(
+      AgentProfileLoadRequested event, Emitter<AgentProfileState> emit) async {
     // A reload keeps what is on screen; only the first load shows the spinner.
     if (state.profile == null) emit(const AgentProfileState());
     final result = await _get(event.subAgentId);
@@ -103,20 +105,27 @@ class AgentProfileBloc extends Bloc<AgentProfileEvent, AgentProfileState> {
       (failure) => emit(state.profile == null
           ? AgentProfileState(
               status: AgentProfileStatus.failed,
-              offline: SubAgentIssue.from(failure).kind == SubAgentIssueKind.offline,
+              offline:
+                  SubAgentIssue.from(failure).kind == SubAgentIssueKind.offline,
             )
           : state),
-      (profile) => emit(AgentProfileState(status: AgentProfileStatus.ready, profile: profile)),
+      (profile) => emit(AgentProfileState(
+          status: AgentProfileStatus.ready, profile: profile)),
     );
   }
 
-  Future<void> _onActive(AgentActiveChangeSubmitted event, Emitter<AgentProfileState> emit) async {
+  Future<void> _onActive(
+      AgentActiveChangeSubmitted event, Emitter<AgentProfileState> emit) async {
     final profile = state.profile;
     if (profile == null) return;
     emit(state.copyWith(busy: true));
-    final result = await _setActive(subAgentId: profile.agent.id, active: event.active, reason: event.reason);
+    final result = await _setActive(
+        subAgentId: profile.agent.id,
+        active: event.active,
+        reason: event.reason);
     result.match(
-      (failure) => emit(state.copyWith(busy: false, outcome: AgentProfileOutcome.failed)),
+      (failure) => emit(
+          state.copyWith(busy: false, outcome: AgentProfileOutcome.failed)),
       (agent) => emit(AgentProfileState(
         status: AgentProfileStatus.ready,
         profile: SubAgentProfile(
@@ -128,7 +137,9 @@ class AgentProfileBloc extends Bloc<AgentProfileEvent, AgentProfileState> {
           ledger: profile.ledger,
           requests: profile.requests,
         ),
-        outcome: event.active ? AgentProfileOutcome.reactivated : AgentProfileOutcome.suspended,
+        outcome: event.active
+            ? AgentProfileOutcome.reactivated
+            : AgentProfileOutcome.suspended,
         outcomeSeq: state.outcomeSeq + 1,
       )),
     );

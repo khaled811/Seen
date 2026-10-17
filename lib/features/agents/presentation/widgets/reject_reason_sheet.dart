@@ -24,7 +24,8 @@ Future<String?> showRejectReasonSheet(BuildContext context) async {
         label: l10n.subAgentRejectReasonLabel,
         isRequired: true,
         controller: reasonController,
-        validator: (value) => FormValidators.required(value, message: l10n.validationRequired),
+        validator: (value) =>
+            FormValidators.required(value, message: l10n.validationRequired),
       ),
     ),
     footerBuilder: (sheetContext) => Row(children: [

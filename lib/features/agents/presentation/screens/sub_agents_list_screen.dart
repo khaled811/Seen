@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
+import '../../../../core/presentation/widgets/empty_state.dart';
 import '../../../../core/presentation/widgets/extended_fab.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -22,6 +24,7 @@ import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
 import 'add_sub_agent_screen.dart';
 import 'agent_profile_screen.dart';
+import 'sub_agent_approvals_screen.dart';
 import '../widgets/seen_sub_agent_card.dart';
 
 /// Sub-agent network (Figma 13, node 18:722): title with a search button, two
@@ -75,14 +78,7 @@ class _SubAgentsViewState extends State<SubAgentsView> {
     });
   }
 
-  Future<void> _addAgent() async {
-    final bloc = context.read<AgentsBloc>();
-    final added = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const AddSubAgentScreen()),
-    );
-    // New agents (and the invite state) come from the server.
-    if (added == true) bloc.add(const AgentsLoadRequested());
-  }
+  Future<void> _addAgent() => _pushAddAgent(context);
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +100,8 @@ class _SubAgentsViewState extends State<SubAgentsView> {
                 child: Row(
                   children: [
                     Expanded(child: Text(l10n.agentsTitle, style: t.h1)),
+                    const _ApprovalsButton(),
+                    const SizedBox(width: 8),
                     Semantics(
                       button: true,
                       label: l10n.agentsSearchAction,
@@ -194,6 +192,8 @@ class _LoadedView extends StatefulWidget {
 }
 
 class _LoadedViewState extends State<_LoadedView> {
+  Future<void> _addAgent() => _pushAddAgent(context);
+
   Future<void> _openProfile(SubAgent agent) async {
     final bloc = context.read<AgentsBloc>();
     await Navigator.of(context).push<void>(
@@ -231,6 +231,24 @@ class _LoadedViewState extends State<_LoadedView> {
               a.name.toLowerCase().contains(needle) ||
               a.code.toLowerCase().contains(needle));
     }).toList();
+
+    if (state.subAgents.isEmpty) {
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: SizedBox(
+            height: constraints.maxHeight,
+            child: SeenEmptyState(
+              iconAsset: SeenVectors.iconAgents,
+              title: l10n.agentsEmptyTitle,
+              message: l10n.agentsEmptyBody,
+              actionLabel: l10n.agentAddTitle,
+              onAction: _addAgent,
+              topInset: 56,
+            ),
+          ),
+        ),
+      );
+    }
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -271,8 +289,16 @@ class _LoadedViewState extends State<_LoadedView> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 48),
               child: Center(
-                  child: Text(l10n.agentsNoMatch,
-                      style: t.body.copyWith(color: c.inkMuted))),
+                child: Text(
+                  needle.isNotEmpty
+                      ? l10n.agentsNoSearchResult(widget.query.trim())
+                      : (_filter == _AgentFilter.suspended
+                          ? l10n.agentsNoSuspended
+                          : l10n.agentsNoActive),
+                  textAlign: TextAlign.center,
+                  style: t.body.copyWith(color: c.inkMuted),
+                ),
+              ),
             )
           else
             for (final agent in visible)
@@ -295,4 +321,89 @@ class _LoadedViewState extends State<_LoadedView> {
       ),
     );
   }
+}
+
+/// Opens the approvals list (Figma AGT-06) with the number waiting as a badge.
+/// Entry point chosen by us (the designer left it open): the agents header.
+class _ApprovalsButton extends StatelessWidget {
+  const _ApprovalsButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final s = SeenStrings.of(context);
+    final c = SeenColors.of(context);
+    return BlocBuilder<AgentsBloc, AgentsState>(
+      buildWhen: (previous, current) =>
+          (previous is AgentsLoaded ? previous.pendingRequests.length : -1) !=
+          (current is AgentsLoaded ? current.pendingRequests.length : -1),
+      builder: (context, state) {
+        final count = state is AgentsLoaded ? state.pendingRequests.length : 0;
+        final bloc = context.read<AgentsBloc>();
+        return Semantics(
+          button: true,
+          label: count == 0
+              ? l10n.agentApprovalsTitle
+              : '${l10n.agentApprovalsTitle} ${l10n.agentApprovalsWaiting(s.numeral(count))}',
+          excludeSemantics: true,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Material(
+                color: SeenBrand.violet10,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                          value: bloc, child: const SubAgentApprovalsScreen()),
+                    ),
+                  ),
+                  customBorder: const CircleBorder(),
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(
+                        child:
+                            Icon(SeenIcons.check, size: 22, color: c.primary)),
+                  ),
+                ),
+              ),
+              if (count > 0)
+                PositionedDirectional(
+                  top: -2,
+                  end: -2,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: SeenRequestStatus.rejected.colors.fg,
+                      borderRadius: const BorderRadius.all(SeenRadius.full),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1),
+                      child: Text(
+                        s.numeral(count),
+                        style: SeenType.of(context)
+                            .caption
+                            .copyWith(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Opens "Add sub-agent" and reloads the list when one was added.
+Future<void> _pushAddAgent(BuildContext context) async {
+  final bloc = context.read<AgentsBloc>();
+  final added = await Navigator.of(context).push<bool>(
+    MaterialPageRoute(builder: (_) => const AddSubAgentScreen()),
+  );
+  // New agents (and the invite state) come from the server.
+  if (added == true) bloc.add(const AgentsLoadRequested());
 }

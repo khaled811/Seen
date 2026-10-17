@@ -51,13 +51,15 @@ class AddSubAgentBloc extends Bloc<AddSubAgentEvent, AddSubAgentState> {
       : _create = createSubAgent,
         super(const AddSubAgentState()) {
     on<AddSubAgentSubmitted>(_onSubmitted, transformer: droppable());
-    on<AddSubAgentIssueDismissed>((event, emit) => emit(AddSubAgentState(created: state.created)));
+    on<AddSubAgentIssueDismissed>(
+        (event, emit) => emit(AddSubAgentState(created: state.created)));
     on<AddSubAgentReset>((event, emit) => emit(const AddSubAgentState()));
   }
 
   final CreateSubAgentUseCase _create;
 
-  Future<void> _onSubmitted(AddSubAgentSubmitted event, Emitter<AddSubAgentState> emit) async {
+  Future<void> _onSubmitted(
+      AddSubAgentSubmitted event, Emitter<AddSubAgentState> emit) async {
     emit(const AddSubAgentState(submitting: true));
     final result = await _create(event.newSubAgent);
     result.match(
@@ -77,7 +79,8 @@ sealed class CreditLimitEvent extends Equatable {
 }
 
 final class CreditLimitSubmitted extends CreditLimitEvent {
-  const CreditLimitSubmitted({required this.subAgentId, required this.limitCents});
+  const CreditLimitSubmitted(
+      {required this.subAgentId, required this.limitCents});
 
   final String subAgentId;
   final int limitCents;
@@ -106,9 +109,11 @@ class CreditLimitBloc extends Bloc<CreditLimitEvent, CreditLimitState> {
 
   final UpdateCreditLimitUseCase _update;
 
-  Future<void> _onSubmitted(CreditLimitSubmitted event, Emitter<CreditLimitState> emit) async {
+  Future<void> _onSubmitted(
+      CreditLimitSubmitted event, Emitter<CreditLimitState> emit) async {
     emit(const CreditLimitState(submitting: true));
-    final result = await _update(subAgentId: event.subAgentId, limitCents: event.limitCents);
+    final result = await _update(
+        subAgentId: event.subAgentId, limitCents: event.limitCents);
     result.match(
       (failure) => emit(CreditLimitState(issue: SubAgentIssue.from(failure))),
       (agent) => emit(CreditLimitState(updated: agent)),

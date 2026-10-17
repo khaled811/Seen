@@ -47,7 +47,8 @@ class SeenApprovalCard extends StatelessWidget {
     final s = SeenStrings.of(context);
     final text = Theme.of(context).textTheme;
     final dt = text.labelSmall!;
-    final dd = seenStyle(14, 22, FontWeight.w600, c.ink).copyWith(fontFeatures: SeenFonts.tabular);
+    final dd = seenStyle(14, 22, FontWeight.w600, c.ink)
+        .copyWith(fontFeatures: SeenFonts.tabular);
 
     Widget fact(String k, String v) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,20 +66,25 @@ class SeenApprovalCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(children: [
-            SeenAvatar(initial: agentName.isEmpty ? '' : agentName.characters.first),
+            SeenAvatar(
+                initial: agentName.isEmpty ? '' : agentName.characters.first),
             const SizedBox(width: SeenSpace.s3),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(agentName, style: text.titleMedium),
-                Text('$branch · $timeAgo', style: text.labelSmall),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(agentName, style: text.titleMedium),
+                    Text('$branch · $timeAgo', style: text.labelSmall),
+                  ]),
             ),
             const SeenStatusBadge(status: SeenStatus.pending),
           ]),
           Container(
             margin: const EdgeInsets.symmetric(vertical: SeenSpace.s4),
             padding: const EdgeInsets.all(SeenSpace.s3),
-            decoration: BoxDecoration(color: c.surface, borderRadius: const BorderRadius.all(SeenRadius.sm)),
+            decoration: BoxDecoration(
+                color: c.surface,
+                borderRadius: const BorderRadius.all(SeenRadius.sm)),
             child: Column(children: [
               Row(children: [
                 Expanded(child: fact(s.service, service)),
@@ -90,7 +96,9 @@ class SeenApprovalCard extends StatelessWidget {
                 Expanded(child: fact(s.amount, SeenFormat.usd(amount))),
                 if (margin != null) ...[
                   const SizedBox(width: SeenSpace.s4),
-                  Expanded(child: fact(s.branchMargin, SeenFormat.isolate('+${SeenFormat.money(margin!)}'))),
+                  Expanded(
+                      child: fact(s.branchMargin,
+                          SeenFormat.isolate('+${SeenFormat.money(margin!)}'))),
                 ],
               ]),
             ]),
@@ -98,12 +106,20 @@ class SeenApprovalCard extends StatelessWidget {
           Row(children: [
             Expanded(
               child: SeenButton.dangerOutline(
-                  label: s.reject, icon: SeenIcons.x, size: SeenButtonSize.small, expand: true, onPressed: onReject),
+                  label: s.reject,
+                  icon: SeenIcons.x,
+                  size: SeenButtonSize.small,
+                  expand: true,
+                  onPressed: onReject),
             ),
             const SizedBox(width: SeenSpace.s3),
             Expanded(
               child: SeenButton(
-                  label: s.approve, icon: SeenIcons.check, size: SeenButtonSize.small, expand: true, onPressed: onApprove),
+                  label: s.approve,
+                  icon: SeenIcons.check,
+                  size: SeenButtonSize.small,
+                  expand: true,
+                  onPressed: onApprove),
             ),
           ]),
         ],

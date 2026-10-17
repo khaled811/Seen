@@ -31,14 +31,17 @@ Future<bool?> showEditCreditLimitSheet(
     isScrollControlled: true,
     useSafeArea: true,
     builder: (_) => BlocProvider(
-      create: (_) => (createBloc ?? InjectionContainer.instance.createCreditLimitBloc)(),
-      child: EditCreditLimitSheet(subAgent: subAgent, masterAvailableCents: masterAvailableCents),
+      create: (_) =>
+          (createBloc ?? InjectionContainer.instance.createCreditLimitBloc)(),
+      child: EditCreditLimitSheet(
+          subAgent: subAgent, masterAvailableCents: masterAvailableCents),
     ),
   );
 }
 
 class EditCreditLimitSheet extends StatefulWidget {
-  const EditCreditLimitSheet({super.key, required this.subAgent, required this.masterAvailableCents});
+  const EditCreditLimitSheet(
+      {super.key, required this.subAgent, required this.masterAvailableCents});
 
   final SubAgent subAgent;
   final int? masterAvailableCents;
@@ -103,26 +106,34 @@ class _EditCreditLimitSheetState extends State<EditCreditLimitSheet> {
         final usedForMessage = issue?.amountCents ?? used;
         final aboveBalance = (cents != null && max != null && cents > max) ||
             issue?.kind == SubAgentIssueKind.limitAboveAllowed;
-        final maxForMessage = issue?.kind == SubAgentIssueKind.limitAboveAllowed ? issue?.amountCents : max;
+        final maxForMessage = issue?.kind == SubAgentIssueKind.limitAboveAllowed
+            ? issue?.amountCents
+            : max;
         final changed = cents != null && cents != agent.creditLimitCents;
         final valid = changed && !belowUsage && !aboveBalance;
         String? error;
         if (belowUsage && usedForMessage != null) {
-          error = l10n.agentCreditBelowUsage(SeenFormat.usd(usedForMessage / 100));
+          error =
+              l10n.agentCreditBelowUsage(SeenFormat.usd(usedForMessage / 100));
         } else if (aboveBalance && maxForMessage != null) {
-          error = l10n.agentCreditAboveBalanceError(SeenFormat.usd(maxForMessage / 100));
+          error = l10n.agentCreditAboveBalanceError(
+              SeenFormat.usd(maxForMessage / 100));
         }
 
         Widget tile(String label, int? value) => Expanded(
               child: DecoratedBox(
-                decoration: const BoxDecoration(color: SeenBrand.violet05, borderRadius: BorderRadius.all(SeenRadius.r14)),
+                decoration: const BoxDecoration(
+                    color: SeenBrand.violet05,
+                    borderRadius: BorderRadius.all(SeenRadius.r14)),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(label, style: t.caption.copyWith(color: c.inkMuted)),
-                      Text(value == null ? '—' : SeenFormat.usd(value / 100), style: t.bodyStrong),
+                      Text(value == null ? '—' : SeenFormat.usd(value / 100),
+                          style: t.bodyStrong),
                     ],
                   ),
                 ),
@@ -138,14 +149,15 @@ class _EditCreditLimitSheetState extends State<EditCreditLimitSheet> {
                 child: Opacity(
                   opacity: valid ? 1 : 0.45,
                   child: SeenButton(
-                    label: state.submitting ? l10n.loading : l10n.agentCreditSave,
+                    label:
+                        state.submitting ? l10n.loading : l10n.agentCreditSave,
                     loading: state.submitting,
                     expand: true,
                     onPressed: (!valid || state.submitting)
                         ? null
-                        : () => context
-                            .read<CreditLimitBloc>()
-                            .add(CreditLimitSubmitted(subAgentId: agent.id, limitCents: cents)),
+                        : () => context.read<CreditLimitBloc>().add(
+                            CreditLimitSubmitted(
+                                subAgentId: agent.id, limitCents: cents)),
                   ),
                 ),
               ),
@@ -154,7 +166,9 @@ class _EditCreditLimitSheetState extends State<EditCreditLimitSheet> {
                 child: SeenButton.secondary(
                   label: l10n.transferCancel,
                   expand: true,
-                  onPressed: state.submitting ? null : () => Navigator.of(context).pop(false),
+                  onPressed: state.submitting
+                      ? null
+                      : () => Navigator.of(context).pop(false),
                 ),
               ),
             ],
@@ -173,7 +187,8 @@ class _EditCreditLimitSheetState extends State<EditCreditLimitSheet> {
               SeenTextField(
                 label: l10n.agentCreditNew,
                 controller: _limit,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: const [LatinDigitsFormatter()],
                 mono: true,
                 ltr: true,
@@ -185,7 +200,8 @@ class _EditCreditLimitSheetState extends State<EditCreditLimitSheet> {
                 const SizedBox(height: 14),
                 SeenInlineBanner(
                   tone: SeenBannerTone.warn,
-                  message: l10n.agentCreditAboveBalance(SeenFormat.usd(max / 100)),
+                  message:
+                      l10n.agentCreditAboveBalance(SeenFormat.usd(max / 100)),
                 ),
               ],
               if (issue != null &&
@@ -193,8 +209,12 @@ class _EditCreditLimitSheetState extends State<EditCreditLimitSheet> {
                   issue.kind != SubAgentIssueKind.limitAboveAllowed) ...[
                 const SizedBox(height: 14),
                 SeenInlineBanner(
-                  tone: issue.kind == SubAgentIssueKind.offline ? SeenBannerTone.offline : SeenBannerTone.error,
-                  message: issue.kind == SubAgentIssueKind.offline ? l10n.recoveryOffline : l10n.recoveryServerError,
+                  tone: issue.kind == SubAgentIssueKind.offline
+                      ? SeenBannerTone.offline
+                      : SeenBannerTone.error,
+                  message: issue.kind == SubAgentIssueKind.offline
+                      ? l10n.recoveryOffline
+                      : l10n.recoveryServerError,
                 ),
               ],
             ],

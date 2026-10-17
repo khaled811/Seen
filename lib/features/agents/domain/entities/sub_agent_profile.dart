@@ -45,7 +45,8 @@ class AgentRequestRow extends Equatable {
   final DateTime submittedAt;
 
   @override
-  List<Object?> get props => [id, referenceId, serviceName, status, submittedAt];
+  List<Object?> get props =>
+      [id, referenceId, serviceName, status, submittedAt];
 }
 
 /// Everything the profile screen shows about one sub-agent.
@@ -69,6 +70,13 @@ class SubAgentProfile extends Equatable {
   final List<AgentRequestRow> requests;
 
   @override
-  List<Object?> get props =>
-      [agent, city, memberSince, monthlyRequestCount, inProgressRequestCount, ledger, requests];
+  List<Object?> get props => [
+        agent,
+        city,
+        memberSince,
+        monthlyRequestCount,
+        inProgressRequestCount,
+        ledger,
+        requests
+      ];
 }
