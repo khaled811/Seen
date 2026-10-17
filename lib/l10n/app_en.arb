@@ -3394,5 +3394,107 @@
   "walletResubmitAction": "Resubmit",
   "@walletResubmitAction": {
     "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletHistoryTitle": "Top-up history",
+  "@walletHistoryTitle": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletHistoryLink": "Top-up history",
+  "@walletHistoryLink": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletHistoryLoadMore": "Load more…",
+  "@walletHistoryLoadMore": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletHistoryLoadMoreRetry": "Could not load more. Tap to try again.",
+  "@walletHistoryLoadMoreRetry": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletHistoryEmpty": "No top-up requests yet.",
+  "@walletHistoryEmpty": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletHistoryEmptyFilter": "No top-up requests with this status.",
+  "@walletHistoryEmptyFilter": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletTopUpSentTitle": "Top-up request sent",
+  "@walletTopUpSentTitle": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletTopUpSentBody": "Reference {code}. Finance will review it and you will be notified when it is added to your balance.",
+  "@walletTopUpSentBody": {
+    "description": "Wallet top-up history, confirmation and statement export copy.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "walletTopUpSentBodyNoCode": "Finance will review it and you will be notified when it is added to your balance.",
+  "@walletTopUpSentBodyNoCode": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletBackToWallet": "Back to wallet",
+  "@walletBackToWallet": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportTitle": "Export statement",
+  "@walletExportTitle": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportThisMonth": "This month",
+  "@walletExportThisMonth": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportThreeMonths": "3 months",
+  "@walletExportThreeMonths": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportCustom": "Custom",
+  "@walletExportCustom": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportCustomHelp": "Choose the statement period",
+  "@walletExportCustomHelp": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportGenerating": "Building the statement… {range}",
+  "@walletExportGenerating": {
+    "description": "Wallet top-up history, confirmation and statement export copy.",
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "walletExportFailed": "Could not build the statement. Try again.",
+  "@walletExportFailed": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportRetry": "Retry",
+  "@walletExportRetry": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportShare": "Share",
+  "@walletExportShare": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportDownload": "Download",
+  "@walletExportDownload": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportSaved": "Statement saved.",
+  "@walletExportSaved": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportSaveFailed": "Could not save the statement.",
+  "@walletExportSaveFailed": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletExportShareFailed": "Could not share the statement.",
+  "@walletExportShareFailed": {
+    "description": "Wallet top-up history, confirmation and statement export copy."
   }
 }

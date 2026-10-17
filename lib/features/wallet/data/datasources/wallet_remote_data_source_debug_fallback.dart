@@ -4,6 +4,8 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/utils/money.dart';
+import '../../domain/entities/statement.dart';
+import '../models/statement_file_dto.dart';
 import '../models/wallet_balance_dto.dart';
 import '../models/wallet_transaction_dto.dart';
 import 'wallet_remote_data_source.dart';
@@ -27,6 +29,19 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
   /// Mutable so a debug-mode top-up submission shows up in the ledger on
   /// the next fetch, making the demo flow feel real end-to-end.
   final List<WalletTransactionDto> _mockTransactions = _seedTransactions(DateTime.now());
+
+  @override
+  Future<Either<Failure, StatementFileDto>> exportStatement({
+    required DateTime from,
+    required DateTime to,
+    required StatementFormat format,
+  }) async {
+    final result = await _real.exportStatement(from: from, to: to, format: format);
+    if (!(kDebugMode && result.isLeft())) return result;
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    // The debug document source serves a sample PDF for any mock:// link.
+    return Right(StatementFileDto(url: 'mock://statements/statement.pdf', fileName: 'statement.${format.extension}'));
+  }
 
   @override
   Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) async {

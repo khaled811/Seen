@@ -93,6 +93,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     // Success: the backend is the source of truth for the resulting
     // balance/hold amounts and transaction list — refetch rather than
     // fabricate the update client-side.
+    final created = (result as Right<Failure, WalletTransaction>).value;
     final refreshed = await _fetchData();
     emit(
       refreshed.match(
@@ -102,6 +103,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
           transactions: data.$2,
           typeFilter: current.typeFilter,
           topUpStatus: TopUpSubmissionStatus.success,
+          submittedTopUp: created,
         ),
       ),
     );
@@ -118,6 +120,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       current.copyWith(
         topUpStatus: TopUpSubmissionStatus.idle,
         clearTopUpError: true,
+        clearSubmittedTopUp: true,
       ),
     );
   }

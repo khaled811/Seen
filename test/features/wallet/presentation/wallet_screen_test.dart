@@ -2,12 +2,14 @@
 // ledger with its All / Debits / Credits segments, over a real WalletBloc.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
+import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
@@ -66,6 +68,14 @@ class _Repo implements WalletRepository {
 
 void main() {
   late WalletBloc bloc;
+
+  setUpAll(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+      (call) async => null,
+    );
+    InjectionContainer.instance.init();
+  });
 
   setUp(() {
     final repo = _Repo();
@@ -131,10 +141,12 @@ void main() {
     expect(find.text('−150.00'), findsNothing);
   });
 
-  testWidgets('the statement link and header button explain there is no export yet', (tester) async {
+  testWidgets('the statement link opens the export sheet', (tester) async {
     await open(tester);
     await tester.tap(find.text('كشف الحساب'));
     await tester.pumpAndSettle();
-    expect(find.text('تصدير كشف الحساب غير متاح بعد. تواصل مع الدعم للحصول على نسخة.'), findsOneWidget);
+    expect(find.text('تصدير كشف الحساب'), findsOneWidget);
+    expect(find.text('هذا الشهر'), findsOneWidget);
+    expect(find.text('تنزيل'), findsOneWidget);
   });
 }

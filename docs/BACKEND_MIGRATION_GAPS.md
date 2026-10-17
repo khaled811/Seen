@@ -841,3 +841,30 @@ arrives and omits the rest.
   reference. The form has no receipt upload yet (docs section on top-ups), so the receipt is NOT
   reused and the note says only "the same details". When the receipt upload exists, the
   prefill should carry the receipt too.
+
+## 24. Top-up history, submitted confirmation and statement export (Figma WAL-04 / 05 / 06)
+
+- **Top-up history (WAL-04)** uses the existing `walletTransactions(type: "topup", page, pageSize)`
+  (20 per page, "load more" while a page comes back full). Nothing new is needed to list it, but:
+  - the status chips (under review / approved / rejected) narrow only the pages already loaded;
+    a `status` argument on `walletTransactions` would let "rejected" reach older pages;
+  - "has more" is inferred from a full page: a `hasMore` / total count would be exact.
+  - The method + bank shown on each row come from `topUp.method` (section 23).
+- **Submitted confirmation (WAL-05)** shows the created request's `topUp.code` (TU-xxxx) from the
+  `requestTopUp` response, so that mutation must return `topUp { code }` (section 23); without a
+  code the screen still confirms, just without the reference. The design's "finance usually reviews
+  within an hour" is not shown (the app states no duration the server did not give). "You will be
+  notified when it is added to your balance" is a server promise: the backend must send that
+  notification (push / in-app) when finance approves or rejects.
+- **Statement export (WAL-06)** needs a new placeholder mutation:
+  `exportWalletStatement(from: String!, to: String!, format: String!) { url fileName }`,
+  `from` / `to` as `YYYY-MM-DD` (inclusive), `format` = `PDF | XLSX`. The app downloads `url`
+  (same authenticated download path as request documents) and then saves or shares it.
+  - Periods: "this month" = 1st .. today, "3 months" = same day three months back .. today,
+    "custom" = the range the agent picks (up to five years back). Say if the server wants other
+    boundaries or a maximum span (the app does not limit it).
+  - The server reports no progress, so the sheet shows an indeterminate bar, not the design's
+    partly filled one. Long statements should answer fast or the mutation needs a job + status.
+  - The statement's content (opening / closing balance, every ledger row, locale) is the backend's.
+  - Failure is any error: the sheet offers a retry.
+- The previous "export not available yet" message was removed.

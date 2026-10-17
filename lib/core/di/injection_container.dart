@@ -9,6 +9,10 @@ import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
 import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
 import '../../features/requests/data/datasources/missing_document_remote_data_source.dart';
 import '../../features/wallet/data/repositories/top_up_cancellation_repository_impl.dart';
+import '../../features/wallet/data/repositories/statement_repository_impl.dart';
+import '../../features/wallet/domain/usecases/export_statement_usecase.dart';
+import '../../features/wallet/presentation/bloc/statement_export_cubit.dart';
+import '../../features/wallet/presentation/bloc/top_up_history_cubit.dart';
 import '../../features/wallet/domain/usecases/cancel_top_up_usecase.dart';
 import '../../features/wallet/presentation/bloc/top_up_cancel_cubit.dart';
 import '../../features/requests/data/datasources/secure_recent_searches_store.dart';
@@ -156,6 +160,7 @@ class InjectionContainer {
   late final GetTransactionsUseCase getTransactionsUseCase;
   late final RequestTopUpUseCase requestTopUpUseCase;
   late final CancelTopUpUseCase cancelTopUpUseCase;
+  late final ExportStatementUseCase exportStatementUseCase;
 
   late final ServicesRemoteDataSource servicesRemoteDataSource;
   late final ServicesRepository servicesRepository;
@@ -267,6 +272,7 @@ class InjectionContainer {
     getTransactionsUseCase = GetTransactionsUseCase(walletRepository);
     requestTopUpUseCase = RequestTopUpUseCase(walletRepository);
     cancelTopUpUseCase = CancelTopUpUseCase(TopUpCancellationRepositoryImpl(remote: walletRemoteDataSource));
+    exportStatementUseCase = ExportStatementUseCase(StatementRepositoryImpl(remote: walletRemoteDataSource));
 
     // Same reasoning as the wallet fallback above: inert in release builds.
     servicesRemoteDataSource = DebugFallbackServicesRemoteDataSource(
@@ -420,6 +426,17 @@ class InjectionContainer {
         uploadDocument: uploadMissingDocumentUseCase,
         pickDocument: pickDocumentUseCase,
       );
+
+  /// Builds a fresh [StatementExportCubit]; the export sheet owns it.
+  StatementExportCubit createStatementExportCubit() => StatementExportCubit(
+        exportStatement: exportStatementUseCase,
+        fetchDocument: fetchDocumentFileUseCase,
+        saveDocument: saveDocumentUseCase,
+        shareDocument: shareDocumentUseCase,
+      );
+
+  /// Builds a fresh [TopUpHistoryCubit]; the history screen owns it.
+  TopUpHistoryCubit createTopUpHistoryCubit() => TopUpHistoryCubit(getTransactions: getTransactionsUseCase);
 
   /// Builds a fresh [TopUpCancelCubit]; the top-up detail screen owns it.
   TopUpCancelCubit createTopUpCancelCubit() => TopUpCancelCubit(cancelTopUp: cancelTopUpUseCase);

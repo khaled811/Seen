@@ -37,6 +37,7 @@ final class WalletLoaded extends WalletState {
     required this.typeFilter,
     this.topUpStatus = TopUpSubmissionStatus.idle,
     this.topUpError,
+    this.submittedTopUp,
   });
 
   final WalletBalance balance;
@@ -44,6 +45,10 @@ final class WalletLoaded extends WalletState {
   final TransactionType? typeFilter;
   final TopUpSubmissionStatus topUpStatus;
   final String? topUpError;
+
+  /// The request just created, for the confirmation screen (Figma WAL-05);
+  /// cleared with the submission status.
+  final WalletTransaction? submittedTopUp;
 
   List<WalletTransaction> get filteredTransactions => typeFilter == null
       ? transactions
@@ -57,6 +62,7 @@ final class WalletLoaded extends WalletState {
     TopUpSubmissionStatus? topUpStatus,
     String? topUpError,
     bool clearTopUpError = false,
+    bool clearSubmittedTopUp = false,
   }) =>
       WalletLoaded(
         balance: balance ?? this.balance,
@@ -64,9 +70,10 @@ final class WalletLoaded extends WalletState {
         typeFilter: clearFilter ? null : (typeFilter ?? this.typeFilter),
         topUpStatus: topUpStatus ?? this.topUpStatus,
         topUpError: clearTopUpError ? null : (topUpError ?? this.topUpError),
+        submittedTopUp: clearSubmittedTopUp ? null : submittedTopUp,
       );
 
   @override
   List<Object?> get props =>
-      [balance, transactions, typeFilter, topUpStatus, topUpError];
+      [balance, transactions, typeFilter, topUpStatus, topUpError, submittedTopUp];
 }

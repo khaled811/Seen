@@ -41,9 +41,9 @@ BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / H
 WAL-01,WAL,Screen,P1,تفاصيل العملية,Transaction detail,Wallet (11) ledger row,Hold vs final deduction vs refund; linked request; reference copy,Designed - Implemented (Flutter)
 WAL-02,WAL,Screen,P1,تفاصيل الشحن المعلّق,Pending top-up detail / status,Wallet (11) pending card,Receipt preview; review status; cancel request,Designed - Implemented (Flutter)
 WAL-03,WAL,State,P1,شحن مرفوض,Rejected top-up with reason,"Wallet (11), top-up detail",Reason; retry with same data,Designed - Implemented (Flutter)
-WAL-04,WAL,Screen,P1,سجل الشحن,Top-up history,Wallet (11),Empty; filter by status; pagination,Pending Design
-WAL-05,WAL,Screen,P1,تأكيد طلب الشحن,Top-up submitted confirmation,After Top-up (12) submit,Reference; expected review time; link to pending item,Pending Design
-WAL-06,WAL,Flow,P1,تصدير كشف الحساب,Statement export,Wallet (11) header / link,Period picker; format; generating; failure; share,Pending Design
+WAL-04,WAL,Screen,P1,سجل الشحن,Top-up history,Wallet (11),Empty; filter by status; pagination,Designed - Implemented (Flutter)
+WAL-05,WAL,Screen,P1,تأكيد طلب الشحن,Top-up submitted confirmation,After Top-up (12) submit,Reference; expected review time; link to pending item,Designed - Implemented (Flutter)
+WAL-06,WAL,Flow,P1,تصدير كشف الحساب,Statement export,Wallet (11) header / link,Period picker; format; generating; failure; share,Designed - Implemented (Flutter)
 WAL-07,WAL,Flow,P0,تحويل لوكيل,Transfer to agent,Wallet (11) > تحويل لوكيل,Choose agent; amount; insufficient balance; confirmation; success,Designed - Implemented (Flutter)
 WAL-08,WAL,State,P1,المحفظة: حالات الرصيد,Wallet: balance states,"Wallet (11), Home (05)",Hidden balance; zero; over limit; loading; error,Pending Design
 WAL-09,WAL,State,P1,سجل العمليات فارغ,Ledger empty,Wallet (11),0 transactions; segment with 0 rows,Pending Design

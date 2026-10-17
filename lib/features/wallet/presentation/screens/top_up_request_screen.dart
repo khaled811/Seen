@@ -19,6 +19,7 @@ import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
 import '../widgets/topup_widgets.dart';
+import 'top_up_submitted_screen.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
 
@@ -128,9 +129,20 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
         final loaded = state as WalletLoaded;
         switch (loaded.topUpStatus) {
           case TopUpSubmissionStatus.success:
-            _toast(l10n.topUpSuccessMessage);
-            context.read<WalletBloc>().add(const WalletTopUpStatusCleared());
-            Navigator.of(context).pop();
+            final bloc = context.read<WalletBloc>();
+            final created = loaded.submittedTopUp;
+            bloc.add(const WalletTopUpStatusCleared());
+            if (created == null) {
+              _toast(l10n.topUpSuccessMessage);
+              Navigator.of(context).pop();
+            } else {
+              // Figma WAL-05: confirm, with the reference, instead of a toast.
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute<void>(
+                  builder: (_) => BlocProvider.value(value: bloc, child: TopUpSubmittedScreen(transaction: created)),
+                ),
+              );
+            }
           case TopUpSubmissionStatus.failure:
             _toast(loaded.topUpError ?? l10n.error);
             context.read<WalletBloc>().add(const WalletTopUpStatusCleared());

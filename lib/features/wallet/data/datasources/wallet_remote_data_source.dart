@@ -5,6 +5,8 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../../../core/utils/money.dart';
+import '../../domain/entities/statement.dart';
+import '../models/statement_file_dto.dart';
 import '../models/wallet_balance_dto.dart';
 import '../models/wallet_transaction_dto.dart';
 
@@ -17,6 +19,13 @@ import '../models/wallet_transaction_dto.dart';
 /// upload is deliberately not wired here yet — mocked/decoupled until the
 /// backend's Supabase mutations are active (per Task 06).
 abstract interface class WalletRemoteDataSource {
+  /// Builds an account statement and returns where to download it.
+  Future<Either<Failure, StatementFileDto>> exportStatement({
+    required DateTime from,
+    required DateTime to,
+    required StatementFormat format,
+  });
+
   /// Withdraws a top-up request that finance has not decided yet.
   Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId);
 
@@ -60,6 +69,16 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
         request { id referenceId serviceName }
         topUp { method code bankName transferReference receiptName receiptUrl rejectionReason }
   ''';
+
+  // TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 24).
+  static final _exportStatementDocument = gql('''
+    mutation ExportWalletStatement(\$from: String!, \$to: String!, \$format: String!) {
+      exportWalletStatement(from: \$from, to: \$to, format: \$format) {
+        url
+        fileName
+      }
+    }
+  ''');
 
   static final _cancelTopUpDocument = gql('''
     mutation CancelTopUp(\$transactionId: ID!) {
@@ -117,6 +136,24 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
       }
     }
   ''');
+
+  @override
+  Future<Either<Failure, StatementFileDto>> exportStatement({
+    required DateTime from,
+    required DateTime to,
+    required StatementFormat format,
+  }) {
+    String day(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    return _graphQLService.mutate<StatementFileDto>(
+      MutationOptions<StatementFileDto>(
+        document: _exportStatementDocument,
+        variables: {'from': day(from), 'to': day(to), 'format': format.wire},
+        parserFn: (json) =>
+            StatementFileDto.fromJson(json['exportWalletStatement'] as Map<String, dynamic>),
+      ),
+    );
+  }
 
   @override
   Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) {

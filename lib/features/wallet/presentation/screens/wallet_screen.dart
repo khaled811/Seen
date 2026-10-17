@@ -11,7 +11,6 @@ import '../../../../core/presentation/widgets/balance_card.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/segmented_control.dart';
-import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
@@ -24,8 +23,10 @@ import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
 import '../widgets/ledger_row.dart';
+import '../widgets/statement_export_sheet.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
+import 'top_up_history_screen.dart';
 import 'top_up_request_screen.dart';
 import 'wallet_transaction_detail_screen.dart';
 
@@ -54,15 +55,7 @@ class WalletScreen extends StatelessWidget {
 class WalletView extends StatelessWidget {
   const WalletView({super.key});
 
-  void _openStatement(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    // No statement API yet: say so instead of exporting something made up.
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      builder: (_) => SeenSheet(title: l10n.walletStatementAction, child: Text(l10n.walletStatementSoonBody)),
-    );
-  }
+  void _openStatement(BuildContext context) => showStatementExportSheet(context);
 
   @override
   Widget build(BuildContext context) {
@@ -252,6 +245,8 @@ class _LoadedViewState extends State<_LoadedView> {
           Row(
             children: [
               Expanded(child: Text(l10n.walletLedgerTitle, style: t.h2)),
+              SeenTextLink(label: l10n.walletHistoryLink, onTap: () => openTopUpHistory(context)),
+              const SizedBox(width: 12),
               SeenTextLink(label: l10n.walletStatementAction, onTap: widget.onStatement),
             ],
           ),
