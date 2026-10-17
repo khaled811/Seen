@@ -13,6 +13,7 @@ abstract interface class SupportRepository {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   });
 
   /// Appends [message] to [ticketId]'s thread. Not named in Task 10's own

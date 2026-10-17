@@ -21,7 +21,14 @@ abstract interface class SupportRemoteDataSource {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   });
+
+  /// Marks the thread as read (clears the unread-reply marker).
+  Future<Either<Failure, bool>> markTicketRead(String ticketId);
+
+  /// Reopens a closed ticket.
+  Future<Either<Failure, SupportTicketDto>> reopenTicket(String ticketId);
 
   Future<Either<Failure, SupportTicketDto>> replyToTicket({
     required String ticketId,
@@ -50,6 +57,7 @@ class SupportRemoteDataSourceImpl implements SupportRemoteDataSource {
     requestId
     status
     createdAt
+    hasUnreadReply
     messages { id authorName isSupportReply body sentAt }
   ''';
 
@@ -67,13 +75,30 @@ class SupportRemoteDataSourceImpl implements SupportRemoteDataSource {
       \$subject: String!
       \$message: String!
       \$requestId: ID
+      \$priority: String
     ) {
       createTicket(
         category: \$category
         subject: \$subject
         message: \$message
         requestId: \$requestId
+        priority: \$priority
       ) {
+        $_ticketFields
+      }
+    }
+  ''');
+
+  // TODO(backend-contract): placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 27).
+  static final _markTicketReadDocument = gql(r'''
+    mutation MarkTicketRead($ticketId: ID!) {
+      markTicketRead(ticketId: $ticketId) { success }
+    }
+  ''');
+
+  static final _reopenTicketDocument = gql('''
+    mutation ReopenTicket(\$ticketId: ID!) {
+      reopenTicket(ticketId: \$ticketId) {
         $_ticketFields
       }
     }
@@ -135,6 +160,7 @@ class SupportRemoteDataSourceImpl implements SupportRemoteDataSource {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   }) {
     return _graphQLService.mutate<SupportTicketDto>(
       MutationOptions<SupportTicketDto>(
@@ -144,9 +170,32 @@ class SupportRemoteDataSourceImpl implements SupportRemoteDataSource {
           'subject': subject,
           'message': message,
           'requestId': requestId,
+          'priority': priority.value,
         },
         parserFn: (json) =>
             SupportTicketDto.fromJson(json['createTicket'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> markTicketRead(String ticketId) {
+    return _graphQLService.mutate<bool>(
+      MutationOptions<bool>(
+        document: _markTicketReadDocument,
+        variables: {'ticketId': ticketId},
+        parserFn: (json) => (json['markTicketRead'] as Map<String, dynamic>?)?['success'] as bool? ?? true,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, SupportTicketDto>> reopenTicket(String ticketId) {
+    return _graphQLService.mutate<SupportTicketDto>(
+      MutationOptions<SupportTicketDto>(
+        document: _reopenTicketDocument,
+        variables: {'ticketId': ticketId},
+        parserFn: (json) => SupportTicketDto.fromJson(json['reopenTicket'] as Map<String, dynamic>),
       ),
     );
   }

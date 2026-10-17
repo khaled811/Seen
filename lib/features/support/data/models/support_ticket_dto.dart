@@ -20,6 +20,7 @@ class SupportTicketDto {
     this.priority,
     this.requestId,
     this.status,
+    this.hasUnreadReply = false,
   });
 
   factory SupportTicketDto.fromJson(Map<String, dynamic> json) => SupportTicketDto(
@@ -30,6 +31,7 @@ class SupportTicketDto {
         subject: json['subject'] as String,
         requestId: json['requestId'] as String?,
         status: json['status'] as String?,
+        hasUnreadReply: json['hasUnreadReply'] as bool? ?? false,
         createdAt: DateTime.parse(json['createdAt'] as String),
         messages: (json['messages'] as List<dynamic>)
             .map((e) => TicketMessageDto.fromJson(e as Map<String, dynamic>))
@@ -43,6 +45,9 @@ class SupportTicketDto {
   final String subject;
   final String? requestId;
   final String? status;
+
+  /// TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 27).
+  final bool hasUnreadReply;
   final DateTime createdAt;
   final List<TicketMessageDto> messages;
 
@@ -56,5 +61,6 @@ class SupportTicketDto {
         status: SupportTicketStatus.fromValue(status),
         createdAt: createdAt,
         messages: messages.map((dto) => dto.toEntity()).toList(),
+        hasUnreadReply: hasUnreadReply,
       );
 }

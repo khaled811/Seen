@@ -42,6 +42,7 @@ class _FakeSupportRepository implements SupportRepository {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   }) async {
     lastCreateSubject = subject;
     return createResult ??

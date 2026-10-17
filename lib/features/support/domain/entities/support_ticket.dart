@@ -46,6 +46,7 @@ class SupportTicket extends Equatable {
     required this.createdAt,
     required this.messages,
     this.requestId,
+    this.hasUnreadReply = false,
   });
 
   final String id;
@@ -61,6 +62,36 @@ class SupportTicket extends Equatable {
   final DateTime createdAt;
   final List<TicketMessage> messages;
 
+  /// Support replied and the agent has not opened the thread since (Figma SUP-01).
+  final bool hasUnreadReply;
+
+  /// When the thread last moved: the newest message, else the creation time.
+  DateTime get lastActivityAt => messages.isEmpty ? createdAt : messages.last.sentAt;
+
+  /// The newest message is support's and the ticket is still live: the next
+  /// move is the agent's ("waiting for your action", Figma SUP-01).
+  bool get awaitingAgent =>
+      isLive && messages.isNotEmpty && messages.last.isSupportReply;
+
+  /// Not resolved or closed.
+  bool get isLive => status != SupportTicketStatus.closed && status != SupportTicketStatus.resolved;
+
+  /// A closed ticket is read-only until it is reopened (Figma SUP-03).
+  bool get isClosed => status == SupportTicketStatus.closed;
+
+  SupportTicket copyWith({bool? hasUnreadReply, List<TicketMessage>? messages}) => SupportTicket(
+        id: id,
+        referenceId: referenceId,
+        category: category,
+        priority: priority,
+        subject: subject,
+        status: status,
+        createdAt: createdAt,
+        messages: messages ?? this.messages,
+        requestId: requestId,
+        hasUnreadReply: hasUnreadReply ?? this.hasUnreadReply,
+      );
+
   bool get isRequestRelated => requestId != null;
 
   @override
@@ -74,5 +105,6 @@ class SupportTicket extends Equatable {
         status,
         createdAt,
         messages,
+        hasUnreadReply,
       ];
 }

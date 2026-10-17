@@ -58,6 +58,7 @@ class _FakeSupportRepository implements SupportRepository {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   }) =>
       throw UnimplementedError('Not used by NotificationsBloc');
 

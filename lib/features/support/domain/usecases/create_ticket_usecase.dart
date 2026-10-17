@@ -15,11 +15,13 @@ class CreateTicketUseCase {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   }) =>
       _repository.createTicket(
         category: category,
         subject: subject,
         message: message,
         requestId: requestId,
+        priority: priority,
       );
 }

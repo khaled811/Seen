@@ -57,9 +57,9 @@ AGT-05,AGT,Sheet,P1,تمويل وكيل,Fund agent,Agent profile / card,Amount; 
 AGT-06,AGT,Screen,P1,موافقات الوكلاء,Sub-agent approvals list,Entry point to be decided (Account or tab badge),Empty; many; approve; reject,Designed - Implemented (Flutter)
 AGT-07,AGT,Sheet,P1,سبب رفض طلب وكيل,Reject reason sheet,Approvals list,Reason required; failure,Designed - Implemented (Flutter)
 AGT-08,AGT,State,P1,الوكلاء: فارغ / لا نتائج,Agents: empty and no results,Agents (13),No agents yet; search empty; segment empty,Designed - Implemented (Flutter)
-SUP-01,SUP,Screen,P1,تذاكر الدعم,Support tickets list,Home chat button; Account > Help; Tracking (07) Support,Open/closed; unread reply marker; empty; loading; error,Pending Design
-SUP-02,SUP,Screen,P1,إنشاء تذكرة,Create ticket,Tickets list,Category (general / financial correction); priority; subject; description; attachments; validation,Pending Design
-SUP-03,SUP,Screen,P1,محادثة الدعم,Support chat / ticket thread,Ticket row,Bubbles; timestamps; attachments; sending/failed/retry; closed read-only; reopen; long text,Pending Design
+SUP-01,SUP,Screen,P1,تذاكر الدعم,Support tickets list,Home chat button; Account > Help; Tracking (07) Support,Open/closed; unread reply marker; empty; loading; error,Designed - Implemented (Flutter)
+SUP-02,SUP,Screen,P1,إنشاء تذكرة,Create ticket,Tickets list,Category (general / financial correction); priority; subject; description; attachments; validation,Designed - Implemented (Flutter)
+SUP-03,SUP,Screen,P1,محادثة الدعم,Support chat / ticket thread,Ticket row,Bubbles; timestamps; attachments; sending/failed/retry; closed read-only; reopen; long text,Designed - Implemented (Flutter)
 SUP-04,SUP,Screen,P2,مركز المساعدة / الأسئلة الشائعة,Help centre / FAQ,Account > Help & support,Search; categories; no result,Pending Design
 SUP-05,SUP,Sheet,P1,تواصل مع الدعم قبل تسجيل الدخول,Contact support (signed out),"Pending approval (16), Login",Phone / email / chat options,Pending Design
 ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Agency details and commercial register,Account (14) row,View vs edit; verification status; documents; expiry,Pending Design

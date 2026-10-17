@@ -19,7 +19,11 @@ class SupportBloc extends Bloc<SupportEvent, SupportState> {
     on<SupportTicketsLoadRequested>(_onLoadRequested, transformer: droppable());
     on<SupportTicketCreateSubmitted>(_onCreateSubmitted, transformer: droppable());
     on<SupportTicketCreateAcknowledged>(_onCreateAcknowledged);
-    on<SupportTicketReplySubmitted>(_onReplySubmitted, transformer: droppable());
+    // Messages go out one after the other, in the order they were typed.
+    on<SupportTicketReplySubmitted>(_onReplySubmitted, transformer: sequential());
+    on<SupportOutboxRetryRequested>(_onOutboxRetry, transformer: sequential());
+    on<SupportTicketReplaced>(_onTicketReplaced);
+    on<SupportTicketMarkedRead>(_onTicketMarkedRead);
   }
 
   final GetTicketsUseCase _getTicketsUseCase;
@@ -59,6 +63,7 @@ class SupportBloc extends Bloc<SupportEvent, SupportState> {
       subject: event.subject,
       message: event.message,
       requestId: event.requestId,
+      priority: event.priority,
     );
     final latest = state;
     if (latest is! SupportLoaded) return;
@@ -91,6 +96,8 @@ class SupportBloc extends Bloc<SupportEvent, SupportState> {
     );
   }
 
+  int _outboxSeq = 0;
+
   Future<void> _onReplySubmitted(
     SupportTicketReplySubmitted event,
     Emitter<SupportState> emit,
@@ -98,23 +105,54 @@ class SupportBloc extends Bloc<SupportEvent, SupportState> {
     final current = state;
     if (current is! SupportLoaded) return;
 
+    final item = OutboxMessage(
+      localId: 'out-${_outboxSeq++}',
+      ticketId: event.ticketId,
+      body: event.message,
+      sentAt: DateTime.now(),
+    );
     emit(
       current.copyWith(
+        outbox: [...current.outbox, item],
         replyStatus: ReplyStatus.submitting,
         replyingTicketId: event.ticketId,
         clearReplyError: true,
       ),
     );
+    await _deliver(item, emit);
+  }
 
-    final result = await _replyToTicketUseCase(
-      ticketId: event.ticketId,
-      message: event.message,
+  Future<void> _onOutboxRetry(
+    SupportOutboxRetryRequested event,
+    Emitter<SupportState> emit,
+  ) async {
+    final current = state;
+    if (current is! SupportLoaded) return;
+    final failed = current.outbox.where((m) => m.localId == event.localId && m.status == OutboxStatus.failed);
+    if (failed.isEmpty) return;
+    final item = failed.first.withStatus(OutboxStatus.sending);
+    emit(
+      current.copyWith(
+        outbox: [for (final m in current.outbox) if (m.localId == item.localId) item else m],
+        replyStatus: ReplyStatus.submitting,
+        replyingTicketId: item.ticketId,
+        clearReplyError: true,
+      ),
     );
+    await _deliver(item, emit);
+  }
+
+  Future<void> _deliver(OutboxMessage item, Emitter<SupportState> emit) async {
+    final result = await _replyToTicketUseCase(ticketId: item.ticketId, message: item.body);
     final latest = state;
     if (latest is! SupportLoaded) return;
     emit(
       result.match(
         (failure) => latest.copyWith(
+          outbox: [
+            for (final m in latest.outbox)
+              if (m.localId == item.localId) m.withStatus(OutboxStatus.failed) else m,
+          ],
           replyStatus: ReplyStatus.failure,
           replyError: failure.message,
         ),
@@ -123,9 +161,35 @@ class SupportBloc extends Bloc<SupportEvent, SupportState> {
             for (final ticket in latest.tickets)
               if (ticket.id == updatedTicket.id) updatedTicket else ticket,
           ],
+          outbox: [for (final m in latest.outbox) if (m.localId != item.localId) m],
           replyStatus: ReplyStatus.success,
           clearReplyingTicketId: true,
         ),
+      ),
+    );
+  }
+
+  void _onTicketReplaced(SupportTicketReplaced event, Emitter<SupportState> emit) {
+    final current = state;
+    if (current is! SupportLoaded) return;
+    emit(
+      current.copyWith(
+        tickets: [for (final t in current.tickets) if (t.id == event.ticket.id) event.ticket else t],
+      ),
+    );
+  }
+
+  void _onTicketMarkedRead(SupportTicketMarkedRead event, Emitter<SupportState> emit) {
+    final current = state;
+    if (current is! SupportLoaded) return;
+    final ticket = current.ticketById(event.ticketId);
+    if (ticket == null || !ticket.hasUnreadReply) return;
+    emit(
+      current.copyWith(
+        tickets: [
+          for (final t in current.tickets)
+            if (t.id == event.ticketId) t.copyWith(hasUnreadReply: false) else t,
+        ],
       ),
     );
   }

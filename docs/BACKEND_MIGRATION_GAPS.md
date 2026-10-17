@@ -917,3 +917,34 @@ arrives and omits the rest.
 - The transfer-number field shows a check mark once it has a value; the design's green border was not
   added (the shared text field has no such state). No format is validated: the exchange house's
   numbers are free text to the app.
+
+## 27. Support tickets: list, new ticket and thread (Figma SUP-01 / 02 / 03)
+
+The three screens were redone to the design. New placeholder contract (`TODO(backend-contract)`):
+
+- **Unread reply marker.** `supportTickets[].hasUnreadReply: Boolean`: support replied and the agent has
+  not opened the thread since. The app clears it on the device at once when the thread opens and calls
+  the new mutation `markTicketRead(ticketId) { success }`; the server must persist it, otherwise the
+  marker returns on the next refresh.
+- **Reopen.** `reopenTicket(ticketId)` returning the updated ticket: a **closed** ticket is read-only in the
+  app ("a closed ticket becomes read-only") with a "Reopen" link. A *resolved* ticket stays writable: say if
+  replying to a resolved ticket should reopen it server-side.
+- **Priority.** `createTicket` gets a `priority` argument (`low | normal | high`; the design has three, the
+  existing enum also has `urgent`, which the screen does not offer).
+- **Ticket status chip.** Derived on the device from the status and the last message: closed / resolved say so;
+  a live ticket whose newest message is support's is "waiting for you"; otherwise "in progress" / "open". If
+  the backend tracks "waiting on the agent" itself, expose it and the app will use it.
+- **Open / closed tabs.** *Closed* = `closed` + `resolved`; *open* = the rest. The list is ordered by last
+  activity (newest message). Pagination is not done: the list loads everything the query returns.
+- **Messages being sent.** A message the agent types appears at once, "sending" then either confirmed (the
+  server's thread replaces it) or "failed to send" with "Resend". Messages go out one at a time in order. There
+  is no idempotency key, so a resend after a timeout may duplicate the message if the first one did arrive:
+  `replyToTicket` should accept a client message id and ignore a repeat.
+- **Attachments.** The "attach a file" slots (new ticket and thread) say "not available yet": there is no
+  picker / upload API for tickets (same gap as receipts, sections on top-ups). Needs an upload mutation and
+  an `attachments` list on ticket messages.
+- **Request link.** The old free-text "request reference" field is gone (the design has none); the screen can
+  still be opened with a `requestId` that travels with the ticket. The design's list shows the ticket's area
+  ("Requests") where the app shows the category.
+- Authors: a support message shows `authorName` ("Reem (operations)"); the agent's own messages show only the
+  time. The day separator says Today / Yesterday / day-month.

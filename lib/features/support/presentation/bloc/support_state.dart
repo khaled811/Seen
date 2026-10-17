@@ -6,6 +6,32 @@ enum CreateTicketStatus { idle, submitting, success, failure }
 
 enum ReplyStatus { idle, submitting, success, failure }
 
+enum OutboxStatus { sending, failed }
+
+/// A message the agent typed that the server has not confirmed yet. It shows in
+/// the thread right away, marked "sending" or "failed" (Figma SUP-03).
+class OutboxMessage extends Equatable {
+  const OutboxMessage({
+    required this.localId,
+    required this.ticketId,
+    required this.body,
+    required this.sentAt,
+    this.status = OutboxStatus.sending,
+  });
+
+  final String localId;
+  final String ticketId;
+  final String body;
+  final DateTime sentAt;
+  final OutboxStatus status;
+
+  OutboxMessage withStatus(OutboxStatus status) =>
+      OutboxMessage(localId: localId, ticketId: ticketId, body: body, sentAt: sentAt, status: status);
+
+  @override
+  List<Object?> get props => [localId, ticketId, body, sentAt, status];
+}
+
 sealed class SupportState extends Equatable {
   const SupportState();
 
@@ -39,6 +65,7 @@ final class SupportLoaded extends SupportState {
     this.replyStatus = ReplyStatus.idle,
     this.replyError,
     this.replyingTicketId,
+    this.outbox = const [],
   });
 
   final List<SupportTicket> tickets;
@@ -54,6 +81,11 @@ final class SupportLoaded extends SupportState {
   final ReplyStatus replyStatus;
   final String? replyError;
   final String? replyingTicketId;
+
+  /// Messages not yet confirmed by the server, oldest first.
+  final List<OutboxMessage> outbox;
+
+  List<OutboxMessage> outboxFor(String ticketId) => [for (final m in outbox) if (m.ticketId == ticketId) m];
 
   SupportTicket? ticketById(String id) {
     for (final ticket in tickets) {
@@ -74,6 +106,7 @@ final class SupportLoaded extends SupportState {
     bool clearReplyError = false,
     String? replyingTicketId,
     bool clearReplyingTicketId = false,
+    List<OutboxMessage>? outbox,
   }) =>
       SupportLoaded(
         tickets: tickets ?? this.tickets,
@@ -85,6 +118,7 @@ final class SupportLoaded extends SupportState {
         replyError: clearReplyError ? null : (replyError ?? this.replyError),
         replyingTicketId:
             clearReplyingTicketId ? null : (replyingTicketId ?? this.replyingTicketId),
+        outbox: outbox ?? this.outbox,
       );
 
   @override
@@ -96,5 +130,6 @@ final class SupportLoaded extends SupportState {
         replyStatus,
         replyError,
         replyingTicketId,
+        outbox,
       ];
 }

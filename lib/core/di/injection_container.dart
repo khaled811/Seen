@@ -8,6 +8,9 @@ import '../../features/auth/domain/repositories/agency_registration_repository.d
 import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
 import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
 import '../../features/requests/data/datasources/missing_document_remote_data_source.dart';
+import '../../features/support/data/repositories/ticket_actions_repository_impl.dart';
+import '../../features/support/domain/usecases/ticket_actions_usecases.dart';
+import '../../features/support/presentation/bloc/ticket_actions_cubit.dart';
 import '../../features/wallet/data/repositories/top_up_cancellation_repository_impl.dart';
 import '../../features/wallet/data/repositories/statement_repository_impl.dart';
 import '../../features/wallet/domain/usecases/export_statement_usecase.dart';
@@ -482,6 +485,11 @@ class InjectionContainer {
 
   /// Builds a fresh [SupportBloc]. The caller (the tickets list screen's
   /// own `BlocProvider`) owns its lifetime from here on.
+  TicketActionsCubit createTicketActionsCubit() => TicketActionsCubit(
+        markRead: MarkTicketReadUseCase(TicketActionsRepositoryImpl(remote: supportRemoteDataSource)),
+        reopen: ReopenTicketUseCase(TicketActionsRepositoryImpl(remote: supportRemoteDataSource)),
+      );
+
   SupportBloc createSupportBloc() => SupportBloc(
         getTicketsUseCase: getTicketsUseCase,
         createTicketUseCase: createTicketUseCase,

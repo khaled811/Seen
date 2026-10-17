@@ -3652,5 +3652,93 @@
   "topUpAlternativeUnavailable": "Support sends you the receiving details when top-ups are enabled.",
   "@topUpAlternativeUnavailable": {
     "description": "Top-up by cash or exchange house copy."
+  },
+  "ticketsEmptyOpen": "No open tickets",
+  "@ticketsEmptyOpen": {
+    "description": "Support tickets copy."
+  },
+  "ticketsEmptyClosed": "No closed tickets",
+  "@ticketsEmptyClosed": {
+    "description": "Support tickets copy."
+  },
+  "ticketAwaitingAction": "Waiting for you",
+  "@ticketAwaitingAction": {
+    "description": "Support tickets copy."
+  },
+  "ticketUnreadReplyLabel": "New reply",
+  "@ticketUnreadReplyLabel": {
+    "description": "Support tickets copy."
+  },
+  "ticketCategoryHeading": "Category",
+  "@ticketCategoryHeading": {
+    "description": "Support tickets copy."
+  },
+  "ticketPriorityFieldLabel": "Priority",
+  "@ticketPriorityFieldLabel": {
+    "description": "Support tickets copy."
+  },
+  "ticketPriorityLow": "Low",
+  "@ticketPriorityLow": {
+    "description": "Support tickets copy."
+  },
+  "ticketPriorityNormal": "Normal",
+  "@ticketPriorityNormal": {
+    "description": "Support tickets copy."
+  },
+  "ticketPriorityHigh": "High",
+  "@ticketPriorityHigh": {
+    "description": "Support tickets copy."
+  },
+  "ticketSubjectRequired": "The subject is required",
+  "@ticketSubjectRequired": {
+    "description": "Support tickets copy."
+  },
+  "ticketDescriptionLabel": "Description",
+  "@ticketDescriptionLabel": {
+    "description": "Support tickets copy."
+  },
+  "ticketDescriptionHint": "Describe the problem, and the request number if any…",
+  "@ticketDescriptionHint": {
+    "description": "Support tickets copy."
+  },
+  "ticketAttachOptional": "Attach a file (optional)",
+  "@ticketAttachOptional": {
+    "description": "Support tickets copy."
+  },
+  "ticketAttachComingSoon": "Attachments are not available yet.",
+  "@ticketAttachComingSoon": {
+    "description": "Support tickets copy."
+  },
+  "ticketSubmitAction": "Send ticket",
+  "@ticketSubmitAction": {
+    "description": "Support tickets copy."
+  },
+  "ticketToday": "Today",
+  "@ticketToday": {
+    "description": "Support tickets copy."
+  },
+  "ticketYesterday": "Yesterday",
+  "@ticketYesterday": {
+    "description": "Support tickets copy."
+  },
+  "ticketSending": "Sending…",
+  "@ticketSending": {
+    "description": "Support tickets copy."
+  },
+  "ticketSendFailed": "Failed to send",
+  "@ticketSendFailed": {
+    "description": "Support tickets copy."
+  },
+  "ticketResend": "Resend",
+  "@ticketResend": {
+    "description": "Support tickets copy."
+  },
+  "ticketClosedNote": "A closed ticket is read-only",
+  "@ticketClosedNote": {
+    "description": "Support tickets copy."
+  },
+  "ticketReopen": "Reopen",
+  "@ticketReopen": {
+    "description": "Support tickets copy."
   }
 }

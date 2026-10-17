@@ -38,12 +38,14 @@ class DebugFallbackSupportRemoteDataSource implements SupportRemoteDataSource {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   }) async {
     final result = await _real.createTicket(
       category: category,
       subject: subject,
       message: message,
       requestId: requestId,
+      priority: priority,
     );
     if (kDebugMode && result.isLeft()) {
       final id = 'ticket-${_nextTicketId++}';
@@ -51,7 +53,7 @@ class DebugFallbackSupportRemoteDataSource implements SupportRemoteDataSource {
         id: id,
         referenceId: 'TCK-$_nextTicketId',
         category: category.value,
-        priority: 'normal',
+        priority: priority.value,
         subject: subject,
         requestId: requestId,
         status: SupportTicketStatus.open.value,
@@ -71,6 +73,37 @@ class DebugFallbackSupportRemoteDataSource implements SupportRemoteDataSource {
     }
     return result;
   }
+
+  @override
+  Future<Either<Failure, bool>> markTicketRead(String ticketId) async {
+    final result = await _real.markTicketRead(ticketId);
+    if (!(kDebugMode && result.isLeft())) return result;
+    final t = _mockTickets[ticketId];
+    if (t != null) _mockTickets[ticketId] = _copy(t, hasUnreadReply: false);
+    return const Right(true);
+  }
+
+  @override
+  Future<Either<Failure, SupportTicketDto>> reopenTicket(String ticketId) async {
+    final result = await _real.reopenTicket(ticketId);
+    if (!(kDebugMode && result.isLeft())) return result;
+    final t = _mockTickets[ticketId];
+    if (t == null) return const Left(ServerFailure('Ticket not found.'));
+    return Right(_mockTickets[ticketId] = _copy(t, status: SupportTicketStatus.open.value));
+  }
+
+  SupportTicketDto _copy(SupportTicketDto t, {bool? hasUnreadReply, String? status}) => SupportTicketDto(
+        id: t.id,
+        referenceId: t.referenceId,
+        category: t.category,
+        priority: t.priority,
+        subject: t.subject,
+        requestId: t.requestId,
+        status: status ?? t.status,
+        createdAt: t.createdAt,
+        messages: t.messages,
+        hasUnreadReply: hasUnreadReply ?? t.hasUnreadReply,
+      );
 
   @override
   Future<Either<Failure, SupportTicketDto>> replyToTicket({
@@ -189,6 +222,7 @@ Map<String, SupportTicketDto> _seedTickets() {
       subject: 'Request stuck in review',
       requestId: 'req-3',
       status: 'in_progress',
+      hasUnreadReply: true,
       createdAt: now.subtract(const Duration(days: 3)),
       messages: [
         TicketMessageDto(

@@ -28,12 +28,14 @@ class SupportRepositoryImpl implements SupportRepository {
     required String subject,
     required String message,
     String? requestId,
+    TicketPriority priority = TicketPriority.normal,
   }) async {
     final result = await _remote.createTicket(
       category: category,
       subject: subject,
       message: message,
       requestId: requestId,
+      priority: priority,
     );
     if (result case Left(:final value)) return Left(value);
     final dto = (result as Right<Failure, SupportTicketDto>).value;
