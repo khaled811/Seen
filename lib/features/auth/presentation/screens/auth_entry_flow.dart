@@ -35,6 +35,9 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
   /// "edit number" return to a filled form. Held in memory only.
   AgencyRegistrationDraft? _draft;
 
+  /// What the server refused on the form, to mark that field when it is shown again.
+  RegistrationIssueKind? _conflict;
+
   @override
   void didUpdateWidget(covariant AuthEntryFlow oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -79,8 +82,10 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
               key: const ValueKey('auth-create-agency'),
               onBack: () => _go(_EntryStep.welcome),
               initial: _draft,
+              conflict: _conflict,
               onSubmitted: (draft) {
                 _draft = draft;
+                _conflict = null;
                 _go(_EntryStep.registration);
               },
             ),
@@ -88,6 +93,10 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
               key: const ValueKey('auth-registration'),
               draft: _draft!,
               onExit: () => _go(_EntryStep.createAgency),
+              onFieldConflict: (kind) {
+                _conflict = kind;
+                _go(_EntryStep.createAgency);
+              },
               onCompleted: () {
                 _draft = null;
                 _go(_EntryStep.pendingApproval);

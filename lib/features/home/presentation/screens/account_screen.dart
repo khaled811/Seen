@@ -19,9 +19,11 @@ import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/theme/theme_mode_cubit.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/presentation/widgets/logout_confirm_dialog.dart';
 import '../../../support/presentation/screens/notifications_screen.dart';
 import '../../../support/presentation/screens/help_center_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
@@ -81,19 +83,12 @@ class AccountScreen extends StatelessWidget {
   }
 
   Future<void> _confirmSignOut(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
     final authBloc = context.read<AuthBloc>();
     final navigator = Navigator.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.accountSignOutConfirmTitle),
-        content: Text(l10n.accountSignOutConfirmBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancel)),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(l10n.accountSignOutAction)),
-        ],
-      ),
+    // Figma AUTH-14: say so when signing out would cut an unfinished upload short.
+    final confirmed = await showLogoutConfirmDialog(
+      context,
+      pendingReferences: InjectionContainer.instance.pendingUploads.references,
     );
     if (confirmed != true) return;
     authBloc.add(const AuthLogoutRequested());

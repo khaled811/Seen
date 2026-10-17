@@ -22,11 +22,21 @@ import '../utils/phone_identifier.dart';
 /// phone code, terms) sends it. [initial] restores the form when the user comes
 /// back from a later step.
 class CreateAgencyAccountScreen extends StatefulWidget {
-  const CreateAgencyAccountScreen({super.key, required this.onBack, required this.onSubmitted, this.initial});
+  const CreateAgencyAccountScreen({
+    super.key,
+    required this.onBack,
+    required this.onSubmitted,
+    this.initial,
+    this.conflict,
+  });
 
   final VoidCallback onBack;
   final ValueChanged<AgencyRegistrationDraft> onSubmitted;
   final AgencyRegistrationDraft? initial;
+
+  /// What the server refused the last time (Figma AUTH-08): the licence number or
+  /// the e-mail is marked until the agent changes it.
+  final RegistrationIssueKind? conflict;
 
   @override
   State<CreateAgencyAccountScreen> createState() => _CreateAgencyAccountScreenState();
@@ -41,6 +51,19 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
   late final _email = TextEditingController(text: widget.initial?.email);
   late final _license = TextEditingController(text: widget.initial?.licenseNumber);
   late final _city = TextEditingController(text: widget.initial?.city);
+
+  // Which fields the agent has typed in: only those show the "accepted" mark.
+  final _touched = <TextEditingController>{};
+  late bool _licenseTaken = widget.conflict == RegistrationIssueKind.licenseTaken;
+  late bool _emailTaken = widget.conflict == RegistrationIssueKind.emailTaken;
+
+  void _edited(TextEditingController controller) => setState(() {
+        _touched.add(controller);
+        if (controller == _license) _licenseTaken = false;
+        if (controller == _email) _emailTaken = false;
+      });
+
+  bool _ok(TextEditingController controller, bool valid) => _touched.contains(controller) && valid;
 
   String? _initialLocalPhone() {
     final phone = widget.initial?.phone;
@@ -60,6 +83,8 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
     _city.dispose();
     super.dispose();
   }
+
+  static bool _validEmail(String value) => value.contains('@') && PhoneIdentifier.isValidIdentifier(value);
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -102,6 +127,8 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
                         isRequired: true,
                         controller: _name,
                         textInputAction: TextInputAction.next,
+                        success: _ok(_name, _name.text.trim().isNotEmpty),
+                        onChanged: (_) => _edited(_name),
                         validator: required,
                       ),
                       gap,
@@ -111,6 +138,8 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
                         isRequired: true,
                         controller: _manager,
                         textInputAction: TextInputAction.next,
+                        success: _ok(_manager, _manager.text.trim().isNotEmpty),
+                        onChanged: (_) => _edited(_manager),
                         validator: required,
                       ),
                       gap,
@@ -133,6 +162,8 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
                             ),
                           ),
                         ),
+                        success: _ok(_phone, PhoneIdentifier.isValid(_phone.text)),
+                        onChanged: (_) => _edited(_phone),
                         validator: (v) => PhoneIdentifier.isValid(v ?? '') ? null : l10n.validationInvalidPhone,
                       ),
                       gap,
@@ -144,12 +175,10 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
                         ltr: true,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        validator: (v) {
-                          final value = v ?? '';
-                          return value.contains('@') && PhoneIdentifier.isValidIdentifier(value)
-                              ? null
-                              : l10n.validationInvalidEmail;
-                        },
+                        success: _ok(_email, _validEmail(_email.text) && !_emailTaken),
+                        errorText: _emailTaken ? l10n.agencyEmailTaken : null,
+                        onChanged: (_) => _edited(_email),
+                        validator: (v) => _validEmail(v ?? '') ? null : l10n.agencyEmailInvalid,
                       ),
                       gap,
                       // City leads (start edge), license number trails, as drawn.
@@ -163,6 +192,8 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
                               isRequired: true,
                               controller: _city,
                               textInputAction: TextInputAction.next,
+                              success: _ok(_city, _city.text.trim().isNotEmpty),
+                              onChanged: (_) => _edited(_city),
                               validator: required,
                             ),
                           ),
@@ -175,6 +206,9 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
                               controller: _license,
                               mono: true,
                               ltr: true,
+                              errorText: _licenseTaken ? l10n.agencyLicenseTaken : null,
+                              success: _ok(_license, _license.text.trim().isNotEmpty && !_licenseTaken),
+                              onChanged: (_) => _edited(_license),
                               validator: required,
                             ),
                           ),

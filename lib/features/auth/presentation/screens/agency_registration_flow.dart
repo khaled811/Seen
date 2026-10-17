@@ -35,6 +35,7 @@ class AgencyRegistrationFlow extends StatelessWidget {
     required this.onExit,
     required this.onCompleted,
     this.onSignIn,
+    this.onFieldConflict,
     this.createBloc,
   });
 
@@ -49,6 +50,10 @@ class AgencyRegistrationFlow extends StatelessWidget {
   /// "Sign in" from the phone-already-registered banner.
   final VoidCallback? onSignIn;
 
+  /// The server refused something typed on the form (licence or e-mail taken,
+  /// Figma AUTH-08): back to step 1 with that field marked.
+  final void Function(RegistrationIssueKind kind)? onFieldConflict;
+
   /// Test seam; defaults to the DI container.
   final AgencyRegistrationBloc Function()? createBloc;
 
@@ -57,8 +62,14 @@ class AgencyRegistrationFlow extends StatelessWidget {
     return BlocProvider(
       create: (_) => (createBloc ?? () => InjectionContainer.instance.createAgencyRegistrationBloc(draft))(),
       child: BlocConsumer<AgencyRegistrationBloc, AgencyRegistrationState>(
-        listenWhen: (previous, current) => previous.step != current.step && current.step == RegistrationStep.done,
-        listener: (context, state) => onCompleted(),
+        listenWhen: (previous, current) =>
+            (previous.step != current.step && current.step == RegistrationStep.done) ||
+            (previous.issue != current.issue && (current.issue?.isFormFieldConflict ?? false)),
+        listener: (context, state) {
+          if (state.step == RegistrationStep.done) return onCompleted();
+          final kind = state.issue!.kind;
+          (onFieldConflict ?? (_) => onExit())(kind);
+        },
         buildWhen: (previous, current) => previous.step != current.step,
         builder: (context, state) {
           final bloc = context.read<AgencyRegistrationBloc>();
@@ -369,6 +380,8 @@ Widget _issueBanner(AppLocalizations l10n, SeenStrings s, RegistrationIssue issu
     RegistrationIssueKind.attemptsExhausted =>
       SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.recoveryExhausted(s.numeral(issue.minutes ?? 15))),
     RegistrationIssueKind.wrongCode ||
+    RegistrationIssueKind.licenseTaken ||
+    RegistrationIssueKind.emailTaken ||
     RegistrationIssueKind.generic =>
       SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.recoveryServerError),
   };

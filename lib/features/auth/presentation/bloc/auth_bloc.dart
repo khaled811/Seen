@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/permissions.dart';
+import '../../../../core/error/failure.dart';
 import '../../../../core/network/auth_session_controller.dart';
 import '../../domain/entities/auth_attempt_result.dart';
 import '../../domain/entities/user_session.dart';
@@ -89,10 +90,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     emit(
       result.match(
-        (failure) => AuthFailure(
-          message: failure.message,
-          stage: AuthFailureStage.login,
-        ),
+        (failure) => _loginFailure(failure),
         (attempt) => switch (attempt) {
           AuthOtpChallenge(:final challengeToken, :final resendCooldownSeconds) =>
             AuthOtpRequired(
@@ -104,6 +102,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         },
       ),
     );
+  }
+
+  // TODO(backend-contract): placeholder error codes (docs/BACKEND_MIGRATION_GAPS.md, section 30).
+  static const _invalidCredentialsCode = 'INVALID_CREDENTIALS';
+  static const _pendingCode = 'ACCOUNT_PENDING_APPROVAL';
+  static const _suspendedCode = 'ACCOUNT_SUSPENDED';
+  static const _lockedCode = 'ACCOUNT_LOCKED';
+
+  AuthFailure _loginFailure(Failure failure) {
+    int? number(Map<String, Object?> d, String key) {
+      final v = d[key];
+      return v is num ? v.toInt() : int.tryParse('$v');
+    }
+
+    if (failure is ServerFailure) {
+      final reason = switch (failure.code) {
+        _invalidCredentialsCode => LoginFailureReason.invalidCredentials,
+        _pendingCode => LoginFailureReason.pendingApproval,
+        _suspendedCode => LoginFailureReason.suspended,
+        _lockedCode => LoginFailureReason.locked,
+        _ => LoginFailureReason.generic,
+      };
+      return AuthFailure(
+        message: failure.message,
+        stage: AuthFailureStage.login,
+        reason: reason,
+        attemptsLeft: number(failure.details, 'attemptsLeft'),
+        retryAfterSeconds: number(failure.details, 'retryAfterSeconds'),
+      );
+    }
+    return AuthFailure(message: failure.message, stage: AuthFailureStage.login);
   }
 
   Future<void> _onOtpSubmitted(

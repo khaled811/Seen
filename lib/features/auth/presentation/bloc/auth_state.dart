@@ -6,6 +6,20 @@ import '../../domain/entities/user_session.dart';
 /// only to its own failures via `BlocListener.listenWhen`.
 enum AuthFailureStage { login, otp }
 
+/// Why a login failed, when the server says (Figma AUTH-11).
+enum LoginFailureReason {
+  /// Anything the screen has no special copy for (shown as a message).
+  generic,
+  invalidCredentials,
+
+  /// The agency is still being reviewed.
+  pendingApproval,
+  suspended,
+
+  /// Too many wrong attempts: locked for a while.
+  locked,
+}
+
 sealed class AuthState extends Equatable {
   const AuthState();
 
@@ -82,6 +96,9 @@ final class AuthFailure extends AuthState {
     required this.message,
     required this.stage,
     this.challengeToken,
+    this.reason = LoginFailureReason.generic,
+    this.attemptsLeft,
+    this.retryAfterSeconds,
   });
 
   final String message;
@@ -91,6 +108,14 @@ final class AuthFailure extends AuthState {
   /// without losing the challenge context.
   final String? challengeToken;
 
+  final LoginFailureReason reason;
+
+  /// [LoginFailureReason.invalidCredentials]: attempts before the lock.
+  final int? attemptsLeft;
+
+  /// [LoginFailureReason.locked]: how long until the next try is allowed.
+  final int? retryAfterSeconds;
+
   @override
-  List<Object?> get props => [message, stage, challengeToken];
+  List<Object?> get props => [message, stage, challengeToken, reason, attemptsLeft, retryAfterSeconds];
 }

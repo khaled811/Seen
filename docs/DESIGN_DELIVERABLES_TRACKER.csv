@@ -6,13 +6,13 @@ AUTH-04,AUTH,Screen,P0,تم تغيير كلمة المرور,Password changed (s
 AUTH-05,AUTH,Screen,P0,إنشاء حساب: كلمة المرور,Registration: create password,Create agency (15) > Continue,Password rules; mismatch; show/hide,Designed - Implemented (Flutter)
 AUTH-06,AUTH,Screen,P0,إنشاء حساب: تحقق الجوال,Registration: verify phone (OTP),After registration password,Wrong/expired code; resend; phone already used,Designed - Implemented (Flutter)
 AUTH-07,AUTH,Screen,P0,إنشاء حساب: الموافقة على الشروط,Registration: terms consent,Registration form,Checkbox required; link to terms; decline,Designed - Implemented (Flutter)
-AUTH-08,AUTH,State,P1,إنشاء حساب: أخطاء النموذج,Registration: field errors,Create agency (15),Duplicate phone/email/license; invalid email; invalid license; file too large,Designed - Not implemented
+AUTH-08,AUTH,State,P1,إنشاء حساب: أخطاء النموذج,Registration: field errors,Create agency (15),Duplicate phone/email/license; invalid email; invalid license; file too large,"Designed - Implemented (Flutter; partial: no file-too-large error, no CR upload yet)"
 AUTH-09,AUTH,Screen,P1,الشروط والأحكام,Terms of use,"Welcome (02), Registration",Long text; language switch; offline,Designed - Not implemented
 AUTH-10,AUTH,Screen,P1,سياسة الخصوصية,Privacy policy,"Welcome (02), Registration",Long text; language switch; offline,Designed - Not implemented
-AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,Login (03),Wrong credentials; suspended account; pending account; locked with timer,Designed - Not implemented
+AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,Login (03),Wrong credentials; suspended account; pending account; locked with timer,Designed - Implemented (Flutter)
 AUTH-12,AUTH,State,P1,رمز التحقق: خطأ,OTP: error state,OTP (04),Error boxes + message; expired; verifying/disabled,Designed (as AUTH-02b) - Implemented (Flutter)
 AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call returning 401,Where the user lands; unsaved form data; background refresh,Designed - Implemented (Flutter)
-AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Designed - Not implemented
+AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Designed - Implemented (Flutter)
 AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Designed - Not implemented
 AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Designed - Not implemented
 REQ-01,REQ,Screen,P1,المسودات,Drafts list,Requests (06) filter/section,Empty; many drafts; draft older than N days; offline,Designed - Implemented (Flutter)

@@ -3824,5 +3824,68 @@
   "helpFaqSubAgentA": "From the Agents tab tap the add button, then enter the agent details and set their credit limit.",
   "@helpFaqSubAgentA": {
     "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "agencyEmailInvalid": "The e-mail format is not valid. Example: name@agency.com",
+  "@agencyEmailInvalid": {
+    "description": "Agency registration field errors."
+  },
+  "agencyEmailTaken": "This e-mail is used by another account.",
+  "@agencyEmailTaken": {
+    "description": "Agency registration field errors."
+  },
+  "agencyLicenseTaken": "This licence number is registered to another agency. Contact support if this is a mistake.",
+  "@agencyLicenseTaken": {
+    "description": "Agency registration field errors."
+  },
+  "loginInvalidCredentials": "The phone number or password is not correct.",
+  "@loginInvalidCredentials": {
+    "description": "Login failure and sign-out copy."
+  },
+  "loginAccountPending": "Your account is under review. We will tell you when it is activated, within one working day.",
+  "@loginAccountPending": {
+    "description": "Login failure and sign-out copy."
+  },
+  "loginAccountSuspended": "Your account is suspended. Contact Jubari to find out why.",
+  "@loginAccountSuspended": {
+    "description": "Login failure and sign-out copy."
+  },
+  "loginLocked": "Sign-in is locked for now after wrong attempts. Try again in {time}.",
+  "@loginLocked": {
+    "description": "Login failure and sign-out copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "loginBannerSupport": "Support",
+  "@loginBannerSupport": {
+    "description": "Login failure and sign-out copy."
+  },
+  "loginBannerContact": "Contact",
+  "@loginBannerContact": {
+    "description": "Login failure and sign-out copy."
+  },
+  "logoutConfirmAction": "Sign out",
+  "@logoutConfirmAction": {
+    "description": "Login failure and sign-out copy."
+  },
+  "logoutPendingUpload": "You have a document upload that is not finished ({reference}). If you sign out now it will stop.",
+  "@logoutPendingUpload": {
+    "description": "Login failure and sign-out copy.",
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "logoutPendingUploads": "You have {count} uploads that are not finished. If you sign out now they will stop.",
+  "@logoutPendingUploads": {
+    "description": "Login failure and sign-out copy.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
   }
 }

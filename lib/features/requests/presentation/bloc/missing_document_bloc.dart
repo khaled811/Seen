@@ -2,6 +2,10 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:fpdart/fpdart.dart';
+
+import '../../../../core/error/failure.dart';
+import '../../../../core/services/pending_uploads.dart';
 import '../../domain/entities/missing_document.dart';
 import '../../domain/usecases/missing_document_usecases.dart';
 
@@ -107,7 +111,9 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
     required UploadMissingDocumentUseCase uploadDocument,
     required PickDocumentUseCase pickDocument,
     DateTime Function() clock = DateTime.now,
-  })  : _get = getMissingDocument,
+    PendingUploads? pendingUploads,
+  })  : _pending = pendingUploads,
+        _get = getMissingDocument,
         _upload = uploadDocument,
         _pick = pickDocument,
         _clock = clock,
@@ -126,6 +132,7 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
   final UploadMissingDocumentUseCase _upload;
   final PickDocumentUseCase _pick;
   final DateTime Function() _clock;
+  final PendingUploads? _pending;
 
   Future<void> _onStarted(MissingDocumentStarted event, Emitter<MissingDocumentState> emit) async {
     emit(const MissingDocumentState());
@@ -171,13 +178,20 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
       return;
     }
     emit(state.copyWith(uploading: true, progress: 0, clearIssue: true));
-    final result = await _upload(
-      requestId: request.requestId,
-      document: doc,
-      onProgress: (f) {
-        if (!isClosed) add(_ProgressChanged(f));
-      },
-    );
+    // Registered for as long as the upload runs, even if the screen is left.
+    final done = _pending?.begin(requestId: request.requestId, referenceId: request.referenceId);
+    final Either<Failure, void> result;
+    try {
+      result = await _upload(
+        requestId: request.requestId,
+        document: doc,
+        onProgress: (f) {
+          if (!isClosed) add(_ProgressChanged(f));
+        },
+      );
+    } finally {
+      done?.call();
+    }
     if (isClosed) return;
     result.match(
       (failure) => emit(state.copyWith(uploading: false, issue: DocumentIssue.fromUpload(failure))),

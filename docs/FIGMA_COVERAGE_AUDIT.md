@@ -23,11 +23,11 @@ the same thing that does not follow the frame.
 ### Auth (7)
 | Frame | Priority | What is missing |
 |---|---|---|
-| AUTH-08 Registration field errors | P1 | Per-field server errors (duplicate licence / phone / email), file-too-large; the form validates locally only. Partly. |
+| AUTH-08 Registration field errors | P1 | **Done** except the file-too-large error (no CR upload yet). See gaps section 30. |
 | AUTH-09 Terms of use | P1 | Long-text screen with the update date, language switch, offline state. |
 | AUTH-10 Privacy policy | P1 | Same as AUTH-09. |
-| AUTH-11 Login failure states | P1 | Wrong credentials with attempts left, suspended, pending review, locked with a countdown. |
-| AUTH-14 Logout confirmation | P1 | Warning about an unfinished upload; offline logout. |
+| AUTH-11 Login failure states | P1 | **Done.** |
+| AUTH-14 Logout confirmation | P1 | **Done.** |
 | AUTH-15 Change password | P2 | Whole screen. |
 | AUTH-16 Change phone number | P2 | Whole flow (OTP on the new number). |
 

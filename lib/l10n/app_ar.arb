@@ -834,5 +834,17 @@
   "helpFaqPassportQ": "ما قاعدة صلاحية الجواز ٦ أشهر؟",
   "helpFaqPassportA": "يجب أن يكون الجواز صالحًا لستة أشهر على الأقل. الجواز الذي تنتهي صلاحيته قبل ذلك قد يُرفض طلبه.",
   "helpFaqSubAgentQ": "كيف أضيف وكيلًا فرعيًا؟",
-  "helpFaqSubAgentA": "من تبويب الوكلاء اضغط زر الإضافة، ثم أدخل بيانات الوكيل وحدّد سقفه الائتماني."
+  "helpFaqSubAgentA": "من تبويب الوكلاء اضغط زر الإضافة، ثم أدخل بيانات الوكيل وحدّد سقفه الائتماني.",
+  "agencyEmailInvalid": "صيغة البريد غير صحيحة. مثال: name@agency.com",
+  "agencyEmailTaken": "البريد مستخدم في حساب آخر.",
+  "agencyLicenseTaken": "رقم الترخيص مسجّل لوكالة أخرى. تواصل مع الدعم إن كان هذا خطأ.",
+  "loginInvalidCredentials": "رقم الجوال أو كلمة المرور غير صحيحة.",
+  "loginAccountPending": "الحساب قيد المراجعة. سنبلغك عند التفعيل خلال يوم عمل.",
+  "loginAccountSuspended": "الحساب موقوف. تواصل مع جُباري لمعرفة السبب.",
+  "loginLocked": "قُفل الدخول مؤقتًا بعد محاولات خاطئة. حاول بعد {time}.",
+  "loginBannerSupport": "الدعم",
+  "loginBannerContact": "تواصل",
+  "logoutConfirmAction": "خروج",
+  "logoutPendingUpload": "لديك رفع مستند لم يكتمل ({reference}). إن خرجت الآن سيتوقف الرفع.",
+  "logoutPendingUploads": "لديك {count} عمليات رفع لم تكتمل. إن خرجت الآن ستتوقف."
 }

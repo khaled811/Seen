@@ -986,3 +986,35 @@ The three screens were redone to the design. New placeholder contract (`TODO(bac
 - "No results? Contact support directly" opens the support tickets (signed-in). Before sign-in the
   contact sheet of section 28 is the way.
 - Opens from Account > "Help centre" (a new row above "Help & support").
+
+## 30. Login failures, registration field errors, sign-out warning (Figma AUTH-11 / 08 / 14)
+
+All codes below are placeholders (`TODO(backend-contract)`); an unknown code or a network error is shown as a
+plain message exactly as before.
+
+- **Login (AUTH-11).** `login` should fail with `extensions.code`:
+  - `INVALID_CREDENTIALS` + `attemptsLeft` → both fields are marked and the line says "wrong phone or password,
+    N attempts left" (without `attemptsLeft` the line has no count);
+  - `ACCOUNT_PENDING_APPROVAL` → "under review, we will tell you within a working day" with a Support action
+    (the contact sheet, section 28). The promise "within one working day" is from the design: it must be true;
+  - `ACCOUNT_SUSPENDED` → "suspended, contact Jubari", same action;
+  - `ACCOUNT_LOCKED` + `retryAfterSeconds` → a live countdown ("try again in 14:52") and the sign-in button is
+    disabled until it ends. The lock itself is the server's; the app only waits.
+  A pending agent who signs in is told so here; today the login result carries no agent status
+  (see the note on the pending-approval screen), so the server must answer this error instead of a session.
+- **Registration (AUTH-08).** The form step only validates locally; the server sees the data when the password
+  is sent (step 2). New codes on that call: `LICENSE_ALREADY_REGISTERED` and `EMAIL_ALREADY_REGISTERED`: the flow
+  returns to the form with that field marked ("licence registered to another agency, contact support" /
+  "e-mail used by another account"), cleared when the agent edits it. `PHONE_ALREADY_REGISTERED` keeps its existing
+  banner with a sign-in action (AUTH-06) instead of a field error, because that screen is designed for it.
+  **Better:** check the three values when the form is submitted (a `checkRegistrationAvailability` query), so the
+  agent hears it before choosing a password. Say if you want that contract.
+- **Not done in AUTH-08: the file-too-large error.** It belongs to the commercial-register upload, which has no
+  picker / upload API yet (the slot says "not available yet"). The 5 MB rule and the wording are in the design.
+- **Sign-out (AUTH-14).** The confirmation is a dialog that warns when a document upload is still running
+  ("an upload is not finished (SB-20487), signing out now will stop it"; several uploads are counted). The app
+  keeps the list of running uploads in memory (`PendingUploads`, registered for as long as an upload runs, even
+  after the screen is left). Signing out only clears the device, so it already works offline. After sign-out the
+  upload fails with 401: the server should not keep a half upload.
+- The shared text field now draws an error without text, an accepted state (green + check) and keeps the
+  password eye next to the error mark.

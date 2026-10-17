@@ -7,6 +7,7 @@ import '../../features/auth/domain/entities/agency_registration.dart';
 import '../../features/auth/domain/repositories/agency_registration_repository.dart';
 import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
 import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
+import '../services/pending_uploads.dart';
 import '../../features/requests/data/datasources/missing_document_remote_data_source.dart';
 import '../../features/support/data/repositories/ticket_actions_repository_impl.dart';
 import '../../features/support/domain/usecases/ticket_actions_usecases.dart';
@@ -171,6 +172,9 @@ class InjectionContainer {
   late final SubmitBookingUseCase submitBookingUseCase;
   late final BookingDraftRepository bookingDraftRepository;
   late final RecentSearchesStore recentSearchesStore;
+
+  /// The uploads running now: signing out warns about them (Figma AUTH-14).
+  final pendingUploads = PendingUploads();
   late final GetBookingDraftsUseCase getBookingDraftsUseCase;
   late final SaveBookingDraftUseCase saveBookingDraftUseCase;
   late final DeleteBookingDraftUseCase deleteBookingDraftUseCase;
@@ -425,6 +429,7 @@ class InjectionContainer {
 
   /// Builds a fresh [MissingDocumentBloc]; the upload screen owns it.
   MissingDocumentBloc createMissingDocumentBloc() => MissingDocumentBloc(
+        pendingUploads: pendingUploads,
         getMissingDocument: getMissingDocumentUseCase,
         uploadDocument: uploadMissingDocumentUseCase,
         pickDocument: pickDocumentUseCase,

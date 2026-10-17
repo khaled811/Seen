@@ -54,6 +54,8 @@ class SeenTextField extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.below,
+    this.showError = false,
+    this.success = false,
   });
 
   final String label;
@@ -106,12 +108,32 @@ class SeenTextField extends StatelessWidget {
   /// Extra content under the field, e.g. a validity/strength hint.
   final Widget? below;
 
+  /// Draws the field in the error state (red border, alert mark) without a message
+  /// of its own, e.g. the phone field next to a "wrong phone or password" line.
+  final bool showError;
+
+  /// Draws the field as accepted: green border and a check mark.
+  final bool success;
+
   static const double _borderWidth = 1.5;
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
         borderRadius: const BorderRadius.all(SeenRadius.lg),
         borderSide: BorderSide(color: color, width: _borderWidth),
       );
+
+  /// The trailing mark: the caller's [suffix] (e.g. the password eye), the alert
+  /// of an error, the check of an accepted value; an error keeps the caller's suffix
+  /// next to the alert.
+  Widget? _suffix(SeenColors c, Color okColor) {
+    final hasError = errorText != null || showError;
+    final mark = hasError
+        ? Icon(SeenIcons.alert, size: 20, color: c.dangerFg)
+        : (success ? Icon(SeenIcons.check, size: 20, color: okColor) : null);
+    if (suffix == null) return mark;
+    if (!hasError) return suffix;
+    return Row(mainAxisSize: MainAxisSize.min, children: [mark!, const SizedBox(width: 8), suffix!]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +144,12 @@ class SeenTextField extends StatelessWidget {
     final valueColor = !enabled ? c.inkMuted : (readOnly && !picker ? c.inkSecondary : c.ink);
     final plainReadOnly = readOnly && !picker;
     final filled = !enabled || plainReadOnly;
-    final restingBorder = plainReadOnly && enabled ? c.border : c.borderStrong;
+    final okColor = SeenRequestStatus.completed.colors.fg;
+    final restingBorder = showError
+        ? SeenBrand.inputErrorBorder
+        : success
+            ? okColor
+            : (plainReadOnly && enabled ? c.border : c.borderStrong);
     const errorBorder = SeenBrand.inputErrorBorder;
     final helperStyle = type.caption.copyWith(color: c.inkMuted);
     final errorStyle = type.caption.copyWith(color: c.dangerFg);
@@ -168,14 +195,14 @@ class SeenTextField extends StatelessWidget {
             border: _border(c.borderStrong),
             enabledBorder: _border(restingBorder),
             disabledBorder: _border(c.borderStrong),
-            focusedBorder: _border(c.focus),
+            focusedBorder: _border(showError ? SeenBrand.inputErrorBorder : (success ? okColor : c.focus)),
             errorBorder: _border(errorBorder),
             focusedErrorBorder: _border(errorBorder),
             prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 20),
             prefix: prefix,
             suffixText: suffixText,
             suffixStyle: base.copyWith(color: c.inkSecondary),
-            suffixIcon: suffix ?? (errorText == null ? null : Icon(SeenIcons.alert, size: 20, color: c.dangerFg)),
+            suffixIcon: _suffix(c, okColor),
             helperText: errorText == null ? helper : null,
             helperStyle: helperStyle,
             helperMaxLines: 2,

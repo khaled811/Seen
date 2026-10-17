@@ -59,6 +59,12 @@ class RegistrationChallenge extends Equatable {
 enum RegistrationIssueKind {
   /// The phone already belongs to another account (Figma AUTH-06 banner).
   phoneTaken,
+
+  /// The licence number belongs to another agency (Figma AUTH-08).
+  licenseTaken,
+
+  /// The e-mail belongs to another account (Figma AUTH-08).
+  emailTaken,
   rateLimited,
   offline,
   wrongCode,
@@ -80,6 +86,8 @@ class RegistrationIssue extends Equatable {
   /// Backend error codes (GraphQL `extensions.code`) this mapping expects.
   /// TODO(backend-contract): confirm the names; see docs/BACKEND_MIGRATION_GAPS.md.
   static const phoneTakenCode = 'PHONE_ALREADY_REGISTERED';
+  static const licenseTakenCode = 'LICENSE_ALREADY_REGISTERED';
+  static const emailTakenCode = 'EMAIL_ALREADY_REGISTERED';
   static const rateLimitedCode = 'RATE_LIMITED';
   static const wrongCodeCode = 'OTP_INVALID';
   static const expiredCodeCode = 'OTP_EXPIRED';
@@ -96,6 +104,8 @@ class RegistrationIssue extends Equatable {
 
       return switch (failure.code) {
         phoneTakenCode => const RegistrationIssue(RegistrationIssueKind.phoneTaken),
+        licenseTakenCode => const RegistrationIssue(RegistrationIssueKind.licenseTaken),
+        emailTakenCode => const RegistrationIssue(RegistrationIssueKind.emailTaken),
         rateLimitedCode => RegistrationIssue(RegistrationIssueKind.rateLimited, seconds: number('retryAfterSeconds')),
         wrongCodeCode => RegistrationIssue(RegistrationIssueKind.wrongCode, attemptsLeft: number('attemptsLeft')),
         expiredCodeCode => const RegistrationIssue(RegistrationIssueKind.expiredCode),
@@ -106,6 +116,11 @@ class RegistrationIssue extends Equatable {
     }
     return const RegistrationIssue(RegistrationIssueKind.generic);
   }
+
+  /// A problem with something typed on the form step: the flow goes back there
+  /// and marks the field instead of showing a banner.
+  bool get isFormFieldConflict =>
+      kind == RegistrationIssueKind.licenseTaken || kind == RegistrationIssueKind.emailTaken;
 
   @override
   List<Object?> get props => [kind, seconds, attemptsLeft, minutes];

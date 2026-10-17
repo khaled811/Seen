@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,9 +7,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_motion_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
+import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/motion_icon.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
@@ -18,6 +22,7 @@ import '../../../../core/utils/latin_digits.dart';
 import '../../../../core/validators/form_validators.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
+import '../../../support/presentation/widgets/contact_support_sheet.dart';
 import '../bloc/auth_state.dart';
 import '../utils/phone_identifier.dart';
 
@@ -45,14 +50,57 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  /// The last login failure that has its own display (Figma AUTH-11); null when
+  /// there is none, or once the agent starts correcting the form.
+  AuthFailure? _failure;
+
+  // Owned here, cancelled in dispose(): counts the lock-out down once a second.
+  Timer? _lockTimer;
+  int _lockSeconds = 0;
+
+  bool get _locked => _failure?.reason == LoginFailureReason.locked && _lockSeconds > 0;
+
+  void _onFailure(AuthFailure failure) {
+    _lockTimer?.cancel();
+    if (failure.reason == LoginFailureReason.generic) {
+      setState(() => _failure = null);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(failure.message)));
+      return;
+    }
+    setState(() {
+      _failure = failure;
+      _lockSeconds = failure.reason == LoginFailureReason.locked ? (failure.retryAfterSeconds ?? 0) : 0;
+    });
+    if (_lockSeconds > 0) {
+      _lockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted) return timer.cancel();
+        setState(() => _lockSeconds -= 1);
+        if (_lockSeconds <= 0) {
+          timer.cancel();
+          setState(() => _failure = null);
+        }
+      });
+    }
+  }
+
+  /// Typing again clears "wrong phone or password" (the other states are the
+  /// account's, not the fields').
+  void _fieldEdited() {
+    if (_failure?.reason == LoginFailureReason.invalidCredentials) setState(() => _failure = null);
+  }
+
   @override
   void dispose() {
+    _lockTimer?.cancel();
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _submit() {
+    if (_locked) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     context.read<AuthBloc>().add(
           AuthLoginSubmitted(
@@ -73,15 +121,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
+    final s = SeenStrings.of(context);
+    final failure = _failure;
+    final badCredentials = failure?.reason == LoginFailureReason.invalidCredentials;
     return Scaffold(
       backgroundColor: c.card,
       body: BlocListener<AuthBloc, AuthState>(
         listenWhen: (previous, current) => current is AuthFailure && current.stage == AuthFailureStage.login,
-        listener: (context, state) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text((state as AuthFailure).message)));
-        },
+        listener: (context, state) => _onFailure(state as AuthFailure),
         child: SeenScreenBackground(
           child: SafeArea(
             child: SingleChildScrollView(
@@ -138,6 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 autofillHints: const [AutofillHints.username, AutofillHints.telephoneNumber],
                                 // Latin digits only, even from an Arabic keyboard.
                                 inputFormatters: const [LatinDigitsFormatter()],
+                                showError: badCredentials,
+                                onChanged: (_) => _fieldEdited(),
                                 // Country context for phone numbers. Fixed default: Figma has no picker.
                                 prefix: isEmail
                                     ? null
@@ -180,6 +229,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               semanticLabel: _obscurePassword ? l10n.showPasswordAction : l10n.hidePasswordAction,
                               onTap: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
+                            showError: badCredentials,
+                            errorText: badCredentials
+                                ? (failure?.attemptsLeft == null
+                                    ? l10n.loginInvalidCredentials
+                                    : '${l10n.loginInvalidCredentials} ${s.attemptsLeft(failure!.attemptsLeft!)}.')
+                                : null,
+                            onChanged: (_) => _fieldEdited(),
                             validator: (value) => FormValidators.required(value, message: l10n.validationRequired),
                           ),
                           const SizedBox(height: SeenSpace.s5),
@@ -190,8 +246,30 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: widget.onForgotPassword ?? _comingSoon,
                             ),
                           ),
+                          if (failure != null) ...[
+                            const SizedBox(height: SeenSpace.s4),
+                            switch (failure.reason) {
+                              LoginFailureReason.pendingApproval => SeenInlineBanner(
+                                  tone: SeenBannerTone.warn,
+                                  message: l10n.loginAccountPending,
+                                  actionLabel: l10n.loginBannerSupport,
+                                  onAction: () => showContactSupportSheet(context),
+                                ),
+                              LoginFailureReason.suspended => SeenInlineBanner(
+                                  tone: SeenBannerTone.error,
+                                  message: l10n.loginAccountSuspended,
+                                  actionLabel: l10n.loginBannerContact,
+                                  onAction: () => showContactSupportSheet(context),
+                                ),
+                              LoginFailureReason.locked => SeenInlineBanner(
+                                  tone: SeenBannerTone.error,
+                                  message: l10n.loginLocked(s.clockMs(_lockSeconds)),
+                                ),
+                              _ => const SizedBox.shrink(),
+                            },
+                          ],
                           // Figma: a 90 px spacer between two 20 px gaps.
-                          const SizedBox(height: 130),
+                          SizedBox(height: failure == null || badCredentials ? 130 : 60),
                           BlocBuilder<AuthBloc, AuthState>(
                             buildWhen: (previous, current) => previous is AuthLoading || current is AuthLoading,
                             builder: (context, state) {
@@ -201,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 size: SeenButtonSize.large,
                                 expand: true,
                                 loading: isLoading,
-                                onPressed: _submit,
+                                onPressed: _locked ? null : _submit,
                               );
                             },
                           ),
