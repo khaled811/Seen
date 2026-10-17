@@ -19,6 +19,10 @@ import '../../domain/entities/traveler_info.dart';
 import '../bloc/service_booking_bloc.dart';
 import '../bloc/service_booking_event.dart';
 import '../bloc/service_booking_state.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../domain/entities/booking_draft.dart';
+import '../utils/draft_summary.dart';
+import '../widgets/save_draft_sheet.dart';
 import '../widgets/seen_dynamic_field.dart';
 import '../widgets/seen_traveler_chips.dart';
 import '../widgets/seen_validity_hint.dart';
@@ -41,44 +45,118 @@ class TravelerEntryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     return BlocListener<ServiceBookingBloc, ServiceBookingState>(
-      listenWhen: (previous, current) => current is ServiceBookingInProgress && current.reviewReady,
+      listenWhen: (previous, current) =>
+          current is ServiceBookingInProgress && current.reviewReady,
       listener: (context, state) {
-        final bloc = context.read<ServiceBookingBloc>()..add(const ReviewReadyAcknowledged());
+        final bloc = context.read<ServiceBookingBloc>()
+          ..add(const ReviewReadyAcknowledged());
         // Same reason as ServiceSelectionScreen's push: forward the same
         // Bloc instance explicitly, since the pushed route isn't a
         // descendant of this screen's BlocProvider.
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => BlocProvider.value(value: bloc, child: const BookingReviewScreen()),
+            builder: (_) => BlocProvider.value(
+                value: bloc, child: const BookingReviewScreen()),
           ),
         );
       },
-      child: Scaffold(
-        backgroundColor: c.card,
-        body: SeenScreenBackground(
-          child: SafeArea(
-            bottom: false,
-            child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
-              builder: (context, state) {
-                if (state is! ServiceBookingInProgress) return const Center(child: SeenLoader());
-                final s = SeenStrings.of(context);
-                return Column(
-                  children: [
-                    SeenScreenHeader(title: state.service.name, subtitle: s.bookingStep(2, 3)),
-                    Expanded(child: _Body(state: state)),
-                  ],
-                );
-              },
-            ),
+      child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
+        buildWhen: (previous, current) =>
+            _isDirty(previous) != _isDirty(current),
+        // Leaving with data entered asks whether to keep it as a draft (REQ-04).
+        builder: (context, state) => PopScope(
+          canPop: !_isDirty(state),
+          onPopInvoked: (didPop) {
+            if (!didPop) _askToSaveDraft(context);
+          },
+          child: _scaffold(context, c),
+        ),
+      ),
+    );
+  }
+
+  static bool _isDirty(ServiceBookingState state) =>
+      state is ServiceBookingInProgress && hasAnyTravelerData(state.travelers);
+
+  Future<void> _askToSaveDraft(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final bloc = context.read<ServiceBookingBloc>();
+    final state = bloc.state;
+    if (state is! ServiceBookingInProgress) return;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final container = InjectionContainer.instance;
+    final existing =
+        (await container.getBookingDraftsUseCase()).getOrElse((_) => const []);
+    if (!context.mounted) return;
+    final choice = await showSaveDraftSheet(
+      context,
+      travelers: travelerCompleteness(state.travelers, state.travelerFields),
+      existingDrafts: existing.length,
+      isUpdate:
+          state.draftId != null && existing.any((d) => d.id == state.draftId),
+    );
+    switch (choice) {
+      case null:
+        return; // dismissed: stay on the form
+      case LeaveFormChoice.discard:
+        navigator.pop();
+      case LeaveFormChoice.save:
+        final id =
+            state.draftId ?? 'draft-${DateTime.now().microsecondsSinceEpoch}';
+        final saved = await container.saveBookingDraftUseCase(BookingDraft(
+          id: id,
+          serviceId: state.service.id,
+          serviceName: state.service.name,
+          category: state.service.category,
+          travelers: state.travelers,
+          updatedAt: DateTime.now(),
+        ));
+        final ok = saved.fold((_) => false, (r) => r == SaveDraftResult.saved);
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+              content: Text(ok ? l10n.draftSaved : l10n.recoveryServerError)));
+        if (ok) {
+          bloc.add(BookingDraftSaved(id));
+          navigator.pop();
+        }
+    }
+  }
+
+  Widget _scaffold(BuildContext context, SeenColors c) {
+    return Scaffold(
+      backgroundColor: c.card,
+      body: SeenScreenBackground(
+        child: SafeArea(
+          bottom: false,
+          child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
+            builder: (context, state) {
+              if (state is! ServiceBookingInProgress) {
+                return const Center(child: SeenLoader());
+              }
+              final s = SeenStrings.of(context);
+              return Column(
+                children: [
+                  SeenScreenHeader(
+                      title: state.service.name, subtitle: s.bookingStep(2, 3)),
+                  Expanded(child: _Body(state: state)),
+                ],
+              );
+            },
           ),
         ),
-        bottomNavigationBar: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
-          buildWhen: (previous, current) => (previous is ServiceBookingInProgress) != (current is ServiceBookingInProgress),
-          builder: (context, state) {
-            if (state is! ServiceBookingInProgress) return const SizedBox.shrink();
-            return const _ActionsBar();
-          },
-        ),
+      ),
+      bottomNavigationBar: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
+        buildWhen: (previous, current) =>
+            (previous is ServiceBookingInProgress) !=
+            (current is ServiceBookingInProgress),
+        builder: (context, state) {
+          if (state is! ServiceBookingInProgress) {
+            return const SizedBox.shrink();
+          }
+          return const _ActionsBar();
+        },
       ),
     );
   }
@@ -94,10 +172,15 @@ class _Body extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final traveler = state.activeTraveler;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(_gutter, SeenSpace.s1, _gutter, SeenSpace.s6),
+      padding: const EdgeInsets.fromLTRB(
+          _gutter, SeenSpace.s1, _gutter, SeenSpace.s6),
       children: [
         SeenFormStepper(
-          labels: [l10n.bookingStepService, l10n.bookingStepTravelers, l10n.bookingStepReview],
+          labels: [
+            l10n.bookingStepService,
+            l10n.bookingStepTravelers,
+            l10n.bookingStepReview
+          ],
           current: 1,
         ),
         const SizedBox(height: SeenSpace.s4),
@@ -134,12 +217,16 @@ class _TravelerTabs extends StatelessWidget {
           SeenTravelerChipData(
             state: (state.travelerErrors[traveler.id]?.isNotEmpty ?? false)
                 ? SeenTravelerState.error
-                : (traveler.fieldValues.isNotEmpty ? SeenTravelerState.done : SeenTravelerState.empty),
+                : (traveler.fieldValues.isNotEmpty
+                    ? SeenTravelerState.done
+                    : SeenTravelerState.empty),
           ),
       ],
       activeIndex: state.activeTravelerIndex,
-      onSelected: (i) => context.read<ServiceBookingBloc>().add(ActiveTravelerChanged(i)),
-      onAdd: () => context.read<ServiceBookingBloc>().add(const TravelerAdded()),
+      onSelected: (i) =>
+          context.read<ServiceBookingBloc>().add(ActiveTravelerChanged(i)),
+      onAdd: () =>
+          context.read<ServiceBookingBloc>().add(const TravelerAdded()),
     );
   }
 }
@@ -157,7 +244,8 @@ class _TravelerCard extends StatelessWidget {
     'birthDate': 'passportIssueDate',
   };
 
-  Widget _field(BuildContext context, DynamicFormField field, TravelerInfo traveler, Map<String, String> errors) =>
+  Widget _field(BuildContext context, DynamicFormField field,
+          TravelerInfo traveler, Map<String, String> errors) =>
       SeenDynamicField(
         key: ValueKey('${traveler.id}-${field.key}'),
         field: field,
@@ -188,7 +276,9 @@ class _TravelerCard extends StatelessWidget {
     final out = <Widget>[];
     for (final field in state.travelerFields) {
       if (secondOfPair.contains(field.key)) continue;
-      final partner = secondOfPair.contains(_pairs[field.key]) ? byKey[_pairs[field.key]] : null;
+      final partner = secondOfPair.contains(_pairs[field.key])
+          ? byKey[_pairs[field.key]]
+          : null;
       if (partner == null) {
         out.add(_field(context, field, traveler, errors));
       } else {
@@ -201,8 +291,11 @@ class _TravelerCard extends StatelessWidget {
           ],
         ));
       }
-      if ((field.key == _passportExpiryFieldKey || partner?.key == _passportExpiryFieldKey) && expiry is DateTime) {
-        out.add(SeenValidityHint.fromDates(expiry: expiry, travelDate: DateTime.now()));
+      if ((field.key == _passportExpiryFieldKey ||
+              partner?.key == _passportExpiryFieldKey) &&
+          expiry is DateTime) {
+        out.add(SeenValidityHint.fromDates(
+            expiry: expiry, travelDate: DateTime.now()));
       }
       out.add(const SizedBox(height: 14));
     }
@@ -210,7 +303,8 @@ class _TravelerCard extends StatelessWidget {
   }
 
   /// Every required field has a value (a UX hint; the validator decides).
-  bool _isComplete(Map<String, Object?> values) => state.travelerFields.where((f) => f.required).every((f) {
+  bool _isComplete(Map<String, Object?> values) =>
+      state.travelerFields.where((f) => f.required).every((f) {
         final v = values[f.key];
         return v != null && !(v is String && v.trim().isEmpty);
       });
@@ -222,7 +316,8 @@ class _TravelerCard extends StatelessWidget {
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
     final traveler = state.activeTraveler;
-    final errors = state.travelerErrors[traveler.id] ?? const <String, String>{};
+    final errors =
+        state.travelerErrors[traveler.id] ?? const <String, String>{};
     final expiry = traveler.fieldValues[_passportExpiryFieldKey];
 
     final (chipStatus, chipLabel) = errors.isNotEmpty
@@ -239,14 +334,18 @@ class _TravelerCard extends StatelessWidget {
         boxShadow: SeenShadows.card,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: 18),
+        padding:
+            const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 Expanded(
-                  child: Text(s.travelerOf(state.activeTravelerIndex + 1, state.travelers.length), style: type.title),
+                  child: Text(
+                      s.travelerOf(state.activeTravelerIndex + 1,
+                          state.travelers.length),
+                      style: type.title),
                 ),
                 SeenStatusChip(status: chipStatus, label: chipLabel),
               ],
@@ -260,7 +359,8 @@ class _TravelerCard extends StatelessWidget {
               caption: l10n.attachmentComingSoon,
               onTap: () => ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(l10n.attachmentComingSoon))),
+                ..showSnackBar(
+                    SnackBar(content: Text(l10n.attachmentComingSoon))),
             ),
             if (state.travelers.length > 1) ...[
               const SizedBox(height: 14),
@@ -268,8 +368,9 @@ class _TravelerCard extends StatelessWidget {
                 label: l10n.removeTravelerAction,
                 size: SeenButtonSize.small,
                 expand: true,
-                onPressed: () =>
-                    context.read<ServiceBookingBloc>().add(TravelerRemoved(state.activeTravelerIndex)),
+                onPressed: () => context
+                    .read<ServiceBookingBloc>()
+                    .add(TravelerRemoved(state.activeTravelerIndex)),
               ),
             ],
           ],
@@ -290,7 +391,9 @@ class _ActionsBar extends StatelessWidget {
         SeenButton(
           label: l10n.bookingNextAction,
           expand: true,
-          onPressed: () => context.read<ServiceBookingBloc>().add(const TravelerContinuePressed()),
+          onPressed: () => context
+              .read<ServiceBookingBloc>()
+              .add(const TravelerContinuePressed()),
         ),
         SeenButton.secondary(
           label: l10n.bookingBackAction,

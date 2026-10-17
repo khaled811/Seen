@@ -18,6 +18,7 @@ import '../../../../core/theme/seen_typography.dart';
 import '../../../dynamic_forms/domain/validators/dynamic_field_validator.dart';
 import '../../../dynamic_forms/domain/validators/form_validation_messages.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
+import '../../domain/entities/booking_draft.dart';
 import '../../domain/entities/service_definition.dart';
 import '../bloc/service_booking_bloc.dart';
 import '../bloc/service_booking_event.dart';
@@ -32,9 +33,14 @@ const _gutter = 20.0;
 /// [ServiceDefinition] the backend returns as Figma service tiles, with a live
 /// search, group chips and a support card.
 class ServiceSelectionScreen extends StatelessWidget {
-  const ServiceSelectionScreen({super.key});
+  const ServiceSelectionScreen({super.key, this.resumeDraft});
 
-  static DynamicFieldValidator buildValidator(AppLocalizations l10n) => DynamicFieldValidator(
+  /// Opens the traveler form straight away with this saved draft (Figma
+  /// REQ-01 "Continue"); backing out of it returns to the drafts list.
+  final BookingDraft? resumeDraft;
+
+  static DynamicFieldValidator buildValidator(AppLocalizations l10n) =>
+      DynamicFieldValidator(
         FormValidationMessages(
           required: l10n.validationRequired,
           invalidEmail: l10n.validationInvalidEmail,
@@ -59,57 +65,99 @@ class ServiceSelectionScreen extends StatelessWidget {
       create: (_) => InjectionContainer.instance.createServiceBookingBloc(
         validator: buildValidator(l10n),
       )..add(const ServiceCatalogRequested()),
-      child: BlocListener<ServiceBookingBloc, ServiceBookingState>(
-        // Only the transition INTO an in-progress booking should push the
-        // next screen — this widget stays mounted underneath
-        // TravelerEntryScreen, so without the `previous is!` guard every
-        // subsequent in-progress emission (each keystroke) would push a
-        // duplicate route.
-        listenWhen: (previous, current) =>
-            previous is! ServiceBookingInProgress && current is ServiceBookingInProgress,
-        listener: (context, state) {
-          // A route pushed via Navigator is NOT a descendant of this
-          // screen's widget tree (it attaches to the Navigator's Overlay),
-          // so the BlocProvider above can't be found by `context.read`
-          // there without explicitly forwarding the same instance.
-          final bloc = context.read<ServiceBookingBloc>();
-          Navigator.of(context)
-              .push(
-            MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: bloc,
-                child: const TravelerEntryScreen(),
-              ),
+      child: MultiBlocListener(
+        listeners: [
+          if (resumeDraft != null)
+            BlocListener<ServiceBookingBloc, ServiceBookingState>(
+              listenWhen: (previous, current) =>
+                  previous is! ServiceCatalogLoaded &&
+                  current is ServiceCatalogLoaded,
+              listener: (context, state) {
+                final services = (state as ServiceCatalogLoaded).services;
+                final match = services.where(
+                    (s) => s.id == resumeDraft!.serviceId && s.isBookable);
+                if (match.isEmpty) {
+                  // The service was withdrawn since the draft was saved.
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                        SnackBar(content: Text(l10n.draftServiceGone)));
+                  Navigator.of(context).pop();
+                  return;
+                }
+                context.read<ServiceBookingBloc>().add(BookingDraftResumed(
+                      service: match.first,
+                      travelerFields: ServiceTravelerFields.forCategory(
+                          match.first.category, l10n),
+                      draft: resumeDraft!,
+                    ));
+              },
             ),
-          )
-              .then((_) {
-            // Backing out of the booking leaves the bloc in its in-progress
-            // state, which would keep this screen on a spinner (and block
-            // selecting again): bring the catalog back.
-            if (context.mounted) bloc.add(const ServiceCatalogRequested());
-          });
-        },
-        child: Scaffold(
-          backgroundColor: c.card,
-          body: SeenScreenBackground(
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  SeenScreenHeader(title: l10n.servicesNewTitle, subtitle: l10n.servicesNewSubtitle),
-                  Expanded(
-                    child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
-                      builder: (context, state) => switch (state) {
-                        ServiceBookingInitial() ||
-                        ServiceCatalogLoading() ||
-                        ServiceBookingInProgress() =>
-                          const Center(child: SeenLoader()),
-                        ServiceCatalogFailure(:final message) => _ErrorView(message: message),
-                        ServiceCatalogLoaded(:final services) => ServiceCatalogView(services: services),
-                      },
+        ],
+        child: BlocListener<ServiceBookingBloc, ServiceBookingState>(
+          // Only the transition INTO an in-progress booking should push the
+          // next screen — this widget stays mounted underneath
+          // TravelerEntryScreen, so without the `previous is!` guard every
+          // subsequent in-progress emission (each keystroke) would push a
+          // duplicate route.
+          listenWhen: (previous, current) =>
+              previous is! ServiceBookingInProgress &&
+              current is ServiceBookingInProgress,
+          listener: (context, state) {
+            // A route pushed via Navigator is NOT a descendant of this
+            // screen's widget tree (it attaches to the Navigator's Overlay),
+            // so the BlocProvider above can't be found by `context.read`
+            // there without explicitly forwarding the same instance.
+            final bloc = context.read<ServiceBookingBloc>();
+            Navigator.of(context)
+                .push(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: bloc,
+                  child: const TravelerEntryScreen(),
+                ),
+              ),
+            )
+                .then((_) {
+              // Backing out of the booking leaves the bloc in its in-progress
+              // state, which would keep this screen on a spinner (and block
+              // selecting again): bring the catalog back.
+              if (!context.mounted) return;
+              // Resumed from the drafts list: go back to it, not to the catalog.
+              if (resumeDraft != null) {
+                Navigator.of(context).pop();
+              } else {
+                bloc.add(const ServiceCatalogRequested());
+              }
+            });
+          },
+          child: Scaffold(
+            backgroundColor: c.card,
+            body: SeenScreenBackground(
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    SeenScreenHeader(
+                        title: l10n.servicesNewTitle,
+                        subtitle: l10n.servicesNewSubtitle),
+                    Expanded(
+                      child:
+                          BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
+                        builder: (context, state) => switch (state) {
+                          ServiceBookingInitial() ||
+                          ServiceCatalogLoading() ||
+                          ServiceBookingInProgress() =>
+                            const Center(child: SeenLoader()),
+                          ServiceCatalogFailure(:final message) =>
+                            _ErrorView(message: message),
+                          ServiceCatalogLoaded(:final services) =>
+                            ServiceCatalogView(services: services),
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -135,7 +183,9 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: SeenSpace.s3),
           SeenButton(
             label: l10n.retry,
-            onPressed: () => context.read<ServiceBookingBloc>().add(const ServiceCatalogRequested()),
+            onPressed: () => context
+                .read<ServiceBookingBloc>()
+                .add(const ServiceCatalogRequested()),
           ),
         ],
       ),
@@ -176,7 +226,10 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
     final query = _query.trim().toLowerCase();
     final visible = [
       for (final s in widget.services)
-        if (query.isEmpty || s.name.toLowerCase().contains(query) || s.description.toLowerCase().contains(query)) s,
+        if (query.isEmpty ||
+            s.name.toLowerCase().contains(query) ||
+            s.description.toLowerCase().contains(query))
+          s,
     ];
 
     return ListView(
@@ -212,11 +265,16 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
           for (final g in ServiceGroup.values)
             if (visible.any((s) => s.category.group == g)) ...[
               Text(
-                g == ServiceGroup.visas ? l10n.servicesSectionVisas : l10n.servicesSectionApprovalsTravel,
+                g == ServiceGroup.visas
+                    ? l10n.servicesSectionVisas
+                    : l10n.servicesSectionApprovalsTravel,
                 style: type.h2.copyWith(color: c.ink),
               ),
               gap,
-              _ServiceGrid(services: [for (final s in visible) if (s.category.group == g) s]),
+              _ServiceGrid(services: [
+                for (final s in visible)
+                  if (s.category.group == g) s
+              ]),
               gap,
             ],
         ],
@@ -224,8 +282,8 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
           title: l10n.servicesHelpTitle,
           subtitle: l10n.servicesHelpSubtitle,
           actionLabel: l10n.servicesHelpAction,
-          onAction: () =>
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
+          onAction: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
         ),
       ],
     );
@@ -251,7 +309,9 @@ class _ServiceGrid extends StatelessWidget {
             for (var j = i; j < i + columns; j++) ...[
               if (j > i) const SizedBox(width: 8),
               Expanded(
-                child: j < services.length ? _ServiceTile(service: services[j]) : const SizedBox.shrink(),
+                child: j < services.length
+                    ? _ServiceTile(service: services[j])
+                    : const SizedBox.shrink(),
               ),
             ],
           ],
@@ -282,7 +342,8 @@ class _ServiceTile extends StatelessWidget {
           ? () => context.read<ServiceBookingBloc>().add(
                 ServiceSelected(
                   service: service,
-                  travelerFields: ServiceTravelerFields.forCategory(service.category, l10n),
+                  travelerFields:
+                      ServiceTravelerFields.forCategory(service.category, l10n),
                 ),
               )
           : null,

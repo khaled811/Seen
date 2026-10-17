@@ -20,6 +20,7 @@ import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../services/presentation/screens/service_selection_screen.dart';
+import '../../../services/presentation/screens/drafts_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../domain/entities/request_summary.dart';
 import '../bloc/requests_bloc.dart';
@@ -90,6 +91,8 @@ class _Header extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(l10n.requestsDashboardTitle, style: type.h1)),
+          const _DraftsButton(),
+          const SizedBox(width: SeenSpace.s2),
           // Product decision: reference / traveler search stays available
           // (the Figma header has only the plus button).
           if (onSearch != null) ...[
@@ -533,6 +536,80 @@ class _RequestCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Opens the drafts list (Figma REQ-01) with the number saved as a badge; hidden
+/// when there are none. Counts through the use case (the list screen owns its
+/// own bloc) and recounts when the user comes back.
+class _DraftsButton extends StatefulWidget {
+  const _DraftsButton();
+
+  @override
+  State<_DraftsButton> createState() => _DraftsButtonState();
+}
+
+class _DraftsButtonState extends State<_DraftsButton> {
+  int _count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final result = await InjectionContainer.instance.getBookingDraftsUseCase();
+    if (!mounted) return;
+    setState(() => _count = result.fold((_) => 0, (list) => list.length));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_count == 0) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final s = SeenStrings.of(context);
+    final c = SeenColors.of(context);
+    return Semantics(
+      button: true,
+      label: '${l10n.draftsOpenAction} ${s.draftCount(_count)}',
+      excludeSemantics: true,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          DecoratedBox(
+            decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: SeenShadows.card),
+            child: Material(
+              color: c.card,
+              shape: CircleBorder(side: BorderSide(color: c.border)),
+              child: InkWell(
+                onTap: () async {
+                  await Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) => const DraftsScreen()));
+                  if (mounted) _refresh();
+                },
+                customBorder: const CircleBorder(),
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(child: Icon(Icons.edit_note_rounded, size: 24, color: c.primary)),
+                ),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            top: -2,
+            end: -2,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(color: SeenBrand.violet, borderRadius: BorderRadius.all(SeenRadius.full)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                child: Text(s.numeral(_count), style: SeenType.of(context).caption.copyWith(color: Colors.white)),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

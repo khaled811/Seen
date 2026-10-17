@@ -2843,5 +2843,167 @@
         "type": "String"
       }
     }
+  },
+  "draftsTitle": "Drafts",
+  "@draftsTitle": {
+    "description": "Drafts copy."
+  },
+  "draftsInfo": "Drafts are deleted automatically 30 days after the last edit.",
+  "@draftsInfo": {
+    "description": "Drafts copy."
+  },
+  "draftsEmptyTitle": "No drafts",
+  "@draftsEmptyTitle": {
+    "description": "Drafts copy."
+  },
+  "draftsEmptyBody": "Start a request and save it as a draft to finish it later.",
+  "@draftsEmptyBody": {
+    "description": "Drafts copy."
+  },
+  "draftsOpenAction": "Drafts",
+  "@draftsOpenAction": {
+    "description": "Drafts copy."
+  },
+  "draftChip": "Draft",
+  "@draftChip": {
+    "description": "Drafts copy."
+  },
+  "draftContinue": "Continue",
+  "@draftContinue": {
+    "description": "Drafts copy."
+  },
+  "draftDelete": "Delete",
+  "@draftDelete": {
+    "description": "Drafts copy."
+  },
+  "draftMissing": "Missing: {what}",
+  "@draftMissing": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "draftMissingTraveler": "traveler {i} details",
+  "@draftMissingTraveler": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "i": {
+        "type": "String"
+      }
+    }
+  },
+  "draftMissingTravelers": "details of {n} travelers",
+  "@draftMissingTravelers": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "draftDeleteTitle": "Delete this draft?",
+  "@draftDeleteTitle": {
+    "description": "Drafts copy."
+  },
+  "draftDeleteBody": "The data of {service} for {travelers} will be deleted.",
+  "@draftDeleteBody": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      },
+      "travelers": {
+        "type": "String"
+      }
+    }
+  },
+  "draftDeleteLast": "This is your last draft.",
+  "@draftDeleteLast": {
+    "description": "Drafts copy."
+  },
+  "draftDeletedToast": "Draft deleted",
+  "@draftDeletedToast": {
+    "description": "Drafts copy."
+  },
+  "draftUndo": "Undo",
+  "@draftUndo": {
+    "description": "Drafts copy."
+  },
+  "draftSaveTitle": "Save the request as a draft?",
+  "@draftSaveTitle": {
+    "description": "Drafts copy."
+  },
+  "draftSaveSubtitle": "You entered {done} of {total} travelers",
+  "@draftSaveSubtitle": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "draftSaveSubtitleOne": "You entered the traveler details",
+  "@draftSaveSubtitleOne": {
+    "description": "Drafts copy."
+  },
+  "draftSaveRowComplete": "Traveler {i} · complete",
+  "@draftSaveRowComplete": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "i": {
+        "type": "String"
+      }
+    }
+  },
+  "draftSaveRowMissing": "Traveler {i} · incomplete",
+  "@draftSaveRowMissing": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "i": {
+        "type": "String"
+      }
+    }
+  },
+  "draftSaveCount": "You have {n} of {max} drafts. Delete an old one to save more.",
+  "@draftSaveCount": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "draftSaveFull": "You reached the limit ({max} drafts). Delete one to save this request.",
+  "@draftSaveFull": {
+    "description": "Drafts copy.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "draftSaveAction": "Save as draft",
+  "@draftSaveAction": {
+    "description": "Drafts copy."
+  },
+  "draftDiscardAction": "Discard and leave",
+  "@draftDiscardAction": {
+    "description": "Drafts copy."
+  },
+  "draftSaved": "Draft saved.",
+  "@draftSaved": {
+    "description": "Drafts copy."
+  },
+  "draftServiceGone": "This service is no longer available.",
+  "@draftServiceGone": {
+    "description": "Drafts copy."
   }
 }

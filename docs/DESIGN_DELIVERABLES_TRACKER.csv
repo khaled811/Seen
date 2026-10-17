@@ -15,10 +15,10 @@ AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call 
 AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Pending Design
 AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Pending Design
 AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Pending Design
-REQ-01,REQ,Screen,P1,المسودات,Drafts list,Requests (06) filter/section,Empty; many drafts; draft older than N days; offline,Pending Design
-REQ-02,REQ,Component,P1,"بطاقة مسودة وشارة ""مسودة""",Draft card and chip,"Drafts list, Requests (06)",Missing data in draft; resume vs delete,Pending Design
-REQ-03,REQ,Dialog,P1,حذف مسودة,Delete draft confirmation,Draft card,Undo; last draft,Pending Design
-REQ-04,REQ,Flow,P1,حفظ كمسودة,Save as draft,Booking form (09) / Review (10),Leave-form prompt; partial traveler data; draft limit,Pending Design
+REQ-01,REQ,Screen,P1,المسودات,Drafts list,Requests (06) filter/section,Empty; many drafts; draft older than N days; offline,Designed - Implemented (Flutter)
+REQ-02,REQ,Component,P1,"بطاقة مسودة وشارة ""مسودة""",Draft card and chip,"Drafts list, Requests (06)",Missing data in draft; resume vs delete,Designed - Implemented (Flutter)
+REQ-03,REQ,Dialog,P1,حذف مسودة,Delete draft confirmation,Draft card,Undo; last draft,Designed - Implemented (Flutter)
+REQ-04,REQ,Flow,P1,حفظ كمسودة,Save as draft,Booking form (09) / Review (10),Leave-form prompt; partial traveler data; draft limit,Designed - Implemented (Flutter)
 REQ-05,REQ,Flow,P0,رفع المستند الناقص,Upload the missing document,Request card / 72h banner / Tracking (07) when awaiting document,Which document and why; capture/pick/preview; progress; failure/retry; deadline passed,Designed - Implemented (Flutter)
 REQ-06,REQ,State,P1,حالة: بانتظار موافقة الوكيل,Status: pending agent approval,"Requests (06), Tracking (07)","Chip, card, stage text, who approves",Pending Design
 REQ-07,REQ,State,P1,حالة: بانتظار موافقة الإدارة,Status: pending management approval,"Requests (06), Tracking (07)","Chip, card, stage text, expected time",Pending Design

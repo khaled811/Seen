@@ -694,3 +694,37 @@ Needed from the backend:
 - **Fund response:** the success message reads the agent's balance from the updated list
   returned by the mutation; confirm the mutation returns the new balance atomically.
 - **"Search / segment empty" copy** is local; nothing needed.
+
+## 19. Booking drafts (Figma REQ-01 … 04)
+
+Drafts are **local to the device**: leaving the traveler form with data entered
+asks to save it; the Requests screen header shows a drafts button with a count;
+the list resumes (Continue), deletes with confirmation and an Undo toast. Rules:
+at most 10 drafts, deleted automatically 30 days after the last edit, sending a
+resumed booking deletes its draft.
+
+Storage: encrypted platform storage (Keystore / Keychain), one document per agent
+(`booking_drafts_v1:<userId>`), because drafts hold passport data. Nothing is sent
+to the backend.
+
+Why this is a decision for backend / product, not just a client detail:
+- **Not synced.** Drafts do not follow the agent to another device or survive an app
+  reinstall / "clear data", and a sub-agent's drafts are invisible to the master. If
+  they should, the backend needs `saveBookingDraft` / `bookingDrafts` /
+  `deleteBookingDraft` (same 10 / 30-day rules, enforced server-side). The client
+  already isolates storage behind `BookingDraftRepository`, so switching is one data
+  source.
+- **Session-expired drafts (AUTH-13).** The expiry dialog says nothing about saving
+  (section 12): the booking form is not auto-saved when the session ends. With
+  server drafts this could be done; locally it would need a save before the logout.
+- **PII at rest.** Passport numbers are stored encrypted on the device; confirm this
+  is acceptable for the product's data policy, and whether drafts must be wiped on
+  sign-out (today they stay for that user id).
+- **Uploaded documents are not part of a draft:** the booking form has no document
+  upload yet (section 4), so the "uploaded documents (2)" row of Figma REQ-04 is not
+  shown. When uploads exist, a draft must reference them (and they need retention).
+- **Service withdrawn since saving:** the app says so and does not open the form.
+- **Entry from Requests (06):** Figma lists drafts as "filter / section" there; the
+  app adds a header button with a badge (the requests list itself is the server's
+  list). Drafts are not mixed into it.
+- Not built: the "Draft · 3" count chip variant of REQ-02 (no place uses it yet).

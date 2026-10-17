@@ -5,6 +5,7 @@ import '../../../dynamic_forms/domain/validators/dynamic_field_validator.dart';
 import '../../../wallet/domain/usecases/get_wallet_balance_usecase.dart';
 import '../../domain/entities/service_booking_request.dart';
 import '../../domain/entities/traveler_info.dart';
+import '../../domain/usecases/booking_draft_usecases.dart';
 import '../../domain/usecases/get_available_services_usecase.dart';
 import '../../domain/usecases/submit_booking_usecase.dart';
 import 'service_booking_event.dart';
@@ -16,13 +17,17 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
     required SubmitBookingUseCase submitBookingUseCase,
     required GetWalletBalanceUseCase getWalletBalanceUseCase,
     required DynamicFieldValidator validator,
-  })  : _getAvailableServicesUseCase = getAvailableServicesUseCase,
+    DeleteBookingDraftUseCase? deleteDraftUseCase,
+  })  : _deleteDraft = deleteDraftUseCase,
+        _getAvailableServicesUseCase = getAvailableServicesUseCase,
         _submitBookingUseCase = submitBookingUseCase,
         _getWalletBalanceUseCase = getWalletBalanceUseCase,
         _validator = validator,
         super(const ServiceBookingInitial()) {
     on<ServiceCatalogRequested>(_onCatalogRequested, transformer: droppable());
     on<ServiceSelected>(_onServiceSelected);
+    on<BookingDraftResumed>(_onDraftResumed);
+    on<BookingDraftSaved>(_onDraftSaved);
     on<TravelerFieldChanged>(_onTravelerFieldChanged);
     on<TravelerAdded>(_onTravelerAdded);
     on<TravelerRemoved>(_onTravelerRemoved);
@@ -37,6 +42,7 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
   final SubmitBookingUseCase _submitBookingUseCase;
   final GetWalletBalanceUseCase _getWalletBalanceUseCase;
   final DynamicFieldValidator _validator;
+  final DeleteBookingDraftUseCase? _deleteDraft;
 
   int _nextTravelerSeq = 0;
   String _newTravelerId() => 'traveler-${_nextTravelerSeq++}';
@@ -78,6 +84,37 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
         (balance) => current.copyWith(walletBalance: balance, walletBalanceLoading: false),
       ),
     );
+  }
+
+  Future<void> _onDraftResumed(BookingDraftResumed event, Emitter<ServiceBookingState> emit) async {
+    final travelers = [
+      for (final t in event.draft.travelers) TravelerInfo(id: _newTravelerId(), fieldValues: Map.of(t.fieldValues)),
+    ];
+    emit(
+      ServiceBookingInProgress(
+        service: event.service,
+        travelerFields: event.travelerFields,
+        travelers: travelers.isEmpty ? [TravelerInfo(id: _newTravelerId(), fieldValues: const {})] : travelers,
+        activeTravelerIndex: 0,
+        walletBalanceLoading: true,
+        draftId: event.draft.id,
+      ),
+    );
+    final balanceResult = await _getWalletBalanceUseCase();
+    final current = state;
+    if (current is! ServiceBookingInProgress) return;
+    emit(
+      balanceResult.match(
+        (failure) => current.copyWith(walletBalanceLoading: false),
+        (balance) => current.copyWith(walletBalance: balance, walletBalanceLoading: false),
+      ),
+    );
+  }
+
+  void _onDraftSaved(BookingDraftSaved event, Emitter<ServiceBookingState> emit) {
+    final current = state;
+    if (current is! ServiceBookingInProgress) return;
+    emit(current.copyWith(draftId: event.draftId));
   }
 
   void _onTravelerFieldChanged(
@@ -203,6 +240,8 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
       travelers: current.travelers,
     );
     final result = await _submitBookingUseCase(request);
+    // Sent: the draft it came from is no longer needed.
+    if (result.isRight() && current.draftId != null) await _deleteDraft?.call(current.draftId!);
     final latest = state;
     if (latest is! ServiceBookingInProgress) return;
     emit(

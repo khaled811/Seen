@@ -59,6 +59,7 @@ final class ServiceBookingInProgress extends ServiceBookingState {
     this.submissionStatus = BookingSubmissionStatus.idle,
     this.submissionError,
     this.submissionResult,
+    this.draftId,
   });
 
   final ServiceDefinition service;
@@ -79,6 +80,10 @@ final class ServiceBookingInProgress extends ServiceBookingState {
   final BookingSubmissionStatus submissionStatus;
   final String? submissionError;
   final ServiceBookingResult? submissionResult;
+
+  /// The saved draft this booking was resumed from (or last saved as), so a
+  /// later save overwrites it and a successful submit removes it.
+  final String? draftId;
 
   int get totalPriceCents => ServicePricing.totalPriceCents(
         perPersonPriceCents: service.perPersonPriceCents,
@@ -103,6 +108,7 @@ final class ServiceBookingInProgress extends ServiceBookingState {
     String? submissionError,
     bool clearSubmissionError = false,
     ServiceBookingResult? submissionResult,
+    String? draftId,
   }) =>
       ServiceBookingInProgress(
         service: service,
@@ -116,6 +122,7 @@ final class ServiceBookingInProgress extends ServiceBookingState {
         submissionStatus: submissionStatus ?? this.submissionStatus,
         submissionError: clearSubmissionError ? null : (submissionError ?? this.submissionError),
         submissionResult: submissionResult ?? this.submissionResult,
+        draftId: draftId ?? this.draftId,
       );
 
   @override
@@ -131,5 +138,6 @@ final class ServiceBookingInProgress extends ServiceBookingState {
         submissionStatus,
         submissionError,
         submissionResult,
+        draftId,
       ];
 }

@@ -30,6 +30,11 @@ import '../../features/agents/presentation/bloc/sub_agent_management_bloc.dart';
 import '../network/connectivity_monitor.dart';
 import '../network/data_freshness.dart';
 import '../presentation/connectivity/connectivity_cubit.dart';
+import '../../features/services/data/datasources/booking_draft_local_data_source.dart';
+import '../../features/services/data/repositories/booking_draft_repository_impl.dart';
+import '../../features/services/domain/repositories/booking_draft_repository.dart';
+import '../../features/services/domain/usecases/booking_draft_usecases.dart';
+import '../../features/services/presentation/bloc/drafts_bloc.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
 import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
@@ -147,6 +152,10 @@ class InjectionContainer {
   late final ServicesRepository servicesRepository;
   late final GetAvailableServicesUseCase getAvailableServicesUseCase;
   late final SubmitBookingUseCase submitBookingUseCase;
+  late final BookingDraftRepository bookingDraftRepository;
+  late final GetBookingDraftsUseCase getBookingDraftsUseCase;
+  late final SaveBookingDraftUseCase saveBookingDraftUseCase;
+  late final DeleteBookingDraftUseCase deleteBookingDraftUseCase;
 
   late final RequestsRemoteDataSource requestsRemoteDataSource;
   late final RequestsRepository requestsRepository;
@@ -254,6 +263,16 @@ class InjectionContainer {
     servicesRepository = ServicesRepositoryImpl(remote: servicesRemoteDataSource);
     getAvailableServicesUseCase = GetAvailableServicesUseCase(servicesRepository);
     submitBookingUseCase = SubmitBookingUseCase(servicesRepository);
+    // Drafts live on the device, in encrypted storage, one document per agent.
+    bookingDraftRepository = BookingDraftRepositoryImpl(
+      local: SecureBookingDraftLocalDataSource(
+        storage: secureStorage,
+        userId: () async => (await authRepository.getPersistedSession())?.userId,
+      ),
+    );
+    getBookingDraftsUseCase = GetBookingDraftsUseCase(bookingDraftRepository);
+    saveBookingDraftUseCase = SaveBookingDraftUseCase(bookingDraftRepository);
+    deleteBookingDraftUseCase = DeleteBookingDraftUseCase(bookingDraftRepository);
 
     // Same reasoning as the wallet/services fallbacks above: inert in
     // release builds.
@@ -360,7 +379,11 @@ class InjectionContainer {
         submitBookingUseCase: submitBookingUseCase,
         getWalletBalanceUseCase: getWalletBalanceUseCase,
         validator: validator,
+        deleteDraftUseCase: deleteBookingDraftUseCase,
       );
+
+  /// Builds a fresh [DraftsBloc]; the drafts list screen owns it.
+  DraftsBloc createDraftsBloc() => DraftsBloc(getDrafts: getBookingDraftsUseCase, deleteDraft: deleteBookingDraftUseCase, saveDraft: saveBookingDraftUseCase);
 
   /// The PDF engine for the document viewer. No PDF plugin is installed yet, so
   /// this is null and PDFs fall back to the download / share card; wire an

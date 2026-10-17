@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
+import '../../domain/entities/booking_draft.dart';
 import '../../domain/entities/service_definition.dart';
 
 sealed class ServiceBookingEvent extends Equatable {
@@ -26,6 +27,28 @@ final class ServiceSelected extends ServiceBookingEvent {
 
   @override
   List<Object?> get props => [service, travelerFields];
+}
+
+/// Opens the traveler form with the data of a saved draft (Figma REQ-01).
+final class BookingDraftResumed extends ServiceBookingEvent {
+  const BookingDraftResumed({required this.service, required this.travelerFields, required this.draft});
+
+  final ServiceDefinition service;
+  final List<DynamicFormField> travelerFields;
+  final BookingDraft draft;
+
+  @override
+  List<Object?> get props => [service, travelerFields, draft];
+}
+
+/// The draft was saved (or its id is now known): later saves overwrite it.
+final class BookingDraftSaved extends ServiceBookingEvent {
+  const BookingDraftSaved(this.draftId);
+
+  final String draftId;
+
+  @override
+  List<Object?> get props => [draftId];
 }
 
 final class TravelerFieldChanged extends ServiceBookingEvent {

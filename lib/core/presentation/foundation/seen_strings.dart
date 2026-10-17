@@ -22,6 +22,9 @@ class SeenStrings {
 
   final bool isArabic;
 
+  /// For code and tests that have a locale but no [BuildContext].
+  factory SeenStrings.forLocale(Locale locale) => SeenStrings._(locale.languageCode != 'en');
+
   static SeenStrings of(BuildContext context) {
     final code = Localizations.maybeLocaleOf(context)?.languageCode ?? 'ar';
     return SeenStrings._(code != 'en');
@@ -60,6 +63,33 @@ class SeenStrings {
     const en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${(isArabic ? ar : en)[d.month - 1]} ${numeral(d.year)}';
   }
+
+  /// "٣ مسودات" / "3 drafts" (Arabic dual and plural forms).
+  String draftCount(int n) {
+    if (!isArabic) return n == 1 ? '1 draft' : '$n drafts';
+    return switch (n) {
+      1 => 'مسودة واحدة',
+      2 => 'مسودتان',
+      >= 3 && <= 10 => '${numeral(n)} مسودات',
+      _ => '${numeral(n)} مسودة',
+    };
+  }
+
+  /// "قبل ساعتين" / "2 h ago" up to a day, "أمس", then "قبل ٣ أيام" / "3 days ago".
+  String draftAge(DateTime at, {DateTime? now}) {
+    final n = now ?? DateTime.now();
+    final days = DateTime(n.year, n.month, n.day).difference(DateTime(at.year, at.month, at.day)).inDays;
+    if (days <= 0) return timeAgo(at, now: n);
+    if (days == 1) return _t('أمس', 'Yesterday');
+    return _t('قبل ${_arUnit(days, 'يوم', 'يومين', 'أيام')}', '$days days ago');
+  }
+
+  /// "تُحذف اليوم" / "تُحذف غدًا" / "تُحذف خلال يومين": when a draft expires.
+  String draftDeletesIn(int days) => switch (days) {
+        <= 0 => _t('تُحذف اليوم', 'Deleted today'),
+        1 => _t('تُحذف غدًا', 'Deleted tomorrow'),
+        _ => _t('تُحذف خلال ${_arUnit(days, 'يوم', 'يومين', 'أيام')}', 'Deleted in $days days'),
+      };
 
   /// "٣ غير مقروءة" / "3 unread" (the notifications header caption).
   String unreadCount(int n) => _t('${numeral(n)} غير مقروءة', '$n unread');
