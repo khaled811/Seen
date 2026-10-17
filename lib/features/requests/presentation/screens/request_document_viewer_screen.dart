@@ -41,9 +41,16 @@ class RequestDocumentViewerScreen extends StatelessWidget {
     this.createBloc,
     this.pagesBuilder,
     this.createPdfRenderer,
+    this.documentUrl,
+    this.documentName,
   });
 
   final RequestDetail detail;
+
+  /// A specific traveler document to open (Figma REQ-12) instead of the
+  /// request's output document.
+  final String? documentUrl;
+  final String? documentName;
 
   /// Test seams; default to the DI container and [DocumentPagesView].
   final DocumentViewerBloc Function()? createBloc;
@@ -54,6 +61,8 @@ class RequestDocumentViewerScreen extends StatelessWidget {
   final PdfPageRenderer Function()? createPdfRenderer;
 
   String? get _url {
+    final own = documentUrl;
+    if (own != null && own.isNotEmpty) return own;
     final url = detail.outputDocumentUrl;
     return detail.hasOutput && url != null && url.isNotEmpty ? url : null;
   }
@@ -68,6 +77,7 @@ class RequestDocumentViewerScreen extends StatelessWidget {
       child: _ViewerScreen(
         detail: detail,
         url: url,
+        name: documentName,
         pagesBuilder: pagesBuilder,
         createPdfRenderer: createPdfRenderer ?? InjectionContainer.instance.createPdfPageRenderer,
       ),
@@ -86,10 +96,11 @@ void _openSupport(BuildContext context) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen()));
 
 class _ViewerScreen extends StatefulWidget {
-  const _ViewerScreen({required this.detail, required this.url, this.pagesBuilder, this.createPdfRenderer});
+  const _ViewerScreen({required this.detail, required this.url, this.name, this.pagesBuilder, this.createPdfRenderer});
 
   final RequestDetail detail;
   final String url;
+  final String? name;
   final DocumentPagesBuilder? pagesBuilder;
   final PdfPageRenderer Function()? createPdfRenderer;
 
@@ -103,7 +114,7 @@ class _ViewerScreenState extends State<_ViewerScreen> {
   // The pages view could not decode the bytes (corrupt file).
   bool _undecodable = false;
 
-  late final String _name = _fileName(widget.detail, widget.url);
+  late final String _name = widget.name ?? _fileName(widget.detail, widget.url);
 
   void _onPage(int page, int total) {
     // Called from the pages view's post-frame / async callbacks.

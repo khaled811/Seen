@@ -18,6 +18,7 @@ class RequestSummaryDto {
     required this.submittedAt,
     this.slaDeadline,
     this.rejectionNote,
+    this.travelerNames = const [],
   });
 
   factory RequestSummaryDto.fromJson(Map<String, dynamic> json) => RequestSummaryDto(
@@ -32,6 +33,9 @@ class RequestSummaryDto {
             ? null
             : DateTime.parse(json['slaDeadline'] as String),
         rejectionNote: json['rejectionNote'] as String?,
+        travelerNames: [
+          for (final n in (json['travelerNames'] as List<dynamic>? ?? const [])) n as String,
+        ],
       );
 
   final String id;
@@ -46,6 +50,9 @@ class RequestSummaryDto {
   final DateTime? slaDeadline;
   final String? rejectionNote;
 
+  /// TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 22).
+  final List<String> travelerNames;
+
   RequestSummary toEntity() => RequestSummary(
         id: id,
         referenceId: referenceId,
@@ -56,5 +63,6 @@ class RequestSummaryDto {
         submittedAt: submittedAt,
         slaDeadline: slaDeadline,
         rejectionNote: rejectionNote,
+        travelerNames: travelerNames,
       );
 }

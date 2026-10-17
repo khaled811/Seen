@@ -27,8 +27,8 @@ REQ-09,REQ,State,P1,طلب ملغى / منتهي,Cancelled / expired request det
 REQ-10,REQ,Sheet,P1,إلغاء الطلب,Cancel request (with reason),Tracking (07) > Cancel,Reason required; not cancellable; refund info; failure,Designed - Implemented (Flutter)
 REQ-10b,REQ,Dialog,P1,إلغاء الطلب: غير قابل للإلغاء,Cancel - not cancellable,Tracking (07) > Cancel,Server refuses (NOT_CANCELLABLE); contact support,Designed - Implemented (Flutter)
 REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) > View documents,PDF/image zoom; multi-page; download; share; not ready; failed to load,Designed - Implemented (Flutter; PDF preview pending engine)
-REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Pending Design
-REQ-13,REQ,Screen,P1,نتائج البحث عن الطلبات,Requests search results,Requests (06) search; Home search pill,Recent searches; by reference or traveler; no results,Pending Design
+REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Designed - Implemented (Flutter)
+REQ-13,REQ,Screen,P1,نتائج البحث عن الطلبات,Requests search results,Requests (06) search; Home search pill,Recent searches; by reference or traveler; no results,Designed - Implemented (Flutter)
 BOOK-01,BOOK,Screen,P0,نجاح الحجز / الإيصال,Booking success / receipt,After Review (10) submit,Request number copy; held amount; balance after; share/download receipt,Designed - Implemented (Flutter)
 BOOK-02,BOOK,Component,P1,مبدّل المسافرين (إضافة / حذف),Traveler switcher (add / remove),Form (09),Min 1 traveler; max travelers; unsaved data; error marker per traveler,Pending Design
 BOOK-03,BOOK,Sheet,P1,اختيار الجنسية,Nationality picker,Form (09) nationality field,Search; long list; no match; recent,Pending Design

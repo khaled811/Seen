@@ -3204,5 +3204,50 @@
         "type": "String"
       }
     }
+  },
+  "requestsSearchFieldHint": "Search by request number or traveler",
+  "@requestsSearchFieldHint": {
+    "description": "Requests search and documents copy."
+  },
+  "requestsSearchRecent": "Recent searches",
+  "@requestsSearchRecent": {
+    "description": "Requests search and documents copy."
+  },
+  "requestsSearchClearRecent": "Clear",
+  "@requestsSearchClearRecent": {
+    "description": "Requests search and documents copy."
+  },
+  "requestsSearchNoResultsTitle": "No results for “{query}”",
+  "@requestsSearchNoResultsTitle": {
+    "description": "Requests search and documents copy.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "requestsSearchNoResultsHint": "Try the full request number or the traveler name",
+  "@requestsSearchNoResultsHint": {
+    "description": "Requests search and documents copy."
+  },
+  "requestDocumentsOfRequestTitle": "Request documents",
+  "@requestDocumentsOfRequestTitle": {
+    "description": "Requests search and documents copy."
+  },
+  "requestDocStatusIssued": "Issued",
+  "@requestDocStatusIssued": {
+    "description": "Requests search and documents copy."
+  },
+  "requestDocStatusApproved": "Approved",
+  "@requestDocStatusApproved": {
+    "description": "Requests search and documents copy."
+  },
+  "requestDocStatusInReview": "In review",
+  "@requestDocStatusInReview": {
+    "description": "Requests search and documents copy."
+  },
+  "requestDocsTravelerEmpty": "No documents for this traveler yet.",
+  "@requestDocsTravelerEmpty": {
+    "description": "Requests search and documents copy."
   }
 }

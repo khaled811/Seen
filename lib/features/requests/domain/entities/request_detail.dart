@@ -103,6 +103,9 @@ class RequestDetail extends Equatable {
 
   bool get hasOutput => status == RequestStatus.completed;
 
+  /// The server listed documents per traveler (Figma REQ-12).
+  bool get hasTravelerDocuments => travelers.any((t) => t.documents.isNotEmpty);
+
   @override
   List<Object?> get props => [
         id,

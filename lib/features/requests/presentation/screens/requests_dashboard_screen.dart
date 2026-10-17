@@ -13,7 +13,6 @@ import '../../../../core/presentation/widgets/filters.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/stat_card.dart';
 import '../../../../core/presentation/widgets/status.dart';
-import '../../../../core/presentation/widgets/search_field.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
@@ -29,6 +28,7 @@ import '../bloc/requests_state.dart';
 import '../widgets/request_status_seen_mapping.dart';
 import '../widgets/seen_request_summary_card.dart';
 import 'request_detail_screen.dart';
+import 'requests_search_screen.dart';
 
 const _gutter = 14.0;
 
@@ -75,11 +75,10 @@ Future<void> _openCatalog(BuildContext context) async {
 /// Figma 06 header: the title at the start and a violet "new request" button
 /// at the end.
 class _Header extends StatelessWidget {
-  const _Header({this.onSearch, this.searchOpen = false});
+  const _Header({this.onSearch});
 
   /// null hides the search button (loading, error, or nothing to search yet).
   final VoidCallback? onSearch;
-  final bool searchOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -112,9 +111,7 @@ class _Header extends StatelessWidget {
                       width: 44,
                       height: 44,
                       child: Center(
-                        child: searchOpen
-                            ? Icon(SeenIcons.x, size: 20, color: c.primary)
-                            : SeenSvgIcon(SeenVectors.agentsSearch, size: 22, color: c.primary),
+                        child: SeenSvgIcon(SeenVectors.agentsSearch, size: 22, color: c.primary),
                       ),
                     ),
                   ),
@@ -276,25 +273,6 @@ class _DashboardBody extends StatefulWidget {
 }
 
 class _DashboardBodyState extends State<_DashboardBody> {
-  // Owned here, disposed in dispose(). Typing dispatches the bloc's debounced
-  // search event; closing the field clears the query.
-  final _search = TextEditingController();
-  bool _searchOpen = false;
-
-  @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
-  }
-
-  void _toggleSearch() {
-    setState(() => _searchOpen = !_searchOpen);
-    if (!_searchOpen) {
-      _search.clear();
-      context.read<RequestsBloc>().add(const RequestsSearchChanged(''));
-    }
-  }
-
   /// Chip order from Figma (the enum order is the bloc's concern).
   static const _filterOrder = [
     RequestsDashboardFilter.all,
@@ -353,19 +331,8 @@ class _DashboardBodyState extends State<_DashboardBody> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
-            child: _Header(onSearch: noData ? null : _toggleSearch, searchOpen: _searchOpen),
+            child: _Header(onSearch: noData ? null : () => openRequestsSearch(context)),
           ),
-          if (_searchOpen && !noData)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, 18),
-                child: SeenSearchField(
-                  hint: l10n.requestsSearchHint,
-                  controller: _search,
-                  onChanged: (value) => context.read<RequestsBloc>().add(RequestsSearchChanged(value)),
-                ),
-              ),
-            ),
           if (!noData) ...[
             SliverToBoxAdapter(
               child: Padding(

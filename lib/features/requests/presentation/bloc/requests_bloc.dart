@@ -62,7 +62,8 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
 
   Future<void> _onSearchChanged(RequestsSearchChanged event, Emitter<RequestsState> emit) async {
     // A newer event restarts this handler; a cancelled emitter ignores emit().
-    await Future<void>.delayed(searchDebounce);
+    // Clearing the query applies at once: only typing is debounced.
+    if (event.query.isNotEmpty) await Future<void>.delayed(searchDebounce);
     final current = state;
     if (current is! RequestsLoaded) return;
     emit(current.copyWith(searchQuery: event.query));
@@ -172,5 +173,6 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
         status: detail.status,
         submittedAt: summary.submittedAt,
         slaDeadline: detail.slaDeadline,
+        travelerNames: summary.travelerNames,
       );
 }

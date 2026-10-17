@@ -96,6 +96,18 @@ class SeenStrings {
         _ => _t('تُحذف خلال ${_arUnit(days, 'يوم', 'يومين', 'أيام')}', 'Deleted in $days days'),
       };
 
+  /// "٣ نتائج لـ «الحميري»" / "3 results for “q”" (request search, Figma REQ-13).
+  String searchResults(int n, String query) {
+    if (!isArabic) return '${n == 1 ? '1 result' : '$n results'} for “$query”';
+    final head = switch (n) {
+      1 => 'نتيجة واحدة',
+      2 => 'نتيجتان',
+      >= 3 && <= 10 => '${numeral(n)} نتائج',
+      _ => '${numeral(n)} نتيجة',
+    };
+    return '$head لـ «$query»';
+  }
+
   /// "٣ غير مقروءة" / "3 unread" (the notifications header caption).
   String unreadCount(int n) => _t('${numeral(n)} غير مقروءة', '$n unread');
 

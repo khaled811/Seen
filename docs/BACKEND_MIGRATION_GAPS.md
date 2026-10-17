@@ -791,3 +791,22 @@ other) with a refund note, and a dialog explains when the request cannot be with
   price; it is a server promise. The refund amount / timing must match the wallet ledger
   entry written at cancellation, and the real amount should come back in `refundedAmount`.
 - Debug builds: the sample request `SB-1012` (processing) answers `NOT_CANCELLABLE`.
+
+## 22. Request documents per traveler and request search (Figma REQ-12 / REQ-13)
+
+- **Traveler documents (REQ-12).** `RequestDetail.travelers[].documents { name url status }`
+  is a new placeholder field (`TODO(backend-contract)`). `status` is
+  `ISSUED | APPROVED | IN_REVIEW` (anything else shows no chip). `url` must be a link the
+  viewer (section 13) can fetch; a document without a `url` is listed but not openable.
+  When no traveler has documents the "View documents" button keeps the old behaviour (the
+  request's single `outputDocumentUrl`), so nothing changes until the backend fills this.
+  Each traveler appears in the sheet, with a note when theirs is empty.
+- **Request search (REQ-13).** `requests { travelerNames }` is a new placeholder field: the
+  names of the request's travelers. The search runs on the list the app already loaded
+  (reference, service, traveler name; case-insensitive substring), so it only finds what the
+  list returned. For large histories the list needs pagination and a server-side
+  `requests(search: String)` query, which the app would call instead (debounced already).
+- **Recent searches** are stored on the device only (encrypted storage, per agent, five
+  newest, with a "clear" link) because they can contain traveler names. Nothing is sent to
+  the server.
+- The dashboard's inline search field was replaced by the dedicated search screen.

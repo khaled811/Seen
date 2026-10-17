@@ -14,6 +14,7 @@ class RequestSummary extends Equatable {
     required this.submittedAt,
     this.slaDeadline,
     this.rejectionNote,
+    this.travelerNames = const [],
   });
 
   final String id;
@@ -31,6 +32,9 @@ class RequestSummary extends Equatable {
   /// Direct rejection/action summary text when status == infoRequired.
   final String? rejectionNote;
 
+  /// Names of the request's travelers, for the reference / traveler search.
+  final List<String> travelerNames;
+
   @override
   List<Object?> get props => [
         id,
@@ -42,5 +46,6 @@ class RequestSummary extends Equatable {
         submittedAt,
         slaDeadline,
         rejectionNote,
+        travelerNames,
       ];
 }

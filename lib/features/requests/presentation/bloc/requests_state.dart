@@ -86,13 +86,7 @@ final class RequestsLoaded extends RequestsState {
       RequestsDashboardFilter.actionRequired =>
         requests.where((r) => r.status == RequestStatus.infoRequired).toList(),
     };
-    final query = searchQuery.trim().toLowerCase();
-    final bySearch = query.isEmpty
-        ? byBucket
-        : byBucket
-            .where((r) =>
-                r.referenceId.toLowerCase().contains(query) || r.serviceName.toLowerCase().contains(query))
-            .toList();
+    final bySearch = _search(byBucket, searchQuery);
     // `List.sort` isn't guaranteed stable, so ties (e.g. identical
     // submittedAt) are broken by original index to keep ordering
     // deterministic rather than relying on the sort algorithm's incidental
@@ -104,6 +98,12 @@ final class RequestsLoaded extends RequestsState {
       });
     return [for (final entry in indexed) entry.$2];
   }
+
+  /// Requests matching [searchQuery] in the reference, service or a traveler's
+  /// name, across every status (the search screen, Figma REQ-13, ignores the
+  /// dashboard's filter chips). Empty while there is no query.
+  List<RequestSummary> get searchResults =>
+      searchQuery.trim().isEmpty ? const [] : _search(requests, searchQuery);
 
   RequestsLoaded copyWith({
     List<RequestSummary>? requests,
@@ -142,6 +142,17 @@ final class RequestsLoaded extends RequestsState {
         cancelStatus,
         cancelError,
       ];
+}
+
+List<RequestSummary> _search(List<RequestSummary> source, String rawQuery) {
+  final query = rawQuery.trim().toLowerCase();
+  if (query.isEmpty) return source;
+  return source
+      .where((r) =>
+          r.referenceId.toLowerCase().contains(query) ||
+          r.serviceName.toLowerCase().contains(query) ||
+          r.travelerNames.any((n) => n.toLowerCase().contains(query)))
+      .toList();
 }
 
 const _pendingStatuses = {

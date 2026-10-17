@@ -31,7 +31,7 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
   final GraphQLService _graphQLService;
 
   static const _travelerAndTimelineFields = r'''
-    travelers { name passportNumber status }
+    travelers { name passportNumber status documents { name url status } }
     timeline { status occurredAt note }
     approval { kind approverName typicalWaitMinutes thresholdAmount }
     rejectionReason
@@ -50,6 +50,7 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
         status
         submittedAt
         slaDeadline
+        travelerNames
       }
     }
   ''');

@@ -8,6 +8,9 @@ import '../../features/auth/domain/repositories/agency_registration_repository.d
 import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
 import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
 import '../../features/requests/data/datasources/missing_document_remote_data_source.dart';
+import '../../features/requests/data/datasources/secure_recent_searches_store.dart';
+import '../../features/requests/domain/repositories/recent_searches_store.dart';
+import '../../features/requests/presentation/bloc/recent_searches_cubit.dart';
 import '../../features/requests/data/datasources/missing_document_remote_data_source_debug_fallback.dart';
 import '../../features/requests/data/repositories/missing_document_repository_impl.dart';
 import '../../features/requests/data/services/plugin_document_picker.dart';
@@ -155,6 +158,7 @@ class InjectionContainer {
   late final GetAvailableServicesUseCase getAvailableServicesUseCase;
   late final SubmitBookingUseCase submitBookingUseCase;
   late final BookingDraftRepository bookingDraftRepository;
+  late final RecentSearchesStore recentSearchesStore;
   late final GetBookingDraftsUseCase getBookingDraftsUseCase;
   late final SaveBookingDraftUseCase saveBookingDraftUseCase;
   late final DeleteBookingDraftUseCase deleteBookingDraftUseCase;
@@ -272,6 +276,10 @@ class InjectionContainer {
         storage: secureStorage,
         userId: () async => (await authRepository.getPersistedSession())?.userId,
       ),
+    );
+    recentSearchesStore = SecureRecentSearchesStore(
+      storage: secureStorage,
+      userId: () async => (await authRepository.getPersistedSession())?.userId,
     );
     getBookingDraftsUseCase = GetBookingDraftsUseCase(bookingDraftRepository);
     saveBookingDraftUseCase = SaveBookingDraftUseCase(bookingDraftRepository);
@@ -407,6 +415,9 @@ class InjectionContainer {
         uploadDocument: uploadMissingDocumentUseCase,
         pickDocument: pickDocumentUseCase,
       );
+
+  /// Builds a fresh [RecentSearchesCubit]; the search screen owns it.
+  RecentSearchesCubit createRecentSearchesCubit() => RecentSearchesCubit(recentSearchesStore);
 
   /// Builds a fresh [ApproverReminderCubit]; the detail's action bar owns it.
   ApproverReminderCubit createApproverReminderCubit() => ApproverReminderCubit(remindApprover: remindApproverUseCase);

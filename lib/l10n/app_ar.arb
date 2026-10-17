@@ -691,5 +691,15 @@
   "requestNotCancellableTitle": "لا يمكن إلغاء الطلب الآن",
   "requestNotCancellableBody": "الطلب لدى الجهة المختصة ولا يمكن سحبه. تواصل مع الدعم إن كان الأمر عاجلًا.",
   "requestNotCancellableOk": "حسنًا",
-  "requestNotCancellableSupport": "تواصل مع الدعم"
+  "requestNotCancellableSupport": "تواصل مع الدعم",
+  "requestsSearchFieldHint": "ابحث برقم الطلب أو اسم المسافر",
+  "requestsSearchRecent": "عمليات بحث سابقة",
+  "requestsSearchClearRecent": "مسح",
+  "requestsSearchNoResultsTitle": "لا نتائج لـ «{query}»",
+  "requestsSearchNoResultsHint": "جرّب رقم الطلب كاملًا أو اسم المسافر",
+  "requestDocumentsOfRequestTitle": "مستندات الطلب",
+  "requestDocStatusIssued": "صادرة",
+  "requestDocStatusApproved": "معتمدة",
+  "requestDocStatusInReview": "قيد المراجعة",
+  "requestDocsTravelerEmpty": "لا توجد مستندات لهذا المسافر بعد."
 }

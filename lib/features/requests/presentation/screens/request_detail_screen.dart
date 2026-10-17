@@ -38,6 +38,7 @@ import '../widgets/seen_deadline_card.dart';
 import 'request_document_viewer_screen.dart';
 import 'upload_missing_document_screen.dart';
 import '../widgets/seen_request_ticket.dart';
+import '../widgets/traveler_documents_sheet.dart';
 
 const _gutter = 20.0;
 
@@ -196,11 +197,13 @@ class _ActionsBar extends StatelessWidget {
                 child: SeenButton(
                   label: l10n.requestViewDocumentsAction,
                   expand: true,
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            RequestDocumentViewerScreen(detail: detail)),
-                  ),
+                  onPressed: () => detail.hasTravelerDocuments
+                      ? showTravelerDocumentsSheet(context, detail)
+                      : Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  RequestDocumentViewerScreen(detail: detail)),
+                        ),
                 ),
               ),
               const SizedBox(width: SeenSpace.s3),

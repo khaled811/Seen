@@ -105,6 +105,7 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
         status: dto.status,
         submittedAt: dto.submittedAt,
         slaDeadline: dto.slaDeadline,
+        travelerNames: [for (final t in dto.travelers) t.name],
         rejectionNote: dto.status == 'info_required'
             ? (dto.timeline.where((t) => t.status == 'info_required').firstOrNull?.note ??
                 'صورة الجواز غير واضحة — المسافر 1')
@@ -217,7 +218,24 @@ Map<String, RequestDetailDto> _seedRequests(DateTime now) {
       totalPriceAmount: '800.00',
       submittedAt: now.subtract(const Duration(days: 10)),
       outputDocumentUrl: 'mock://documents/SB-1006-approval.pdf',
-      travelers: _travelers(4),
+      travelers: const [
+        RequestTravelerStatusDto(
+          name: 'Traveler 1',
+          status: 'approved',
+          documents: [
+            TravelerDocumentDto(name: 'الموافقة الأمنية.pdf', url: 'mock://documents/SB-1006-approval.pdf', status: 'ISSUED'),
+            TravelerDocumentDto(name: 'صورة الجواز.jpg', url: 'mock://documents/SB-1006-passport.jpg', status: 'APPROVED'),
+          ],
+        ),
+        RequestTravelerStatusDto(
+          name: 'Traveler 2',
+          status: 'approved',
+          documents: [
+            TravelerDocumentDto(name: 'صورة الجواز.jpg', url: 'mock://documents/SB-1006-passport.jpg', status: 'IN_REVIEW'),
+          ],
+        ),
+        RequestTravelerStatusDto(name: 'Traveler 3', status: 'approved'),
+      ],
       timeline: [
         RequestTimelineEntryDto(
           status: 'submitted',
