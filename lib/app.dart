@@ -25,6 +25,7 @@ import 'features/home/presentation/screens/home_screen.dart';
 import 'features/agents/presentation/screens/sub_agents_list_screen.dart';
 import 'features/requests/presentation/screens/requests_dashboard_screen.dart';
 import 'features/spiritual/presentation/shell/agent_tab.dart';
+import 'features/system_status/presentation/widgets/app_status_gate.dart';
 import 'features/spiritual/presentation/shell/mode_shell.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 
@@ -47,6 +48,8 @@ class App extends StatelessWidget {
         BlocProvider(create: (_) => LocaleCubit()),
         BlocProvider(create: (_) => ThemeModeCubit()),
         BlocProvider(create: (_) => InjectionContainer.instance.createConnectivityCubit()),
+        // Asks the server once at start (fail-open); the gate shows maintenance / update.
+        BlocProvider(create: (_) => InjectionContainer.instance.createAppStatusCubit()..check()),
         BlocProvider(
             create: (_) => InjectionContainer.instance.createAuthBloc()),
       ],
@@ -69,7 +72,10 @@ class App extends StatelessWidget {
                 darkTheme: AppTheme.dark,
                 themeMode: themeMode,
                 debugShowCheckedModeBanner: false,
-                builder: (context, child) => SeenConnectivityShell(child: child),
+                builder: (context, child) => AppStatusGate(
+                  storeLauncher: InjectionContainer.instance.storeLauncher,
+                  child: SeenConnectivityShell(child: child),
+                ),
                 home: _AuthGate(splashMinDuration: splashMinDuration),
               );
             },

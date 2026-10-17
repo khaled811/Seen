@@ -1,3 +1,4 @@
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../features/auth/data/datasources/agency_registration_remote_data_source.dart';
@@ -94,6 +95,14 @@ import '../../features/services/domain/repositories/services_repository.dart';
 import '../../features/services/domain/usecases/get_available_services_usecase.dart';
 import '../../features/services/domain/usecases/submit_booking_usecase.dart';
 import '../../features/services/presentation/bloc/service_booking_bloc.dart';
+import '../../features/system_status/data/datasources/system_status_remote_data_source.dart';
+import '../../features/system_status/data/datasources/system_status_remote_data_source_debug_fallback.dart';
+import '../../features/system_status/data/repositories/system_status_repository_impl.dart';
+import '../../features/system_status/data/services/url_store_launcher.dart';
+import '../../features/system_status/domain/services/store_launcher.dart';
+import '../../features/system_status/domain/usecases/system_status_usecases.dart';
+import '../../features/system_status/presentation/bloc/access_request_cubit.dart';
+import '../../features/system_status/presentation/bloc/app_status_cubit.dart';
 import '../../features/support/data/datasources/support_remote_data_source.dart';
 import '../../features/support/data/datasources/support_remote_data_source_debug_fallback.dart';
 import '../../features/support/data/repositories/support_repository_impl.dart';
@@ -209,6 +218,9 @@ class InjectionContainer {
   late final UpdateCreditLimitUseCase updateCreditLimitUseCase;
 
   late final SupportRemoteDataSource supportRemoteDataSource;
+  late final GetAppStatusUseCase getAppStatusUseCase;
+  late final RequestAccessUseCase requestAccessUseCase;
+  late final StoreLauncher storeLauncher;
   late final SupportRepository supportRepository;
   late final GetTicketsUseCase getTicketsUseCase;
   late final CreateTicketUseCase createTicketUseCase;
@@ -353,6 +365,14 @@ class InjectionContainer {
       SupportRemoteDataSourceImpl(graphQLService: graphQLService),
     );
     supportRepository = SupportRepositoryImpl(remote: supportRemoteDataSource);
+    final systemStatusRepository = SystemStatusRepositoryImpl(
+      remote: DebugFallbackSystemStatusRemoteDataSource(
+        SystemStatusRemoteDataSourceImpl(graphQLService: graphQLService),
+      ),
+    );
+    getAppStatusUseCase = GetAppStatusUseCase(systemStatusRepository);
+    requestAccessUseCase = RequestAccessUseCase(systemStatusRepository);
+    storeLauncher = const UrlStoreLauncher();
     getTicketsUseCase = GetTicketsUseCase(supportRepository);
     createTicketUseCase = CreateTicketUseCase(supportRepository);
     replyToTicketUseCase = ReplyToTicketUseCase(supportRepository);
@@ -462,6 +482,15 @@ class InjectionContainer {
         getRequestDetailUseCase: getRequestDetailUseCase,
         cancelRequestUseCase: cancelRequestUseCase,
       );
+
+  /// Builds the app-wide [AppStatusCubit] (maintenance / update gate); the root provider owns it.
+  AppStatusCubit createAppStatusCubit() => AppStatusCubit(
+        getStatus: getAppStatusUseCase,
+        currentVersion: () async => (await PackageInfo.fromPlatform()).version,
+      );
+
+  /// Builds an [AccessRequestCubit] for a refused [area]; the no-permission view owns it.
+  AccessRequestCubit createAccessRequestCubit(String area) => AccessRequestCubit(requestAccessUseCase, area: area);
 
   /// Builds the app-wide [ConnectivityCubit]; the root provider owns it.
   ConnectivityCubit createConnectivityCubit() =>

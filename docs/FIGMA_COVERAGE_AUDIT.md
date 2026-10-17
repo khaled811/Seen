@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–31).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–32).
 
 ## Not built to the design (39 frames)
 
@@ -70,9 +70,9 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 ### System (7)
 | Frame | Priority | What is missing |
 |---|---|---|
-| SYS-03 Forbidden (403) | P1 | The "no permission" screen and the hide-vs-disable rule. |
-| SYS-04 Maintenance mode | P1 | Full-screen with ETA and retry. |
-| SYS-05 Force / optional update | P1 | Store link, soft vs hard. |
+| SYS-03 Forbidden (403) | P1 | **Done** for the wallet (the screen, request access, the rule note). Other sections follow with ROLE-01. See gaps section 32. |
+| SYS-04 Maintenance mode | P1 | **Done.** Full screen with ETA and retry, driven by `appStatus` (section 32). |
+| SYS-05 Force / optional update | P1 | **Done.** Blocking screen and optional card, store link (section 32). |
 | SYS-06 Loading skeletons | P1 | Shared pulse, respecting reduced motion (some screens have their own skeletons). Partly. |
 | SYS-07 Camera / photos permission | P1 | Pre-permission and permanently-denied screens. |
 | SYS-08 Missing components | P1 | Sheet, dialog, toast, banner, list row, checkbox, switch, avatar, badge, progress in all states (many exist ad hoc). Partly. |

@@ -1041,3 +1041,26 @@ plain message exactly as before.
   Top-up opens the existing top-up form pre-filled with the shortfall; the balance is read again when it closes.
 - **Not done in BOOK-07.** Field-type extras of the frame (character counter, phone with a country-code picker,
   read-only look) are not built; the existing field types are unchanged except select, which now opens the sheet.
+
+## 32. System states: no permission, maintenance, update (Figma SYS-03 / 04 / 05)
+- **App status query (SYS-04 / 05).** The app asks `appStatus(platform: "android" | "ios")` once at start and when it
+  returns from the background (at most every 5 minutes, but every time while blocked). It must be **public**
+  (no token) and never cached. Placeholder shape:
+  `{ maintenance { active etaAt }, minimumVersion, latestVersion, storeUrl, updateNote }`.
+  - `maintenance.active` -> full-screen maintenance. `etaAt` is optional; without it the screen says "back soon"
+    and shows no time chip (the design always shows one: say if the server will always send it).
+  - app version below `minimumVersion` -> blocking update screen; below `latestVersion` (and not postponed) -> the
+    optional card. "Later" is remembered for that version until the app restarts only.
+  - `storeUrl` is per platform; without it the update buttons are disabled and a message says the store could not open.
+  - **If the status call fails the app keeps working** (fail-open): the server being unreachable is not maintenance.
+    A maintenance screen already showing stays until a call succeeds.
+- **Maintenance while using the app.** An open session only learns about maintenance at the next check. For an
+  immediate effect the server should answer ordinary requests with HTTP 503 + code `MAINTENANCE`; the app does not
+  react to that code yet (say if you want it).
+- **Forbidden (SYS-03).** The wallet shows the no-permission screen when the server answers 403 (`FORBIDDEN`). The
+  copy "wallet is for the owner and branch managers" is the design's; the server must make that rule true.
+  Other sections still show their generic error on 403; they move to the same screen as roles arrive (ROLE-01).
+- **Request access.** `requestAccess(area: "wallet")` -> `{ success }`: notify the account owner. Placeholder
+  contract; one request per refusal on the screen. The server should de-duplicate repeated requests and say who was told.
+- **Debug only.** `--dart-define=DEBUG_APP_STATUS=maintenance|update|soft` forces those screens in a debug build so they
+  can be looked at on a device without a backend. Release builds ignore it.

@@ -42,7 +42,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     emit(
       result.match(
         (failure) => previous == null
-            ? WalletFailure(failure.message)
+            ? WalletFailure(failure.message, forbidden: failure is ForbiddenFailure)
             : previous.copyWith(refreshError: failure.message),
         (data) => WalletLoaded(
           balance: data.$1,
@@ -102,7 +102,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     final refreshed = await _fetchData();
     emit(
       refreshed.match(
-        (failure) => WalletFailure(failure.message),
+        (failure) => WalletFailure(failure.message, forbidden: failure is ForbiddenFailure),
         (data) => WalletLoaded(
           balance: data.$1,
           transactions: data.$2,

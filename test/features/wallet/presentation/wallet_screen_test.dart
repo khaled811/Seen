@@ -66,6 +66,11 @@ class _Repo implements WalletRepository {
       throw UnimplementedError();
 }
 
+class _ForbiddenRepo extends _Repo {
+  @override
+  Future<Either<Failure, WalletBalance>> getBalance() async => const Left(ForbiddenFailure());
+}
+
 void main() {
   late WalletBloc bloc;
 
@@ -148,5 +153,43 @@ void main() {
     expect(find.text('تصدير كشف الحساب'), findsOneWidget);
     expect(find.text('هذا الشهر'), findsOneWidget);
     expect(find.text('تنزيل'), findsOneWidget);
+  });
+
+  testWidgets('a 403 shows the no-permission screen instead of a retry (SYS-03)', (tester) async {
+    final repo = _ForbiddenRepo();
+    final denied = WalletBloc(
+      getWalletBalanceUseCase: GetWalletBalanceUseCase(repo),
+      getTransactionsUseCase: GetTransactionsUseCase(repo),
+      requestTopUpUseCase: RequestTopUpUseCase(repo),
+    )..add(const WalletLoadRequested());
+    addTearDown(() => denied.close().ignore());
+    await tester.binding.setSurfaceSize(const Size(390, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(BlocProvider<WalletBloc>.value(
+      value: denied,
+      child: MaterialApp(
+        locale: const Locale('ar'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.light,
+        home: const WalletView(),
+      ),
+    ));
+    await tester.runAsync(() async {
+      while (denied.state is! WalletFailure) {
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+      }
+    });
+    await tester.pump();
+    expect((denied.state as WalletFailure).forbidden, isTrue);
+    expect(find.text('ليس لديك صلاحية'), findsOneWidget);
+    expect(find.text('إعادة المحاولة'), findsNothing);
+    expect(find.text('طلب الصلاحية'), findsOneWidget);
+    expect(find.text('العودة للرئيسية'), findsOneWidget);
   });
 }

@@ -22,12 +22,16 @@ final class WalletLoading extends WalletState {
 }
 
 final class WalletFailure extends WalletState {
-  const WalletFailure(this.message);
+  const WalletFailure(this.message, {this.forbidden = false});
 
   final String message;
 
+  /// The server refused the wallet to this user (403): show the no-permission
+  /// screen (Figma SYS-03) instead of a retry.
+  final bool forbidden;
+
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, forbidden];
 }
 
 final class WalletLoaded extends WalletState {

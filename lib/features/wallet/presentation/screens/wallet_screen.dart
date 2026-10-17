@@ -4,6 +4,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/navigation/shell_tab_request.dart';
+import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
@@ -12,12 +14,14 @@ import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/segmented_control.dart';
 import '../../../../core/presentation/widgets/status.dart';
+import '../../../../core/presentation/widgets/system_state.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../agents/presentation/screens/transfer_to_agent_screen.dart';
+import '../../../system_status/presentation/bloc/access_request_cubit.dart';
 import '../../domain/entities/wallet_transaction.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
@@ -103,6 +107,7 @@ class WalletView extends StatelessWidget {
                       (p.runtimeType != c.runtimeType || c is WalletLoaded || c is WalletFailure),
                   builder: (context, state) => switch (state) {
                     WalletInitial() || WalletLoading() => const WalletLoadingSkeleton(),
+                    WalletFailure(forbidden: true) => const _ForbiddenView(),
                     WalletFailure(:final message) => _ErrorView(message: message),
                     WalletLoaded() => _LoadedView(state: state, onStatement: () => _openStatement(context)),
                   },
@@ -110,6 +115,45 @@ class WalletView extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Figma SYS-03: the server refused the wallet to this user.
+class _ForbiddenView extends StatelessWidget {
+  const _ForbiddenView();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = SeenStrings.of(context);
+    return BlocProvider(
+      create: (_) => InjectionContainer.instance.createAccessRequestCubit('wallet'),
+      child: BlocConsumer<AccessRequestCubit, AccessRequestState>(
+        listenWhen: (p, c) => p.status != c.status,
+        listener: (context, state) {
+          final message = switch (state.status) {
+            AccessRequestStatus.sent => s.accessRequestSent,
+            AccessRequestStatus.failed => s.accessRequestFailed,
+            _ => null,
+          };
+          if (message == null) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(message)));
+        },
+        builder: (context, state) => SeenForbiddenView(
+          icon: SeenIcons.gear,
+          title: s.forbiddenTitle,
+          message: s.forbiddenWallet,
+          requestLabel: s.requestAccess,
+          requesting: state.status == AccessRequestStatus.sending,
+          requested: state.status == AccessRequestStatus.sent,
+          onRequest: () => context.read<AccessRequestCubit>().send(),
+          backLabel: s.backToHome,
+          onBack: () => ShellTabRequest.show(0),
+          rule: s.visibilityRule,
         ),
       ),
     );

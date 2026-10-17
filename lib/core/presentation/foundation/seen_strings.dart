@@ -273,6 +273,53 @@ class SeenStrings {
   String get attachRemove => _t('حذف المرفق', 'Remove attachment');
   String get attachTypes => _t('الأنواع المقبولة: JPG وPNG وPDF', 'Accepted: JPG, PNG, PDF');
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
+  // System states (Figma SYS-03 / 04 / 05).
+  String get forbiddenTitle => _t('ليس لديك صلاحية', 'You do not have permission');
+  String get forbiddenWallet => _t(
+      'صلاحية المحفظة متاحة لمالك الحساب ومديري الفروع. اطلب الصلاحية من مالك الحساب.',
+      'The wallet is available to the account owner and branch managers. Ask the account owner for access.');
+  String get requestAccess => _t('طلب الصلاحية', 'Request access');
+  String get accessRequestSent => _t('أرسلنا طلبك لمالك الحساب.', 'We sent your request to the account owner.');
+  String get accessRequestFailed => _t('تعذّر إرسال الطلب. حاول مرة أخرى.', 'Could not send the request. Try again.');
+  String get backToHome => _t('العودة للرئيسية', 'Back to home');
+  String get visibilityRule => _t(
+      'قاعدة: نخفي الأقسام غير المسموحة في القوائم، ونعطّل الأزرار داخل الشاشات المسموحة مع شرح السبب.',
+      'Rule: sections you cannot use are hidden from menus; buttons inside allowed screens are disabled with the reason.');
+  String get maintenanceTitle => _t('نُحسّن سين Business الآن', 'We are improving Seen Business');
+  String maintenanceBody(DateTime? eta, DateTime now) {
+    const safe = ' طلباتك وبياناتك محفوظة.';
+    const safeEn = ' Your requests and data are safe.';
+    if (eta == null || !eta.isAfter(now)) {
+      return _t('صيانة مجدولة. نعود قريبًا.$safe', 'Scheduled maintenance. We will be back soon.$safeEn');
+    }
+    final minutes = (eta.difference(now).inSeconds / 60).ceil();
+    return _t('صيانة مجدولة. نعود خلال ${_arUnit(minutes, 'دقيقة', 'دقيقتين', 'دقائق')} تقريبًا (حتى ${clock12(eta)}).$safe',
+        'Scheduled maintenance. Back in about $minutes min (until ${clock12(eta)}).$safeEn');
+  }
+  String maintenanceEtaChip(DateTime eta) => _t('الوقت المتوقع · ${clock24(eta)}', 'Expected · ${clock24(eta)}');
+  String get retryAction => _t('إعادة المحاولة', 'Try again');
+  String get updateRequiredTitle => _t('تحديث مطلوب', 'Update required');
+  String get updateRequiredBody => _t('هذا الإصدار لم يعد مدعومًا. حدّث التطبيق للمتابعة بأمان.',
+      'This version is no longer supported. Update the app to continue safely.');
+  String get updateFromStore => _t('تحديث من المتجر', 'Update from the store');
+  String get updateOptionalTitle => _t('تحديث اختياري متاح', 'Optional update available');
+  String updateVersionLine(String version, String? note) =>
+      _t('الإصدار $version', 'Version $version') + (note == null || note.isEmpty ? '' : ' · $note');
+  String get updateLater => _t('لاحقًا', 'Later');
+  String get updateNow => _t('تحديث', 'Update');
+  String get storeUnavailable => _t('تعذّر فتح المتجر.', 'Could not open the store.');
+
+  /// "02:30" (24 h, Latin digits).
+  String clock24(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+  /// "02:30 ص" / "2:30 AM".
+  String clock12(DateTime d) {
+    final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    final m = d.minute.toString().padLeft(2, '0');
+    final pm = d.hour >= 12;
+    return isArabic ? '${h.toString().padLeft(2, '0')}:$m ${pm ? 'م' : 'ص'}' : '$h:$m ${pm ? 'PM' : 'AM'}';
+  }
+
   String get attachUnavailable => _t('تعذّر فتح المصدر. تحقق من أذونات التطبيق.', 'Could not open the source. Check the app permissions.');
   String get attachBadType => _t('نوع الملف غير مقبول. استخدم JPG أو PNG أو PDF.', 'File type not accepted. Use JPG, PNG or PDF.');
   String get attachNotSent => _t('المرفق محفوظ على جهازك فقط ولم يُرسل بعد.', 'The attachment is kept on this device and has not been sent yet.');
