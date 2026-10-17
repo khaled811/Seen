@@ -6,15 +6,15 @@ AUTH-04,AUTH,Screen,P0,تم تغيير كلمة المرور,Password changed (s
 AUTH-05,AUTH,Screen,P0,إنشاء حساب: كلمة المرور,Registration: create password,Create agency (15) > Continue,Password rules; mismatch; show/hide,Designed - Implemented (Flutter)
 AUTH-06,AUTH,Screen,P0,إنشاء حساب: تحقق الجوال,Registration: verify phone (OTP),After registration password,Wrong/expired code; resend; phone already used,Designed - Implemented (Flutter)
 AUTH-07,AUTH,Screen,P0,إنشاء حساب: الموافقة على الشروط,Registration: terms consent,Registration form,Checkbox required; link to terms; decline,Designed - Implemented (Flutter)
-AUTH-08,AUTH,State,P1,إنشاء حساب: أخطاء النموذج,Registration: field errors,Create agency (15),Duplicate phone/email/license; invalid email; invalid license; file too large,Pending Design
-AUTH-09,AUTH,Screen,P1,الشروط والأحكام,Terms of use,"Welcome (02), Registration",Long text; language switch; offline,Pending Design
-AUTH-10,AUTH,Screen,P1,سياسة الخصوصية,Privacy policy,"Welcome (02), Registration",Long text; language switch; offline,Pending Design
-AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,Login (03),Wrong credentials; suspended account; pending account; locked with timer,Pending Design
+AUTH-08,AUTH,State,P1,إنشاء حساب: أخطاء النموذج,Registration: field errors,Create agency (15),Duplicate phone/email/license; invalid email; invalid license; file too large,Designed - Not implemented
+AUTH-09,AUTH,Screen,P1,الشروط والأحكام,Terms of use,"Welcome (02), Registration",Long text; language switch; offline,Designed - Not implemented
+AUTH-10,AUTH,Screen,P1,سياسة الخصوصية,Privacy policy,"Welcome (02), Registration",Long text; language switch; offline,Designed - Not implemented
+AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,Login (03),Wrong credentials; suspended account; pending account; locked with timer,Designed - Not implemented
 AUTH-12,AUTH,State,P1,رمز التحقق: خطأ,OTP: error state,OTP (04),Error boxes + message; expired; verifying/disabled,Designed (as AUTH-02b) - Implemented (Flutter)
 AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call returning 401,Where the user lands; unsaved form data; background refresh,Designed - Implemented (Flutter)
-AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Pending Design
-AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Pending Design
-AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Pending Design
+AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Designed - Not implemented
+AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Designed - Not implemented
+AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Designed - Not implemented
 REQ-01,REQ,Screen,P1,المسودات,Drafts list,Requests (06) filter/section,Empty; many drafts; draft older than N days; offline,Designed - Implemented (Flutter)
 REQ-02,REQ,Component,P1,"بطاقة مسودة وشارة ""مسودة""",Draft card and chip,"Drafts list, Requests (06)",Missing data in draft; resume vs delete,Designed - Implemented (Flutter)
 REQ-03,REQ,Dialog,P1,حذف مسودة,Delete draft confirmation,Draft card,Undo; last draft,Designed - Implemented (Flutter)
@@ -30,14 +30,14 @@ REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) >
 REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Designed - Implemented (Flutter)
 REQ-13,REQ,Screen,P1,نتائج البحث عن الطلبات,Requests search results,Requests (06) search; Home search pill,Recent searches; by reference or traveler; no results,Designed - Implemented (Flutter)
 BOOK-01,BOOK,Screen,P0,نجاح الحجز / الإيصال,Booking success / receipt,After Review (10) submit,Request number copy; held amount; balance after; share/download receipt,Designed - Implemented (Flutter)
-BOOK-02,BOOK,Component,P1,مبدّل المسافرين (إضافة / حذف),Traveler switcher (add / remove),Form (09),Min 1 traveler; max travelers; unsaved data; error marker per traveler,Pending Design
-BOOK-03,BOOK,Sheet,P1,اختيار الجنسية,Nationality picker,Form (09) nationality field,Search; long list; no match; recent,Pending Design
-BOOK-04,BOOK,Sheet,P1,اختيار التاريخ,Date picker sheet,Form (09) date fields,Min/max dates; passport expiry rule; invalid date,Pending Design
-BOOK-05,BOOK,Sheet,P1,قائمة الاختيار,Select options sheet,Form (09) select fields,Long list; search; required,Pending Design
-BOOK-06,BOOK,Sheet,P1,إرفاق مستند (كاميرا / معرض / ملفات),Attachment source sheet,"Form (09), Top-up (12), Registration (15)",Permission denied; size/type error; crop; replace; remove,Pending Design
-BOOK-07,BOOK,Component,P1,أنواع الحقول: نص طويل / رقم / هاتف / بريد / قائمة,"Field types: textarea, number, phone, email, select",Dynamic form fields,Counter; keyboard type; inline error; read-only,Pending Design
-BOOK-08,BOOK,State,P1,المراجعة: رصيد غير كافٍ,Review: insufficient balance,Review (10),Blocked submit; shortfall amount; top-up shortcut; credit limit,Pending Design
-BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / Home (05) soon tile,Notify me; info only,Pending Design
+BOOK-02,BOOK,Component,P1,مبدّل المسافرين (إضافة / حذف),Traveler switcher (add / remove),Form (09),Min 1 traveler; max travelers; unsaved data; error marker per traveler,Designed - Not implemented
+BOOK-03,BOOK,Sheet,P1,اختيار الجنسية,Nationality picker,Form (09) nationality field,Search; long list; no match; recent,Designed - Not implemented
+BOOK-04,BOOK,Sheet,P1,اختيار التاريخ,Date picker sheet,Form (09) date fields,Min/max dates; passport expiry rule; invalid date,Designed - Not implemented
+BOOK-05,BOOK,Sheet,P1,قائمة الاختيار,Select options sheet,Form (09) select fields,Long list; search; required,Designed - Not implemented
+BOOK-06,BOOK,Sheet,P1,إرفاق مستند (كاميرا / معرض / ملفات),Attachment source sheet,"Form (09), Top-up (12), Registration (15)",Permission denied; size/type error; crop; replace; remove,Designed - Not implemented
+BOOK-07,BOOK,Component,P1,أنواع الحقول: نص طويل / رقم / هاتف / بريد / قائمة,"Field types: textarea, number, phone, email, select",Dynamic form fields,Counter; keyboard type; inline error; read-only,Designed - Not implemented
+BOOK-08,BOOK,State,P1,المراجعة: رصيد غير كافٍ,Review: insufficient balance,Review (10),Blocked submit; shortfall amount; top-up shortcut; credit limit,Designed - Not implemented
+BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / Home (05) soon tile,Notify me; info only,Designed - Not implemented
 WAL-01,WAL,Screen,P1,تفاصيل العملية,Transaction detail,Wallet (11) ledger row,Hold vs final deduction vs refund; linked request; reference copy,Designed - Implemented (Flutter)
 WAL-02,WAL,Screen,P1,تفاصيل الشحن المعلّق,Pending top-up detail / status,Wallet (11) pending card,Receipt preview; review status; cancel request,Designed - Implemented (Flutter)
 WAL-03,WAL,State,P1,شحن مرفوض,Rejected top-up with reason,"Wallet (11), top-up detail",Reason; retry with same data,Designed - Implemented (Flutter)
@@ -62,24 +62,31 @@ SUP-02,SUP,Screen,P1,إنشاء تذكرة,Create ticket,Tickets list,Category (
 SUP-03,SUP,Screen,P1,محادثة الدعم,Support chat / ticket thread,Ticket row,Bubbles; timestamps; attachments; sending/failed/retry; closed read-only; reopen; long text,Designed - Implemented (Flutter)
 SUP-04,SUP,Screen,P2,مركز المساعدة / الأسئلة الشائعة,Help centre / FAQ,Account > Help & support,Search; categories; no result,Designed - Implemented (Flutter; draft answers)
 SUP-05,SUP,Sheet,P1,تواصل مع الدعم قبل تسجيل الدخول,Contact support (signed out),"Pending approval (16), Login",Phone / email / chat options,Designed - Implemented (Flutter; channels from build settings; rows open the phone apps)
-ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Agency details and commercial register,Account (14) row,View vs edit; verification status; documents; expiry,Pending Design
-ACC-02,ACC,Screen,P1,هامش الربح,Profit margin,Account (14) row,Per service; read-only vs editable; history,Pending Design
-ACC-03,ACC,Screen,P1,المستخدمون والصلاحيات,Users and permissions,Account (14) row,Roles owner/branch manager/staff; invite; edit role; deactivate; empty,Pending Design
-ACC-04,ACC,Screen,P1,الإعدادات,Settings,Account (14) row,Language; appearance; notification toggles,Pending Design
-ACC-05,ACC,Dialog,P2,تأكيد تغيير اللغة,Language switch confirmation,Settings,RTL/LTR flip; restart,Pending Design
-ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licences; links,Pending Design
-NOTIF-01,NOTIF,State,P1,الإشعارات فارغة,Notifications empty,Notifications (17),No notifications; all read filter,Pending Design
-NOTIF-02,NOTIF,Component,P1,تصميم لكل نوع إشعار (8),Notification type set (8 events),Notifications (17),"new request, status update, info required, rejected, SLA breach, top-up, new agent, ticket update; icon tone; deep link",Pending Design
-NOTIF-03,NOTIF,Sheet,P1,طلب إذن الإشعارات,Push permission prompt,First launch / after login,Denied; settings deep link,Pending Design
-NOTIF-04,NOTIF,Screen,P2,تفضيلات الإشعارات,Notification preferences,Settings,Per event toggle; quiet hours,Pending Design
+ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Agency details and commercial register,Account (14) row,View vs edit; verification status; documents; expiry,Designed - Not implemented
+ACC-02,ACC,Screen,P1,هامش الربح,Profit margin,Account (14) row,Per service; read-only vs editable; history,Designed - Not implemented
+ACC-03,ACC,Screen,P1,المستخدمون والصلاحيات,Users and permissions,Account (14) row,Roles owner/branch manager/staff; invite; edit role; deactivate; empty,Designed - Not implemented
+ACC-04,ACC,Screen,P1,الإعدادات,Settings,Account (14) row,Language; appearance; notification toggles,Designed - Not implemented
+ACC-05,ACC,Dialog,P2,تأكيد تغيير اللغة,Language switch confirmation,Settings,RTL/LTR flip; restart,Designed - Not implemented
+ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licences; links,Designed - Not implemented
+NOTIF-01,NOTIF,State,P1,الإشعارات فارغة,Notifications empty,Notifications (17),No notifications; all read filter,Designed - Not implemented
+NOTIF-02,NOTIF,Component,P1,تصميم لكل نوع إشعار (8),Notification type set (8 events),Notifications (17),"new request, status update, info required, rejected, SLA breach, top-up, new agent, ticket update; icon tone; deep link",Designed - Not implemented
+NOTIF-03,NOTIF,Sheet,P1,طلب إذن الإشعارات,Push permission prompt,First launch / after login,Denied; settings deep link,Designed - Not implemented
+NOTIF-04,NOTIF,Screen,P2,تفضيلات الإشعارات,Notification preferences,Settings,Per event toggle; quiet hours,Designed - Not implemented
 SYS-01,SYS,Component,P0,شريط انقطاع الاتصال,Offline banner,Any screen offline,Stale data marker; retry; queued actions,Designed - Implemented (Flutter; partial: see gaps section 16)
 SYS-02,SYS,Component,P0,أخطاء الشبكة والخادم,Network and server error patterns,Any failed call,Inline + retry; full screen; error sheet for failed mutations; timeout,Designed - Implemented (Flutter; partial: see gaps section 16)
-SYS-03,SYS,State,P1,غير مصرّح (403),Forbidden / no permission,Action or screen without permission,Hidden vs disabled; explanation; request access,Pending Design
-SYS-04,SYS,Screen,P1,وضع الصيانة,Maintenance mode,Backend flag,ETA; retry,Pending Design
-SYS-05,SYS,Screen,P1,تحديث إجباري,Force update,Version check,Store link; soft vs hard,Pending Design
-SYS-06,SYS,Component,P1,هياكل التحميل,Loading skeletons,"Balance, request cards, ledger, agents, notifications, catalog",Pulse; reduced motion,Pending Design
-SYS-07,SYS,Sheet,P1,أذونات الكاميرا والصور,Camera / photos permission,Attachment sheet,Denied; permanently denied > settings,Pending Design
-SYS-08,SYS,Component,P1,المكوّنات الناقصة,"Missing components: sheet, dialog, toast, banner, list row, checkbox, switch, avatar, badge, progress",Component library,"All states (default, pressed, disabled, error)",Pending Design
-ROLE-01,ROLE,Screen,P1,واجهة الموظف / مدير الفرع,"Role-based views (staff, branch manager)",Session role and permission codes,Hidden tabs; disabled actions; no-permission screen; per-role home,Pending Design
+SYS-03,SYS,State,P1,غير مصرّح (403),Forbidden / no permission,Action or screen without permission,Hidden vs disabled; explanation; request access,Designed - Not implemented
+SYS-04,SYS,Screen,P1,وضع الصيانة,Maintenance mode,Backend flag,ETA; retry,Designed - Not implemented
+SYS-05,SYS,Screen,P1,تحديث إجباري,Force update,Version check,Store link; soft vs hard,Designed - Not implemented
+SYS-06,SYS,Component,P1,هياكل التحميل,Loading skeletons,"Balance, request cards, ledger, agents, notifications, catalog",Pulse; reduced motion,Designed - Not implemented
+SYS-07,SYS,Sheet,P1,أذونات الكاميرا والصور,Camera / photos permission,Attachment sheet,Denied; permanently denied > settings,Designed - Not implemented
+SYS-08,SYS,Component,P1,المكوّنات الناقصة,"Missing components: sheet, dialog, toast, banner, list row, checkbox, switch, avatar, badge, progress",Component library,"All states (default, pressed, disabled, error)",Designed - Not implemented
+ROLE-01,ROLE,Screen,P1,واجهة الموظف / مدير الفرع,"Role-based views (staff, branch manager)",Session role and permission codes,Hidden tabs; disabled actions; no-permission screen; per-role home,Designed - Not implemented
 ROLE-02,ROLE,State,P2,نسخة إنجليزية LTR,English / LTR versions of key frames,Language = English,Mirrored icons and progress; numerals; long strings,Pending Design
 ROLE-03,ROLE,State,P2,الوضع الداكن,Dark theme,Settings > Appearance,Status chip colours; gradients; shadows,Pending Design
+REQ-14,REQ,Flow,TBD,كشف جماعي: بناء وملخص,"Group manifest (build, summary)",Requests (06) / Booking,Import Excel/CSV; per-traveler status; rejected traveler does not stop the rest,Designed - Not implemented
+REQ-15,REQ,Flow,TBD,تعميم شركة طيران,"Airline circular (pick approved security request, auto-filled)",Requests (06),Only an issued security approval; travelers auto-filled,Designed - Not implemented
+SYS-09,SYS,State,TBD,قاعدة صلاحية الجواز ٦ أشهر (حاجبة),Passport 6-month rule (blocking),Booking traveler form,Issue date in the future; expiry < 6 months from travel date,Designed - Not implemented
+ACC-07,ACC,Screen,TBD,إدارة الفروع والهرمية,Branch management and hierarchy,Account (ACC),Filter requests by branch; staff and request counts,Designed - Not implemented
+BOOK-10,BOOK,Screen,TBD,حصة المستشفى والتوفر,Hospital quota and availability,Booking (medical service),Remaining capacity this week; choose hospital,Designed - Not implemented
+REQ-14b,REQ,State,TBD,ملخص الكشف الجماعي,Group manifest summary,REQ-14,GM-code; per-traveler status,Designed - Not implemented
+REQ-15b,REQ,State,TBD,تعميم الطيران: معبّأ تلقائيًا,Airline circular auto-filled,REQ-15,Linked to the security approval; ticket only,Designed - Not implemented
