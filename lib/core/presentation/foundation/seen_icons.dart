@@ -43,6 +43,9 @@ abstract final class SeenIcons {
   static IconData get eye => PhosphorIcons.eye();
   static IconData get eyeSlash => PhosphorIcons.eyeSlash();
   static IconData get refresh => PhosphorIcons.arrowsClockwise();
+  static IconData get camera => PhosphorIcons.camera();
+  static IconData get image => PhosphorIcons.image();
+  static IconData get trash => PhosphorIcons.trash();
 
   /// Chevron pointing "back" in the current reading direction.
   static IconData back(BuildContext context) =>

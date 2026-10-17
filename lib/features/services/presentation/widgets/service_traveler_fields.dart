@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
 import '../../domain/entities/service_definition.dart';
+import 'nationality_options.dart';
 
 /// Resolves which per-traveler fields a service needs, with localized
 /// labels. Lives in presentation (not the domain `ServiceDefinition`
@@ -42,9 +43,10 @@ abstract final class ServiceTravelerFields {
         ),
         DynamicFormField(
           key: 'nationality',
-          type: FieldType.text,
+          type: FieldType.select,
           label: l10n.travelerNationalityLabel,
           required: true,
+          options: nationalityOptions(arabic: l10n.localeName == 'ar'),
         ),
         DynamicFormField(
           key: 'birthDate',

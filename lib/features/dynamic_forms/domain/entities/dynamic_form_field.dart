@@ -18,7 +18,7 @@ enum DateFieldConstraint {
 
 /// One selectable choice for a [FieldType.select] field.
 class FieldOption extends Equatable {
-  const FieldOption({required this.value, required this.label});
+  const FieldOption({required this.value, required this.label, this.description});
 
   /// The value submitted/stored — stable, not necessarily user-facing.
   final String value;
@@ -26,8 +26,11 @@ class FieldOption extends Equatable {
   /// The user-facing, already-localized text.
   final String label;
 
+  /// Optional second line under [label] (e.g. a code or a short explanation).
+  final String? description;
+
   @override
-  List<Object?> get props => [value, label];
+  List<Object?> get props => [value, label, description];
 }
 
 /// Declarative definition of one dynamic form field.

@@ -36,6 +36,7 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
     on<ReviewReadyAcknowledged>(_onReviewReadyAcknowledged);
     on<BookingSubmitted>(_onBookingSubmitted, transformer: droppable());
     on<BookingReset>(_onBookingReset);
+    on<BookingBalanceRefreshRequested>(_onBalanceRefresh, transformer: restartable());
   }
 
   final GetAvailableServicesUseCase _getAvailableServicesUseCase;
@@ -143,9 +144,25 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
     emit(current.copyWith(travelers: travelers, travelerErrors: travelerErrors));
   }
 
+  Future<void> _onBalanceRefresh(BookingBalanceRefreshRequested event, Emitter<ServiceBookingState> emit) async {
+    final before = state;
+    if (before is! ServiceBookingInProgress) return;
+    emit(before.copyWith(walletBalanceLoading: true));
+    final result = await _getWalletBalanceUseCase();
+    final current = state;
+    if (current is! ServiceBookingInProgress) return;
+    emit(
+      result.match(
+        (failure) => current.copyWith(walletBalanceLoading: false),
+        (balance) => current.copyWith(walletBalance: balance, walletBalanceLoading: false),
+      ),
+    );
+  }
+
   void _onTravelerAdded(TravelerAdded event, Emitter<ServiceBookingState> emit) {
     final current = state;
     if (current is! ServiceBookingInProgress) return;
+    if (current.travelers.length >= maxTravelersPerRequest) return;
     final travelers = [
       ...current.travelers,
       TravelerInfo(id: _newTravelerId(), fieldValues: const {}),

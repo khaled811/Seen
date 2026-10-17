@@ -48,6 +48,15 @@ class WalletBalance extends Equatable {
 
   bool get isOverLimit => overLimitCents > 0;
 
+  /// Credit that can still be used (limit minus used), or null while the server
+  /// does not say how much is in use.
+  int? get creditRemainingCents {
+    final used = creditUsedCents;
+    if (used == null) return null;
+    final left = creditLimitCents - used;
+    return left > 0 ? left : 0;
+  }
+
   /// 0..1 share of the credit limit in use, or null without both numbers.
   double? get creditUsedFraction {
     final used = creditUsedCents;

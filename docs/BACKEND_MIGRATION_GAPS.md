@@ -1018,3 +1018,26 @@ plain message exactly as before.
   upload fails with 401: the server should not keep a half upload.
 - The shared text field now draws an error without text, an accepted state (green + check) and keeps the
   password eye next to the error mark.
+
+## 31. Booking form: switcher, pickers, attachment, shortfall (Figma BOOK-02 … 08)
+- **Traveler limit (BOOK-02).** The app stops at 9 travelers per request (`maxTravelersPerRequest`) and says so
+  ("larger lists: use the group manifest"). The server must enforce the same limit and answer
+  `TOO_MANY_TRAVELERS` when it is exceeded. The group manifest (REQ-14) is not built yet.
+- **Nationality list (BOOK-03).** Bundled in the app (22 demonyms, Arabic + English). It must come from the server
+  (`nationalities` query: code, Arabic name, English name). The value sent is still the Arabic demonym, as the
+  free-text field sent before; a code would be better, say so and the app changes.
+- **Recents (BOOK-03 / 05).** The last 3 picks per field are kept in memory for the session only; nothing is
+  stored on the device or the server.
+- **Date rule (BOOK-04).** The calendar limits the range per field (passport expiry: from today + 6 months;
+  issue and birth dates: not after today). The check uses today as the travel date; if the rule is "6 months from
+  the *travel* date", the request needs a travel date the app does not collect. The server stays the authority.
+- **Attachment (BOOK-06).** The picked file (JPG / PNG / PDF, up to 5 MB) is only held on the device and the card
+  says "not sent yet". There is no booking-attachment upload contract: it needs an upload mutation per traveler
+  (or per request) and the codes `FILE_TOO_LARGE` / `FILE_TYPE_NOT_ALLOWED` (same as section 22). The 5 MB limit is
+  from the design; the server must apply it.
+- **Insufficient balance (BOOK-08).** Shortfall = total - available - remaining credit. Remaining credit counts only
+  when the wallet reports `creditUsedAmount` (section 25); without it the full total is the shortfall, so the
+  button stays safe. The server must still reject a booking above balance + credit (`INSUFFICIENT_BALANCE`).
+  Top-up opens the existing top-up form pre-filled with the shortfall; the balance is read again when it closes.
+- **Not done in BOOK-07.** Field-type extras of the frame (character counter, phone with a country-code picker,
+  read-only look) are not built; the existing field types are unchanged except select, which now opens the sheet.

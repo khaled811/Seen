@@ -5,8 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
-import '../../../../core/presentation/widgets/dropzone.dart';
 import '../../../../core/presentation/widgets/form_stepper.dart';
+import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
@@ -19,12 +19,15 @@ import '../../domain/entities/traveler_info.dart';
 import '../bloc/service_booking_bloc.dart';
 import '../bloc/service_booking_event.dart';
 import '../bloc/service_booking_state.dart';
+import '../bloc/traveler_attachment_cubit.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../domain/entities/booking_draft.dart';
 import '../utils/draft_summary.dart';
 import '../widgets/save_draft_sheet.dart';
+import '../widgets/seen_attachment_slot.dart';
 import '../widgets/seen_dynamic_field.dart';
-import '../widgets/seen_traveler_chips.dart';
+import '../widgets/seen_traveler_chips.dart' show SeenTravelerState;
+import '../widgets/seen_traveler_switcher.dart';
 import '../widgets/seen_validity_hint.dart';
 import 'booking_review_screen.dart';
 
@@ -44,32 +47,37 @@ class TravelerEntryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
-    return BlocListener<ServiceBookingBloc, ServiceBookingState>(
-      listenWhen: (previous, current) =>
-          current is ServiceBookingInProgress && current.reviewReady,
-      listener: (context, state) {
-        final bloc = context.read<ServiceBookingBloc>()
-          ..add(const ReviewReadyAcknowledged());
-        // Same reason as ServiceSelectionScreen's push: forward the same
-        // Bloc instance explicitly, since the pushed route isn't a
-        // descendant of this screen's BlocProvider.
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => BlocProvider.value(
-                value: bloc, child: const BookingReviewScreen()),
+    return BlocProvider(
+      // The picker is resolved on first use, so tests never touch the plugins.
+      create: (_) => TravelerAttachmentCubit(
+          () => InjectionContainer.instance.documentPicker),
+      child: BlocListener<ServiceBookingBloc, ServiceBookingState>(
+        listenWhen: (previous, current) =>
+            current is ServiceBookingInProgress && current.reviewReady,
+        listener: (context, state) {
+          final bloc = context.read<ServiceBookingBloc>()
+            ..add(const ReviewReadyAcknowledged());
+          // Same reason as ServiceSelectionScreen's push: forward the same
+          // Bloc instance explicitly, since the pushed route isn't a
+          // descendant of this screen's BlocProvider.
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                  value: bloc, child: const BookingReviewScreen()),
+            ),
+          );
+        },
+        child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
+          buildWhen: (previous, current) =>
+              _isDirty(previous) != _isDirty(current),
+          // Leaving with data entered asks whether to keep it as a draft (REQ-04).
+          builder: (context, state) => PopScope(
+            canPop: !_isDirty(state),
+            onPopInvoked: (didPop) {
+              if (!didPop) _askToSaveDraft(context);
+            },
+            child: _scaffold(context, c),
           ),
-        );
-      },
-      child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
-        buildWhen: (previous, current) =>
-            _isDirty(previous) != _isDirty(current),
-        // Leaving with data entered asks whether to keep it as a draft (REQ-04).
-        builder: (context, state) => PopScope(
-          canPop: !_isDirty(state),
-          onPopInvoked: (didPop) {
-            if (!didPop) _askToSaveDraft(context);
-          },
-          child: _scaffold(context, c),
         ),
       ),
     );
@@ -185,6 +193,11 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: SeenSpace.s4),
         _TravelerTabs(state: state),
+        const SizedBox(height: 8),
+        Text(l10n.bookingTravelerLimit,
+            style: SeenType.of(context)
+                .caption
+                .copyWith(color: SeenColors.of(context).inkMuted)),
         const SizedBox(height: SeenSpace.s3),
         // A fresh card per traveler, cross-faded (add / remove / switch).
         AnimatedSize(
@@ -198,6 +211,7 @@ class _Body extends StatelessWidget {
             ),
           ),
         ),
+        _IssueBanner(state: state),
       ],
     );
   }
@@ -210,23 +224,22 @@ class _TravelerTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SeenTravelerChips(
-      padding: EdgeInsets.zero,
-      travelers: [
+    return SeenTravelerSwitcher(
+      states: [
         for (final traveler in state.travelers)
-          SeenTravelerChipData(
-            state: (state.travelerErrors[traveler.id]?.isNotEmpty ?? false)
-                ? SeenTravelerState.error
-                : (traveler.fieldValues.isNotEmpty
-                    ? SeenTravelerState.done
-                    : SeenTravelerState.empty),
-          ),
+          (state.travelerErrors[traveler.id]?.isNotEmpty ?? false)
+              ? SeenTravelerState.error
+              : (traveler.fieldValues.isNotEmpty
+                  ? SeenTravelerState.done
+                  : SeenTravelerState.empty),
       ],
       activeIndex: state.activeTravelerIndex,
       onSelected: (i) =>
           context.read<ServiceBookingBloc>().add(ActiveTravelerChanged(i)),
-      onAdd: () =>
-          context.read<ServiceBookingBloc>().add(const TravelerAdded()),
+      // At the limit the "+" is shown disabled (the note below says why).
+      onAdd: state.travelers.length >= maxTravelersPerRequest
+          ? null
+          : () => context.read<ServiceBookingBloc>().add(const TravelerAdded()),
     );
   }
 }
@@ -352,25 +365,23 @@ class _TravelerCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             ..._fieldWidgets(context, state, traveler, errors, expiry),
-            // No file-picker / upload API yet: the slot is visual only and
-            // says so, rather than faking an attachment.
-            SeenDropzone(
+            // No booking-attachment upload API yet: the file stays on the device
+            // and the slot says so (see TravelerAttachmentCubit).
+            SeenAttachmentSlot(
+              travelerId: traveler.id,
               title: l10n.travelerAttachmentLabel,
-              caption: l10n.attachmentComingSoon,
-              onTap: () => ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                    SnackBar(content: Text(l10n.attachmentComingSoon))),
+              caption: s.attachTypes,
             ),
             if (state.travelers.length > 1) ...[
-              const SizedBox(height: 14),
-              SeenButton.destructive(
-                label: l10n.removeTravelerAction,
-                size: SeenButtonSize.small,
-                expand: true,
-                onPressed: () => context
-                    .read<ServiceBookingBloc>()
-                    .add(TravelerRemoved(state.activeTravelerIndex)),
+              const SizedBox(height: 6),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: SeenTextLink(
+                  label: l10n.removeThisTravelerAction,
+                  onTap: () => context
+                      .read<ServiceBookingBloc>()
+                      .add(TravelerRemoved(state.activeTravelerIndex)),
+                ),
               ),
             ],
           ],
@@ -401,6 +412,47 @@ class _ActionsBar extends StatelessWidget {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ],
+    );
+  }
+}
+
+/// Figma BOOK-02: after "Next" with a problem, say which traveler and what, with a
+/// shortcut to that traveler.
+class _IssueBanner extends StatelessWidget {
+  const _IssueBanner({required this.state});
+
+  final ServiceBookingInProgress state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final s = SeenStrings.of(context);
+    final index = state.travelers
+        .indexWhere((t) => state.travelerErrors[t.id]?.isNotEmpty ?? false);
+    if (index < 0) return const SizedBox.shrink();
+    final errors = state.travelerErrors[state.travelers[index].id]!;
+    final fieldKey = errors.keys.first;
+    final label = state.travelerFields
+        .where((f) => f.key == fieldKey)
+        .map((f) => f.label)
+        .firstOrNull;
+    final who = s.numeral(index + 1);
+    // "Missing X" only when the problem really is a missing value.
+    final message = label != null && errors[fieldKey] == l10n.validationRequired
+        ? l10n.bookingTravelerMissing(who, label)
+        : l10n.bookingTravelerInvalid(who);
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: SeenInlineBanner(
+        tone: SeenBannerTone.error,
+        message: message,
+        actionLabel: index == state.activeTravelerIndex
+            ? null
+            : l10n.bookingTravelerShow,
+        onAction: () => context
+            .read<ServiceBookingBloc>()
+            .add(ActiveTravelerChanged(index)),
+      ),
     );
   }
 }

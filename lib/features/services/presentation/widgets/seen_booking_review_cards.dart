@@ -2,6 +2,7 @@
 // fee breakdown, wallet-hold panel and the confirmation checkbox. Presentation
 // only: amounts and counts are passed in; nothing here talks to the bloc.
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/foundation/seen_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/presentation/foundation/seen_strings.dart';
@@ -355,6 +356,78 @@ class SeenConfirmCheck extends StatelessWidget {
                     ),
               const SizedBox(width: 10),
               Expanded(child: Text(label, style: type.label.copyWith(color: c.inkSecondary))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Figma BOOK-08: the balance does not cover the booking. The numbers behind the
+/// shortfall: what is available, the credit still free, and what is missing.
+class SeenShortfallCard extends StatelessWidget {
+  const SeenShortfallCard({
+    super.key,
+    required this.title,
+    required this.available,
+    required this.availableLabel,
+    required this.shortfall,
+    required this.shortfallLabel,
+    this.creditRemaining,
+    this.creditLabel,
+  });
+
+  final String title;
+  final num available;
+  final String availableLabel;
+  final num shortfall;
+  final String shortfallLabel;
+
+  /// Shown only when the server says how much credit is free.
+  final num? creditRemaining;
+  final String? creditLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SeenColors.of(context);
+    final type = SeenType.of(context);
+    final tone = SeenRequestStatus.rejected.colors;
+    Widget row(String label, num amount) => Row(
+          children: [
+            Text(label, style: type.body.copyWith(color: c.inkSecondary)),
+            const Spacer(),
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text('${SeenFormat.money(amount)} USD', style: type.bodyStrong.copyWith(color: tone.fg)),
+            ),
+          ],
+        );
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: tone.bg, borderRadius: const BorderRadius.all(SeenRadius.r20)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(SeenIcons.alert, size: 20, color: tone.fg),
+                  const SizedBox(width: 8),
+                  Text(title, style: type.title.copyWith(color: tone.fg)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              row(availableLabel, available),
+              if (creditRemaining != null && creditLabel != null) ...[
+                const SizedBox(height: 10),
+                row(creditLabel!, creditRemaining!),
+              ],
+              const SizedBox(height: 10),
+              row(shortfallLabel, shortfall),
             ],
           ),
         ),

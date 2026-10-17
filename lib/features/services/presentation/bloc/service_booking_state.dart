@@ -9,6 +9,10 @@ import '../../domain/pricing.dart';
 
 enum BookingSubmissionStatus { idle, submitting, success, failure }
 
+/// The most travelers one request takes; more go through the group manifest
+/// (Figma BOOK-02).
+const maxTravelersPerRequest = 9;
+
 sealed class ServiceBookingState extends Equatable {
   const ServiceBookingState();
 
@@ -90,10 +94,19 @@ final class ServiceBookingInProgress extends ServiceBookingState {
         travelerCount: travelers.length,
       );
 
-  /// `true` when the balance hasn't loaded yet — a UX aid only, never a
-  /// substitute for the backend's own enforcement.
-  bool get hasSufficientBalance =>
-      walletBalance == null || walletBalance!.availableCents >= totalPriceCents;
+  /// How much is missing to pay for the booking: the total minus the available
+  /// balance minus the credit still free (only counted when the server says how
+  /// much is in use). 0 while the balance is unknown. A UX aid only, never a
+  /// substitute for the backend's own enforcement (Figma BOOK-08).
+  int get shortfallCents {
+    final balance = walletBalance;
+    if (balance == null) return 0;
+    final missing = totalPriceCents - balance.availableCents - (balance.creditRemainingCents ?? 0);
+    return missing > 0 ? missing : 0;
+  }
+
+  /// `true` when the balance hasn't loaded yet or covers the booking.
+  bool get hasSufficientBalance => shortfallCents == 0;
 
   TravelerInfo get activeTraveler => travelers[activeTravelerIndex];
 

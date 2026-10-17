@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/constants/enums.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
@@ -10,7 +12,10 @@ import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
+import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../wallet/presentation/bloc/wallet_event.dart';
+import '../../../wallet/presentation/screens/top_up_request_screen.dart';
 import '../bloc/service_booking_bloc.dart';
 import '../bloc/service_booking_event.dart';
 import '../bloc/service_booking_state.dart';
@@ -108,6 +113,23 @@ class _ReviewBodyState extends State<_ReviewBody> {
   // and the backend contract do not know about it.
   bool _confirmed = false;
 
+  /// Opens the top-up form for [shortfallCents] and reloads the balance when the
+  /// agent comes back (the form's own wallet bloc lives only for that route).
+  Future<void> _topUp(BuildContext context, int shortfallCents) async {
+    final bloc = context.read<ServiceBookingBloc>();
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => InjectionContainer.instance.createWalletBloc()..add(const WalletLoadRequested()),
+          child: TopUpRequestScreen(
+            prefill: TopUpPrefill(amountCents: shortfallCents, method: TopUpMethod.bankTransfer),
+          ),
+        ),
+      ),
+    );
+    bloc.add(const BookingBalanceRefreshRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -118,6 +140,7 @@ class _ReviewBodyState extends State<_ReviewBody> {
     final totalPrice = state.totalPriceCents / 100;
     final facts = ServiceCardCopy.forCategory(state.service.category, l10n);
     final balance = state.walletBalance;
+    final insufficient = !state.hasSufficientBalance;
 
     final travelers = [
       for (final t in state.travelers)
@@ -168,20 +191,40 @@ class _ReviewBodyState extends State<_ReviewBody> {
                 totalLabel: l10n.reviewTotal,
               ),
               const SizedBox(height: 18),
-              SeenWalletHoldCard(
-                charge: totalPrice,
-                available: balance == null ? null : balance.availableCents / 100,
-                loading: state.walletBalanceLoading,
-                titleBuilder: l10n.reviewHoldTitle,
-                note: l10n.reviewHoldNote,
-                afterLabel: l10n.reviewAvailableAfter,
-              ),
-              const SizedBox(height: 18),
-              SeenConfirmCheck(
-                value: _confirmed,
-                label: l10n.reviewConfirmTerms,
-                onChanged: (v) => setState(() => _confirmed = v),
-              ),
+              if (insufficient && balance != null) ...[
+                // Figma BOOK-08: the balance does not cover it: say by how much and
+                // offer the top-up for exactly that.
+                SeenShortfallCard(
+                  title: s.balanceNotEnough,
+                  available: balance.availableCents / 100,
+                  availableLabel: l10n.reviewShortfallAvailable,
+                  creditRemaining: balance.creditRemainingCents == null ? null : balance.creditRemainingCents! / 100,
+                  creditLabel: l10n.reviewShortfallCredit,
+                  shortfall: state.shortfallCents / 100,
+                  shortfallLabel: l10n.reviewShortfallMissing,
+                ),
+                const SizedBox(height: 14),
+                SeenButton.secondary(
+                  label: l10n.reviewTopUpShortfall(SeenFormat.usd(state.shortfallCents / 100)),
+                  expand: true,
+                  onPressed: () => _topUp(context, state.shortfallCents),
+                ),
+              ] else ...[
+                SeenWalletHoldCard(
+                  charge: totalPrice,
+                  available: balance == null ? null : balance.availableCents / 100,
+                  loading: state.walletBalanceLoading,
+                  titleBuilder: l10n.reviewHoldTitle,
+                  note: l10n.reviewHoldNote,
+                  afterLabel: l10n.reviewAvailableAfter,
+                ),
+                const SizedBox(height: 18),
+                SeenConfirmCheck(
+                  value: _confirmed,
+                  label: l10n.reviewConfirmTerms,
+                  onChanged: (v) => setState(() => _confirmed = v),
+                ),
+              ],
             ],
           ),
         ),
@@ -192,7 +235,9 @@ class _ReviewBodyState extends State<_ReviewBody> {
               expand: true,
               loading: isSubmitting,
               // The reason it is disabled is on screen: the confirmation row above.
-              onPressed: _confirmed ? () => context.read<ServiceBookingBloc>().add(const BookingSubmitted()) : null,
+              onPressed: _confirmed && !insufficient
+                  ? () => context.read<ServiceBookingBloc>().add(const BookingSubmitted())
+                  : null,
             ),
           ],
         ),

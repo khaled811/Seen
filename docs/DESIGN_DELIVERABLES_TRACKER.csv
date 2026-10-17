@@ -30,13 +30,13 @@ REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) >
 REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Designed - Implemented (Flutter)
 REQ-13,REQ,Screen,P1,نتائج البحث عن الطلبات,Requests search results,Requests (06) search; Home search pill,Recent searches; by reference or traveler; no results,Designed - Implemented (Flutter)
 BOOK-01,BOOK,Screen,P0,نجاح الحجز / الإيصال,Booking success / receipt,After Review (10) submit,Request number copy; held amount; balance after; share/download receipt,Designed - Implemented (Flutter)
-BOOK-02,BOOK,Component,P1,مبدّل المسافرين (إضافة / حذف),Traveler switcher (add / remove),Form (09),Min 1 traveler; max travelers; unsaved data; error marker per traveler,Designed - Not implemented
-BOOK-03,BOOK,Sheet,P1,اختيار الجنسية,Nationality picker,Form (09) nationality field,Search; long list; no match; recent,Designed - Not implemented
-BOOK-04,BOOK,Sheet,P1,اختيار التاريخ,Date picker sheet,Form (09) date fields,Min/max dates; passport expiry rule; invalid date,Designed - Not implemented
-BOOK-05,BOOK,Sheet,P1,قائمة الاختيار,Select options sheet,Form (09) select fields,Long list; search; required,Designed - Not implemented
-BOOK-06,BOOK,Sheet,P1,إرفاق مستند (كاميرا / معرض / ملفات),Attachment source sheet,"Form (09), Top-up (12), Registration (15)",Permission denied; size/type error; crop; replace; remove,Designed - Not implemented
-BOOK-07,BOOK,Component,P1,أنواع الحقول: نص طويل / رقم / هاتف / بريد / قائمة,"Field types: textarea, number, phone, email, select",Dynamic form fields,Counter; keyboard type; inline error; read-only,Designed - Not implemented
-BOOK-08,BOOK,State,P1,المراجعة: رصيد غير كافٍ,Review: insufficient balance,Review (10),Blocked submit; shortfall amount; top-up shortcut; credit limit,Designed - Not implemented
+BOOK-02,BOOK,Component,P1,مبدّل المسافرين (إضافة / حذف),Traveler switcher (add / remove),Form (09),Min 1 traveler; max travelers; unsaved data; error marker per traveler,Designed - Implemented (Flutter)
+BOOK-03,BOOK,Sheet,P1,اختيار الجنسية,Nationality picker,Form (09) nationality field,Search; long list; no match; recent,Designed - Implemented (Flutter)
+BOOK-04,BOOK,Sheet,P1,اختيار التاريخ,Date picker sheet,Form (09) date fields,Min/max dates; passport expiry rule; invalid date,Designed - Implemented (Flutter)
+BOOK-05,BOOK,Sheet,P1,قائمة الاختيار,Select options sheet,Form (09) select fields,Long list; search; required,Designed - Implemented (Flutter)
+BOOK-06,BOOK,Sheet,P1,إرفاق مستند (كاميرا / معرض / ملفات),Attachment source sheet,"Form (09), Top-up (12), Registration (15)",Permission denied; size/type error; crop; replace; remove,Designed - Implemented (Flutter)
+BOOK-07,BOOK,Component,P1,أنواع الحقول: نص طويل / رقم / هاتف / بريد / قائمة,"Field types: textarea, number, phone, email, select",Dynamic form fields,Counter; keyboard type; inline error; read-only,Designed - Partly implemented (Flutter)
+BOOK-08,BOOK,State,P1,المراجعة: رصيد غير كافٍ,Review: insufficient balance,Review (10),Blocked submit; shortfall amount; top-up shortcut; credit limit,Designed - Implemented (Flutter)
 BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / Home (05) soon tile,Notify me; info only,Designed - Not implemented
 WAL-01,WAL,Screen,P1,تفاصيل العملية,Transaction detail,Wallet (11) ledger row,Hold vs final deduction vs refund; linked request; reference copy,Designed - Implemented (Flutter)
 WAL-02,WAL,Screen,P1,تفاصيل الشحن المعلّق,Pending top-up detail / status,Wallet (11) pending card,Receipt preview; review status; cancel request,Designed - Implemented (Flutter)

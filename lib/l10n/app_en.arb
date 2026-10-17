@@ -3887,5 +3887,59 @@
         "type": "String"
       }
     }
+  },
+  "reviewShortfallAvailable": "Available",
+  "@reviewShortfallAvailable": {
+    "description": "Booking review: insufficient balance."
+  },
+  "reviewShortfallCredit": "Credit limit left",
+  "@reviewShortfallCredit": {
+    "description": "Booking review: insufficient balance."
+  },
+  "reviewShortfallMissing": "Shortfall",
+  "@reviewShortfallMissing": {
+    "description": "Booking review: insufficient balance."
+  },
+  "reviewTopUpShortfall": "Top up {amount}",
+  "@reviewTopUpShortfall": {
+    "description": "Booking review: insufficient balance.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingTravelerLimit": "Limit: 1 to 9 travelers per request. For larger lists use the group manifest.",
+  "@bookingTravelerLimit": {
+    "description": "Booking traveler switcher copy."
+  },
+  "removeThisTravelerAction": "Remove this traveler",
+  "@removeThisTravelerAction": {
+    "description": "Booking traveler switcher copy."
+  },
+  "bookingTravelerMissing": "Traveler {traveler} is missing {field}.",
+  "@bookingTravelerMissing": {
+    "description": "Booking traveler switcher copy.",
+    "placeholders": {
+      "traveler": {
+        "type": "String"
+      },
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingTravelerInvalid": "Traveler {traveler} has details to correct.",
+  "@bookingTravelerInvalid": {
+    "description": "Booking traveler switcher copy.",
+    "placeholders": {
+      "traveler": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingTravelerShow": "Show",
+  "@bookingTravelerShow": {
+    "description": "Booking traveler switcher copy."
   }
 }

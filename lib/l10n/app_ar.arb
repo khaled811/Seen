@@ -846,5 +846,14 @@
   "loginBannerContact": "تواصل",
   "logoutConfirmAction": "خروج",
   "logoutPendingUpload": "لديك رفع مستند لم يكتمل ({reference}). إن خرجت الآن سيتوقف الرفع.",
-  "logoutPendingUploads": "لديك {count} عمليات رفع لم تكتمل. إن خرجت الآن ستتوقف."
+  "logoutPendingUploads": "لديك {count} عمليات رفع لم تكتمل. إن خرجت الآن ستتوقف.",
+  "reviewShortfallAvailable": "المتاح",
+  "reviewShortfallCredit": "حد الائتمان المتبقي",
+  "reviewShortfallMissing": "النقص",
+  "reviewTopUpShortfall": "شحن {amount}",
+  "bookingTravelerLimit": "الحد: ١ إلى ٩ مسافرين في الطلب الواحد. للكشوف الأكبر استخدم الكشف الجماعي.",
+  "removeThisTravelerAction": "إزالة هذا المسافر",
+  "bookingTravelerMissing": "المسافر {traveler} ينقصه {field}.",
+  "bookingTravelerInvalid": "المسافر {traveler} فيه بيانات تحتاج تصحيحًا.",
+  "bookingTravelerShow": "عرض"
 }

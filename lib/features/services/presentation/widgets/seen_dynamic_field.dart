@@ -9,11 +9,13 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
-import '../../../../core/presentation/widgets/sheets.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/utils/latin_digits.dart';
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
+import 'seen_date_sheet.dart';
+import 'seen_options_sheet.dart';
 
 class SeenDynamicField extends StatefulWidget {
   const SeenDynamicField({
@@ -74,35 +76,39 @@ class _SeenDynamicFieldState extends State<SeenDynamicField> {
   }
 
   Future<void> _pickDate() async {
+    final f = widget.field;
     final now = DateTime.now();
-    final current = widget.value is DateTime ? widget.value as DateTime : null;
-    final picked = await showDatePicker(
+    final today = DateTime(now.year, now.month, now.day);
+    // Allowed range follows the field's own rule (the validators stay the authority).
+    final (first, last) = switch (f.dateConstraint) {
+      DateFieldConstraint.minMonthsInFuture => (
+          DateTime(today.year, today.month + f.minMonthsInFuture, today.day),
+          DateTime(today.year + 20, today.month, today.day),
+        ),
+      DateFieldConstraint.notInFuture => (DateTime(today.year - 100), today),
+      DateFieldConstraint.none => (DateTime(today.year - 100), DateTime(today.year + 100)),
+    };
+    final s = SeenStrings.of(context);
+    final picked = await showSeenDateSheet(
       context: context,
-      initialDate: current ?? now,
-      firstDate: DateTime(now.year - 100),
-      lastDate: DateTime(now.year + 100),
+      title: f.label,
+      firstDate: first,
+      lastDate: last,
+      initial: widget.value is DateTime ? widget.value as DateTime : null,
+      rule: f.dateConstraint == DateFieldConstraint.minMonthsInFuture
+          ? s.expiryRuleHint(f.minMonthsInFuture)
+          : null,
     );
     if (picked != null) widget.onChanged(picked);
   }
 
   Future<void> _pickOption() async {
-    final options = widget.field.options ?? const <FieldOption>[];
-    final picked = await showSeenSheet<String>(
+    final picked = await showSeenOptionsSheet(
       context: context,
       title: widget.field.label,
-      builder: (sheetContext) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final option in options)
-            ListTile(
-              title: Text(option.label),
-              trailing: option.value == widget.value
-                  ? Icon(SeenIcons.check, color: SeenColors.of(sheetContext).primary)
-                  : null,
-              onTap: () => Navigator.of(sheetContext).pop(option.value),
-            ),
-        ],
-      ),
+      recentsKey: widget.field.key,
+      options: widget.field.options ?? const <FieldOption>[],
+      selected: widget.value is String ? widget.value as String : null,
     );
     if (picked != null) widget.onChanged(picked);
   }

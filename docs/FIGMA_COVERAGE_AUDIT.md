@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–29).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–31).
 
 ## Not built to the design (39 frames)
 
@@ -34,13 +34,13 @@ the same thing that does not follow the frame.
 ### Booking (9, + BOOK-10 with no tracker row)
 | Frame | Priority | What is missing |
 |---|---|---|
-| BOOK-02 Traveler switcher | P1 | Add / remove travelers, per-traveler error marker, limits (1–9). |
-| BOOK-03 Nationality picker | P1 | Searchable sheet with recents and "no match". |
-| BOOK-04 Date picker sheet | P1 | Sheet with min / max and the 6-month passport rule (the rule exists as a validator and hint; the sheet does not). Partly. |
-| BOOK-05 Select options sheet | P1 | Searchable options sheet. |
-| BOOK-06 Attachment source sheet | P1 | Camera / gallery / file source, type and size errors, replace, remove. |
-| BOOK-07 Field types | P1 | Textarea, number pad, phone with country code, e-mail, select, counters. Partly (dynamic form has the types, not this look). |
-| BOOK-08 Review: insufficient balance | P1 | Blocked submit with the shortfall and a top-up shortcut. Partly (review cards mention it). |
+| BOOK-02 Traveler switcher | P1 | **Done.** Switcher, limit 9, issue banner. See gaps section 31. |
+| BOOK-03 Nationality picker | P1 | **Done.** Searchable sheet, recents (session), no-match. List is bundled (section 31). |
+| BOOK-04 Date picker sheet | P1 | **Done.** Calendar sheet with the field range and the 6-month rule. |
+| BOOK-05 Select options sheet | P1 | **Done.** Shared options sheet with search above 7 options. |
+| BOOK-06 Attachment source sheet | P1 | **Done** on the device only: the file is not sent (no upload API, section 31). |
+| BOOK-07 Field types | P1 | **Partly.** Select uses the sheet; counter, phone country code and read-only look are not built. |
+| BOOK-08 Review: insufficient balance | P1 | **Done.** Shortfall card, top-up shortcut, blocked submit. |
 | BOOK-09 Service coming soon | P2 | "Notify me" screen. |
 | BOOK-10 Hospital quota & availability | — | Whole screen (medical service). |
 

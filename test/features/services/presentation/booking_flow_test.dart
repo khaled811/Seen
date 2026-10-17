@@ -214,14 +214,14 @@ void main() {
 
     testWidgets('add and remove a traveler', (tester) async {
       await pumpTravelers(tester);
-      await tester.tap(find.text('إضافة مسافر'));
+      await tester.tap(find.text('+'));
       await tester.pumpAndSettle();
       expect(find.text('المسافر ٢ من ٢'), findsOneWidget);
-      expect(find.text('إزالة المسافر'), findsOneWidget);
+      expect(find.text('إزالة هذا المسافر'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('إزالة المسافر'));
+      await tester.ensureVisible(find.text('إزالة هذا المسافر'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('إزالة المسافر'));
+      await tester.tap(find.text('إزالة هذا المسافر'));
       await tester.pumpAndSettle();
       expect(find.text('المسافر ١ من ١'), findsOneWidget);
     });

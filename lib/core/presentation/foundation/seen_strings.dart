@@ -255,6 +255,27 @@ class SeenStrings {
   // Chrome
   String get back => _t('رجوع', 'Back');
   String get close => _t('إغلاق', 'Close');
+
+  // Pickers (Figma BOOK-03 … 06).
+  String get optionsSearchHint => _t('ابحث…', 'Search…');
+  String get optionsRecent => _t('الأخيرة', 'Recent');
+  String get optionsAll => _t('الكل', 'All');
+  String optionsNoMatch(String q) => _t('لا نتائج لـ «$q»', 'No results for “$q”');
+  String get optionsNoMatchHint => _t('جرّب كتابة الاسم بطريقة أخرى.', 'Try spelling it another way.');
+  String expiryRuleHint(int months) => _t('يجب أن تبقى صالحة ${numeral(months)} أشهر على الأقل.', 'Must be valid for at least $months more months.');
+  String get dateConfirm => _t('تأكيد التاريخ', 'Confirm date');
+  String get dateSelected => _t('التاريخ المحدد', 'Selected date');
+  String get attachSourceTitle => _t('إضافة مرفق', 'Add attachment');
+  String get attachCamera => _t('الكاميرا', 'Camera');
+  String get attachGallery => _t('معرض الصور', 'Photo gallery');
+  String get attachFile => _t('ملف', 'File');
+  String get attachReplace => _t('استبدال', 'Replace');
+  String get attachRemove => _t('حذف المرفق', 'Remove attachment');
+  String get attachTypes => _t('الأنواع المقبولة: JPG وPNG وPDF', 'Accepted: JPG, PNG, PDF');
+  String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
+  String get attachUnavailable => _t('تعذّر فتح المصدر. تحقق من أذونات التطبيق.', 'Could not open the source. Check the app permissions.');
+  String get attachBadType => _t('نوع الملف غير مقبول. استخدم JPG أو PNG أو PDF.', 'File type not accepted. Use JPG, PNG or PDF.');
+  String get attachNotSent => _t('المرفق محفوظ على جهازك فقط ولم يُرسل بعد.', 'The attachment is kept on this device and has not been sent yet.');
   String get notifications => _t('الإشعارات', 'Notifications');
   String get languageSwitch => _t('EN', 'ع');
   String get languageLabel => _t('English', 'العربية');
@@ -274,6 +295,9 @@ class SeenStrings {
   String get processing => _t('مدة المعالجة', 'Processing');
   String get documents => _t('المستندات', 'Documents');
   String traveler(int n) => _t('المسافر $n', 'Traveler $n');
+
+  /// "مسافر ٣" / "Traveler 3": the label of a switcher tile.
+  String travelerShort(int n) => _t('مسافر ${numeral(n)}', 'Traveler $n');
   String get addTraveler => _t('إضافة مسافر', 'Add traveler');
   String travelers(int n) => _t('$n مسافرين', n == 1 ? '1 traveler' : '$n travelers');
   String get validityBad =>

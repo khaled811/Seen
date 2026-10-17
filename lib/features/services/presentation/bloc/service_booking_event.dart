@@ -109,3 +109,8 @@ final class BookingSubmitted extends ServiceBookingEvent {
 final class BookingReset extends ServiceBookingEvent {
   const BookingReset();
 }
+
+/// Reload the wallet balance (after a top-up from the review screen, Figma BOOK-08).
+final class BookingBalanceRefreshRequested extends ServiceBookingEvent {
+  const BookingBalanceRefreshRequested();
+}
