@@ -11,6 +11,7 @@ import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../support/presentation/widgets/contact_support_sheet.dart';
 
 /// Figma 16 (node 20:667) — the agency request is waiting for the operations
 /// team: illustration, title, copy, a review chip and a three-step card, with
@@ -106,9 +107,7 @@ class AgencyPendingApprovalScreen extends StatelessWidget {
                 SeenButton.outline(
                   label: l10n.agencyPendingSupportAction,
                   expand: true,
-                  onPressed: () => ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(SnackBar(content: Text(l10n.agencyPendingSupportNote))),
+                  onPressed: () => showContactSupportSheet(context),
                 ),
               ],
             ),

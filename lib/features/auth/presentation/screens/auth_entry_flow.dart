@@ -1,5 +1,5 @@
+import '../../../support/presentation/widgets/contact_support_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../domain/entities/agency_registration.dart';
 import 'agency_pending_approval_screen.dart';
@@ -43,10 +43,8 @@ class _AuthEntryFlowState extends State<AuthEntryFlow> {
 
   void _go(_EntryStep step) => setState(() => _step = step);
 
-  // No support channel exists before sign-in (see BACKEND_MIGRATION_GAPS.md).
-  void _contactSupportSoon() => ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.agencyPendingSupportNote)));
+  // Figma SUP-05: the channels come from build-time settings (SupportContactsConfig).
+  void _contactSupportSoon() => showContactSupportSheet(context);
 
   @override
   Widget build(BuildContext context) {

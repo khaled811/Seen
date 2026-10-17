@@ -3740,5 +3740,29 @@
   "ticketReopen": "Reopen",
   "@ticketReopen": {
     "description": "Support tickets copy."
+  },
+  "contactSupportTitle": "Contact support",
+  "@contactSupportTitle": {
+    "description": "Contact support sheet copy."
+  },
+  "contactSupportWhatsapp": "WhatsApp",
+  "@contactSupportWhatsapp": {
+    "description": "Contact support sheet copy."
+  },
+  "contactSupportCall": "Call us",
+  "@contactSupportCall": {
+    "description": "Contact support sheet copy."
+  },
+  "contactSupportEmail": "Email",
+  "@contactSupportEmail": {
+    "description": "Contact support sheet copy."
+  },
+  "contactSupportCopiedNumber": "Number copied.",
+  "@contactSupportCopiedNumber": {
+    "description": "Contact support sheet copy."
+  },
+  "contactSupportCopiedEmail": "Email address copied.",
+  "@contactSupportCopiedEmail": {
+    "description": "Contact support sheet copy."
   }
 }

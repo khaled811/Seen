@@ -813,5 +813,11 @@
   "ticketSendFailed": "فشل الإرسال",
   "ticketResend": "إعادة إرسال",
   "ticketClosedNote": "عند إغلاق التذكرة تصبح للقراءة فقط",
-  "ticketReopen": "إعادة فتح"
+  "ticketReopen": "إعادة فتح",
+  "contactSupportTitle": "تواصل مع الدعم",
+  "contactSupportWhatsapp": "واتساب",
+  "contactSupportCall": "اتصال مباشر",
+  "contactSupportEmail": "بريد إلكتروني",
+  "contactSupportCopiedNumber": "تم نسخ الرقم.",
+  "contactSupportCopiedEmail": "تم نسخ البريد الإلكتروني."
 }

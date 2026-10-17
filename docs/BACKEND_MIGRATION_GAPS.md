@@ -948,3 +948,22 @@ The three screens were redone to the design. New placeholder contract (`TODO(bac
   ("Requests") where the app shows the category.
 - Authors: a support message shows `authorName` ("Reem (operations)"); the agent's own messages show only the
   time. The day separator says Today / Yesterday / day-month.
+
+## 28. Contact support before sign-in (Figma SUP-05)
+
+- **The numbers and e-mail are not in the code.** The design's "+967 1 000 000" and
+  "support@seen.business" look like placeholders, so the channels are build-time settings:
+  `--dart-define=SUPPORT_WHATSAPP=…  SUPPORT_PHONE=…  SUPPORT_EMAIL=…  SUPPORT_HOURS=…`
+  (`lib/core/config/support_contacts_config.dart`). Any channel left out is not shown. With none set,
+  release builds show "you can reach support from inside the app after signing in" (as before) and debug
+  builds show obvious placeholders. **Decision needed:** the real values, and whether they should come from
+  the backend (a public, unauthenticated `supportContacts` query would let them change without a release;
+  the app would use it instead of the build settings).
+- **Rows copy, they do not open.** WhatsApp, the dialer and the mail app need the `url_launcher` plugin,
+  which the app does not have (a new dependency, so not added unasked). Until then tapping a row copies the
+  number / address and says "copied". With `url_launcher`: WhatsApp → `https://wa.me/<digits>`, call →
+  `tel:`, e-mail → `mailto:`; the rows already carry the values. Say the word and I add it.
+- **Hours** are shown as the written string from the setting ("available 8 am to 10 pm"): the app does not
+  compute open / closed.
+- **Where it opens:** from the pending-approval screen's "Contact support" button and from the password
+  recovery "Contact support" links (both went to a "later" message before).
