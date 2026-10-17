@@ -37,6 +37,7 @@ import '../../../wallet/presentation/bloc/wallet_bloc.dart';
 import '../../../wallet/presentation/bloc/wallet_event.dart';
 import '../../../wallet/presentation/bloc/wallet_state.dart';
 import '../../../wallet/presentation/screens/top_up_request_screen.dart';
+import '../../../wallet/presentation/widgets/wallet_balance_widgets.dart';
 import 'account_screen.dart';
 
 /// Home dashboard (Figma 05): header, greeting, balance card, primary actions,
@@ -343,7 +344,10 @@ class _BalanceSection extends StatelessWidget {
             onRetry: () =>
                 context.read<WalletBloc>().add(const WalletLoadRequested()),
           ),
+        WalletLoaded(:final balance) when balance.isOverLimit => SeenOverLimitCard(balance: balance),
         WalletLoaded(:final balance) => SeenBalanceCard(
+            hint: balance.isZero ? l10n.walletBalanceZeroHint : null,
+            hiddenHint: l10n.walletBalanceHiddenHint,
             available: balance.availableCents / 100,
             hold: balance.holdCents / 100,
             creditLimit: balance.creditLimitCents / 100,

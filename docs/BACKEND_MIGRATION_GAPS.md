@@ -868,3 +868,31 @@ arrives and omits the rest.
   - The statement's content (opening / closing balance, every ledger row, locale) is the backend's.
   - Failure is any error: the sheet offers a retry.
 - The previous "export not available yet" message was removed.
+
+## 25. Balance states, empty ledger and balance breakdown (Figma WAL-08 / 09 / 10)
+
+- **Credit in use (WAL-10).** The breakdown card draws a "credit limit use" bar, which needs
+  one new placeholder field: `walletBalance { creditUsedAmount }` (decimal string, the part of
+  `creditLimitAmount` currently used). Without it the bar and its line are not shown (the app
+  never derives it). Please confirm whether `availableAmount` already includes the credit
+  (i.e. it can be negative while credit is in use) or is separate; the app assumes **separate
+  limits**: `availableAmount` may go negative.
+- **Over the limit (WAL-08).** The app decides it on the device: it is over the limit when
+  `-availableAmount > creditLimitAmount`, and asks the agent to pay `-available - limit`
+  ("pay X to resume requests"). The server is the one that rejects requests, so it should say it
+  outright (an `isOverCreditLimit` flag and the amount to settle) and the app would stop deriving it.
+  "Resume requests" is also a server rule: requests must really be refused while over the limit.
+- **Zero** is `availableAmount == 0 && holdAmount == 0`; **hidden** is a display setting on the
+  device (eye icon), not stored.
+- **Refresh failure.** If a refresh fails and numbers were already shown, they stay on screen
+  with "could not refresh, last known value X" and a retry. The failed refresh sets no state on the
+  server; nothing to do.
+- **Legend text (WAL-10)** states two business rules from the design: held amounts are deducted
+  when the request is done or returned when it is rejected, and credit "is settled from the next
+  top-up". Confirm both are true in the ledger (the second one is not visible to the app).
+- **Ledger chips** now say what happened to the money by type: `hold` → "Held", `final_deduction`
+  → "Deducted", `refund` / `release` → "Returned" (a rejected entry still says "Rejected").
+- **Empty ledger (WAL-09).** The design says "no deposits in this period / try another period", but
+  the ledger has no period filter, so the app says "no deposits yet" and offers the top-up. If a
+  period filter is wanted, `walletTransactions` already takes `from` / `to`.
+- **Home** shows the same over-limit card and the zero / hidden hints on its balance card.

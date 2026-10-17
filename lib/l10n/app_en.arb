@@ -3496,5 +3496,115 @@
   "walletExportShareFailed": "Could not share the statement.",
   "@walletExportShareFailed": {
     "description": "Wallet top-up history, confirmation and statement export copy."
+  },
+  "walletBalanceHiddenHint": "Tap the eye to show the balance",
+  "@walletBalanceHiddenHint": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletBalanceZeroHint": "Top up to start requests",
+  "@walletBalanceZeroHint": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletBalanceAvailableCaption": "Balance available for requests",
+  "@walletBalanceAvailableCaption": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletBalanceHeldPart": "Held · under review",
+  "@walletBalanceHeldPart": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletBalanceTotalPart": "Total",
+  "@walletBalanceTotalPart": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletCreditUsage": "Credit limit use · {used} of {limit}",
+  "@walletCreditUsage": {
+    "description": "Wallet balance states and breakdown copy.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "walletOverLimitTitle": "You are over your credit limit",
+  "@walletOverLimitTitle": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletOverLimitHint": "Pay {amount} to resume requests",
+  "@walletOverLimitHint": {
+    "description": "Wallet balance states and breakdown copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walletBalanceRefreshFailed": "Could not refresh the balance. Last known value {amount}.",
+  "@walletBalanceRefreshFailed": {
+    "description": "Wallet balance states and breakdown copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walletBalanceRetry": "Retry",
+  "@walletBalanceRetry": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletLegendTitle": "How we calculate your balance",
+  "@walletLegendTitle": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletLegendAvailable": "Available",
+  "@walletLegendAvailable": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletLegendAvailableBody": "You can use it for new requests right now",
+  "@walletLegendAvailableBody": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletChipHeld": "Held",
+  "@walletChipHeld": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletLegendHeldBody": "Amounts of requests under review: deducted when done, returned if rejected",
+  "@walletLegendHeldBody": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletLegendCredit": "Credit limit",
+  "@walletLegendCredit": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletLegendCreditBody": "Extra balance granted by Jubari, settled from your next top-up",
+  "@walletLegendCreditBody": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletChipDeducted": "Deducted",
+  "@walletChipDeducted": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletChipReturned": "Returned",
+  "@walletChipReturned": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletEmptyAllTitle": "No transactions yet",
+  "@walletEmptyAllTitle": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletEmptyCreditsTitle": "No deposits yet",
+  "@walletEmptyCreditsTitle": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletEmptyDebitsTitle": "No deductions yet",
+  "@walletEmptyDebitsTitle": {
+    "description": "Wallet balance states and breakdown copy."
+  },
+  "walletEmptyMessage": "Top up now to start using the wallet.",
+  "@walletEmptyMessage": {
+    "description": "Wallet balance states and breakdown copy."
   }
 }

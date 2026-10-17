@@ -13,6 +13,7 @@ class WalletBalance extends Equatable {
     required this.holdCents,
     required this.creditLimitCents,
     required this.currency,
+    this.creditUsedCents,
   });
 
   /// Free to spend right now.
@@ -24,11 +25,36 @@ class WalletBalance extends Equatable {
   final int creditLimitCents;
   final WalletCurrency currency;
 
+  /// How much of [creditLimitCents] is in use (Figma WAL-10); null when the
+  /// server does not say.
+  final int? creditUsedCents;
+
   /// Derived, not a separately-trusted backend field: total is definitionally
   /// available + hold, and treating it as anything else risks the two
   /// silently disagreeing.
   int get totalCents => availableCents + holdCents;
 
+  /// Nothing available and nothing held (Figma WAL-08 "zero").
+  bool get isZero => availableCents == 0 && holdCents == 0;
+
+  /// What is owed beyond the credit limit (0 when within it): the available
+  /// balance is negative by more than [creditLimitCents] (Figma WAL-08).
+  /// Derived on the device from these three fields; the backend may prefer to
+  /// say it outright (docs/BACKEND_MIGRATION_GAPS.md, section 25).
+  int get overLimitCents {
+    final excess = -availableCents - creditLimitCents;
+    return excess > 0 ? excess : 0;
+  }
+
+  bool get isOverLimit => overLimitCents > 0;
+
+  /// 0..1 share of the credit limit in use, or null without both numbers.
+  double? get creditUsedFraction {
+    final used = creditUsedCents;
+    if (used == null || creditLimitCents <= 0) return null;
+    return (used / creditLimitCents).clamp(0.0, 1.0);
+  }
+
   @override
-  List<Object?> get props => [availableCents, holdCents, creditLimitCents, currency];
+  List<Object?> get props => [availableCents, holdCents, creditLimitCents, currency, creditUsedCents];
 }

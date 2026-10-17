@@ -94,6 +94,7 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
         availableAmount
         holdAmount
         creditLimitAmount
+        creditUsedAmount
         currency
       }
     }

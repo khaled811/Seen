@@ -34,11 +34,16 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     WalletLoadRequested event,
     Emitter<WalletState> emit,
   ) async {
+    // A refresh that fails keeps the last known numbers (with a message) instead
+    // of replacing them by an error screen.
+    final previous = state is WalletLoaded ? state as WalletLoaded : null;
     emit(const WalletLoading());
     final result = await _fetchData();
     emit(
       result.match(
-        (failure) => WalletFailure(failure.message),
+        (failure) => previous == null
+            ? WalletFailure(failure.message)
+            : previous.copyWith(refreshError: failure.message),
         (data) => WalletLoaded(
           balance: data.$1,
           transactions: data.$2,

@@ -22,6 +22,8 @@ class SeenBalanceCard extends StatefulWidget {
     required this.hideSemanticLabel,
     this.creditLimit,
     this.creditLimitLabel,
+    this.hint,
+    this.hiddenHint,
     this.onTap,
   });
 
@@ -36,6 +38,12 @@ class SeenBalanceCard extends StatefulWidget {
   /// Build the chip text from the formatted amount, e.g. `(a) => 'محجوز $a'`.
   final String Function(String amount) holdLabel;
   final String Function(String amount)? creditLimitLabel;
+
+  /// Replaces the chips with one line, e.g. "top up to start" on an empty wallet.
+  final String? hint;
+
+  /// The same, while the amount is hidden ("tap the eye to show the balance").
+  final String? hiddenHint;
 
   /// Accessible names of the eye toggle in each state.
   final String showSemanticLabel;
@@ -138,15 +146,18 @@ class _SeenBalanceCardState extends State<SeenBalanceCard> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Wrap(
-                          spacing: SeenSpace.s2,
-                          runSpacing: SeenSpace.s2,
-                          children: [
-                            chip(w.holdLabel(SeenFormat.isolate(_usd(w.hold)))),
-                            if (w.creditLimit != null && creditLimitLabel != null)
-                              chip(creditLimitLabel(SeenFormat.isolate(_usd(w.creditLimit!)))),
-                          ],
-                        ),
+                        if ((_hidden ? w.hiddenHint : w.hint) case final line?)
+                          Text(line, style: type.caption.copyWith(color: c.onPrimary))
+                        else
+                          Wrap(
+                            spacing: SeenSpace.s2,
+                            runSpacing: SeenSpace.s2,
+                            children: [
+                              chip(w.holdLabel(SeenFormat.isolate(_usd(w.hold)))),
+                              if (w.creditLimit != null && creditLimitLabel != null)
+                                chip(creditLimitLabel(SeenFormat.isolate(_usd(w.creditLimit!)))),
+                            ],
+                          ),
                       ],
                     ),
                   ),

@@ -120,6 +120,7 @@ const _mockBalance = WalletBalanceDto(
   availableAmount: '5420.00',
   holdAmount: '350.00',
   creditLimitAmount: '1000.00',
+  creditUsedAmount: '540.00',
   currency: 'USD',
 );
 

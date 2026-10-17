@@ -38,6 +38,7 @@ final class WalletLoaded extends WalletState {
     this.topUpStatus = TopUpSubmissionStatus.idle,
     this.topUpError,
     this.submittedTopUp,
+    this.refreshError,
   });
 
   final WalletBalance balance;
@@ -49,6 +50,10 @@ final class WalletLoaded extends WalletState {
   /// The request just created, for the confirmation screen (Figma WAL-05);
   /// cleared with the submission status.
   final WalletTransaction? submittedTopUp;
+
+  /// A refresh failed but the numbers above are still the last known ones
+  /// (Figma WAL-08 error banner).
+  final String? refreshError;
 
   List<WalletTransaction> get filteredTransactions => typeFilter == null
       ? transactions
@@ -63,6 +68,7 @@ final class WalletLoaded extends WalletState {
     String? topUpError,
     bool clearTopUpError = false,
     bool clearSubmittedTopUp = false,
+    String? refreshError,
   }) =>
       WalletLoaded(
         balance: balance ?? this.balance,
@@ -71,9 +77,10 @@ final class WalletLoaded extends WalletState {
         topUpStatus: topUpStatus ?? this.topUpStatus,
         topUpError: clearTopUpError ? null : (topUpError ?? this.topUpError),
         submittedTopUp: clearSubmittedTopUp ? null : submittedTopUp,
+        refreshError: refreshError ?? this.refreshError,
       );
 
   @override
   List<Object?> get props =>
-      [balance, transactions, typeFilter, topUpStatus, topUpError, submittedTopUp];
+      [balance, transactions, typeFilter, topUpStatus, topUpError, submittedTopUp, refreshError];
 }

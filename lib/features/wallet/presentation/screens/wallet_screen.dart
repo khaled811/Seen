@@ -7,8 +7,8 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
-import '../../../../core/presentation/widgets/balance_card.dart';
-import '../../../../core/presentation/widgets/loader.dart';
+import '../../../../core/presentation/widgets/empty_state.dart';
+import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/segmented_control.dart';
 import '../../../../core/presentation/widgets/status.dart';
@@ -24,6 +24,7 @@ import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
 import '../widgets/ledger_row.dart';
 import '../widgets/statement_export_sheet.dart';
+import '../widgets/wallet_balance_widgets.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
 import 'top_up_history_screen.dart';
@@ -96,9 +97,12 @@ class WalletView extends StatelessWidget {
               ),
               Expanded(
                 child: BlocBuilder<WalletBloc, WalletState>(
-                  buildWhen: (p, c) => p.runtimeType != c.runtimeType || c is WalletLoaded || c is WalletFailure,
+                  // A refresh keeps the numbers on screen (no skeleton over them).
+                  buildWhen: (p, c) =>
+                      !(p is WalletLoaded && c is WalletLoading) &&
+                      (p.runtimeType != c.runtimeType || c is WalletLoaded || c is WalletFailure),
                   builder: (context, state) => switch (state) {
-                    WalletInitial() || WalletLoading() => const Center(child: SeenLoader()),
+                    WalletInitial() || WalletLoading() => const WalletLoadingSkeleton(),
                     WalletFailure(:final message) => _ErrorView(message: message),
                     WalletLoaded() => _LoadedView(state: state, onStatement: () => _openStatement(context)),
                   },
@@ -202,25 +206,18 @@ class _LoadedViewState extends State<_LoadedView> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 24),
         children: [
-          SeenBalanceCard(
-            available: balance.availableCents / 100,
-            hold: balance.holdCents / 100,
-            creditLimit: balance.creditLimitCents / 100,
-            caption: l10n.homeBalanceCaption,
-            holdLabel: l10n.homeHoldChip,
-            creditLimitLabel: l10n.homeCreditLimitChip,
-            showSemanticLabel: l10n.balanceHiddenLabel,
-            hideSemanticLabel: l10n.balanceShownLabel,
-          ),
-          gap,
-          SeenWalletUsageCard(
-            available: balance.availableCents / 100,
-            hold: balance.holdCents / 100,
-            heldLabel: l10n.walletUsageHeldLabel,
-            availableLabel: l10n.walletUsageAvailableLabel,
-            heldValue: l10n.walletUsageHeldValue,
-            availableValue: l10n.walletUsageAvailableValue,
-          ),
+          // The last refresh failed: the numbers below are the last known ones.
+          if (widget.state.refreshError != null) ...[
+            SeenInlineBanner(
+              tone: SeenBannerTone.error,
+              message: l10n.walletBalanceRefreshFailed(SeenFormat.usd(balance.availableCents / 100)),
+              actionLabel: l10n.walletBalanceRetry,
+              onAction: () => context.read<WalletBloc>().add(const WalletLoadRequested()),
+            ),
+            gap,
+          ],
+          if (balance.isOverLimit) ...[SeenOverLimitCard(balance: balance), gap],
+          SeenBalanceBreakdownCard(balance: balance),
           gap,
           // Top-up leads (start edge), Transfer trails, as drawn.
           Row(
@@ -242,6 +239,8 @@ class _LoadedViewState extends State<_LoadedView> {
             ),
           ],
           gap,
+          SeenBalanceLegendCard(showCredit: balance.creditLimitCents > 0),
+          gap,
           Row(
             children: [
               Expanded(child: Text(l10n.walletLedgerTitle, style: t.h2)),
@@ -258,9 +257,20 @@ class _LoadedViewState extends State<_LoadedView> {
           ),
           gap,
           if (transactions.isEmpty)
+            // Figma WAL-09: an illustration, what is missing, and the way out.
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: Text(l10n.walletEmptyTransactions, style: t.body.copyWith(color: c.inkMuted))),
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: SeenEmptyState(
+                iconAsset: SeenVectors.walletIcon,
+                title: switch (_sideFilter) {
+                  _LedgerSideFilter.all => l10n.walletEmptyAllTitle,
+                  _LedgerSideFilter.credits => l10n.walletEmptyCreditsTitle,
+                  _LedgerSideFilter.debits => l10n.walletEmptyDebitsTitle,
+                },
+                message: l10n.walletEmptyMessage,
+                actionLabel: l10n.topUpScreenTitle,
+                onAction: _openTopUp,
+              ),
             )
           else
             DecoratedBox(
@@ -309,6 +319,15 @@ class _LedgerEntry extends StatelessWidget {
     final s = SeenStrings.of(context);
     final credit = transaction.side == LedgerSide.credit;
     final flagged = transaction.status != TransactionStatus.approved;
+    // Figma WAL-10: holds, deductions and returns say what happened to the money.
+    final (SeenRequestStatus, String)? semantic = transaction.status == TransactionStatus.rejected
+        ? null
+        : switch (transaction.type) {
+            TransactionType.hold => (SeenRequestStatus.actionRequired, l10n.walletChipHeld),
+            TransactionType.finalDeduction => (SeenRequestStatus.rejected, l10n.walletChipDeducted),
+            TransactionType.refund || TransactionType.release => (SeenRequestStatus.completed, l10n.walletChipReturned),
+            _ => null,
+          };
     final ref = transaction.referenceId;
     final label = WalletLabels.transactionType(l10n, transaction.type);
     return SeenLedgerRow(
@@ -319,7 +338,9 @@ class _LedgerEntry extends StatelessWidget {
       iconAsset: _icon(transaction),
       onTap: onTap,
       // Approved is the expected resting state — only flag the exceptions.
-      statusChip: flagged
+      statusChip: semantic != null
+          ? SeenStatusChip(status: semantic.$1, label: semantic.$2)
+          : flagged
           ? SeenStatusChip(
               status: transaction.status.toChipStatus,
               label: WalletLabels.transactionStatus(l10n, transaction.status),

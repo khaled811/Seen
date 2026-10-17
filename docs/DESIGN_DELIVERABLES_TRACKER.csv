@@ -45,8 +45,9 @@ WAL-04,WAL,Screen,P1,سجل الشحن,Top-up history,Wallet (11),Empty; filter 
 WAL-05,WAL,Screen,P1,تأكيد طلب الشحن,Top-up submitted confirmation,After Top-up (12) submit,Reference; expected review time; link to pending item,Designed - Implemented (Flutter)
 WAL-06,WAL,Flow,P1,تصدير كشف الحساب,Statement export,Wallet (11) header / link,Period picker; format; generating; failure; share,Designed - Implemented (Flutter)
 WAL-07,WAL,Flow,P0,تحويل لوكيل,Transfer to agent,Wallet (11) > تحويل لوكيل,Choose agent; amount; insufficient balance; confirmation; success,Designed - Implemented (Flutter)
-WAL-08,WAL,State,P1,المحفظة: حالات الرصيد,Wallet: balance states,"Wallet (11), Home (05)",Hidden balance; zero; over limit; loading; error,Pending Design
-WAL-09,WAL,State,P1,سجل العمليات فارغ,Ledger empty,Wallet (11),0 transactions; segment with 0 rows,Pending Design
+WAL-08,WAL,State,P1,المحفظة: حالات الرصيد,Wallet: balance states,"Wallet (11), Home (05)",Hidden balance; zero; over limit; loading; error,Designed - Implemented (Flutter)
+WAL-09,WAL,State,P1,سجل العمليات فارغ,Ledger empty,Wallet (11),0 transactions; segment with 0 rows,Designed - Implemented (Flutter)
+WAL-10,WAL,Screen,P1,تفصيل الرصيد: متاح مقابل محجوز,Balance breakdown (available vs held),Wallet (11) balance card,Available; held; total; credit use; how it is calculated,Designed - Implemented (Flutter)
 AGT-01,AGT,Flow,P0,إضافة وكيل فرعي,Add sub-agent,Agents (13) FAB,Fields and validation; credentials/invite; duplicate; success,Designed - Implemented (Flutter)
 AGT-02,AGT,Sheet,P0,تعديل السقف,Edit credit limit,Agent card / profile,Above master balance; below current usage; confirmation,Designed - Implemented (Flutter)
 AGT-03,AGT,Dialog,P1,إيقاف / إعادة تفعيل وكيل,Suspend / reactivate agent,Agent profile,Pending requests of the agent; reason; confirmation,Designed - Implemented (Flutter)

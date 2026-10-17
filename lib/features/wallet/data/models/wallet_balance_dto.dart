@@ -14,6 +14,7 @@ class WalletBalanceDto {
     required this.holdAmount,
     required this.creditLimitAmount,
     required this.currency,
+    this.creditUsedAmount,
   });
 
   factory WalletBalanceDto.fromJson(Map<String, dynamic> json) => WalletBalanceDto(
@@ -21,6 +22,7 @@ class WalletBalanceDto {
         holdAmount: json['holdAmount'] as String,
         creditLimitAmount: json['creditLimitAmount'] as String,
         currency: json['currency'] as String?,
+        creditUsedAmount: json['creditUsedAmount'] as String?,
       );
 
   /// Decimal strings (e.g. `"1234.50"`) — never parsed as `double`.
@@ -29,10 +31,14 @@ class WalletBalanceDto {
   final String creditLimitAmount;
   final String? currency;
 
+  /// TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 25).
+  final String? creditUsedAmount;
+
   WalletBalance toEntity() => WalletBalance(
         availableCents: MoneyParser.centsFromDecimalString(availableAmount),
         holdCents: MoneyParser.centsFromDecimalString(holdAmount),
         creditLimitCents: MoneyParser.centsFromDecimalString(creditLimitAmount),
         currency: WalletCurrency.fromValue(currency),
+        creditUsedCents: creditUsedAmount == null ? null : MoneyParser.centsFromDecimalString(creditUsedAmount!),
       );
 }
