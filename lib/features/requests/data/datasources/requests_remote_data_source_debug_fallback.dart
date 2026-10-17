@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../domain/entities/cancel_reason.dart';
 import '../models/request_detail_dto.dart';
 import '../models/request_summary_dto.dart';
 import '../models/request_timeline_entry_dto.dart';
@@ -61,12 +62,16 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
   }
 
   @override
-  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId) async {
-    final result = await _real.cancelRequest(requestId);
+  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId, {CancelReason? reason}) async {
+    final result = await _real.cancelRequest(requestId, reason: reason);
     if (kDebugMode && result.isLeft()) {
       final dto = _mockRequests[requestId];
       if (dto == null) {
         return const Left(ServerFailure('Request not found.'));
+      }
+      // Demo: a request already with the authority cannot be withdrawn.
+      if (dto.status == 'processing') {
+        return const Left(ServerFailure('Not cancellable', code: 'NOT_CANCELLABLE'));
       }
       final cancelled = RequestDetailDto(
         id: dto.id,
@@ -276,6 +281,19 @@ Map<String, RequestDetailDto> _seedRequests(DateTime now) {
         reason: 'العميل غيّر موعد السفر',
       ),
       refundedAmount: '400.00',
+    ),
+    RequestDetailDto(
+      id: 'req-12',
+      referenceId: 'SB-1012',
+      serviceName: 'دخول مصر',
+      status: 'processing',
+      totalPriceAmount: '60.00',
+      submittedAt: now.subtract(const Duration(days: 3)),
+      travelers: _travelers(1),
+      timeline: [
+        RequestTimelineEntryDto(status: 'submitted', occurredAt: now.subtract(const Duration(days: 3))),
+        RequestTimelineEntryDto(status: 'processing', occurredAt: now.subtract(const Duration(days: 1))),
+      ],
     ),
     RequestDetailDto(
       id: 'req-9',

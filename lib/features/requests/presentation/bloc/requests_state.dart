@@ -12,7 +12,7 @@ enum RequestsDashboardFilter { all, pendingUnderReview, completed, actionRequire
 
 enum RequestDetailStatus { idle, loading, loaded, failure }
 
-enum RequestCancelStatus { idle, submitting, success, failure }
+enum RequestCancelStatus { idle, submitting, success, failure, notCancellable }
 
 sealed class RequestsState extends Equatable {
   const RequestsState();

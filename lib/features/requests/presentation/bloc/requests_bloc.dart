@@ -125,13 +125,16 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
       ),
     );
 
-    final result = await _cancelRequestUseCase(event.requestId);
+    final result = await _cancelRequestUseCase(event.requestId, reason: event.reason);
     final latest = state;
     if (latest is! RequestsLoaded) return;
     emit(
       result.match(
         (failure) => latest.copyWith(
-          cancelStatus: RequestCancelStatus.failure,
+          cancelStatus:
+              failure is ServerFailure && failure.code == 'NOT_CANCELLABLE'
+                  ? RequestCancelStatus.notCancellable
+                  : RequestCancelStatus.failure,
           cancelError: failure.message,
         ),
         (updatedDetail) {

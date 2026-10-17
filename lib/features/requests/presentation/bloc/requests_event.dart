@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/cancel_reason.dart';
 import 'requests_state.dart' show RequestsDashboardFilter;
 
 sealed class RequestsEvent extends Equatable {
@@ -53,10 +54,11 @@ final class RequestDetailAcknowledged extends RequestsEvent {
 }
 
 final class RequestCancelSubmitted extends RequestsEvent {
-  const RequestCancelSubmitted(this.requestId);
+  const RequestCancelSubmitted(this.requestId, {this.reason});
 
   final String requestId;
+  final CancelReason? reason;
 
   @override
-  List<Object?> get props => [requestId];
+  List<Object?> get props => [requestId, reason];
 }

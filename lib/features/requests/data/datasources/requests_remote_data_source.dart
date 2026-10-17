@@ -3,6 +3,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../../core/network/graphql_service.dart';
+import '../../domain/entities/cancel_reason.dart';
 import '../models/request_detail_dto.dart';
 import '../models/request_summary_dto.dart';
 
@@ -17,7 +18,7 @@ abstract interface class RequestsRemoteDataSource {
 
   Future<Either<Failure, RequestDetailDto>> getRequestDetail(String requestId);
 
-  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId);
+  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId, {CancelReason? reason});
 
   /// Nudges the approver of a request waiting on approval (Figma REQ-06 / 07).
   Future<Either<Failure, void>> remindApprover(String requestId);
@@ -69,9 +70,11 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
     }
   ''');
 
+  // TODO(backend-contract): `reason` is a placeholder argument
+  // (docs/BACKEND_MIGRATION_GAPS.md, section 21).
   static final _cancelRequestDocument = gql('''
-    mutation CancelRequest(\$requestId: ID!) {
-      cancelRequest(requestId: \$requestId) {
+    mutation CancelRequest(\$requestId: ID!, \$reason: CancelReason) {
+      cancelRequest(requestId: \$requestId, reason: \$reason) {
         id
         referenceId
         serviceName
@@ -110,11 +113,11 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
   }
 
   @override
-  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId) {
+  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId, {CancelReason? reason}) {
     return _graphQLService.mutate<RequestDetailDto>(
       MutationOptions<RequestDetailDto>(
         document: _cancelRequestDocument,
-        variables: {'requestId': requestId},
+        variables: {'requestId': requestId, 'reason': reason?.wire},
         parserFn: (json) =>
             RequestDetailDto.fromJson(json['cancelRequest'] as Map<String, dynamic>),
       ),

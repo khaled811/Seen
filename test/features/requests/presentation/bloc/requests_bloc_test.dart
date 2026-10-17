@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/error/failure.dart';
+import 'package:seen_booking/features/requests/domain/entities/cancel_reason.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_detail.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_summary.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_timeline_entry.dart';
@@ -72,7 +73,7 @@ class _FakeRequestsRepository implements RequestsRepository {
   Future<Either<Failure, void>> remindApprover(String requestId) async => const Right(null);
 
   @override
-  Future<Either<Failure, RequestDetail>> cancelRequest(String requestId) async {
+  Future<Either<Failure, RequestDetail>> cancelRequest(String requestId, {CancelReason? reason}) async {
     cancelCalls++;
     return cancelResult ?? Right(_detailFor(requestId, RequestStatus.cancelled));
   }

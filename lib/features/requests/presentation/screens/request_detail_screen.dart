@@ -12,6 +12,7 @@ import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/motion_icon.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
+import '../../../../core/presentation/widgets/selection.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/presentation/widgets/steppers.dart';
@@ -21,6 +22,7 @@ import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
+import '../../domain/entities/cancel_reason.dart';
 import '../../domain/entities/request_detail.dart';
 import '../../domain/entities/request_traveler_status.dart';
 import '../../../../core/di/injection_container.dart';
@@ -57,9 +59,15 @@ class RequestDetailScreen extends StatelessWidget {
     return BlocListener<RequestsBloc, RequestsState>(
       listenWhen: (previous, current) =>
           current is RequestsLoaded &&
-          current.cancelStatus == RequestCancelStatus.failure,
+          (current.cancelStatus == RequestCancelStatus.failure ||
+              current.cancelStatus == RequestCancelStatus.notCancellable),
       listener: (context, state) {
-        final message = (state as RequestsLoaded).cancelError ?? l10n.error;
+        final loaded = state as RequestsLoaded;
+        if (loaded.cancelStatus == RequestCancelStatus.notCancellable) {
+          showNotCancellableDialog(context);
+          return;
+        }
+        final message = loaded.cancelError ?? l10n.error;
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(message)));
@@ -211,37 +219,222 @@ class _ActionsBar extends StatelessWidget {
   }
 }
 
-/// Asks "cancel this request?" and, if confirmed, cancels it.
+/// Cancel request (Figma REQ-10): the agent picks a reason, sees what comes
+/// back to the balance, and confirms.
 Future<void> confirmCancelRequest(
     BuildContext context, RequestDetail detail) async {
-  final l10n = AppLocalizations.of(context)!;
-  final confirmed = await showSeenSheet<bool>(
+  final reason = await showSeenSheet<CancelReason>(
     context: context,
-    title: l10n.requestDetailCancelConfirmTitle,
-    subtitle: l10n.requestDetailCancelConfirmMessage,
-    builder: (_) => const SizedBox.shrink(),
-    footerBuilder: (sheetContext) => Row(
+    title: AppLocalizations.of(context)!.requestCancelSheetTitle,
+    subtitle: '${detail.referenceId} · ${detail.serviceName}',
+    builder: (_) => _CancelReasonBody(detail: detail),
+  );
+  if (reason != null && context.mounted) {
+    context
+        .read<RequestsBloc>()
+        .add(RequestCancelSubmitted(detail.id, reason: reason));
+  }
+}
+
+class _CancelReasonBody extends StatefulWidget {
+  const _CancelReasonBody({required this.detail});
+
+  final RequestDetail detail;
+
+  @override
+  State<_CancelReasonBody> createState() => _CancelReasonBodyState();
+}
+
+class _CancelReasonBodyState extends State<_CancelReasonBody> {
+  CancelReason _selected = CancelReason.customerCancelled;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
+    final t = SeenType.of(context);
+    final labels = {
+      CancelReason.customerCancelled: l10n.requestCancelReasonCustomer,
+      CancelReason.dataError: l10n.requestCancelReasonData,
+      CancelReason.delayed: l10n.requestCancelReasonDelay,
+      CancelReason.other: l10n.requestCancelReasonOther,
+    };
+    final review = SeenRequestStatus.underReview.colors;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: SeenButton.secondary(
-            label: l10n.no,
-            expand: true,
-            onPressed: () => Navigator.of(sheetContext).pop(false),
+        for (final reason in CancelReason.values) ...[
+          Semantics(
+            button: true,
+            selected: reason == _selected,
+            child: Material(
+              color: reason == _selected ? SeenBrand.violet05 : c.card,
+              shape: RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(SeenRadius.r14),
+                side: BorderSide(
+                    color: reason == _selected ? c.primary : c.border),
+              ),
+              child: InkWell(
+                onTap: () => setState(() => _selected = reason),
+                customBorder: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(SeenRadius.r14)),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Row(
+                    children: [
+                      SeenRadioDot(selected: reason == _selected),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(labels[reason]!, style: t.label)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        DecoratedBox(
+          decoration: BoxDecoration(
+              color: review.bg,
+              borderRadius: const BorderRadius.all(SeenRadius.lg)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                SeenSvgIcon(SeenVectors.notifReview, size: 20, color: review.fg),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l10n.requestCancelRefundNote(
+                        SeenFormat.usd(widget.detail.totalPriceCents / 100)),
+                    style: t.label.copyWith(color: review.fg),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(width: SeenSpace.s3),
-        Expanded(
-          child: SeenButton.destructive(
-            label: l10n.yes,
-            expand: true,
-            onPressed: () => Navigator.of(sheetContext).pop(true),
-          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: SeenButton.outline(
+                label: l10n.requestCancelBack,
+                expand: true,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            const SizedBox(width: SeenSpace.s3),
+            Expanded(
+              child: SeenButton.destructive(
+                label: l10n.requestCancelConfirm,
+                expand: true,
+                onPressed: () => Navigator.of(context).pop(_selected),
+              ),
+            ),
+          ],
         ),
       ],
-    ),
+    );
+  }
+}
+
+/// "Can't cancel now" (Figma REQ-10b): the server refused because the request
+/// is already with the authority.
+Future<void> showNotCancellableDialog(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    barrierColor: const Color(0x521B1530),
+    builder: (_) => const _NotCancellableDialog(),
   );
-  if (confirmed == true && context.mounted) {
-    context.read<RequestsBloc>().add(RequestCancelSubmitted(detail.id));
+}
+
+class _NotCancellableDialog extends StatelessWidget {
+  const _NotCancellableDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
+    final t = SeenType.of(context);
+    final action = SeenRequestStatus.actionRequired.colors;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Semantics(
+        scopesRoute: true,
+        explicitChildNodes: true,
+        namesRoute: true,
+        label: l10n.requestNotCancellableTitle,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: const BorderRadius.all(SeenRadius.r28),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0x142C186A), blurRadius: 16, offset: Offset(0, 8)),
+              BoxShadow(
+                  color: Color(0x385B36DA), blurRadius: 48, offset: Offset(0, 24)),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                      color: action.bg,
+                      borderRadius: const BorderRadius.all(Radius.circular(17))),
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Center(
+                        child: SeenSvgIcon(SeenVectors.notifAlert,
+                            size: 31, color: action.fg)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.requestNotCancellableTitle,
+                    textAlign: TextAlign.center, style: t.h2),
+                const SizedBox(height: 12),
+                Text(l10n.requestNotCancellableBody,
+                    textAlign: TextAlign.center,
+                    style: t.body.copyWith(color: c.inkSecondary)),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SeenButton(
+                        label: l10n.requestNotCancellableSupport,
+                        expand: true,
+                        onPressed: () {
+                          final navigator = Navigator.of(context);
+                          navigator.pop();
+                          navigator.push(MaterialPageRoute(
+                              builder: (_) => const SupportTicketsScreen()));
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: SeenSpace.s3),
+                    Expanded(
+                      child: SeenButton.outline(
+                        label: l10n.requestNotCancellableOk,
+                        expand: true,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

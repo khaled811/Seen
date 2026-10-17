@@ -679,5 +679,17 @@
   "requestCancelledBy": "ألغاه: {who}",
   "requestCancelReasonLine": "السبب: {reason}",
   "requestExpiredNote": "انتهت مهلة {hours} ساعة دون رفع المستند المطلوب.",
-  "requestExpiredRefund": "أُعيد المبلغ المحجوز {amount}"
+  "requestExpiredRefund": "أُعيد المبلغ المحجوز {amount}",
+  "requestCancelSheetTitle": "إلغاء الطلب",
+  "requestCancelReasonCustomer": "العميل ألغى السفر",
+  "requestCancelReasonData": "خطأ في البيانات",
+  "requestCancelReasonDelay": "تأخر التنفيذ",
+  "requestCancelReasonOther": "سبب آخر",
+  "requestCancelRefundNote": "يُعاد {amount} إلى رصيدك خلال دقائق من تأكيد الإلغاء.",
+  "requestCancelBack": "تراجع",
+  "requestCancelConfirm": "تأكيد الإلغاء",
+  "requestNotCancellableTitle": "لا يمكن إلغاء الطلب الآن",
+  "requestNotCancellableBody": "الطلب لدى الجهة المختصة ولا يمكن سحبه. تواصل مع الدعم إن كان الأمر عاجلًا.",
+  "requestNotCancellableOk": "حسنًا",
+  "requestNotCancellableSupport": "تواصل مع الدعم"
 }

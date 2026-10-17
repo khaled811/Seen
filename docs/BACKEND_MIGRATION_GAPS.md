@@ -773,3 +773,21 @@ Needed from the backend / product:
   the detail), which the app turns into a local draft (section 19) and opens.
 - **Statuses with no screen of their own:** processing / completed / under review keep the
   old layout; Figma has nothing for them in this pass.
+
+## 21. Cancel request (Figma REQ-10 / 10b)
+
+The cancel confirmation is now a reason sheet (customer cancelled / data error / delay /
+other) with a refund note, and a dialog explains when the request cannot be withdrawn.
+
+- **`cancelRequest(requestId, reason)`**: `reason` is a new optional argument of the enum
+  `CancelReason` = `CUSTOMER_CANCELLED | DATA_ERROR | DELAYED | OTHER` (placeholder,
+  `TODO(backend-contract)`). Store it on the cancellation record so the cancelled screen
+  (section 20, `cancellation.reason`) can show it; the app sends the code, not the label.
+- **Not cancellable:** when a request is already with the authority the mutation must fail
+  with `code: NOT_CANCELLABLE`. The app then shows "can't cancel now" with a support
+  shortcut. The client only hides the cancel button for statuses it knows are final; the
+  server stays the authority on what can be withdrawn (e.g. `processing` can be either).
+- **Refund note:** "returned to your balance within minutes" shows the request's total
+  price; it is a server promise. The refund amount / timing must match the wallet ledger
+  entry written at cancellation, and the real amount should come back in `refundedAmount`.
+- Debug builds: the sample request `SB-1012` (processing) answers `NOT_CANCELLABLE`.

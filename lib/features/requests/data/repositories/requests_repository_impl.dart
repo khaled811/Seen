@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../domain/entities/cancel_reason.dart';
 import '../../domain/entities/request_detail.dart';
 import '../../domain/entities/request_summary.dart';
 import '../../domain/repositories/requests_repository.dart';
@@ -30,8 +31,8 @@ class RequestsRepositoryImpl implements RequestsRepository {
   }
 
   @override
-  Future<Either<Failure, RequestDetail>> cancelRequest(String requestId) async {
-    final result = await _remote.cancelRequest(requestId);
+  Future<Either<Failure, RequestDetail>> cancelRequest(String requestId, {CancelReason? reason}) async {
+    final result = await _remote.cancelRequest(requestId, reason: reason);
     if (result case Left(:final value)) return Left(value);
     final dto = (result as Right<Failure, RequestDetailDto>).value;
     return Right(dto.toEntity());

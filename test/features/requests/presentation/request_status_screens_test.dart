@@ -14,6 +14,7 @@ import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/requests/data/models/request_detail_dto.dart';
+import 'package:seen_booking/features/requests/domain/entities/cancel_reason.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_detail.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_summary.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_traveler_status.dart';
@@ -78,7 +79,7 @@ class _Repo implements RequestsRepository {
       Right(detail);
 
   @override
-  Future<Either<Failure, RequestDetail>> cancelRequest(String requestId) async {
+  Future<Either<Failure, RequestDetail>> cancelRequest(String requestId, {CancelReason? reason}) async {
     cancels++;
     return Right(_detail(RequestStatus.cancelled));
   }

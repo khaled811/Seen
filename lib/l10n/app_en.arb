@@ -3151,5 +3151,58 @@
         "type": "String"
       }
     }
+  },
+  "requestCancelSheetTitle": "Cancel request",
+  "@requestCancelSheetTitle": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelReasonCustomer": "The customer cancelled the trip",
+  "@requestCancelReasonCustomer": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelReasonData": "Data error",
+  "@requestCancelReasonData": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelReasonDelay": "Processing delay",
+  "@requestCancelReasonDelay": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelReasonOther": "Other reason",
+  "@requestCancelReasonOther": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelBack": "Go back",
+  "@requestCancelBack": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelConfirm": "Confirm cancellation",
+  "@requestCancelConfirm": {
+    "description": "Cancel request flow copy."
+  },
+  "requestNotCancellableTitle": "This request can't be cancelled now",
+  "@requestNotCancellableTitle": {
+    "description": "Cancel request flow copy."
+  },
+  "requestNotCancellableBody": "The request is with the authority and can't be withdrawn. Contact support if it is urgent.",
+  "@requestNotCancellableBody": {
+    "description": "Cancel request flow copy."
+  },
+  "requestNotCancellableOk": "OK",
+  "@requestNotCancellableOk": {
+    "description": "Cancel request flow copy."
+  },
+  "requestNotCancellableSupport": "Contact support",
+  "@requestNotCancellableSupport": {
+    "description": "Cancel request flow copy."
+  },
+  "requestCancelRefundNote": "{amount} is returned to your balance within minutes of confirming the cancellation.",
+  "@requestCancelRefundNote": {
+    "description": "Cancel request flow copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   }
 }
