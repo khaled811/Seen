@@ -46,8 +46,8 @@ WAL-06,WAL,Flow,P1,تصدير كشف الحساب,Statement export,Wallet (11) h
 WAL-07,WAL,Flow,P0,تحويل لوكيل,Transfer to agent,Wallet (11) > تحويل لوكيل,Choose agent; amount; insufficient balance; confirmation; success,Designed - Implemented (Flutter)
 WAL-08,WAL,State,P1,المحفظة: حالات الرصيد,Wallet: balance states,"Wallet (11), Home (05)",Hidden balance; zero; over limit; loading; error,Pending Design
 WAL-09,WAL,State,P1,سجل العمليات فارغ,Ledger empty,Wallet (11),0 transactions; segment with 0 rows,Pending Design
-AGT-01,AGT,Flow,P0,إضافة وكيل فرعي,Add sub-agent,Agents (13) FAB,Fields and validation; credentials/invite; duplicate; success,Pending Design
-AGT-02,AGT,Sheet,P0,تعديل السقف,Edit credit limit,Agent card / profile,Above master balance; below current usage; confirmation,Pending Design
+AGT-01,AGT,Flow,P0,إضافة وكيل فرعي,Add sub-agent,Agents (13) FAB,Fields and validation; credentials/invite; duplicate; success,Designed - Implemented (Flutter)
+AGT-02,AGT,Sheet,P0,تعديل السقف,Edit credit limit,Agent card / profile,Above master balance; below current usage; confirmation,Designed - Implemented (Flutter)
 AGT-03,AGT,Dialog,P1,إيقاف / إعادة تفعيل وكيل,Suspend / reactivate agent,Agent profile,Pending requests of the agent; reason; confirmation,Pending Design
 AGT-04,AGT,Screen,P1,ملف الوكيل,Agent profile / detail,Agents (13) card tap,Balance history; requests; limit; status; actions,Pending Design
 AGT-05,AGT,Sheet,P1,تمويل وكيل,Fund agent,Agent profile / card,Amount; master balance check; success; failure,Pending Design

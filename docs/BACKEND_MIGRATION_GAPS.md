@@ -549,3 +549,45 @@ Needed from the backend:
 - **Atomicity / idempotency:** a retry after a timeout must not transfer twice
   (idempotency key), since the confirm button can be pressed again after an error.
 - **"Cannot be undone"** is the copy on the confirm sheet: no reversal exists in the app.
+
+## 15. Add sub-agent and edit credit limit (Figma AGT-01 / 01b / 02)
+
+The FAB on the agents list opens "Add sub-agent" (replacing the "not available yet"
+message); success shows "Agent added" with an "Activating" chip while the invite is
+pending. "Edit credit limit" is a sheet reached from the fund sheet (the card tap)
+until the agent profile (AGT-04) exists. Both call placeholders; debug builds fall
+back to canned answers, **release builds call the real operations and fail until
+they exist**.
+
+```graphql
+mutation CreateSubAgent($input: CreateSubAgentInput!)
+  # input: agencyName managerName phone(E.164) email? marginPercent? creditLimit? sendInvite
+  -> SubAgent { id name code balanceAmount isActive marginPercent
+                creditLimitAmount creditUsedAmount invitePending }
+mutation UpdateSubAgentCreditLimit($subAgentId: ID!, $creditLimit: String!)
+  -> SubAgent
+```
+
+`SubAgent` gains `creditLimitAmount`, `creditUsedAmount` (decimal strings) and
+`invitePending`; the `subAgents` query must return them (the sheet shows "—" when absent).
+
+| Code | Details | Screen state |
+|---|---|---|
+| `SUBAGENT_PHONE_TAKEN` | none | red message under the phone field |
+| `SUBAGENT_EMAIL_TAKEN` | none | red message under the email field |
+| `CREDIT_LIMIT_BELOW_USAGE` | `usedCents` | red message under the new limit |
+| `CREDIT_LIMIT_ABOVE_ALLOWED` | `maxCents` | red message under the new limit |
+
+Needed from the backend / product:
+- **The login invitation:** `sendInvite` must send a link (SMS / email) to create a
+  password, and the agent stays `invitePending` until it is accepted. Who is the
+  login of the sub-agent (phone or email)? The form's email is optional.
+- **Credit-limit rules.** Figma's hint says the limit may not exceed the master's
+  available main balance, and cannot go under the amount in use. The app checks both
+  locally; the server must enforce them (the main balance changes), with the codes above.
+- **Margin** is a percentage 0–100; confirm the scale and whether it can be changed later.
+- **Code generation:** the sub-agent `code` (AG-101…) is server-assigned.
+- **Success page action:** Figma's second button is "Agent profile"; that screen
+  (AGT-04) does not exist, so the button is "Back to agents".
+- **Edit entry point:** needs the agent profile (AGT-04) or a card menu to be
+  discoverable; today it is a link inside the fund sheet.

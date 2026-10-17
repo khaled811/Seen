@@ -24,6 +24,8 @@ import '../../features/requests/domain/services/document_exporter.dart';
 import '../../features/requests/domain/services/pdf_page_renderer.dart';
 import '../../features/requests/domain/usecases/request_document_usecases.dart';
 import '../../features/requests/presentation/bloc/document_viewer_bloc.dart';
+import '../../features/agents/domain/usecases/sub_agent_management_usecases.dart';
+import '../../features/agents/presentation/bloc/sub_agent_management_bloc.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
 import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
@@ -164,6 +166,8 @@ class InjectionContainer {
   late final ApproveSubAgentRequestUseCase approveSubAgentRequestUseCase;
   late final RejectSubAgentRequestUseCase rejectSubAgentRequestUseCase;
   late final FundSubAgentWalletUseCase fundSubAgentWalletUseCase;
+  late final CreateSubAgentUseCase createSubAgentUseCase;
+  late final UpdateCreditLimitUseCase updateCreditLimitUseCase;
 
   late final SupportRemoteDataSource supportRemoteDataSource;
   late final SupportRepository supportRepository;
@@ -281,6 +285,8 @@ class InjectionContainer {
     approveSubAgentRequestUseCase = ApproveSubAgentRequestUseCase(agentsRepository);
     rejectSubAgentRequestUseCase = RejectSubAgentRequestUseCase(agentsRepository);
     fundSubAgentWalletUseCase = FundSubAgentWalletUseCase(agentsRepository);
+    createSubAgentUseCase = CreateSubAgentUseCase(agentsRepository);
+    updateCreditLimitUseCase = UpdateCreditLimitUseCase(agentsRepository);
 
     // Same reasoning as the other feature fallbacks above: inert in release
     // builds.
@@ -372,6 +378,12 @@ class InjectionContainer {
         getRequestDetailUseCase: getRequestDetailUseCase,
         cancelRequestUseCase: cancelRequestUseCase,
       );
+
+  /// Builds a fresh [AddSubAgentBloc]; the add-agent screen owns it.
+  AddSubAgentBloc createAddSubAgentBloc() => AddSubAgentBloc(createSubAgent: createSubAgentUseCase);
+
+  /// Builds a fresh [CreditLimitBloc]; the credit-limit sheet owns it.
+  CreditLimitBloc createCreditLimitBloc() => CreditLimitBloc(updateCreditLimit: updateCreditLimitUseCase);
 
   /// Builds a fresh [AgentsBloc]. The caller (the sub-agents list screen's
   /// own `BlocProvider`) owns its lifetime from here on.

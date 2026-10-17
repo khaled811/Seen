@@ -10,6 +10,7 @@ import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/presentation/widgets/actions.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
+import 'package:seen_booking/features/agents/domain/entities/new_sub_agent.dart';
 import 'package:seen_booking/features/agents/domain/entities/sub_agent.dart';
 import 'package:seen_booking/features/agents/domain/entities/sub_agent_request_summary.dart';
 import 'package:seen_booking/features/agents/domain/repositories/agents_repository.dart';
@@ -70,6 +71,14 @@ class _AgentsRepo implements AgentsRepository {
     w.agentCents += amountCents;
     return Right(_agents.first);
   }
+
+  @override
+  Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent) async =>
+      const Right(SubAgent(id: 'new', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+
+  @override
+  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
+      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 }
 
 class _WalletRepo implements WalletRepository {

@@ -9,6 +9,9 @@ class SubAgent extends Equatable {
     required this.balanceCents,
     required this.isActive,
     this.marginPercent,
+    this.creditLimitCents,
+    this.creditUsedCents,
+    this.invitePending = false,
   });
 
   final String id;
@@ -24,6 +27,15 @@ class SubAgent extends Equatable {
   /// representation.
   final double? marginPercent;
 
+  /// Credit the master agent granted, and how much of it is in use. `null`
+  /// when the backend does not say.
+  final int? creditLimitCents;
+  final int? creditUsedCents;
+
+  /// Invited but has not accepted yet ("activating").
+  final bool invitePending;
+
   @override
-  List<Object?> get props => [id, name, code, balanceCents, isActive, marginPercent];
+  List<Object?> get props =>
+      [id, name, code, balanceCents, isActive, marginPercent, creditLimitCents, creditUsedCents, invitePending];
 }

@@ -12,6 +12,7 @@ import '../../domain/entities/sub_agent.dart';
 import '../bloc/agents_bloc.dart';
 import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
+import 'edit_credit_limit_sheet.dart';
 
 /// Shows the sheet, wired to the ancestor [AgentsBloc]. The caller (the
 /// sub-agents list screen) owns the [AgentsBloc] provider; this just reads
@@ -78,8 +79,11 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
 
   void _onAmountChanged() {
     final text = _amountController.text.trim();
-    final cents = text.isEmpty ? null : MoneyParser.centsFromDecimalString(text);
-    final valid = cents != null && cents > 0 && cents <= widget.masterAvailableBalanceCents;
+    final cents =
+        text.isEmpty ? null : MoneyParser.centsFromDecimalString(text);
+    final valid = cents != null &&
+        cents > 0 &&
+        cents <= widget.masterAvailableBalanceCents;
     final next = valid ? cents : null;
     if (next != _validAmountCents) setState(() => _validAmountCents = next);
   }
@@ -89,7 +93,8 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
     context.read<AgentsBloc>().add(
           SubAgentWalletFundingSubmitted(
             subAgentId: widget.subAgent.id,
-            amountCents: MoneyParser.centsFromDecimalString(_amountController.text.trim()),
+            amountCents: MoneyParser.centsFromDecimalString(
+                _amountController.text.trim()),
           ),
         );
   }
@@ -99,7 +104,8 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
     final l10n = AppLocalizations.of(context)!;
     return BlocListener<AgentsBloc, AgentsState>(
       listenWhen: (previous, current) =>
-          current is AgentsLoaded && current.fundingStatus != FundingStatus.idle,
+          current is AgentsLoaded &&
+          current.fundingStatus != FundingStatus.idle,
       listener: (context, state) {
         final loaded = state as AgentsLoaded;
         switch (loaded.fundingStatus) {
@@ -112,7 +118,8 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
           case FundingStatus.failure:
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(loaded.fundingError ?? l10n.error)));
+              ..showSnackBar(
+                  SnackBar(content: Text(loaded.fundingError ?? l10n.error)));
             context.read<AgentsBloc>().add(const FundingStatusCleared());
           case FundingStatus.idle:
           case FundingStatus.submitting:
@@ -121,19 +128,22 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
       },
       child: SeenSheet(
         title: l10n.fundSheetTitle(widget.subAgent.name),
-        subtitle: l10n.fundAvailableBalanceLabel(SeenFormat.usd(widget.masterAvailableBalanceCents / 100)),
+        subtitle: l10n.fundAvailableBalanceLabel(
+            SeenFormat.usd(widget.masterAvailableBalanceCents / 100)),
         footer: BlocBuilder<AgentsBloc, AgentsState>(
           buildWhen: (previous, current) =>
               current is AgentsLoaded &&
-              (previous is! AgentsLoaded || previous.fundingStatus != current.fundingStatus),
+              (previous is! AgentsLoaded ||
+                  previous.fundingStatus != current.fundingStatus),
           builder: (context, state) {
-            final isSubmitting =
-                state is AgentsLoaded && state.fundingStatus == FundingStatus.submitting;
+            final isSubmitting = state is AgentsLoaded &&
+                state.fundingStatus == FundingStatus.submitting;
             final label = isSubmitting
                 ? l10n.loading
                 : _validAmountCents != null
                     ? l10n.fundSubmitActionNamed(
-                        SeenFormat.usd(_validAmountCents! / 100), widget.subAgent.name)
+                        SeenFormat.usd(_validAmountCents! / 100),
+                        widget.subAgent.name)
                     : l10n.fundSubmitAction;
             return SeenButton(
               label: label,
@@ -142,30 +152,54 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
             );
           },
         ),
-        child: Form(
-          key: _formKey,
-          child: SeenTextField(
-            label: l10n.fundAmountLabel,
-            isRequired: true,
-            controller: _amountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            mono: true,
-            ltr: true,
-            suffixText: 'USD',
-            validator: (value) {
-              final positiveError =
-                  FormValidators.positiveAmount(value, message: l10n.validationInvalidAmount);
-              if (positiveError != null) return positiveError;
-              return FormValidators.maxAmount(
-                value,
-                maxCents: widget.masterAvailableBalanceCents,
-                message: l10n.validationInvalidMaxAmount(
-                    SeenFormat.usd(widget.masterAvailableBalanceCents / 100)),
-              );
-            },
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Form(
+              key: _formKey,
+              child: SeenTextField(
+                label: l10n.fundAmountLabel,
+                isRequired: true,
+                controller: _amountController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                mono: true,
+                ltr: true,
+                suffixText: 'USD',
+                validator: (value) {
+                  final positiveError = FormValidators.positiveAmount(value,
+                      message: l10n.validationInvalidAmount);
+                  if (positiveError != null) return positiveError;
+                  return FormValidators.maxAmount(
+                    value,
+                    maxCents: widget.masterAvailableBalanceCents,
+                    message: l10n.validationInvalidMaxAmount(SeenFormat.usd(
+                        widget.masterAvailableBalanceCents / 100)),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            SeenTextLink(
+                label: l10n.agentCreditEditAction, onTap: _editCreditLimit),
+          ],
         ),
       ),
     );
+  }
+
+  // Entry point for AGT-02 until the agent profile (AGT-04) exists.
+  Future<void> _editCreditLimit() async {
+    final saved = await showEditCreditLimitSheet(
+      context,
+      subAgent: widget.subAgent,
+      masterAvailableCents: widget.masterAvailableBalanceCents,
+    );
+    if (saved == true && mounted) {
+      final bloc = context.read<AgentsBloc>();
+      Navigator.of(context).pop();
+      bloc.add(const AgentsLoadRequested());
+    }
   }
 }

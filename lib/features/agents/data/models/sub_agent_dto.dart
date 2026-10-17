@@ -14,6 +14,9 @@ class SubAgentDto {
     required this.balanceAmount,
     required this.isActive,
     this.marginPercent,
+    this.creditLimitAmount,
+    this.creditUsedAmount,
+    this.invitePending = false,
   });
 
   factory SubAgentDto.fromJson(Map<String, dynamic> json) => SubAgentDto(
@@ -23,6 +26,9 @@ class SubAgentDto {
         balanceAmount: json['balanceAmount'] as String,
         isActive: json['isActive'] as bool,
         marginPercent: (json['marginPercent'] as num?)?.toDouble(),
+        creditLimitAmount: json['creditLimitAmount'] as String?,
+        creditUsedAmount: json['creditUsedAmount'] as String?,
+        invitePending: json['invitePending'] as bool? ?? false,
       );
 
   final String id;
@@ -34,6 +40,29 @@ class SubAgentDto {
   final bool isActive;
   final double? marginPercent;
 
+  /// Decimal strings, like [balanceAmount].
+  final String? creditLimitAmount;
+  final String? creditUsedAmount;
+  final bool invitePending;
+
+  SubAgentDto copyWith({
+    String? balanceAmount,
+    bool? isActive,
+    String? creditLimitAmount,
+    bool? invitePending,
+  }) =>
+      SubAgentDto(
+        id: id,
+        name: name,
+        code: code,
+        balanceAmount: balanceAmount ?? this.balanceAmount,
+        isActive: isActive ?? this.isActive,
+        marginPercent: marginPercent,
+        creditLimitAmount: creditLimitAmount ?? this.creditLimitAmount,
+        creditUsedAmount: creditUsedAmount,
+        invitePending: invitePending ?? this.invitePending,
+      );
+
   SubAgent toEntity() => SubAgent(
         id: id,
         name: name,
@@ -41,5 +70,8 @@ class SubAgentDto {
         balanceCents: MoneyParser.centsFromDecimalString(balanceAmount),
         isActive: isActive,
         marginPercent: marginPercent,
+        creditLimitCents: creditLimitAmount == null ? null : MoneyParser.centsFromDecimalString(creditLimitAmount!),
+        creditUsedCents: creditUsedAmount == null ? null : MoneyParser.centsFromDecimalString(creditUsedAmount!),
+        invitePending: invitePending,
       );
 }

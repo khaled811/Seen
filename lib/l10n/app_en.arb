@@ -2425,5 +2425,146 @@
   "transferBackToWallet": "Back to wallet",
   "@transferBackToWallet": {
     "description": "Transfer to agent copy."
+  },
+  "agentAddTitle": "Add sub-agent",
+  "@agentAddTitle": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddName": "Agency name",
+  "@agentAddName": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddManager": "Manager name",
+  "@agentAddManager": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddPhone": "Phone number",
+  "@agentAddPhone": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddEmail": "Email",
+  "@agentAddEmail": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddMargin": "Margin",
+  "@agentAddMargin": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddCreditLimit": "Credit limit",
+  "@agentAddCreditLimit": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddInviteTitle": "Send a login invitation",
+  "@agentAddInviteTitle": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddInviteBody": "The agent gets a link to create a password",
+  "@agentAddInviteBody": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddSubmit": "Add agent",
+  "@agentAddSubmit": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddPhoneTaken": "This number belongs to another agent. Use a different one.",
+  "@agentAddPhoneTaken": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddEmailTaken": "This email belongs to another agent. Use a different one.",
+  "@agentAddEmailTaken": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddMarginInvalid": "Enter a percentage between 0 and 100.",
+  "@agentAddMarginInvalid": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddDoneTitle": "Agent added",
+  "@agentAddDoneTitle": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddDoneInvited": "We sent a login invitation to {name}. The agent shows as \"Activating\" until the invitation is accepted.",
+  "@agentAddDoneInvited": {
+    "description": "Add sub-agent / credit limit copy.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentAddDoneNoInvite": "{name} was added without a login invitation.",
+  "@agentAddDoneNoInvite": {
+    "description": "Add sub-agent / credit limit copy.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentAddPending": "Activating",
+  "@agentAddPending": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddAnother": "Add another",
+  "@agentAddAnother": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentAddBackToList": "Back to agents",
+  "@agentAddBackToList": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditTitle": "Edit credit limit",
+  "@agentCreditTitle": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditUsed": "Currently used",
+  "@agentCreditUsed": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditCurrent": "Current limit",
+  "@agentCreditCurrent": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditNew": "New limit",
+  "@agentCreditNew": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditBelowUsage": "The new limit is below what is currently used ({used}).",
+  "@agentCreditBelowUsage": {
+    "description": "Add sub-agent / credit limit copy.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "agentCreditAboveBalance": "The limit exceeds your available main balance ({max}) if you enter more than that.",
+  "@agentCreditAboveBalance": {
+    "description": "Add sub-agent / credit limit copy.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "agentCreditAboveBalanceError": "The new limit is above your available main balance ({max}).",
+  "@agentCreditAboveBalanceError": {
+    "description": "Add sub-agent / credit limit copy.",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "agentCreditSave": "Save limit",
+  "@agentCreditSave": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditSaved": "The credit limit was updated.",
+  "@agentCreditSaved": {
+    "description": "Add sub-agent / credit limit copy."
+  },
+  "agentCreditEditAction": "Edit credit limit",
+  "@agentCreditEditAction": {
+    "description": "Add sub-agent / credit limit copy."
   }
 }

@@ -20,6 +20,7 @@ import '../bloc/agents_bloc.dart';
 import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
 import '../widgets/fund_sub_agent_sheet.dart';
+import 'add_sub_agent_screen.dart';
 import '../widgets/seen_sub_agent_card.dart';
 
 /// Sub-agent network (Figma 13, node 18:722): title with a search button, two
@@ -72,18 +73,24 @@ class _SubAgentsViewState extends State<SubAgentsView> {
     });
   }
 
+  Future<void> _addAgent() async {
+    final bloc = context.read<AgentsBloc>();
+    final added = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const AddSubAgentScreen()),
+    );
+    // New agents (and the invite state) come from the server.
+    if (added == true) bloc.add(const AgentsLoadRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     return Scaffold(
-      // No create-agent mutation exists on the backend yet: say so, don't fake it.
       floatingActionButton: SeenExtendedFab(
         label: l10n.agentsAddAction,
-        onPressed: () => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l10n.agentsAddSoon))),
+        onPressed: _addAgent,
       ),
       body: SeenScreenBackground(
         child: SafeArea(
@@ -243,7 +250,9 @@ class _LoadedViewState extends State<_LoadedView> {
                   caption: agent.code,
                   balance: agent.balanceCents / 100,
                   suspended: !agent.isActive,
-                  statusLabel: agent.isActive ? l10n.agentsFilterActive : l10n.agentsStatusSuspended,
+                  statusLabel: agent.invitePending
+                      ? l10n.agentAddPending
+                      : (agent.isActive ? l10n.agentsFilterActive : l10n.agentsStatusSuspended),
                   onTap: () => showFundSubAgentSheet(
                     context,
                     subAgent: agent,

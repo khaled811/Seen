@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
+import '../entities/new_sub_agent.dart';
 import '../entities/sub_agent.dart';
 import '../entities/sub_agent_request_summary.dart';
 
@@ -26,4 +27,11 @@ abstract interface class AgentsRepository {
     required int amountCents,
     String? note,
   });
+
+  /// Adds a sub-agent under the logged-in master agent (Figma AGT-01). The new
+  /// record comes back with `invitePending` when an invitation was sent.
+  Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent);
+
+  /// Sets the credit the master agent grants [subAgentId] (Figma AGT-02).
+  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents});
 }

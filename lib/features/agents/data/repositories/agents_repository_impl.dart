@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../domain/entities/new_sub_agent.dart';
 import '../../domain/entities/sub_agent.dart';
 import '../../domain/entities/sub_agent_request_summary.dart';
 import '../../domain/repositories/agents_repository.dart';
@@ -58,4 +59,12 @@ class AgentsRepositoryImpl implements AgentsRepository {
     final dto = (result as Right<Failure, SubAgentDto>).value;
     return Right(dto.toEntity());
   }
+
+  @override
+  Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent) async =>
+      (await _remote.createSubAgent(newSubAgent)).map((dto) => dto.toEntity());
+
+  @override
+  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
+      (await _remote.updateCreditLimit(subAgentId: subAgentId, limitCents: limitCents)).map((dto) => dto.toEntity());
 }

@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../../../core/utils/money.dart';
+import '../../domain/entities/new_sub_agent.dart';
 import '../models/sub_agent_dto.dart';
 import '../models/sub_agent_request_summary_dto.dart';
 
@@ -31,6 +32,10 @@ abstract interface class AgentsRemoteDataSource {
     required int amountCents,
     String? note,
   });
+
+  Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent);
+
+  Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents});
 }
 
 class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
@@ -163,6 +168,57 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
         },
         parserFn: (json) =>
             SubAgentDto.fromJson(json['fundSubAgentWallet'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  // TODO(backend-contract): `createSubAgent` / `updateSubAgentCreditLimit` are
+  // placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 15).
+  static final _createSubAgentDocument = gql(r'''
+    mutation CreateSubAgent($input: CreateSubAgentInput!) {
+      createSubAgent(input: $input) {
+        id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending
+      }
+    }
+  ''');
+
+  static final _updateCreditLimitDocument = gql(r'''
+    mutation UpdateSubAgentCreditLimit($subAgentId: ID!, $creditLimit: String!) {
+      updateSubAgentCreditLimit(subAgentId: $subAgentId, creditLimit: $creditLimit) {
+        id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending
+      }
+    }
+  ''');
+
+  @override
+  Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent) {
+    return _graphQLService.mutate<SubAgentDto>(
+      MutationOptions<SubAgentDto>(
+        document: _createSubAgentDocument,
+        variables: {
+          'input': {
+            'agencyName': newSubAgent.agencyName,
+            'managerName': newSubAgent.managerName,
+            'phone': newSubAgent.phone,
+            if (newSubAgent.email != null) 'email': newSubAgent.email,
+            if (newSubAgent.marginPercent != null) 'marginPercent': newSubAgent.marginPercent,
+            if (newSubAgent.creditLimitCents != null)
+              'creditLimit': MoneyParser.decimalStringFromCents(newSubAgent.creditLimitCents!),
+            'sendInvite': newSubAgent.sendInvite,
+          },
+        },
+        parserFn: (json) => SubAgentDto.fromJson(json['createSubAgent'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents}) {
+    return _graphQLService.mutate<SubAgentDto>(
+      MutationOptions<SubAgentDto>(
+        document: _updateCreditLimitDocument,
+        variables: {'subAgentId': subAgentId, 'creditLimit': MoneyParser.decimalStringFromCents(limitCents)},
+        parserFn: (json) => SubAgentDto.fromJson(json['updateSubAgentCreditLimit'] as Map<String, dynamic>),
       ),
     );
   }

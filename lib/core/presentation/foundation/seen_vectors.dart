@@ -61,6 +61,7 @@ abstract final class SeenVectors {
 
   // Requests header (Figma 06 · node 11:241).
   static const requestsPlus = 'assets/icons/requests/plus.svg';
+  static const agentAdded = 'assets/icons/agents/added.svg';
   static const viewerShare = 'assets/icons/requests/viewer_share.svg';
   static const viewerClock = 'assets/icons/requests/viewer_clock.svg';
   static const viewerAlert = 'assets/icons/requests/viewer_alert.svg';

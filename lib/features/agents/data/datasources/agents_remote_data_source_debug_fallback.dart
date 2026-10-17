@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../../core/utils/money.dart';
+import '../../domain/entities/new_sub_agent.dart';
 import '../models/sub_agent_dto.dart';
 import '../models/sub_agent_request_summary_dto.dart';
 import 'agents_remote_data_source.dart';
@@ -81,18 +82,58 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
       if (existing == null) {
         return const Left(ServerFailure('Sub-agent not found.'));
       }
-      final updated = SubAgentDto(
-        id: existing.id,
-        name: existing.name,
-        code: existing.code,
-        balanceAmount: _addCentsToAmount(existing.balanceAmount, amountCents),
-        isActive: existing.isActive,
-        marginPercent: existing.marginPercent,
-      );
+      final updated = existing.copyWith(balanceAmount: _addCentsToAmount(existing.balanceAmount, amountCents));
       _mockSubAgents[subAgentId] = updated;
       return Right(updated);
     }
     return result;
+  }
+
+  /// Demo rules: a phone ending `4410` belongs to another agent; the credit
+  /// limit cannot go under the mock usage or over 5,000.00.
+  @override
+  Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent) async {
+    final result = await _real.createSubAgent(newSubAgent);
+    if (!(kDebugMode && result.isLeft())) return result;
+    if (newSubAgent.phone.endsWith('4410')) {
+      return const Left(ServerFailure('Phone taken', code: SubAgentIssue.phoneTakenCode));
+    }
+    final n = _mockSubAgents.length + 1;
+    final dto = SubAgentDto(
+      id: 'sub-$n',
+      name: newSubAgent.agencyName,
+      code: 'NEW-${n.toString().padLeft(2, '0')}',
+      balanceAmount: '0.00',
+      isActive: !newSubAgent.sendInvite,
+      invitePending: newSubAgent.sendInvite,
+      marginPercent: newSubAgent.marginPercent,
+      creditLimitAmount: newSubAgent.creditLimitCents == null
+          ? null
+          : MoneyParser.decimalStringFromCents(newSubAgent.creditLimitCents!),
+      creditUsedAmount: '0.00',
+    );
+    _mockSubAgents[dto.id] = dto;
+    return Right(dto);
+  }
+
+  @override
+  Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents}) async {
+    final result = await _real.updateCreditLimit(subAgentId: subAgentId, limitCents: limitCents);
+    if (!(kDebugMode && result.isLeft())) return result;
+    final existing = _mockSubAgents[subAgentId];
+    if (existing == null) return const Left(ServerFailure('Sub-agent not found.'));
+    final used = existing.creditUsedAmount == null ? 0 : MoneyParser.centsFromDecimalString(existing.creditUsedAmount!);
+    if (limitCents < used) {
+      return Left(ServerFailure('Below usage',
+          code: SubAgentIssue.limitBelowUsageCode, details: {'usedCents': used}));
+    }
+    if (limitCents > 500000) {
+      return const Left(ServerFailure('Above allowed',
+          code: SubAgentIssue.limitAboveAllowedCode, details: {'maxCents': 500000}));
+    }
+    final updated = existing.copyWith(creditLimitAmount: MoneyParser.decimalStringFromCents(limitCents));
+    _mockSubAgents[subAgentId] = updated;
+    return Right(updated);
   }
 
   String _addCentsToAmount(String decimalAmount, int addCents) {
@@ -110,6 +151,8 @@ Map<String, SubAgentDto> _seedSubAgents() {
       balanceAmount: '2400.00',
       isActive: true,
       marginPercent: 3.0,
+      creditLimitAmount: '500.00',
+      creditUsedAmount: '380.00',
     ),
     SubAgentDto(
       id: 'sub-2',
@@ -118,6 +161,8 @@ Map<String, SubAgentDto> _seedSubAgents() {
       balanceAmount: '850.50',
       isActive: true,
       marginPercent: 5.0,
+      creditLimitAmount: '1000.00',
+      creditUsedAmount: '120.00',
     ),
     SubAgentDto(
       id: 'sub-3',

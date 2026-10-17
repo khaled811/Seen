@@ -2,14 +2,17 @@
 // and the card list, driven by a real AgentsBloc over fake repositories.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
+import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
+import 'package:seen_booking/features/agents/domain/entities/new_sub_agent.dart';
 import 'package:seen_booking/features/agents/domain/entities/sub_agent.dart';
 import 'package:seen_booking/features/agents/domain/entities/sub_agent_request_summary.dart';
 import 'package:seen_booking/features/agents/domain/repositories/agents_repository.dart';
@@ -50,6 +53,14 @@ class _AgentsRepo implements AgentsRepository {
   @override
   Future<Either<Failure, SubAgent>> fundSubAgentWallet({required String subAgentId, required int amountCents, String? note}) async =>
       const Right(SubAgent(id: '1', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+
+  @override
+  Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent) async =>
+      const Right(SubAgent(id: 'new', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+
+  @override
+  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
+      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 }
 
 class _WalletRepo implements WalletRepository {
@@ -153,10 +164,16 @@ void main() {
     expect(find.text('مكتب الريان'), findsOneWidget); // closing clears the query
   });
 
-  testWidgets('the add-agent FAB explains it is not available yet', (tester) async {
+  testWidgets('the add-agent FAB opens the add sub-agent screen', (tester) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+      (call) async => null,
+    );
+    InjectionContainer.instance.init();
     await open(tester);
     await tester.tap(find.text('إضافة وكيل'));
-    await tester.pump();
-    expect(find.text('إضافة وكيل جديد غير متاحة بعد.'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('إضافة وكيل فرعي'), findsOneWidget);
+    expect(find.text('إضافة الوكيل'), findsOneWidget);
   });
 }
