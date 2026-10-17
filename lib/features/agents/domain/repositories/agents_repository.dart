@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failure.dart';
 import '../entities/new_sub_agent.dart';
 import '../entities/sub_agent.dart';
+import '../entities/sub_agent_profile.dart';
 import '../entities/sub_agent_request_summary.dart';
 
 abstract interface class AgentsRepository {
@@ -34,4 +35,16 @@ abstract interface class AgentsRepository {
 
   /// Sets the credit the master agent grants [subAgentId] (Figma AGT-02).
   Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents});
+
+  /// The profile of one sub-agent (Figma AGT-04): record, balance history and
+  /// the agent's requests.
+  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId);
+
+  /// Suspends ([active] false, with a [reason]) or reactivates a sub-agent
+  /// (Figma AGT-03). Returns the updated record.
+  Future<Either<Failure, SubAgent>> setSubAgentActive({
+    required String subAgentId,
+    required bool active,
+    String? reason,
+  });
 }

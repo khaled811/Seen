@@ -14,6 +14,7 @@ import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/agents/domain/entities/new_sub_agent.dart';
 import 'package:seen_booking/features/agents/domain/entities/sub_agent.dart';
+import 'package:seen_booking/features/agents/domain/entities/sub_agent_profile.dart';
 import 'package:seen_booking/features/agents/domain/entities/sub_agent_request_summary.dart';
 import 'package:seen_booking/features/agents/domain/repositories/agents_repository.dart';
 import 'package:seen_booking/features/agents/domain/usecases/approve_sub_agent_request_usecase.dart';
@@ -60,6 +61,18 @@ class _AgentsRepo implements AgentsRepository {
 
   @override
   Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
+      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+
+  @override
+  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId) async =>
+      const Right(SubAgentProfile(agent: SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true)));
+
+  @override
+  Future<Either<Failure, SubAgent>> setSubAgentActive({
+    required String subAgentId,
+    required bool active,
+    String? reason,
+  }) async =>
       const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 }
 

@@ -555,7 +555,7 @@ Needed from the backend:
 The FAB on the agents list opens "Add sub-agent" (replacing the "not available yet"
 message); success shows "Agent added" with an "Activating" chip while the invite is
 pending. "Edit credit limit" is a sheet reached from the fund sheet (the card tap)
-until the agent profile (AGT-04) exists. Both call placeholders; debug builds fall
+until the agent profile (AGT-04) exists (it now does: "Edit limit" is a button there, section 17). Both call placeholders; debug builds fall
 back to canned answers, **release builds call the real operations and fail until
 they exist**.
 
@@ -627,3 +627,38 @@ Needed from the backend:
   (after 8 s, with Cancel) exists as a component but is not yet attached to a screen.
 - "Online" in the banner means the device has a network transport, not that the
   backend answers; a lightweight health endpoint would let the banner say the latter.
+
+## 17. Agent profile and suspend / reactivate (Figma AGT-04 / AGT-03)
+
+Tapping an agent card now opens the profile (before: the fund sheet): card with
+status, balance / credit limit / requests this month, **Fund · Edit limit · Suspend**
+(or Reactivate), the agent's balance history and their requests. Fund and Edit limit
+reuse the existing sheets; Suspend asks for a reason and names the requests still in
+progress. Placeholders below; debug builds fall back to canned data, **release builds
+call the real operations and fail until they exist**.
+
+```graphql
+query SubAgentProfile($subAgentId: ID!)
+  -> { agent { id name code balanceAmount isActive marginPercent
+               creditLimitAmount creditUsedAmount invitePending }
+       city memberSince monthlyRequestCount inProgressRequestCount
+       ledger { id title amount side(credit|debit) createdAt }      # newest first
+       requests { id referenceId serviceName status submittedAt } }  # newest first
+mutation SetSubAgentActive($subAgentId: ID!, $active: Boolean!, $reason: String)
+  -> SubAgent
+```
+
+Needed from the backend / product:
+- **Pagination:** `ledger` and `requests` come as plain lists; the screen shows all of
+  them. Return only the latest N (e.g. 10) with a cursor or a "see all" screen.
+- **Ledger titles** are server-written text ("Funding from the main agent",
+  "SB-20484 · flight booking"), so they are localized and shaped there.
+- **Suspension semantics** (the dialog promises them): requests already in progress
+  continue until done, new requests are blocked, and a suspended agent is told. A
+  reason is required to suspend (audit); reactivation takes none.
+- **Permissions:** only the master agent may suspend / reactivate; the server must
+  refuse suspending an agent that is not theirs.
+- **Settings button:** Figma draws a settings button at the start of the profile
+  header; nothing is specified for it (edit name / contact details?), so it is not
+  built. Needs a design and an `updateSubAgent` mutation.
+- **Request rows** are not tappable yet (no sub-agent-scoped request detail).

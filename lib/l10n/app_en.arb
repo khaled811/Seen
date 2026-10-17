@@ -2628,5 +2628,108 @@
   "transferFailedTitle": "The transfer was not completed",
   "@transferFailedTitle": {
     "description": "Connectivity and error pattern copy."
+  },
+  "agentProfileTitle": "Agent profile",
+  "@agentProfileTitle": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileSince": "Sub-agent since {date}",
+  "@agentProfileSince": {
+    "description": "Agent profile copy.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "agentProfileBalance": "Balance",
+  "@agentProfileBalance": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileMonthly": "Requests this month",
+  "@agentProfileMonthly": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileFund": "Fund",
+  "@agentProfileFund": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileEditLimit": "Edit limit",
+  "@agentProfileEditLimit": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileSuspend": "Suspend",
+  "@agentProfileSuspend": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileReactivate": "Reactivate",
+  "@agentProfileReactivate": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileLedger": "Balance history",
+  "@agentProfileLedger": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileLedgerEmpty": "No movements yet.",
+  "@agentProfileLedgerEmpty": {
+    "description": "Agent profile copy."
+  },
+  "agentProfileRequests": "Agent requests · {n} in progress",
+  "@agentProfileRequests": {
+    "description": "Agent profile copy.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "agentProfileRequestsEmpty": "No requests.",
+  "@agentProfileRequestsEmpty": {
+    "description": "Agent profile copy."
+  },
+  "agentSuspendTitle": "Suspend this agent?",
+  "@agentSuspendTitle": {
+    "description": "Agent profile copy."
+  },
+  "agentSuspendBody": "The agent has {n} requests in progress that will continue until done, but cannot send new ones.",
+  "@agentSuspendBody": {
+    "description": "Agent profile copy.",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "agentSuspendBodyNone": "The agent will not be able to send new requests.",
+  "@agentSuspendBodyNone": {
+    "description": "Agent profile copy."
+  },
+  "agentSuspendReason": "Reason",
+  "@agentSuspendReason": {
+    "description": "Agent profile copy."
+  },
+  "agentSuspendConfirm": "Suspend",
+  "@agentSuspendConfirm": {
+    "description": "Agent profile copy."
+  },
+  "agentReactivateTitle": "Reactivate this agent?",
+  "@agentReactivateTitle": {
+    "description": "Agent profile copy."
+  },
+  "agentReactivateBody": "The agent will be able to send new requests again.",
+  "@agentReactivateBody": {
+    "description": "Agent profile copy."
+  },
+  "agentReactivateConfirm": "Reactivate",
+  "@agentReactivateConfirm": {
+    "description": "Agent profile copy."
+  },
+  "agentSuspendedDone": "The agent was suspended.",
+  "@agentSuspendedDone": {
+    "description": "Agent profile copy."
+  },
+  "agentReactivatedDone": "The agent was reactivated.",
+  "@agentReactivatedDone": {
+    "description": "Agent profile copy."
   }
 }

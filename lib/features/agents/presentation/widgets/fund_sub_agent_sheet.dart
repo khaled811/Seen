@@ -12,7 +12,6 @@ import '../../domain/entities/sub_agent.dart';
 import '../bloc/agents_bloc.dart';
 import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
-import 'edit_credit_limit_sheet.dart';
 
 /// Shows the sheet, wired to the ancestor [AgentsBloc]. The caller (the
 /// sub-agents list screen) owns the [AgentsBloc] provider; this just reads
@@ -180,26 +179,9 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
                 },
               ),
             ),
-            const SizedBox(height: 8),
-            SeenTextLink(
-                label: l10n.agentCreditEditAction, onTap: _editCreditLimit),
           ],
         ),
       ),
     );
-  }
-
-  // Entry point for AGT-02 until the agent profile (AGT-04) exists.
-  Future<void> _editCreditLimit() async {
-    final saved = await showEditCreditLimitSheet(
-      context,
-      subAgent: widget.subAgent,
-      masterAvailableCents: widget.masterAvailableBalanceCents,
-    );
-    if (saved == true && mounted) {
-      final bloc = context.read<AgentsBloc>();
-      Navigator.of(context).pop();
-      bloc.add(const AgentsLoadRequested());
-    }
   }
 }

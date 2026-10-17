@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/new_sub_agent.dart';
 import '../../domain/entities/sub_agent.dart';
+import '../../domain/entities/sub_agent_profile.dart';
 import '../../domain/entities/sub_agent_request_summary.dart';
 import '../../domain/repositories/agents_repository.dart';
 import '../datasources/agents_remote_data_source.dart';
@@ -67,4 +68,17 @@ class AgentsRepositoryImpl implements AgentsRepository {
   @override
   Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
       (await _remote.updateCreditLimit(subAgentId: subAgentId, limitCents: limitCents)).map((dto) => dto.toEntity());
+
+  @override
+  Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId) async =>
+      (await _remote.getSubAgentProfile(subAgentId)).map((dto) => dto.toEntity());
+
+  @override
+  Future<Either<Failure, SubAgent>> setSubAgentActive({
+    required String subAgentId,
+    required bool active,
+    String? reason,
+  }) async =>
+      (await _remote.setSubAgentActive(subAgentId: subAgentId, active: active, reason: reason))
+          .map((dto) => dto.toEntity());
 }

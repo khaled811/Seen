@@ -6,6 +6,7 @@ import '../../../../core/network/graphql_service.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/new_sub_agent.dart';
 import '../models/sub_agent_dto.dart';
+import '../models/sub_agent_profile_dto.dart';
 import '../models/sub_agent_request_summary_dto.dart';
 
 /// Raw GraphQL access for the agents feature. Returns DTOs, never entities.
@@ -36,6 +37,14 @@ abstract interface class AgentsRemoteDataSource {
   Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent);
 
   Future<Either<Failure, SubAgentDto>> updateCreditLimit({required String subAgentId, required int limitCents});
+
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId);
+
+  Future<Either<Failure, SubAgentDto>> setSubAgentActive({
+    required String subAgentId,
+    required bool active,
+    String? reason,
+  });
 }
 
 class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
@@ -219,6 +228,60 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
         document: _updateCreditLimitDocument,
         variables: {'subAgentId': subAgentId, 'creditLimit': MoneyParser.decimalStringFromCents(limitCents)},
         parserFn: (json) => SubAgentDto.fromJson(json['updateSubAgentCreditLimit'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  // TODO(backend-contract): placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 17).
+  static final _profileDocument = gql(r'''
+    query SubAgentProfile($subAgentId: ID!) {
+      subAgentProfile(subAgentId: $subAgentId) {
+        agent { id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending }
+        city
+        memberSince
+        monthlyRequestCount
+        inProgressRequestCount
+        ledger { id title amount side createdAt }
+        requests { id referenceId serviceName status submittedAt }
+      }
+    }
+  ''');
+
+  static final _setActiveDocument = gql(r'''
+    mutation SetSubAgentActive($subAgentId: ID!, $active: Boolean!, $reason: String) {
+      setSubAgentActive(subAgentId: $subAgentId, active: $active, reason: $reason) {
+        id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending
+      }
+    }
+  ''');
+
+  @override
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId) {
+    return _graphQLService.query<SubAgentProfileDto>(
+      QueryOptions<SubAgentProfileDto>(
+        document: _profileDocument,
+        variables: {'subAgentId': subAgentId},
+        fetchPolicy: FetchPolicy.networkOnly,
+        parserFn: (json) => SubAgentProfileDto.fromJson(json['subAgentProfile'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, SubAgentDto>> setSubAgentActive({
+    required String subAgentId,
+    required bool active,
+    String? reason,
+  }) {
+    return _graphQLService.mutate<SubAgentDto>(
+      MutationOptions<SubAgentDto>(
+        document: _setActiveDocument,
+        variables: {
+          'subAgentId': subAgentId,
+          'active': active,
+          if (reason != null && reason.isNotEmpty) 'reason': reason,
+        },
+        parserFn: (json) => SubAgentDto.fromJson(json['setSubAgentActive'] as Map<String, dynamic>),
       ),
     );
   }

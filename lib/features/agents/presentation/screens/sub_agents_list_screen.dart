@@ -16,11 +16,12 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../domain/entities/sub_agent.dart';
 import '../bloc/agents_bloc.dart';
 import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
-import '../widgets/fund_sub_agent_sheet.dart';
 import 'add_sub_agent_screen.dart';
+import 'agent_profile_screen.dart';
 import '../widgets/seen_sub_agent_card.dart';
 
 /// Sub-agent network (Figma 13, node 18:722): title with a search button, two
@@ -35,7 +36,8 @@ class SubAgentsListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => InjectionContainer.instance.createAgentsBloc()..add(const AgentsLoadRequested()),
+      create: (_) => InjectionContainer.instance.createAgentsBloc()
+        ..add(const AgentsLoadRequested()),
       child: const SubAgentsView(),
     );
   }
@@ -115,7 +117,9 @@ class _SubAgentsViewState extends State<SubAgentsView> {
                           child: SizedBox(
                             width: 44,
                             height: 44,
-                            child: Center(child: SeenSvgIcon(SeenVectors.agentsSearch, size: 22, color: c.primary)),
+                            child: Center(
+                                child: SeenSvgIcon(SeenVectors.agentsSearch,
+                                    size: 22, color: c.primary)),
                           ),
                         ),
                       ),
@@ -135,8 +139,11 @@ class _SubAgentsViewState extends State<SubAgentsView> {
               Expanded(
                 child: BlocBuilder<AgentsBloc, AgentsState>(
                   builder: (context, state) => switch (state) {
-                    AgentsInitial() || AgentsLoading() => const Center(child: SeenLoader()),
-                    AgentsFailure(:final message) => _ErrorView(message: message),
+                    AgentsInitial() ||
+                    AgentsLoading() =>
+                      const Center(child: SeenLoader()),
+                    AgentsFailure(:final message) =>
+                      _ErrorView(message: message),
                     AgentsLoaded() => _LoadedView(state: state, query: _query),
                   },
                 ),
@@ -165,7 +172,8 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: SeenSpace.s3),
           SeenButton(
             label: l10n.retry,
-            onPressed: () => context.read<AgentsBloc>().add(const AgentsLoadRequested()),
+            onPressed: () =>
+                context.read<AgentsBloc>().add(const AgentsLoadRequested()),
           ),
         ],
       ),
@@ -186,6 +194,18 @@ class _LoadedView extends StatefulWidget {
 }
 
 class _LoadedViewState extends State<_LoadedView> {
+  Future<void> _openProfile(SubAgent agent) async {
+    final bloc = context.read<AgentsBloc>();
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+            value: bloc, child: AgentProfileScreen(subAgent: agent)),
+      ),
+    );
+    // The profile may have funded, re-limited or suspended the agent.
+    bloc.add(const AgentsLoadRequested());
+  }
+
   _AgentFilter _filter = _AgentFilter.all;
 
   @override
@@ -197,7 +217,8 @@ class _LoadedViewState extends State<_LoadedView> {
     final state = widget.state;
     final all = state.subAgents;
     final activeCount = all.where((a) => a.isActive).length;
-    final distributed = all.fold<int>(0, (sum, a) => sum + a.balanceCents) / 100;
+    final distributed =
+        all.fold<int>(0, (sum, a) => sum + a.balanceCents) / 100;
     final needle = widget.query.trim().toLowerCase();
     final visible = all.where((a) {
       final byFilter = switch (_filter) {
@@ -206,12 +227,15 @@ class _LoadedViewState extends State<_LoadedView> {
         _AgentFilter.suspended => !a.isActive,
       };
       return byFilter &&
-          (needle.isEmpty || a.name.toLowerCase().contains(needle) || a.code.toLowerCase().contains(needle));
+          (needle.isEmpty ||
+              a.name.toLowerCase().contains(needle) ||
+              a.code.toLowerCase().contains(needle));
     }).toList();
 
     return RefreshIndicator(
       onRefresh: () async {
-        final bloc = context.read<AgentsBloc>()..add(const AgentsLoadRequested());
+        final bloc = context.read<AgentsBloc>()
+          ..add(const AgentsLoadRequested());
         await bloc.stream.firstWhere((x) => x is! AgentsLoading);
       },
       child: ListView(
@@ -220,7 +244,10 @@ class _LoadedViewState extends State<_LoadedView> {
           // The active-agents tile leads (right in RTL), as in Figma.
           Row(
             children: [
-              Expanded(child: SeenAgentStatTile(label: l10n.agentsStatActive, value: s.numeral(activeCount))),
+              Expanded(
+                  child: SeenAgentStatTile(
+                      label: l10n.agentsStatActive,
+                      value: s.numeral(activeCount))),
               Expanded(
                 child: SeenAgentStatTile(
                   label: l10n.agentsStatDistributed,
@@ -231,7 +258,11 @@ class _LoadedViewState extends State<_LoadedView> {
           ),
           const SizedBox(height: 18),
           SeenSegmentedControl(
-            labels: [l10n.walletFilterAll, l10n.agentsFilterActive, l10n.agentsFilterSuspended],
+            labels: [
+              l10n.walletFilterAll,
+              l10n.agentsFilterActive,
+              l10n.agentsFilterSuspended
+            ],
             selectedIndex: _AgentFilter.values.indexOf(_filter),
             onSelected: (i) => setState(() => _filter = _AgentFilter.values[i]),
           ),
@@ -239,7 +270,9 @@ class _LoadedViewState extends State<_LoadedView> {
           if (visible.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: Text(l10n.agentsNoMatch, style: t.body.copyWith(color: c.inkMuted))),
+              child: Center(
+                  child: Text(l10n.agentsNoMatch,
+                      style: t.body.copyWith(color: c.inkMuted))),
             )
           else
             for (final agent in visible)
@@ -252,12 +285,10 @@ class _LoadedViewState extends State<_LoadedView> {
                   suspended: !agent.isActive,
                   statusLabel: agent.invitePending
                       ? l10n.agentAddPending
-                      : (agent.isActive ? l10n.agentsFilterActive : l10n.agentsStatusSuspended),
-                  onTap: () => showFundSubAgentSheet(
-                    context,
-                    subAgent: agent,
-                    masterAvailableBalanceCents: state.masterWalletBalance?.availableCents ?? 0,
-                  ),
+                      : (agent.isActive
+                          ? l10n.agentsFilterActive
+                          : l10n.agentsStatusSuspended),
+                  onTap: () => _openProfile(agent),
                 ),
               ),
         ],

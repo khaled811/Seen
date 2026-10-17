@@ -48,8 +48,8 @@ WAL-08,WAL,State,P1,المحفظة: حالات الرصيد,Wallet: balance stat
 WAL-09,WAL,State,P1,سجل العمليات فارغ,Ledger empty,Wallet (11),0 transactions; segment with 0 rows,Pending Design
 AGT-01,AGT,Flow,P0,إضافة وكيل فرعي,Add sub-agent,Agents (13) FAB,Fields and validation; credentials/invite; duplicate; success,Designed - Implemented (Flutter)
 AGT-02,AGT,Sheet,P0,تعديل السقف,Edit credit limit,Agent card / profile,Above master balance; below current usage; confirmation,Designed - Implemented (Flutter)
-AGT-03,AGT,Dialog,P1,إيقاف / إعادة تفعيل وكيل,Suspend / reactivate agent,Agent profile,Pending requests of the agent; reason; confirmation,Pending Design
-AGT-04,AGT,Screen,P1,ملف الوكيل,Agent profile / detail,Agents (13) card tap,Balance history; requests; limit; status; actions,Pending Design
+AGT-03,AGT,Dialog,P1,إيقاف / إعادة تفعيل وكيل,Suspend / reactivate agent,Agent profile,Pending requests of the agent; reason; confirmation,Designed - Implemented (Flutter)
+AGT-04,AGT,Screen,P1,ملف الوكيل,Agent profile / detail,Agents (13) card tap,Balance history; requests; limit; status; actions,Designed - Implemented (Flutter)
 AGT-05,AGT,Sheet,P1,تمويل وكيل,Fund agent,Agent profile / card,Amount; master balance check; success; failure,Pending Design
 AGT-06,AGT,Screen,P1,موافقات الوكلاء,Sub-agent approvals list,Entry point to be decided (Account or tab badge),Empty; many; approve; reject,Pending Design
 AGT-07,AGT,Sheet,P1,سبب رفض طلب وكيل,Reject reason sheet,Approvals list,Reason required; failure,Pending Design

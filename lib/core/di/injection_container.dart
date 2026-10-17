@@ -25,6 +25,7 @@ import '../../features/requests/domain/services/pdf_page_renderer.dart';
 import '../../features/requests/domain/usecases/request_document_usecases.dart';
 import '../../features/requests/presentation/bloc/document_viewer_bloc.dart';
 import '../../features/agents/domain/usecases/sub_agent_management_usecases.dart';
+import '../../features/agents/presentation/bloc/agent_profile_bloc.dart';
 import '../../features/agents/presentation/bloc/sub_agent_management_bloc.dart';
 import '../network/connectivity_monitor.dart';
 import '../network/data_freshness.dart';
@@ -171,6 +172,8 @@ class InjectionContainer {
   late final RejectSubAgentRequestUseCase rejectSubAgentRequestUseCase;
   late final FundSubAgentWalletUseCase fundSubAgentWalletUseCase;
   late final CreateSubAgentUseCase createSubAgentUseCase;
+  late final GetSubAgentProfileUseCase getSubAgentProfileUseCase;
+  late final SetSubAgentActiveUseCase setSubAgentActiveUseCase;
   late final UpdateCreditLimitUseCase updateCreditLimitUseCase;
 
   late final SupportRemoteDataSource supportRemoteDataSource;
@@ -291,6 +294,8 @@ class InjectionContainer {
     rejectSubAgentRequestUseCase = RejectSubAgentRequestUseCase(agentsRepository);
     fundSubAgentWalletUseCase = FundSubAgentWalletUseCase(agentsRepository);
     createSubAgentUseCase = CreateSubAgentUseCase(agentsRepository);
+    getSubAgentProfileUseCase = GetSubAgentProfileUseCase(agentsRepository);
+    setSubAgentActiveUseCase = SetSubAgentActiveUseCase(agentsRepository);
     updateCreditLimitUseCase = UpdateCreditLimitUseCase(agentsRepository);
 
     // Same reasoning as the other feature fallbacks above: inert in release
@@ -387,6 +392,10 @@ class InjectionContainer {
   /// Builds the app-wide [ConnectivityCubit]; the root provider owns it.
   ConnectivityCubit createConnectivityCubit() =>
       ConnectivityCubit(monitor: PluginConnectivityMonitor(), freshness: dataFreshness);
+
+  /// Builds a fresh [AgentProfileBloc]; the profile screen owns it.
+  AgentProfileBloc createAgentProfileBloc() =>
+      AgentProfileBloc(getProfile: getSubAgentProfileUseCase, setActive: setSubAgentActiveUseCase);
 
   /// Builds a fresh [AddSubAgentBloc]; the add-agent screen owns it.
   AddSubAgentBloc createAddSubAgentBloc() => AddSubAgentBloc(createSubAgent: createSubAgentUseCase);

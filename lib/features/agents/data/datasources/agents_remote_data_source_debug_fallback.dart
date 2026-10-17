@@ -5,6 +5,7 @@ import '../../../../core/error/failure.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/new_sub_agent.dart';
 import '../models/sub_agent_dto.dart';
+import '../models/sub_agent_profile_dto.dart';
 import '../models/sub_agent_request_summary_dto.dart';
 import 'agents_remote_data_source.dart';
 
@@ -132,6 +133,84 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
           code: SubAgentIssue.limitAboveAllowedCode, details: {'maxCents': 500000}));
     }
     final updated = existing.copyWith(creditLimitAmount: MoneyParser.decimalStringFromCents(limitCents));
+    _mockSubAgents[subAgentId] = updated;
+    return Right(updated);
+  }
+
+  /// Demo data: the mock agent plus a canned balance history and requests.
+  @override
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId) async {
+    final result = await _real.getSubAgentProfile(subAgentId);
+    if (!(kDebugMode && result.isLeft())) return result;
+    final agent = _mockSubAgents[subAgentId];
+    if (agent == null) return const Left(ServerFailure('Sub-agent not found.'));
+    final now = DateTime.now();
+    return Right(SubAgentProfileDto(
+      agent: agent,
+      city: 'عدن',
+      memberSince: DateTime(2024, 3, 1),
+      monthlyRequestCount: 412,
+      inProgressRequestCount: 3,
+      ledger: [
+        LedgerEntryDto(
+          id: 'l1',
+          title: 'تمويل من الوكيل الرئيسي',
+          amount: '300.00',
+          isCredit: true,
+          createdAt: now.subtract(const Duration(hours: 3)),
+        ),
+        LedgerEntryDto(
+          id: 'l2',
+          title: 'SB-20484 · حجز طيران',
+          amount: '1240.00',
+          isCredit: false,
+          createdAt: now.subtract(const Duration(days: 1)),
+        ),
+        LedgerEntryDto(
+          id: 'l3',
+          title: 'تمويل من الوكيل الرئيسي',
+          amount: '1000.00',
+          isCredit: true,
+          createdAt: now.subtract(const Duration(days: 4)),
+        ),
+      ],
+      requests: [
+        AgentRequestDto(
+          id: 'r1',
+          referenceId: 'SB-20488',
+          serviceName: 'تأشيرة السعودية',
+          status: 'processing',
+          submittedAt: now.subtract(const Duration(days: 1)),
+        ),
+        AgentRequestDto(
+          id: 'r2',
+          referenceId: 'SB-20487',
+          serviceName: 'تأشيرة مصر',
+          status: 'under_review',
+          submittedAt: now.subtract(const Duration(days: 2)),
+        ),
+        AgentRequestDto(
+          id: 'r3',
+          referenceId: 'SB-20470',
+          serviceName: 'تأشيرة السعودية',
+          status: 'completed',
+          submittedAt: now.subtract(const Duration(days: 9)),
+        ),
+      ],
+    ));
+  }
+
+  @override
+  Future<Either<Failure, SubAgentDto>> setSubAgentActive({
+    required String subAgentId,
+    required bool active,
+    String? reason,
+  }) async {
+    final result = await _real.setSubAgentActive(subAgentId: subAgentId, active: active, reason: reason);
+    if (!(kDebugMode && result.isLeft())) return result;
+    final existing = _mockSubAgents[subAgentId];
+    if (existing == null) return const Left(ServerFailure('Sub-agent not found.'));
+    final updated = existing.copyWith(isActive: active);
     _mockSubAgents[subAgentId] = updated;
     return Right(updated);
   }

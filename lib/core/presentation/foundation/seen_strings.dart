@@ -54,6 +54,13 @@ class SeenStrings {
     return '${numeral(d.day)} ${(isArabic ? ar : en)[d.month - 1]}';
   }
 
+  /// "مارس ٢٠٢٤" / "Mar 2024": month name and year; digits follow [numeral].
+  String monthYear(DateTime d) {
+    const ar = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${(isArabic ? ar : en)[d.month - 1]} ${numeral(d.year)}';
+  }
+
   /// "٣ غير مقروءة" / "3 unread" (the notifications header caption).
   String unreadCount(int n) => _t('${numeral(n)} غير مقروءة', '$n unread');
 
