@@ -728,3 +728,48 @@ Why this is a decision for backend / product, not just a client detail:
   app adds a header button with a badge (the requests list itself is the server's
   list). Drafts are not mixed into it.
 - Not built: the "Draft · 3" count chip variant of REQ-02 (no place uses it yet).
+
+## 20. Request status screens (Figma REQ-06 / 07 / 08 / 09)
+
+The request detail now has its own screen for: waiting on the main agent (06),
+waiting on management (07), rejected (08), cancelled (09) and expired (09). The
+other statuses keep the existing ticket + stages screen. The placeholders below are
+queried with the request detail (`requestDetail` / `cancelRequest`); debug builds
+fall back to canned data (SB-1007 rejected, SB-1008 / 1011 cancelled / expired,
+SB-1009 / 1010 waiting for approval).
+
+Added to the request detail (all optional; screens degrade when absent):
+```graphql
+approval { kind(MASTER_AGENT|MANAGEMENT) approverName typicalWaitMinutes thresholdAmount }
+rejectionReason            # the authority's text
+cancellation { cancelledBy cancelledAt reason code }   # code DEADLINE_EXPIRED = automatic
+refundedAmount             # decimal string: what went back to the wallet
+mutation RemindApprover($requestId: ID!) -> { success }      # new
+```
+
+Needed from the backend / product:
+- **Approver and the reason approval is needed.** The banner texts ("exceeds your
+  limit" / "exceeds 2,000 USD") are built from `approval.kind` and `thresholdAmount`;
+  the typical wait comes from `typicalWaitMinutes` (measured, not guessed). Without
+  them the screen shows the generic wording / omits the time.
+- **Reminder rules:** `RemindApprover` should notify the approver (push / SMS / email),
+  be rate limited (`RATE_LIMITED` with `retryAfterSeconds`; the app then says "you
+  reminded them recently, again in mm:ss"), and refuse when the request is no longer
+  waiting. Decide the cooldown (the app never invents one).
+- **Rejection reason:** free text from the authority today. A code + text would let the
+  app localize and offer the right fix. When no reason arrives the app says so and points
+  to support.
+- **Cancellation record:** who (name + role), when, reason; `code: DEADLINE_EXPIRED`
+  marks the 72 h automatic cancellation, shown as "Expired". The app also treats an
+  "info required" request whose deadline already passed as expired (client clock), until
+  the server has cancelled it.
+- **Refund amount** is shown only when `refundedAmount` is returned; the app never
+  computes a refund. "The held amount was returned" is the server's promise: the amount
+  and time must match the wallet ledger entry of the release / refund.
+- **"Correct and resubmit" / "New request with the same data"** need the request's full
+  form data to prefill the booking (service id and every traveler's fields). The detail
+  only has names and passport numbers, so both buttons open the service catalog empty.
+  Proposed: `requestAsDraft(requestId)` returning a draft payload (or the form values in
+  the detail), which the app turns into a local draft (section 19) and opens.
+- **Statuses with no screen of their own:** processing / completed / under review keep the
+  old layout; Figma has nothing for them in this pass.

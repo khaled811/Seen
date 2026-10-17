@@ -64,6 +64,11 @@ class SeenStrings {
     return '${(isArabic ? ar : en)[d.month - 1]} ${numeral(d.year)}';
   }
 
+  /// "ساعتين" / "٢٤ ساعة" / "2 h": a short wait.
+  String durationHours(int h) => _t(_arUnit(h, 'ساعة', 'ساعتين', 'ساعات'), '$h h');
+
+  String durationMinutes(int m) => _t(_arUnit(m, 'دقيقة', 'دقيقتين', 'دقائق'), '$m min');
+
   /// "٣ مسودات" / "3 drafts" (Arabic dual and plural forms).
   String draftCount(int n) {
     if (!isArabic) return n == 1 ? '1 draft' : '$n drafts';

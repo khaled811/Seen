@@ -69,6 +69,9 @@ class _FakeRequestsRepository implements RequestsRepository {
   }
 
   @override
+  Future<Either<Failure, void>> remindApprover(String requestId) async => const Right(null);
+
+  @override
   Future<Either<Failure, RequestDetail>> cancelRequest(String requestId) async {
     cancelCalls++;
     return cancelResult ?? Right(_detailFor(requestId, RequestStatus.cancelled));

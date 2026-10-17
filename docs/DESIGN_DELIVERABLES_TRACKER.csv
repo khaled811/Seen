@@ -20,10 +20,10 @@ REQ-02,REQ,Component,P1,"بطاقة مسودة وشارة ""مسودة""",Draft 
 REQ-03,REQ,Dialog,P1,حذف مسودة,Delete draft confirmation,Draft card,Undo; last draft,Designed - Implemented (Flutter)
 REQ-04,REQ,Flow,P1,حفظ كمسودة,Save as draft,Booking form (09) / Review (10),Leave-form prompt; partial traveler data; draft limit,Designed - Implemented (Flutter)
 REQ-05,REQ,Flow,P0,رفع المستند الناقص,Upload the missing document,Request card / 72h banner / Tracking (07) when awaiting document,Which document and why; capture/pick/preview; progress; failure/retry; deadline passed,Designed - Implemented (Flutter)
-REQ-06,REQ,State,P1,حالة: بانتظار موافقة الوكيل,Status: pending agent approval,"Requests (06), Tracking (07)","Chip, card, stage text, who approves",Pending Design
-REQ-07,REQ,State,P1,حالة: بانتظار موافقة الإدارة,Status: pending management approval,"Requests (06), Tracking (07)","Chip, card, stage text, expected time",Pending Design
-REQ-08,REQ,Screen,P1,طلب مرفوض,Rejected request detail,Tracking (07) of a rejected request,Reason text; resubmit; contact support; refund of hold,Pending Design
-REQ-09,REQ,State,P1,طلب ملغى / منتهي,Cancelled / expired request detail,Tracking (07),Who cancelled; refund; expired SLA,Pending Design
+REQ-06,REQ,State,P1,حالة: بانتظار موافقة الوكيل,Status: pending agent approval,"Requests (06), Tracking (07)","Chip, card, stage text, who approves",Designed - Implemented (Flutter)
+REQ-07,REQ,State,P1,حالة: بانتظار موافقة الإدارة,Status: pending management approval,"Requests (06), Tracking (07)","Chip, card, stage text, expected time",Designed - Implemented (Flutter)
+REQ-08,REQ,Screen,P1,طلب مرفوض,Rejected request detail,Tracking (07) of a rejected request,Reason text; resubmit; contact support; refund of hold,Designed - Implemented (Flutter)
+REQ-09,REQ,State,P1,طلب ملغى / منتهي,Cancelled / expired request detail,Tracking (07),Who cancelled; refund; expired SLA,Designed - Implemented (Flutter)
 REQ-10,REQ,Sheet,P1,إلغاء الطلب,Cancel request (with reason),Tracking (07) > Cancel,Reason required; not cancellable; refund info; failure,Pending Design
 REQ-11,REQ,Screen,P0,عارض المستندات,Document viewer,Tracking (07) > View documents,PDF/image zoom; multi-page; download; share; not ready; failed to load,Designed - Implemented (Flutter; PDF preview pending engine)
 REQ-12,REQ,Sheet,P1,قائمة مستندات الطلب لكل مسافر,Request documents list (per traveler),Tracking (07) > View documents,Traveler with no documents yet; approved vs pending,Pending Design

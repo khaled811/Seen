@@ -18,6 +18,9 @@ abstract interface class RequestsRemoteDataSource {
   Future<Either<Failure, RequestDetailDto>> getRequestDetail(String requestId);
 
   Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId);
+
+  /// Nudges the approver of a request waiting on approval (Figma REQ-06 / 07).
+  Future<Either<Failure, void>> remindApprover(String requestId);
 }
 
 class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
@@ -29,6 +32,10 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
   static const _travelerAndTimelineFields = r'''
     travelers { name passportNumber status }
     timeline { status occurredAt note }
+    approval { kind approverName typicalWaitMinutes thresholdAmount }
+    rejectionReason
+    cancellation { cancelledBy cancelledAt reason code }
+    refundedAmount
   ''';
 
   static final _requestsDocument = gql(r'''
@@ -112,5 +119,24 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
             RequestDetailDto.fromJson(json['cancelRequest'] as Map<String, dynamic>),
       ),
     );
+  }
+
+  // TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 20).
+  static final _remindDocument = gql(r'''
+    mutation RemindApprover($requestId: ID!) {
+      remindApprover(requestId: $requestId) { success }
+    }
+  ''');
+
+  @override
+  Future<Either<Failure, void>> remindApprover(String requestId) async {
+    final result = await _graphQLService.mutate<bool>(
+      MutationOptions<bool>(
+        document: _remindDocument,
+        variables: {'requestId': requestId},
+        parserFn: (json) => (json['remindApprover'] as Map<String, dynamic>)['success'] as bool? ?? false,
+      ),
+    );
+    return result.flatMap((ok) => ok ? const Right(null) : const Left(ServerFailure('Reminder was not sent.')));
   }
 }

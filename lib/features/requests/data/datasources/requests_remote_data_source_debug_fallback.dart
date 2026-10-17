@@ -46,6 +46,20 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
     return result;
   }
 
+  /// Demo: the first reminder works, a second one within the session is
+  /// refused as too soon (to see the "try again later" state).
+  final _reminded = <String>{};
+
+  @override
+  Future<Either<Failure, void>> remindApprover(String requestId) async {
+    final result = await _real.remindApprover(requestId);
+    if (!(kDebugMode && result.isLeft())) return result;
+    if (!_reminded.add(requestId)) {
+      return const Left(ServerFailure('Too soon', code: 'RATE_LIMITED', details: {'retryAfterSeconds': 3600}));
+    }
+    return const Right(null);
+  }
+
   @override
   Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId) async {
     final result = await _real.cancelRequest(requestId);
@@ -234,6 +248,8 @@ Map<String, RequestDetailDto> _seedRequests(DateTime now) {
           note: 'Passport expiry did not meet the 6-month rule.',
         ),
       ],
+      rejectionReason: 'صورة الجواز غير مطابقة للبيانات المدخلة (اختلاف في تاريخ الميلاد). صحّح البيانات وأعد التقديم.',
+      refundedAmount: '150.00',
     ),
     RequestDetailDto(
       id: 'req-8',
@@ -254,6 +270,61 @@ Map<String, RequestDetailDto> _seedRequests(DateTime now) {
           note: 'Cancelled by agent.',
         ),
       ],
+      cancellation: RequestCancellationDto(
+        cancelledBy: 'وليد ناصر (موظف)',
+        cancelledAt: now.subtract(const Duration(days: 5)),
+        reason: 'العميل غيّر موعد السفر',
+      ),
+      refundedAmount: '400.00',
+    ),
+    RequestDetailDto(
+      id: 'req-9',
+      referenceId: 'SB-1009',
+      serviceName: 'حجز طيران',
+      status: 'pending_agent_approval',
+      totalPriceAmount: '1240.00',
+      submittedAt: now.subtract(const Duration(hours: 1)),
+      travelers: _travelers(4),
+      timeline: [RequestTimelineEntryDto(status: 'submitted', occurredAt: now.subtract(const Duration(hours: 1)))],
+      approval: const RequestApprovalDto(
+        kind: 'MASTER_AGENT',
+        approverName: 'مكتب الريان',
+        typicalWaitMinutes: 120,
+      ),
+    ),
+    RequestDetailDto(
+      id: 'req-10',
+      referenceId: 'SB-1010',
+      serviceName: 'حجز طيران',
+      status: 'pending_management_approval',
+      totalPriceAmount: '2400.00',
+      submittedAt: now.subtract(const Duration(hours: 5)),
+      travelers: _travelers(4),
+      timeline: [RequestTimelineEntryDto(status: 'submitted', occurredAt: now.subtract(const Duration(hours: 5)))],
+      approval: const RequestApprovalDto(
+        kind: 'MANAGEMENT',
+        approverName: 'إدارة جُباري',
+        typicalWaitMinutes: 1440,
+        thresholdAmount: '2000.00',
+      ),
+    ),
+    RequestDetailDto(
+      id: 'req-11',
+      referenceId: 'SB-1011',
+      serviceName: 'دخول مصر',
+      status: 'cancelled',
+      totalPriceAmount: '60.00',
+      submittedAt: now.subtract(const Duration(days: 7)),
+      travelers: _travelers(1),
+      timeline: [
+        RequestTimelineEntryDto(status: 'submitted', occurredAt: now.subtract(const Duration(days: 7))),
+        RequestTimelineEntryDto(status: 'cancelled', occurredAt: now.subtract(const Duration(days: 4))),
+      ],
+      cancellation: RequestCancellationDto(
+        cancelledAt: now.subtract(const Duration(days: 4)),
+        code: 'DEADLINE_EXPIRED',
+      ),
+      refundedAmount: '60.00',
     ),
   ];
   return {for (final r in requests) r.id: r};

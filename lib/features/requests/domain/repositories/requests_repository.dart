@@ -11,4 +11,7 @@ abstract interface class RequestsRepository {
 
   /// Returns the request's updated detail on success.
   Future<Either<Failure, RequestDetail>> cancelRequest(String requestId);
+
+  /// Reminds the approver of a request waiting on approval.
+  Future<Either<Failure, void>> remindApprover(String requestId);
 }

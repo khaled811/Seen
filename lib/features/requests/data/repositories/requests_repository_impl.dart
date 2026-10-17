@@ -36,4 +36,7 @@ class RequestsRepositoryImpl implements RequestsRepository {
     final dto = (result as Right<Failure, RequestDetailDto>).value;
     return Right(dto.toEntity());
   }
+
+  @override
+  Future<Either<Failure, void>> remindApprover(String requestId) => _remote.remindApprover(requestId);
 }

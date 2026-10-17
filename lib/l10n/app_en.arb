@@ -3005,5 +3005,151 @@
   "draftServiceGone": "This service is no longer available.",
   "@draftServiceGone": {
     "description": "Drafts copy."
+  },
+  "requestWaitingAgent": "Waiting for the agent",
+  "@requestWaitingAgent": {
+    "description": "Request status screens copy."
+  },
+  "requestWaitingManagement": "Waiting for management",
+  "@requestWaitingManagement": {
+    "description": "Request status screens copy."
+  },
+  "requestWhoApproves": "Who approves?",
+  "@requestWhoApproves": {
+    "description": "Request status screens copy."
+  },
+  "requestApproverIs": "Approved by: {name}",
+  "@requestApproverIs": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "requestApproverMasterAgent": "(main agent)",
+  "@requestApproverMasterAgent": {
+    "description": "Request status screens copy."
+  },
+  "requestApproverManagement": "Jubari management",
+  "@requestApproverManagement": {
+    "description": "Request status screens copy."
+  },
+  "requestApproverEta": "Expected time: {time}",
+  "@requestApproverEta": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "requestApprovalBannerAgent": "Your request exceeds your allowed limit, so your main agent has to approve it.",
+  "@requestApprovalBannerAgent": {
+    "description": "Request status screens copy."
+  },
+  "requestApprovalBannerManagement": "The booking value exceeds {amount}, so senior management has to approve it.",
+  "@requestApprovalBannerManagement": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "requestApprovalBannerManagementNoAmount": "The booking value exceeds the allowed limit, so senior management has to approve it.",
+  "@requestApprovalBannerManagementNoAmount": {
+    "description": "Request status screens copy."
+  },
+  "requestRemindApprover": "Remind approver",
+  "@requestRemindApprover": {
+    "description": "Request status screens copy."
+  },
+  "requestReminderSent": "The reminder was sent.",
+  "@requestReminderSent": {
+    "description": "Request status screens copy."
+  },
+  "requestReminderTooSoon": "You reminded them recently. You can remind again in {time}.",
+  "@requestReminderTooSoon": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "requestReminderTooSoonNoTime": "You reminded them recently. Try later.",
+  "@requestReminderTooSoonNoTime": {
+    "description": "Request status screens copy."
+  },
+  "requestRejectionReasonTitle": "The authority's reason",
+  "@requestRejectionReasonTitle": {
+    "description": "Request status screens copy."
+  },
+  "requestRejectionNoReason": "The authority sent no reason. Contact support to find out.",
+  "@requestRejectionNoReason": {
+    "description": "Request status screens copy."
+  },
+  "requestRefundedAvailable": "The held {amount} was returned to your available balance.",
+  "@requestRefundedAvailable": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "requestRefundedShort": "{amount} was returned to your balance.",
+  "@requestRefundedShort": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "requestCorrectAndResubmit": "Correct and resubmit",
+  "@requestCorrectAndResubmit": {
+    "description": "Request status screens copy."
+  },
+  "requestNewSameData": "New request with the same data",
+  "@requestNewSameData": {
+    "description": "Request status screens copy."
+  },
+  "requestCancelledBy": "Cancelled by: {who}",
+  "@requestCancelledBy": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "requestCancelReasonLine": "Reason: {reason}",
+  "@requestCancelReasonLine": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "requestExpiredNote": "The {hours}-hour deadline passed without the required document.",
+  "@requestExpiredNote": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "requestExpiredRefund": "The held {amount} was returned",
+  "@requestExpiredRefund": {
+    "description": "Request status screens copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -14,6 +14,8 @@ import '../../features/requests/data/services/plugin_document_picker.dart';
 import '../../features/requests/domain/repositories/missing_document_repository.dart';
 import '../../features/requests/domain/services/document_picker.dart';
 import '../../features/requests/domain/usecases/missing_document_usecases.dart';
+import '../../features/requests/domain/usecases/remind_approver_usecase.dart';
+import '../../features/requests/presentation/bloc/approver_reminder_cubit.dart';
 import '../../features/requests/presentation/bloc/missing_document_bloc.dart';
 import '../../features/requests/data/datasources/document_file_remote_data_source.dart';
 import '../../features/requests/data/datasources/document_file_remote_data_source_debug_fallback.dart';
@@ -162,6 +164,7 @@ class InjectionContainer {
   late final GetRequestsUseCase getRequestsUseCase;
   late final GetRequestDetailUseCase getRequestDetailUseCase;
   late final CancelRequestUseCase cancelRequestUseCase;
+  late final RemindApproverUseCase remindApproverUseCase;
   late final MissingDocumentRepository missingDocumentRepository;
   late final DocumentPicker documentPicker;
   late final DocumentFileRepository documentFileRepository;
@@ -283,6 +286,7 @@ class InjectionContainer {
     getRequestsUseCase = GetRequestsUseCase(requestsRepository);
     getRequestDetailUseCase = GetRequestDetailUseCase(requestsRepository);
     cancelRequestUseCase = CancelRequestUseCase(requestsRepository);
+    remindApproverUseCase = RemindApproverUseCase(requestsRepository);
     missingDocumentRepository = MissingDocumentRepositoryImpl(
       remote: DebugFallbackMissingDocumentRemoteDataSource(
         MissingDocumentRemoteDataSourceImpl(graphQLService: graphQLService),
@@ -403,6 +407,9 @@ class InjectionContainer {
         uploadDocument: uploadMissingDocumentUseCase,
         pickDocument: pickDocumentUseCase,
       );
+
+  /// Builds a fresh [ApproverReminderCubit]; the detail's action bar owns it.
+  ApproverReminderCubit createApproverReminderCubit() => ApproverReminderCubit(remindApprover: remindApproverUseCase);
 
   /// Builds a fresh [RequestsBloc]. The caller (the dashboard screen's own
   /// `BlocProvider`) owns its lifetime from here on.
