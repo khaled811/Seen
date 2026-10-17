@@ -24,5 +24,6 @@ abstract interface class AgentsRepository {
   Future<Either<Failure, SubAgent>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    String? note,
   });
 }

@@ -17,6 +17,7 @@ class FundSubAgentWalletUseCase {
   Future<Either<Failure, SubAgent>> call({
     required String subAgentId,
     required int amountCents,
+    String? note,
   }) =>
-      _repository.fundSubAgentWallet(subAgentId: subAgentId, amountCents: amountCents);
+      _repository.fundSubAgentWallet(subAgentId: subAgentId, amountCents: amountCents, note: note);
 }

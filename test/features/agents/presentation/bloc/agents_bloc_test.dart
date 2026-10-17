@@ -90,6 +90,7 @@ class _FakeAgentsRepository implements AgentsRepository {
   Future<Either<Failure, SubAgent>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    String? note,
   }) async =>
       fundResult;
 }

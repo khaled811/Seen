@@ -42,13 +42,17 @@ final class SubAgentWalletFundingSubmitted extends AgentsEvent {
   const SubAgentWalletFundingSubmitted({
     required this.subAgentId,
     required this.amountCents,
+    this.note,
   });
 
   final String subAgentId;
   final int amountCents;
 
+  /// Optional free-text note sent with the transfer.
+  final String? note;
+
   @override
-  List<Object?> get props => [subAgentId, amountCents];
+  List<Object?> get props => [subAgentId, amountCents, note];
 }
 
 final class FundingStatusCleared extends AgentsEvent {

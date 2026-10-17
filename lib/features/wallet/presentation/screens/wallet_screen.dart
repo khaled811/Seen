@@ -18,7 +18,7 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
-import '../../../agents/presentation/screens/sub_agents_list_screen.dart';
+import '../../../agents/presentation/screens/transfer_to_agent_screen.dart';
 import '../../domain/entities/wallet_transaction.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
@@ -160,9 +160,14 @@ class _LoadedViewState extends State<_LoadedView> {
 
   void _openTopUp() => Navigator.of(context).push(TopUpRequestScreen.route(context.read<WalletBloc>()));
 
-  // Funding happens per agent on the sub-agents screen.
-  void _openTransfer() =>
-      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SubAgentsListScreen()));
+  Future<void> _openTransfer() async {
+    final bloc = context.read<WalletBloc>();
+    final done = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const TransferToAgentScreen()),
+    );
+    // A transfer changed the balance and added a ledger row.
+    if (done == true) bloc.add(const WalletLoadRequested());
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -47,10 +47,12 @@ class AgentsRepositoryImpl implements AgentsRepository {
   Future<Either<Failure, SubAgent>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    String? note,
   }) async {
     final result = await _remote.fundSubAgentWallet(
       subAgentId: subAgentId,
       amountCents: amountCents,
+      note: note,
     );
     if (result case Left(:final value)) return Left(value);
     final dto = (result as Right<Failure, SubAgentDto>).value;

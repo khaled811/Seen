@@ -522,3 +522,30 @@ Needed from the backend:
 Client side: adds `path_provider` as a direct dependency (temp file for sharing);
 saving uses the system save dialog (`file_picker`), sharing uses `share_plus`
 (already a dependency).
+
+## 14. Transfer to agent (Figma WAL-07 / 07b / 07c)
+
+The wallet's "Transfer to agent" now opens a flow instead of the sub-agents list:
+choose an active sub-agent, amount (quick chips 100 / 300 / 500 / 1,000) and an
+optional note, a confirmation sheet, then a success page showing the refetched
+balance. It uses the existing `fundSubAgentWallet` mutation.
+
+Changed contract (placeholder, additive): `fundSubAgentWallet(subAgentId, amount,
+note)`: `note` is new, optional, sent only when the user typed one.
+
+Needed from the backend:
+- **Accept and store `note`** (shown in both ledgers) or tell us it is not wanted
+  and the field is removed.
+- **Return a transfer reference.** Figma's success text says "Reference TR-5521";
+  the mutation returns only the sub-agent, so the reference is **not shown**. Return
+  `{ subAgent, transferReference, masterBalanceAfter }`; the app would then show the
+  reference and stop refetching the balance.
+- **Ledger entries for both sides** (debit for the master, credit for the
+  sub-agent) with the note and reference, so the wallet history shows the transfer.
+- **Authorization:** only a master agent may transfer; the app checks the amount
+  against the available balance but the server must re-check (and reject while
+  amounts are on hold) and answer a clear code for insufficient balance
+  (`INSUFFICIENT_BALANCE`, with `available`), which today surfaces as a generic message.
+- **Atomicity / idempotency:** a retry after a timeout must not transfer twice
+  (idempotency key), since the confirm button can be pressed again after an error.
+- **"Cannot be undone"** is the copy on the confirm sheet: no reversal exists in the app.

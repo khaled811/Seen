@@ -69,10 +69,12 @@ class DebugFallbackAgentsRemoteDataSource implements AgentsRemoteDataSource {
   Future<Either<Failure, SubAgentDto>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    String? note,
   }) async {
     final result = await _real.fundSubAgentWallet(
       subAgentId: subAgentId,
       amountCents: amountCents,
+      note: note,
     );
     if (kDebugMode && result.isLeft()) {
       final existing = _mockSubAgents[subAgentId];

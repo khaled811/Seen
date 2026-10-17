@@ -29,6 +29,7 @@ abstract interface class AgentsRemoteDataSource {
   Future<Either<Failure, SubAgentDto>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    String? note,
   });
 }
 
@@ -82,8 +83,8 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
   ''');
 
   static final _fundSubAgentWalletDocument = gql(r'''
-    mutation FundSubAgentWallet($subAgentId: ID!, $amount: String!) {
-      fundSubAgentWallet(subAgentId: $subAgentId, amount: $amount) {
+    mutation FundSubAgentWallet($subAgentId: ID!, $amount: String!, $note: String) {
+      fundSubAgentWallet(subAgentId: $subAgentId, amount: $amount, note: $note) {
         id
         name
         code
@@ -150,6 +151,7 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
   Future<Either<Failure, SubAgentDto>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    String? note,
   }) {
     return _graphQLService.mutate<SubAgentDto>(
       MutationOptions<SubAgentDto>(
@@ -157,6 +159,7 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
         variables: {
           'subAgentId': subAgentId,
           'amount': MoneyParser.decimalStringFromCents(amountCents),
+          if (note != null && note.isNotEmpty) 'note': note,
         },
         parserFn: (json) =>
             SubAgentDto.fromJson(json['fundSubAgentWallet'] as Map<String, dynamic>),

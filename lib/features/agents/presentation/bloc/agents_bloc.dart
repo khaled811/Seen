@@ -193,6 +193,7 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
     final result = await _fundSubAgentWalletUseCase(
       subAgentId: event.subAgentId,
       amountCents: event.amountCents,
+      note: event.note,
     );
     final latest = state;
     if (latest is! AgentsLoaded) return;

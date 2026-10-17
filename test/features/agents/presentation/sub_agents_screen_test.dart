@@ -48,7 +48,7 @@ class _AgentsRepo implements AgentsRepository {
       const Right(null);
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({required String subAgentId, required int amountCents}) async =>
+  Future<Either<Failure, SubAgent>> fundSubAgentWallet({required String subAgentId, required int amountCents, String? note}) async =>
       const Right(SubAgent(id: '1', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 }
 

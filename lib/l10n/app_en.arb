@@ -2299,5 +2299,131 @@
   "viewerPdfUnavailableBody": "Download or share the file to open it in a PDF reader on your device.",
   "@viewerPdfUnavailableBody": {
     "description": "Document viewer copy."
+  },
+  "transferToLabel": "To",
+  "@transferToLabel": {
+    "description": "Transfer to agent copy."
+  },
+  "transferChoose": "Choose an agent",
+  "@transferChoose": {
+    "description": "Transfer to agent copy."
+  },
+  "transferChange": "Change",
+  "@transferChange": {
+    "description": "Transfer to agent copy."
+  },
+  "transferPick": "Choose",
+  "@transferPick": {
+    "description": "Transfer to agent copy."
+  },
+  "transferPickerTitle": "Choose an agent",
+  "@transferPickerTitle": {
+    "description": "Transfer to agent copy."
+  },
+  "transferNoAgents": "There are no active sub-agents to transfer to.",
+  "@transferNoAgents": {
+    "description": "Transfer to agent copy."
+  },
+  "transferAgentMeta": "Sub-agent · balance {balance}",
+  "@transferAgentMeta": {
+    "description": "Transfer to agent copy.",
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "transferAmountLabel": "Amount",
+  "@transferAmountLabel": {
+    "description": "Transfer to agent copy."
+  },
+  "transferAvailable": "Available to transfer {amount}",
+  "@transferAvailable": {
+    "description": "Transfer to agent copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "transferNoteLabel": "Note (optional)",
+  "@transferNoteLabel": {
+    "description": "Transfer to agent copy."
+  },
+  "transferInsufficient": "Insufficient balance. Available {available}, required {required}.",
+  "@transferInsufficient": {
+    "description": "Transfer to agent copy.",
+    "placeholders": {
+      "available": {
+        "type": "String"
+      },
+      "required": {
+        "type": "String"
+      }
+    }
+  },
+  "transferReview": "Review transfer",
+  "@transferReview": {
+    "description": "Transfer to agent copy."
+  },
+  "transferConfirmTitle": "Confirm transfer",
+  "@transferConfirmTitle": {
+    "description": "Transfer to agent copy."
+  },
+  "transferRowTo": "To",
+  "@transferRowTo": {
+    "description": "Transfer to agent copy."
+  },
+  "transferRowAmount": "Amount",
+  "@transferRowAmount": {
+    "description": "Transfer to agent copy."
+  },
+  "transferRowMyAfter": "Your balance after",
+  "@transferRowMyAfter": {
+    "description": "Transfer to agent copy."
+  },
+  "transferRowAgentAfter": "Agent's balance after",
+  "@transferRowAgentAfter": {
+    "description": "Transfer to agent copy."
+  },
+  "transferIrreversible": "The transfer cannot be undone once confirmed.",
+  "@transferIrreversible": {
+    "description": "Transfer to agent copy."
+  },
+  "transferCancel": "Cancel",
+  "@transferCancel": {
+    "description": "Transfer to agent copy."
+  },
+  "transferConfirm": "Confirm transfer",
+  "@transferConfirm": {
+    "description": "Transfer to agent copy."
+  },
+  "transferDoneTitle": "Transfer complete",
+  "@transferDoneTitle": {
+    "description": "Transfer to agent copy."
+  },
+  "transferDoneBody": "You transferred {amount} to {name}.",
+  "@transferDoneBody": {
+    "description": "Transfer to agent copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferRowBalanceNow": "Your current balance",
+  "@transferRowBalanceNow": {
+    "description": "Transfer to agent copy."
+  },
+  "transferAnother": "Another transfer",
+  "@transferAnother": {
+    "description": "Transfer to agent copy."
+  },
+  "transferBackToWallet": "Back to wallet",
+  "@transferBackToWallet": {
+    "description": "Transfer to agent copy."
   }
 }
