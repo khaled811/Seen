@@ -591,3 +591,39 @@ Needed from the backend / product:
   (AGT-04) does not exist, so the button is "Back to agents".
 - **Edit entry point:** needs the agent profile (AGT-04) or a card menu to be
   discoverable; today it is a link inside the fund sheet.
+
+## 16. Connectivity and error patterns (Figma SYS-01 / 02 / 02b)
+
+Built: an app-wide offline banner ("You are offline. Showing data as of 10:42" with
+Retry, then a green "Connection is back" that hides itself), and reusable error
+patterns: inline section error with retry, "taking longer than usual" notice,
+error sheet for a failed action, and the full-screen server error. They are applied
+to the requests list (offline → inline error; server error → full screen with the
+error code) and to the transfer confirmation (failure → error sheet with Retry).
+Other screens still use their older error views.
+
+Not built, and why:
+- **Stale-data marker and cached lists (SYS-01).** The app keeps no cache, so
+  offline the screens keep whatever they already loaded; the "as of" time is the last
+  successful backend answer (in memory). A real offline mode needs a local cache with
+  a defined staleness policy.
+- **Queued actions ("waiting for connection").** Replaying a document upload or a
+  transfer after reconnecting needs persistent queueing and **idempotency keys** on
+  every mutation (a replay after a timeout must not run twice). Until then the app
+  fails the action and offers Retry. Product and backend decision.
+- **"Data updated and 1 action sent" (green banner).** The banner says only
+  "Connection is back": nothing refreshes or sends on reconnect yet (no queue, no
+  global refetch).
+- **"No amount was charged" (SYS-02 error sheet).** Not claimed: after a timeout the
+  client cannot know. If the server guarantees all-or-nothing and reports it, add a
+  flag to the failure and the sheet can say so.
+
+Needed from the backend:
+- **A request reference on every error:** the header `x-request-id` on HTTP errors
+  and `extensions.requestId` on GraphQL errors; the app quotes `502 · a91f` (status
+  or code + first 4 characters) so support can find the request.
+- **Error codes:** keep `extensions.code` stable; 5xx vs 4xx drives which pattern shows.
+- **Timeout policy:** the client times out at its own limit; the slow-server notice
+  (after 8 s, with Cancel) exists as a component but is not yet attached to a screen.
+- "Online" in the banner means the device has a network transport, not that the
+  backend answers; a lightweight health endpoint would let the banner say the latter.

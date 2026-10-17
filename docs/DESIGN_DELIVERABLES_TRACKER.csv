@@ -69,8 +69,8 @@ NOTIF-01,NOTIF,State,P1,الإشعارات فارغة,Notifications empty,Notifi
 NOTIF-02,NOTIF,Component,P1,تصميم لكل نوع إشعار (8),Notification type set (8 events),Notifications (17),"new request, status update, info required, rejected, SLA breach, top-up, new agent, ticket update; icon tone; deep link",Pending Design
 NOTIF-03,NOTIF,Sheet,P1,طلب إذن الإشعارات,Push permission prompt,First launch / after login,Denied; settings deep link,Pending Design
 NOTIF-04,NOTIF,Screen,P2,تفضيلات الإشعارات,Notification preferences,Settings,Per event toggle; quiet hours,Pending Design
-SYS-01,SYS,Component,P0,شريط انقطاع الاتصال,Offline banner,Any screen offline,Stale data marker; retry; queued actions,Pending Design
-SYS-02,SYS,Component,P0,أخطاء الشبكة والخادم,Network and server error patterns,Any failed call,Inline + retry; full screen; error sheet for failed mutations; timeout,Pending Design
+SYS-01,SYS,Component,P0,شريط انقطاع الاتصال,Offline banner,Any screen offline,Stale data marker; retry; queued actions,Designed - Implemented (Flutter; partial: see gaps section 16)
+SYS-02,SYS,Component,P0,أخطاء الشبكة والخادم,Network and server error patterns,Any failed call,Inline + retry; full screen; error sheet for failed mutations; timeout,Designed - Implemented (Flutter; partial: see gaps section 16)
 SYS-03,SYS,State,P1,غير مصرّح (403),Forbidden / no permission,Action or screen without permission,Hidden vs disabled; explanation; request access,Pending Design
 SYS-04,SYS,Screen,P1,وضع الصيانة,Maintenance mode,Backend flag,ETA; retry,Pending Design
 SYS-05,SYS,Screen,P1,تحديث إجباري,Force update,Version check,Store link; soft vs hard,Pending Design

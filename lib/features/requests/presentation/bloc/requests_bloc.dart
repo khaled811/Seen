@@ -1,6 +1,8 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/error/failure.dart';
+
 import '../../domain/entities/request_detail.dart';
 import '../../domain/entities/request_summary.dart';
 import '../../domain/usecases/cancel_request_usecase.dart';
@@ -39,7 +41,11 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
     final result = await _getRequestsUseCase();
     emit(
       result.match(
-        (failure) => RequestsFailure(failure.message),
+        (failure) => RequestsFailure(
+          failure.message,
+          offline: failure is NetworkFailure,
+          reference: failure.reference,
+        ),
         (requests) => RequestsLoaded(requests: requests),
       ),
     );

@@ -2566,5 +2566,67 @@
   "agentCreditEditAction": "Edit credit limit",
   "@agentCreditEditAction": {
     "description": "Add sub-agent / credit limit copy."
+  },
+  "connectivityOffline": "You are offline. Showing data as of {time}.",
+  "@connectivityOffline": {
+    "description": "Connectivity and error pattern copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "connectivityOfflineNoTime": "You are offline. The data may be out of date.",
+  "@connectivityOfflineNoTime": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "connectivityRetry": "Retry",
+  "@connectivityRetry": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "connectivityRestored": "Connection is back.",
+  "@connectivityRestored": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorSectionLoad": "This section could not be loaded",
+  "@errorSectionLoad": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorSlowServer": "The server is taking longer than usual. Still trying…",
+  "@errorSlowServer": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorCancel": "Cancel",
+  "@errorCancel": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorTryAgain": "Try again",
+  "@errorTryAgain": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorUnexpectedTitle": "Something went wrong",
+  "@errorUnexpectedTitle": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorUnexpectedBody": "We are working on it. Your data and requests are safe.",
+  "@errorUnexpectedBody": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "errorReference": "Error code {reference}",
+  "@errorReference": {
+    "description": "Connectivity and error pattern copy.",
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "errorContactSupport": "Contact support",
+  "@errorContactSupport": {
+    "description": "Connectivity and error pattern copy."
+  },
+  "transferFailedTitle": "The transfer was not completed",
+  "@transferFailedTitle": {
+    "description": "Connectivity and error pattern copy."
   }
 }

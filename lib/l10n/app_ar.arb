@@ -570,5 +570,18 @@
   "agentCreditAboveBalanceError": "الحد الجديد أكبر من رصيدك الرئيسي المتاح ({max}).",
   "agentCreditSave": "حفظ الحد",
   "agentCreditSaved": "تم تحديث حد الائتمان.",
-  "agentCreditEditAction": "تعديل حد الائتمان"
+  "agentCreditEditAction": "تعديل حد الائتمان",
+  "connectivityOffline": "أنت غير متصل. تعرض البيانات آخر تحديث {time}.",
+  "connectivityOfflineNoTime": "أنت غير متصل. قد لا تكون البيانات محدّثة.",
+  "connectivityRetry": "إعادة",
+  "connectivityRestored": "عاد الاتصال.",
+  "errorSectionLoad": "تعذّر تحميل هذا القسم",
+  "errorSlowServer": "الخادم يستغرق وقتًا أطول من المعتاد. ما زلنا نحاول…",
+  "errorCancel": "إلغاء",
+  "errorTryAgain": "حاول مجددًا",
+  "errorUnexpectedTitle": "حدث خطأ غير متوقع",
+  "errorUnexpectedBody": "نعمل على إصلاحه الآن. بياناتك وطلباتك محفوظة.",
+  "errorReference": "رمز الخطأ {reference}",
+  "errorContactSupport": "تواصل مع الدعم",
+  "transferFailedTitle": "لم يكتمل التحويل"
 }

@@ -32,6 +32,9 @@ Failure mapOperationExceptionToFailure(OperationException exception) {
     return ServerFailure(
       graphqlErrors.map((e) => e.message).join('; '),
       code: graphqlErrors.first.extensions?['code'] as String?,
+      details: {
+        if (graphqlErrors.first.extensions?['requestId'] != null) 'requestId': graphqlErrors.first.extensions!['requestId'],
+      },
     );
   }
 
@@ -44,7 +47,11 @@ Failure? _mapLinkException(LinkException linkException) {
     return switch (statusCode) {
       401 => const UnauthorizedFailure(),
       403 => const ForbiddenFailure(),
-      _ => ServerFailure('Server returned $statusCode.', statusCode: statusCode),
+      _ => ServerFailure(
+          'Server returned $statusCode.',
+          statusCode: statusCode,
+          details: {if (linkException.response.headers['x-request-id'] != null) 'requestId': linkException.response.headers['x-request-id']},
+        ),
     };
   }
 

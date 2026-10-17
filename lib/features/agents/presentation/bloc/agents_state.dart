@@ -49,6 +49,7 @@ final class AgentsLoaded extends AgentsState {
     this.fundingStatus = FundingStatus.idle,
     this.fundingSubAgentId,
     this.fundingError,
+    this.fundingReference,
   });
 
   final List<SubAgent> subAgents;
@@ -68,6 +69,9 @@ final class AgentsLoaded extends AgentsState {
   final String? fundingSubAgentId;
   final String? fundingError;
 
+  /// Support reference of the failed transfer (`502 · a91f`), when known.
+  final String? fundingReference;
+
   AgentsLoaded copyWith({
     List<SubAgent>? subAgents,
     List<SubAgentRequestSummary>? pendingRequests,
@@ -84,6 +88,7 @@ final class AgentsLoaded extends AgentsState {
     bool clearFundingSubAgentId = false,
     String? fundingError,
     bool clearFundingError = false,
+    String? fundingReference,
   }) =>
       AgentsLoaded(
         subAgents: subAgents ?? this.subAgents,
@@ -102,6 +107,7 @@ final class AgentsLoaded extends AgentsState {
         fundingSubAgentId:
             clearFundingSubAgentId ? null : (fundingSubAgentId ?? this.fundingSubAgentId),
         fundingError: clearFundingError ? null : (fundingError ?? this.fundingError),
+        fundingReference: clearFundingError ? null : (fundingReference ?? this.fundingReference),
       );
 
   @override
@@ -117,5 +123,6 @@ final class AgentsLoaded extends AgentsState {
         fundingStatus,
         fundingSubAgentId,
         fundingError,
+        fundingReference,
       ];
 }

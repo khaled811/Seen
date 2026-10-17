@@ -90,7 +90,7 @@ packages:
     source: hosted
     version: "1.18.0"
   connectivity_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: connectivity_plus
       sha256: b74247fad72c171381dbe700ca17da24deac637ab6d43c343b42867acb95c991

@@ -66,3 +66,18 @@ final class ValidationFailure extends Failure {
   @override
   List<Object?> get props => [message, fieldErrors];
 }
+
+extension FailureReference on Failure {
+  /// A short diagnostic for support, shown on error screens: the HTTP status
+  /// (or the backend code) and the first four characters of the backend request
+  /// id, e.g. `502 · a91f`. Null when there is nothing useful to quote.
+  String? get reference {
+    final self = this;
+    if (self is! ServerFailure) return null;
+    final what = self.statusCode?.toString() ?? self.code;
+    final id = self.details['requestId'];
+    final short = id is String && id.isNotEmpty ? id.substring(0, id.length < 4 ? id.length : 4) : null;
+    if (what == null && short == null) return null;
+    return [if (what != null) what, if (short != null) short].join(' · ');
+  }
+}

@@ -30,12 +30,18 @@ final class RequestsLoading extends RequestsState {
 }
 
 final class RequestsFailure extends RequestsState {
-  const RequestsFailure(this.message);
+  const RequestsFailure(this.message, {this.offline = false, this.reference});
 
   final String message;
 
+  /// No connection / timeout (as opposed to a server error).
+  final bool offline;
+
+  /// Support reference (`502 · a91f`), when the server gave one.
+  final String? reference;
+
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, offline, reference];
 }
 
 final class RequestsLoaded extends RequestsState {

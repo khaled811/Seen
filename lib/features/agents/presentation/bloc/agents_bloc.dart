@@ -203,6 +203,7 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
         latest.copyWith(
           fundingStatus: FundingStatus.failure,
           fundingError: value.message,
+          fundingReference: value.reference,
         ),
       );
       return;

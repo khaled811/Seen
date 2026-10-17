@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/config/feature_flags.dart';
 import 'core/di/injection_container.dart';
+import 'core/presentation/connectivity/connectivity_shell.dart';
 import 'core/localization/locale_cubit.dart';
 import 'core/presentation/foundation/seen_icons.dart';
 import 'core/presentation/foundation/seen_strings.dart';
@@ -45,6 +46,7 @@ class App extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
         BlocProvider(create: (_) => ThemeModeCubit()),
+        BlocProvider(create: (_) => InjectionContainer.instance.createConnectivityCubit()),
         BlocProvider(
             create: (_) => InjectionContainer.instance.createAuthBloc()),
       ],
@@ -67,6 +69,7 @@ class App extends StatelessWidget {
                 darkTheme: AppTheme.dark,
                 themeMode: themeMode,
                 debugShowCheckedModeBanner: false,
+                builder: (context, child) => SeenConnectivityShell(child: child),
                 home: _AuthGate(splashMinDuration: splashMinDuration),
               );
             },

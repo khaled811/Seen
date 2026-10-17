@@ -212,7 +212,7 @@ void main() {
     expect(w.funds, 0);
   });
 
-  testWidgets('a failed transfer keeps the sheet open and sends nothing twice', (tester) async {
+  testWidgets('a failed transfer shows the error sheet with the reference; retry sends it again', (tester) async {
     await open(tester);
     await tester.tap(find.text('اختر الوكيل'));
     await settle(tester);
@@ -222,12 +222,19 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('مراجعة التحويل'));
     await settle(tester);
-    w.fundOverride = const Left(ServerFailure('فشل التحويل'));
+    w.fundOverride = const Left(ServerFailure('فشل التحويل', statusCode: 502, details: {'requestId': 'a91f77'}));
     await tester.tap(find.widgetWithText(SeenButton, 'تأكيد التحويل'));
     await settle(tester);
-    expect(find.text('فشل التحويل'), findsOneWidget);
+    expect(find.text('لم يكتمل التحويل'), findsOneWidget);
+    expect(find.textContaining('رمز الخطأ 502 · a91f'), findsOneWidget);
     expect(find.text('تم التحويل'), findsNothing);
     expect(w.funds, 1);
+
+    w.fundOverride = null;
+    await tester.tap(find.text('حاول مجددًا'));
+    await settle(tester);
+    expect(w.funds, 2);
+    expect(find.text('تم التحويل'), findsOneWidget);
   });
 }
 

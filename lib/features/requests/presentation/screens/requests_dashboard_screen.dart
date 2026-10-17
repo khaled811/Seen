@@ -7,7 +7,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
-import '../../../../core/presentation/widgets/actions.dart';
+import '../../../../core/presentation/widgets/error_patterns.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
 import '../../../../core/presentation/widgets/filters.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -20,6 +20,7 @@ import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../services/presentation/screens/service_selection_screen.dart';
+import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../domain/entities/request_summary.dart';
 import '../bloc/requests_bloc.dart';
 import '../bloc/requests_event.dart';
@@ -51,8 +52,8 @@ class RequestsDashboardScreen extends StatelessWidget {
                 RequestsInitial() || RequestsLoading() => const Column(
                     children: [_Header(), Expanded(child: _SkeletonList())],
                   ),
-                RequestsFailure(:final message) => Column(
-                    children: [const _Header(), Expanded(child: _ErrorView(message: message))],
+                RequestsFailure() => Column(
+                    children: [const _Header(), Expanded(child: _ErrorView(failure: state))],
                   ),
                 RequestsLoaded() => _DashboardBody(state: state),
               },
@@ -143,26 +144,34 @@ class _Header extends StatelessWidget {
   }
 }
 
+/// SYS-02: offline / timeout → an inline error with retry; a server error →
+/// the full-screen pattern (SYS-02b) with the error code and reference.
 class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message});
+  const _ErrorView({required this.failure});
 
-  final String message;
+  final RequestsFailure failure;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(message, textAlign: TextAlign.center),
-          const SizedBox(height: SeenSpace.s3),
-          SeenButton(
-            label: l10n.retry,
-            onPressed: () => context.read<RequestsBloc>().add(const RequestsLoadRequested()),
-          ),
-        ],
-      ),
+    void retry() => context.read<RequestsBloc>().add(const RequestsLoadRequested());
+    if (failure.offline) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: SeenInlineError(title: l10n.errorSectionLoad, retryLabel: l10n.retry, onRetry: retry),
+        ),
+      );
+    }
+    final ref = failure.reference;
+    return SeenFullScreenError(
+      title: l10n.errorUnexpectedTitle,
+      body: ref == null ? l10n.errorUnexpectedBody : '${l10n.errorUnexpectedBody} ${l10n.errorReference(ref)}',
+      retryLabel: l10n.retry,
+      onRetry: retry,
+      supportLabel: l10n.errorContactSupport,
+      onSupport: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
     );
   }
 }

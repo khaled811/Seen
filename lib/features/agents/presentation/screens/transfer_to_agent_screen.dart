@@ -7,6 +7,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
+import '../../../../core/presentation/widgets/error_patterns.dart';
 import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -503,10 +504,25 @@ class _ConfirmSheet extends StatelessWidget {
             onSuccess();
             Navigator.of(context).pop();
           case FundingStatus.failure:
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(loaded.fundingError ?? l10n.error)));
-            context.read<AgentsBloc>().add(const FundingStatusCleared());
+            final bloc = context.read<AgentsBloc>()..add(const FundingStatusCleared());
+            showSeenErrorSheet(
+              context,
+              title: l10n.transferFailedTitle,
+              detail: [
+                if (loaded.fundingError != null) loaded.fundingError!,
+                if (loaded.fundingReference != null) l10n.errorReference(loaded.fundingReference!),
+              ].join(' · '),
+              retryLabel: l10n.errorTryAgain,
+              cancelLabel: l10n.errorCancel,
+            ).then((retry) {
+              if (retry) {
+                bloc.add(SubAgentWalletFundingSubmitted(
+                  subAgentId: agent.id,
+                  amountCents: cents,
+                  note: note.isEmpty ? null : note,
+                ));
+              }
+            });
           case FundingStatus.idle:
           case FundingStatus.submitting:
             break;

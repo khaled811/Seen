@@ -26,6 +26,9 @@ import '../../features/requests/domain/usecases/request_document_usecases.dart';
 import '../../features/requests/presentation/bloc/document_viewer_bloc.dart';
 import '../../features/agents/domain/usecases/sub_agent_management_usecases.dart';
 import '../../features/agents/presentation/bloc/sub_agent_management_bloc.dart';
+import '../network/connectivity_monitor.dart';
+import '../network/data_freshness.dart';
+import '../presentation/connectivity/connectivity_cubit.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source.dart';
 import '../../features/auth/data/datasources/password_recovery_remote_data_source_debug_fallback.dart';
 import '../../features/auth/data/repositories/password_recovery_repository_impl.dart';
@@ -108,6 +111,7 @@ class InjectionContainer {
 
   late final FlutterSecureStorage secureStorage;
   late final AuthSessionController authSessionController;
+  late final DataFreshness dataFreshness;
   late final GraphQLClientFactory graphQLClientFactory;
   late final GraphQLService graphQLService;
 
@@ -190,7 +194,8 @@ class InjectionContainer {
       authSessionController: authSessionController,
       secureStorage: secureStorage,
     );
-    graphQLService = GraphQLService(clientFactory: graphQLClientFactory);
+    dataFreshness = DataFreshness();
+    graphQLService = GraphQLService(clientFactory: graphQLClientFactory, freshness: dataFreshness);
 
     authRemoteDataSource =
         AuthRemoteDataSourceImpl(graphQLService: graphQLService);
@@ -378,6 +383,10 @@ class InjectionContainer {
         getRequestDetailUseCase: getRequestDetailUseCase,
         cancelRequestUseCase: cancelRequestUseCase,
       );
+
+  /// Builds the app-wide [ConnectivityCubit]; the root provider owns it.
+  ConnectivityCubit createConnectivityCubit() =>
+      ConnectivityCubit(monitor: PluginConnectivityMonitor(), freshness: dataFreshness);
 
   /// Builds a fresh [AddSubAgentBloc]; the add-agent screen owns it.
   AddSubAgentBloc createAddSubAgentBloc() => AddSubAgentBloc(createSubAgent: createSubAgentUseCase);

@@ -44,6 +44,7 @@ dependencies:
   fpdart: ^1.2.0
   logger: ^2.8.0
   http: ^0.13.6
+  connectivity_plus: ^3.0.6
   flutter_localizations:
     sdk: flutter
   phosphor_flutter: ^2.1.0

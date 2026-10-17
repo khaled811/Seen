@@ -1,7 +1,8 @@
 // InlineBanner — Figma "Banner · offline / warn / error" (password-recovery
 // frames): a rounded 16 strip with an icon and one or two lines of text, and an
 // optional text action at the end. Three tones reuse the status colours:
-// offline = cancelled (grey), warn = action required (amber), error = rejected.
+// offline = cancelled (grey), warn = action required (amber), error = rejected,
+// ok = completed (green).
 import 'package:flutter/material.dart';
 
 import '../../theme/seen_colors.dart';
@@ -10,7 +11,7 @@ import '../../theme/seen_typography.dart';
 import '../foundation/seen_vectors.dart';
 import 'svg_icon.dart';
 
-enum SeenBannerTone { offline, warn, error }
+enum SeenBannerTone { offline, warn, error, ok }
 
 class SeenInlineBanner extends StatelessWidget {
   const SeenInlineBanner({
@@ -37,8 +38,14 @@ class SeenInlineBanner extends StatelessWidget {
       SeenBannerTone.offline => SeenRequestStatus.cancelled.colors,
       SeenBannerTone.warn => SeenRequestStatus.actionRequired.colors,
       SeenBannerTone.error => SeenRequestStatus.rejected.colors,
+      SeenBannerTone.ok => SeenRequestStatus.completed.colors,
     };
-    final asset = iconAsset ?? (tone == SeenBannerTone.warn ? SeenVectors.walletClock : SeenVectors.notifAlert);
+    final asset = iconAsset ??
+        switch (tone) {
+          SeenBannerTone.warn => SeenVectors.walletClock,
+          SeenBannerTone.ok => SeenVectors.walletCheck,
+          _ => SeenVectors.notifAlert,
+        };
     return Semantics(
       container: true,
       liveRegion: true,
