@@ -4,14 +4,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/dropzone.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
+import '../../../../core/theme/seen_dimensions.dart';
+import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/money.dart';
 import '../../../../core/validators/form_validators.dart';
@@ -38,7 +42,7 @@ class TopUpPrefill {
 /// sticky submit bar. The wallet screen owns the [WalletBloc]; this route
 /// re-provides it with `BlocProvider.value`.
 class TopUpRequestScreen extends StatefulWidget {
-  const TopUpRequestScreen({super.key, this.bankDetails, this.prefill});
+  const TopUpRequestScreen({super.key, this.bankDetails, this.alternativeDetails, this.prefill});
 
   /// Starts the form from a rejected request's data (Figma WAL-03).
   final TopUpPrefill? prefill;
@@ -48,17 +52,33 @@ class TopUpRequestScreen extends StatefulWidget {
   /// inventing details; debug builds show an obvious placeholder.
   final TopUpBankDetails? bankDetails;
 
+  /// Who receives cash / an exchange-house transfer, and the agent's code.
+  /// Like [bankDetails]: not exposed by the backend yet, so release builds show a
+  /// "support will send it" note and debug builds an obvious placeholder.
+  final TopUpAlternativeDetails? alternativeDetails;
+
+  static const _debugAlternative = TopUpAlternativeDetails(
+    recipientName: 'Sample Beneficiary (debug)',
+    agentCode: 'AG-0000',
+    branchAddress: 'Sample branch (debug)',
+  );
+
   static const _debugSample = TopUpBankDetails(
     bankName: 'Sample Bank (debug)',
     accountName: 'Sample Beneficiary',
     iban: 'XX00 0000 0000 0000 0000',
   );
 
-  static Route<void> route(WalletBloc bloc, {TopUpBankDetails? bankDetails, TopUpPrefill? prefill}) =>
+  static Route<void> route(
+    WalletBloc bloc, {
+    TopUpBankDetails? bankDetails,
+    TopUpAlternativeDetails? alternativeDetails,
+    TopUpPrefill? prefill,
+  }) =>
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider.value(
           value: bloc,
-          child: TopUpRequestScreen(bankDetails: bankDetails, prefill: prefill),
+          child: TopUpRequestScreen(bankDetails: bankDetails, alternativeDetails: alternativeDetails, prefill: prefill),
         ),
       );
 
@@ -121,6 +141,8 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final bank = widget.bankDetails ?? (kDebugMode ? TopUpRequestScreen._debugSample : null);
+    final alternative = widget.alternativeDetails ?? (kDebugMode ? TopUpRequestScreen._debugAlternative : null);
+    final exchange = _method == TopUpMethod.exchangeHouse;
     const gap = SizedBox(height: 18);
 
     return BlocListener<WalletBloc, WalletState>(
@@ -201,6 +223,53 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                           else
                             Text(l10n.topUpBankDetailsUnavailable, style: t.body.copyWith(color: c.inkSecondary)),
                         ],
+                        if (exchange) ...[
+                          gap,
+                          // Figma WAL-11: what to quote at the exchange house.
+                          Text(l10n.topUpExchangeSection, style: t.h2),
+                          gap,
+                          SeenTextField(
+                            label: l10n.topUpTransferNumberLabel,
+                            isRequired: true,
+                            controller: _referenceController,
+                            mono: true,
+                            ltr: true,
+                            onChanged: (_) => setState(() {}),
+                            prefix: _referenceController.text.trim().isEmpty
+                                ? null
+                                : Icon(SeenIcons.check, size: 20, color: SeenRequestStatus.completed.colors.fg),
+                            validator: (v) => FormValidators.required(v, message: l10n.validationRequired),
+                          ),
+                          if (alternative != null) ...[
+                            gap,
+                            SeenTextField(
+                              // A key: the value comes from `initialValue`, which a reused field state would ignore.
+                              key: const ValueKey('topUpRecipient'),
+                              label: l10n.topUpRecipientLabel,
+                              readOnly: true,
+                              initialValue: alternative.recipientName,
+                            ),
+                            gap,
+                            SeenTextField(
+                              key: const ValueKey('topUpAgentCode'),
+                              label: l10n.topUpAgentCodeLabel,
+                              readOnly: true,
+                              mono: true,
+                              ltr: true,
+                              initialValue: alternative.agentCode,
+                            ),
+                          ] else ...[
+                            gap,
+                            Text(l10n.topUpAlternativeUnavailable, style: t.body.copyWith(color: c.inkSecondary)),
+                          ],
+                        ],
+                        if (_method == TopUpMethod.cash) ...[
+                          gap,
+                          if (alternative != null)
+                            _CashInstructions(details: alternative)
+                          else
+                            Text(l10n.topUpAlternativeUnavailable, style: t.body.copyWith(color: c.inkSecondary)),
+                        ],
                         gap,
                         Text(l10n.topUpAmountSection, style: t.h2),
                         gap,
@@ -223,15 +292,18 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                         ),
                         gap,
                         // The API requires the bank's transfer reference; Figma has no field for it.
-                        SeenTextField(
-                          label: l10n.topUpReferenceNumberLabel,
-                          isRequired: true,
-                          controller: _referenceController,
-                          mono: true,
-                          ltr: true,
-                          validator: (v) => FormValidators.required(v, message: l10n.validationRequired),
-                        ),
-                        gap,
+                        // (For an exchange house it is the transfer-number field above.)
+                        if (!exchange) ...[
+                          SeenTextField(
+                            label: l10n.topUpReferenceNumberLabel,
+                            isRequired: true,
+                            controller: _referenceController,
+                            mono: true,
+                            ltr: true,
+                            validator: (v) => FormValidators.required(v, message: l10n.validationRequired),
+                          ),
+                          gap,
+                        ],
                         Text(l10n.topUpReceiptSection, style: t.h2),
                         gap,
                         // No picker or upload API yet: say so, never fake an attachment.
@@ -263,6 +335,52 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Figma WAL-11 "Cash instructions": where to go, what to say, what to bring back.
+class _CashInstructions extends StatelessWidget {
+  const _CashInstructions({required this.details});
+
+  final TopUpAlternativeDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = SeenColors.of(context);
+    final t = SeenType.of(context);
+    final steps = [
+      if (details.branchAddress != null) l10n.topUpCashStepBranch(details.branchAddress!),
+      l10n.topUpCashStepCode(SeenFormat.isolate(details.agentCode)),
+      l10n.topUpCashStepReceipt,
+    ];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: const BorderRadius.all(SeenRadius.r22),
+        border: Border.all(color: c.border),
+        boxShadow: SeenShadows.card,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                SeenSvgIcon(SeenVectors.walletCash, size: 18, color: c.primary),
+                const SizedBox(width: 8),
+                Expanded(child: Text(l10n.topUpCashTitle, style: t.label.copyWith(color: c.ink))),
+              ],
+            ),
+            for (final step in steps) ...[
+              const SizedBox(height: 8),
+              Text(step, style: t.caption.copyWith(color: c.inkSecondary)),
+            ],
+          ],
         ),
       ),
     );

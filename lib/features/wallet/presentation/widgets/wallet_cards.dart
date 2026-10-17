@@ -212,6 +212,17 @@ class TopUpBankDetails {
   final String currency;
 }
 
+/// Where the agent hands over cash or an exchange-house transfer (Figma
+/// WAL-11): who receives it, the agent's own code to quote, and the branch for
+/// cash. Display-only data from the caller; the app never invents it.
+class TopUpAlternativeDetails {
+  const TopUpAlternativeDetails({required this.recipientName, required this.agentCode, this.branchAddress});
+
+  final String recipientName;
+  final String agentCode;
+  final String? branchAddress;
+}
+
 /// Figma "Bank details card" (node 18:654): violet gradient, grid pattern, the
 /// white logo, bank name, IBAN with a copy pill, currency and beneficiary.
 class SeenBankDetailsCard extends StatelessWidget {

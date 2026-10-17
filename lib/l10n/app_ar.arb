@@ -782,5 +782,14 @@
   "walletEmptyAllTitle": "لا توجد عمليات بعد",
   "walletEmptyCreditsTitle": "لا توجد إيداعات بعد",
   "walletEmptyDebitsTitle": "لا توجد خصومات بعد",
-  "walletEmptyMessage": "اشحن رصيدك الآن لبدء استخدام المحفظة."
+  "walletEmptyMessage": "اشحن رصيدك الآن لبدء استخدام المحفظة.",
+  "topUpExchangeSection": "بيانات الحوالة من الصرافة",
+  "topUpTransferNumberLabel": "رقم الحوالة",
+  "topUpRecipientLabel": "اسم المستلم",
+  "topUpAgentCodeLabel": "رمز الوكيل",
+  "topUpCashTitle": "الإيداع النقدي في الفرع",
+  "topUpCashStepBranch": "١. توجّه إلى فرع {branch}",
+  "topUpCashStepCode": "٢. اذكر رمز الوكيل {code}",
+  "topUpCashStepReceipt": "٣. صوّر الإيصال وأرفقه هنا",
+  "topUpAlternativeUnavailable": "تصلك بيانات الاستلام من فريق الدعم عند تفعيل خدمة الشحن."
 }

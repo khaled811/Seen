@@ -896,3 +896,24 @@ arrives and omits the rest.
   the ledger has no period filter, so the app says "no deposits yet" and offers the top-up. If a
   period filter is wanted, `walletTransactions` already takes `from` / `to`.
 - **Home** shows the same over-limit card and the zero / hidden hints on its balance card.
+
+## 26. Top-up by cash or exchange house (Figma WAL-11)
+
+- **Receiving details are not exposed yet**, like the bank account (`TopUpBankDetails`): the new
+  `TopUpAlternativeDetails { recipientName, agentCode, branchAddress }` is display-only and the
+  screen takes it as a parameter. Until the backend returns it, release builds show "support sends
+  you the receiving details" and debug builds an obvious placeholder. Needed from the server:
+  - the **beneficiary name** to quote at the exchange house ("Jubari Travel & Tourism" in the design);
+  - the agent's own **agent code** (AG-1183): `UserSession` has no such field today;
+  - the **branch address** for cash deposits (Sanaa, Al-Zubairi Street in the design) — probably per
+    country / branch, not one global value.
+- **Submission is the existing `requestTopUp`**: method `exchange_house` / `cash`, and the exchange
+  "transfer number" travels as `referenceNumber`. No new field was added. If the backend wants the
+  agent code or branch with the request (to match the cash deposit), say so.
+- **Receipt.** Step 3 of the cash card ("photograph the receipt and attach it here") and the receipt
+  slot below it are the same placeholder as in the bank flow: there is still no picker / upload API
+  (section on top-ups), so the slot says "coming soon". The cash and exchange requests therefore go
+  without a receipt until that exists.
+- The transfer-number field shows a check mark once it has a value; the design's green border was not
+  added (the shared text field has no such state). No format is validated: the exchange house's
+  numbers are free text to the app.

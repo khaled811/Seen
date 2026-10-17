@@ -3606,5 +3606,51 @@
   "walletEmptyMessage": "Top up now to start using the wallet.",
   "@walletEmptyMessage": {
     "description": "Wallet balance states and breakdown copy."
+  },
+  "topUpExchangeSection": "Exchange-house transfer details",
+  "@topUpExchangeSection": {
+    "description": "Top-up by cash or exchange house copy."
+  },
+  "topUpTransferNumberLabel": "Transfer number",
+  "@topUpTransferNumberLabel": {
+    "description": "Top-up by cash or exchange house copy."
+  },
+  "topUpRecipientLabel": "Recipient name",
+  "@topUpRecipientLabel": {
+    "description": "Top-up by cash or exchange house copy."
+  },
+  "topUpAgentCodeLabel": "Agent code",
+  "@topUpAgentCodeLabel": {
+    "description": "Top-up by cash or exchange house copy."
+  },
+  "topUpCashTitle": "Cash deposit at the branch",
+  "@topUpCashTitle": {
+    "description": "Top-up by cash or exchange house copy."
+  },
+  "topUpCashStepBranch": "1. Go to the branch: {branch}",
+  "@topUpCashStepBranch": {
+    "description": "Top-up by cash or exchange house copy.",
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "topUpCashStepCode": "2. Quote your agent code {code}",
+  "@topUpCashStepCode": {
+    "description": "Top-up by cash or exchange house copy.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "topUpCashStepReceipt": "3. Photograph the receipt and attach it here",
+  "@topUpCashStepReceipt": {
+    "description": "Top-up by cash or exchange house copy."
+  },
+  "topUpAlternativeUnavailable": "Support sends you the receiving details when top-ups are enabled.",
+  "@topUpAlternativeUnavailable": {
+    "description": "Top-up by cash or exchange house copy."
   }
 }
