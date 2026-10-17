@@ -1,7 +1,6 @@
 // "Contact support" before sign-in (Figma SUP-05): WhatsApp, a call and e-mail.
-// The app has no plugin to open WhatsApp, the dialer or a mail app yet, so a
-// row copies its number / address and says so; opening them directly needs
-// `url_launcher` (docs/BACKEND_MIGRATION_GAPS.md, section 28).
+// A row opens WhatsApp, the dialer or the mail app; when the phone has nothing
+// to handle it, the row copies its number / address instead and says so.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -14,10 +13,16 @@ import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../data/services/url_contact_launcher.dart';
 import '../../domain/entities/support_contacts.dart';
+import '../../domain/services/contact_launcher.dart';
 
 /// Opens the sheet. [contacts] defaults to [SupportContactsConfig.current].
-Future<void> showContactSupportSheet(BuildContext context, {SupportContacts? contacts}) {
+Future<void> showContactSupportSheet(
+  BuildContext context, {
+  SupportContacts? contacts,
+  ContactLauncher launcher = const UrlContactLauncher(),
+}) {
   final l10n = AppLocalizations.of(context)!;
   final shown = contacts ?? SupportContactsConfig.current;
   final hours = shown.hours;
@@ -27,15 +32,16 @@ Future<void> showContactSupportSheet(BuildContext context, {SupportContacts? con
     context: context,
     title: l10n.contactSupportTitle,
     subtitle: hours == null || hours.trim().isEmpty ? null : hours,
-    builder: (_) => _Options(contacts: shown, messenger: messenger),
+    builder: (_) => _Options(contacts: shown, messenger: messenger, launcher: launcher),
   );
 }
 
 class _Options extends StatelessWidget {
-  const _Options({required this.contacts, required this.messenger});
+  const _Options({required this.contacts, required this.messenger, required this.launcher});
 
   final SupportContacts contacts;
   final ScaffoldMessengerState messenger;
+  final ContactLauncher launcher;
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +60,11 @@ class _Options extends StatelessWidget {
     }
     final rows = [
       if (_has(contacts.whatsapp))
-        (SeenVectors.iconChat, l10n.contactSupportWhatsapp, contacts.whatsapp!, l10n.contactSupportCopiedNumber),
+        (SeenVectors.iconChat, l10n.contactSupportWhatsapp, contacts.whatsapp!, l10n.contactSupportCopiedNumber, ContactChannel.whatsapp),
       if (_has(contacts.phone))
-        (SeenVectors.accountSupport, l10n.contactSupportCall, contacts.phone!, l10n.contactSupportCopiedNumber),
+        (SeenVectors.accountSupport, l10n.contactSupportCall, contacts.phone!, l10n.contactSupportCopiedNumber, ContactChannel.phone),
       if (_has(contacts.email))
-        (SeenVectors.accountDocument, l10n.contactSupportEmail, contacts.email!, l10n.contactSupportCopiedEmail),
+        (SeenVectors.accountDocument, l10n.contactSupportEmail, contacts.email!, l10n.contactSupportCopiedEmail, ContactChannel.email),
     ];
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -77,6 +83,8 @@ class _Options extends StatelessWidget {
                 title: rows[i].$2,
                 value: rows[i].$3,
                 onTap: () async {
+                  if (await launcher.open(rows[i].$5, rows[i].$3)) return;
+                  // Nothing on this phone handles it: give the value to paste instead.
                   await Clipboard.setData(ClipboardData(text: rows[i].$3));
                   messenger
                     ..hideCurrentSnackBar()

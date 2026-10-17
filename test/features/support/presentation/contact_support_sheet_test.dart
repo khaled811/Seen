@@ -7,10 +7,31 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/support/domain/entities/support_contacts.dart';
+import 'package:seen_booking/features/support/domain/services/contact_launcher.dart';
 import 'package:seen_booking/features/support/presentation/widgets/contact_support_sheet.dart';
 
+class _Launcher implements ContactLauncher {
+  _Launcher({this.canOpen = true});
+
+  final bool canOpen;
+  final opened = <(ContactChannel, String)>[];
+
+  @override
+  Future<bool> open(ContactChannel channel, String value) async {
+    opened.add((channel, value));
+    return canOpen;
+  }
+}
+
 void main() {
-  Future<void> open(WidgetTester tester, SupportContacts contacts) async {
+  test('each channel leads to its own link', () {
+    expect(contactUri(ContactChannel.whatsapp, '+967 1 000 000').toString(), 'https://wa.me/9671000000');
+    expect(contactUri(ContactChannel.phone, '+967 1 000 000').toString(), 'tel:+9671000000');
+    expect(contactUri(ContactChannel.phone, '01 000 000').toString(), 'tel:01000000');
+    expect(contactUri(ContactChannel.email, ' help@x.test ').toString(), 'mailto:help@x.test');
+  });
+
+  Future<void> open(WidgetTester tester, SupportContacts contacts, {ContactLauncher? launcher}) async {
     await tester.binding.setSurfaceSize(const Size(390, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(MaterialApp(
@@ -26,7 +47,11 @@ void main() {
       home: Builder(
         builder: (context) => Scaffold(
           body: TextButton(
-            onPressed: () => showContactSupportSheet(context, contacts: contacts),
+            onPressed: () => showContactSupportSheet(
+              context,
+              contacts: contacts,
+              launcher: launcher ?? _Launcher(canOpen: false),
+            ),
             child: const Text('open'),
           ),
         ),
@@ -63,7 +88,16 @@ void main() {
     expect(find.text('بريد إلكتروني'), findsOneWidget);
   });
 
-  testWidgets('tapping a row copies its value and says so', (tester) async {
+  testWidgets('tapping a row opens the app for it and copies nothing', (tester) async {
+    final launcher = _Launcher();
+    await open(tester, const SupportContacts(phone: '+967 1 222 222', email: 'help@x.test'), launcher: launcher);
+    await tester.tap(find.text('اتصال مباشر'));
+    await tester.pump();
+    expect(launcher.opened, [(ContactChannel.phone, '+967 1 222 222')]);
+    expect(find.text('تم نسخ الرقم.'), findsNothing);
+  });
+
+  testWidgets('with no app to handle it, the row copies its value and says so', (tester) async {
     String? copied;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,

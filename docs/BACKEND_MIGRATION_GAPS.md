@@ -959,10 +959,12 @@ The three screens were redone to the design. New placeholder contract (`TODO(bac
   builds show obvious placeholders. **Decision needed:** the real values, and whether they should come from
   the backend (a public, unauthenticated `supportContacts` query would let them change without a release;
   the app would use it instead of the build settings).
-- **Rows copy, they do not open.** WhatsApp, the dialer and the mail app need the `url_launcher` plugin,
-  which the app does not have (a new dependency, so not added unasked). Until then tapping a row copies the
-  number / address and says "copied". With `url_launcher`: WhatsApp → `https://wa.me/<digits>`, call →
-  `tel:`, e-mail → `mailto:`; the rows already carry the values. Say the word and I add it.
+- **Rows open the phone's own apps** (`url_launcher` 6.3.0, added): WhatsApp → `https://wa.me/<digits>`,
+  call → `tel:`, e-mail → `mailto:`. If the phone has nothing to handle the link (no WhatsApp, a tablet
+  without a dialer, no mail app) the row copies the number / address and says "copied". Android needs the
+  `<queries>` entries for `https`, `tel` and `mailto` (added to `AndroidManifest.xml`); the repo has no iOS
+  `Info.plist` yet, so when the iOS project is generated add `LSApplicationQueriesSchemes` with `https`,
+  `tel` and `mailto`. The WhatsApp number must be in international format.
 - **Hours** are shown as the written string from the setting ("available 8 am to 10 pm"): the app does not
   compute open / closed.
 - **Where it opens:** from the pending-approval screen's "Contact support" button and from the password
