@@ -38,9 +38,9 @@ BOOK-06,BOOK,Sheet,P1,إرفاق مستند (كاميرا / معرض / ملفا�
 BOOK-07,BOOK,Component,P1,أنواع الحقول: نص طويل / رقم / هاتف / بريد / قائمة,"Field types: textarea, number, phone, email, select",Dynamic form fields,Counter; keyboard type; inline error; read-only,Pending Design
 BOOK-08,BOOK,State,P1,المراجعة: رصيد غير كافٍ,Review: insufficient balance,Review (10),Blocked submit; shortfall amount; top-up shortcut; credit limit,Pending Design
 BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / Home (05) soon tile,Notify me; info only,Pending Design
-WAL-01,WAL,Screen,P1,تفاصيل العملية,Transaction detail,Wallet (11) ledger row,Hold vs final deduction vs refund; linked request; reference copy,Pending Design
-WAL-02,WAL,Screen,P1,تفاصيل الشحن المعلّق,Pending top-up detail / status,Wallet (11) pending card,Receipt preview; review status; cancel request,Pending Design
-WAL-03,WAL,State,P1,شحن مرفوض,Rejected top-up with reason,"Wallet (11), top-up detail",Reason; retry with same data,Pending Design
+WAL-01,WAL,Screen,P1,تفاصيل العملية,Transaction detail,Wallet (11) ledger row,Hold vs final deduction vs refund; linked request; reference copy,Designed - Implemented (Flutter)
+WAL-02,WAL,Screen,P1,تفاصيل الشحن المعلّق,Pending top-up detail / status,Wallet (11) pending card,Receipt preview; review status; cancel request,Designed - Implemented (Flutter)
+WAL-03,WAL,State,P1,شحن مرفوض,Rejected top-up with reason,"Wallet (11), top-up detail",Reason; retry with same data,Designed - Implemented (Flutter)
 WAL-04,WAL,Screen,P1,سجل الشحن,Top-up history,Wallet (11),Empty; filter by status; pagination,Pending Design
 WAL-05,WAL,Screen,P1,تأكيد طلب الشحن,Top-up submitted confirmation,After Top-up (12) submit,Reference; expected review time; link to pending item,Pending Design
 WAL-06,WAL,Flow,P1,تصدير كشف الحساب,Statement export,Wallet (11) header / link,Period picker; format; generating; failure; share,Pending Design

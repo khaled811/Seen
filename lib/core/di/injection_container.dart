@@ -8,6 +8,9 @@ import '../../features/auth/domain/repositories/agency_registration_repository.d
 import '../../features/auth/domain/usecases/agency_registration_usecases.dart';
 import '../../features/auth/presentation/bloc/agency_registration_bloc.dart';
 import '../../features/requests/data/datasources/missing_document_remote_data_source.dart';
+import '../../features/wallet/data/repositories/top_up_cancellation_repository_impl.dart';
+import '../../features/wallet/domain/usecases/cancel_top_up_usecase.dart';
+import '../../features/wallet/presentation/bloc/top_up_cancel_cubit.dart';
 import '../../features/requests/data/datasources/secure_recent_searches_store.dart';
 import '../../features/requests/domain/repositories/recent_searches_store.dart';
 import '../../features/requests/presentation/bloc/recent_searches_cubit.dart';
@@ -152,6 +155,7 @@ class InjectionContainer {
   late final GetWalletBalanceUseCase getWalletBalanceUseCase;
   late final GetTransactionsUseCase getTransactionsUseCase;
   late final RequestTopUpUseCase requestTopUpUseCase;
+  late final CancelTopUpUseCase cancelTopUpUseCase;
 
   late final ServicesRemoteDataSource servicesRemoteDataSource;
   late final ServicesRepository servicesRepository;
@@ -262,6 +266,7 @@ class InjectionContainer {
     getWalletBalanceUseCase = GetWalletBalanceUseCase(walletRepository);
     getTransactionsUseCase = GetTransactionsUseCase(walletRepository);
     requestTopUpUseCase = RequestTopUpUseCase(walletRepository);
+    cancelTopUpUseCase = CancelTopUpUseCase(TopUpCancellationRepositoryImpl(remote: walletRemoteDataSource));
 
     // Same reasoning as the wallet fallback above: inert in release builds.
     servicesRemoteDataSource = DebugFallbackServicesRemoteDataSource(
@@ -415,6 +420,9 @@ class InjectionContainer {
         uploadDocument: uploadMissingDocumentUseCase,
         pickDocument: pickDocumentUseCase,
       );
+
+  /// Builds a fresh [TopUpCancelCubit]; the top-up detail screen owns it.
+  TopUpCancelCubit createTopUpCancelCubit() => TopUpCancelCubit(cancelTopUp: cancelTopUpUseCase);
 
   /// Builds a fresh [RecentSearchesCubit]; the search screen owns it.
   RecentSearchesCubit createRecentSearchesCubit() => RecentSearchesCubit(recentSearchesStore);

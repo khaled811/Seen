@@ -18,6 +18,9 @@ class WalletTransactionDto {
     this.currency,
     this.referenceId,
     this.notes,
+    this.balanceAfter,
+    this.request,
+    this.topUp,
   });
 
   factory WalletTransactionDto.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +34,11 @@ class WalletTransactionDto {
         createdAt: DateTime.parse(json['createdAt'] as String),
         referenceId: json['referenceId'] as String?,
         notes: json['notes'] as String?,
+        balanceAfter: json['balanceAfter'] as String?,
+        request: json['request'] == null
+            ? null
+            : LinkedRequestDto.fromJson(json['request'] as Map<String, dynamic>),
+        topUp: json['topUp'] == null ? null : TopUpInfoDto.fromJson(json['topUp'] as Map<String, dynamic>),
       );
 
   final String id;
@@ -45,6 +53,11 @@ class WalletTransactionDto {
   final String? referenceId;
   final String? notes;
 
+  /// TODO(backend-contract): placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 23).
+  final String? balanceAfter;
+  final LinkedRequestDto? request;
+  final TopUpInfoDto? topUp;
+
   WalletTransaction toEntity() => WalletTransaction(
         id: id,
         type: TransactionType.fromValue(type),
@@ -55,5 +68,64 @@ class WalletTransactionDto {
         createdAt: createdAt,
         referenceId: referenceId,
         notes: notes,
+        balanceAfterCents: balanceAfter == null ? null : MoneyParser.centsFromDecimalString(balanceAfter!),
+        request: request?.toEntity(),
+        topUp: topUp?.toEntity(),
+      );
+}
+
+class LinkedRequestDto {
+  const LinkedRequestDto({required this.id, required this.referenceId, this.serviceName});
+
+  factory LinkedRequestDto.fromJson(Map<String, dynamic> json) => LinkedRequestDto(
+        id: json['id'] as String,
+        referenceId: json['referenceId'] as String,
+        serviceName: json['serviceName'] as String?,
+      );
+
+  final String id;
+  final String referenceId;
+  final String? serviceName;
+
+  LinkedRequest toEntity() => LinkedRequest(id: id, referenceId: referenceId, serviceName: serviceName);
+}
+
+class TopUpInfoDto {
+  const TopUpInfoDto({
+    this.method,
+    this.code,
+    this.bankName,
+    this.transferReference,
+    this.receiptName,
+    this.receiptUrl,
+    this.rejectionReason,
+  });
+
+  factory TopUpInfoDto.fromJson(Map<String, dynamic> json) => TopUpInfoDto(
+        method: json['method'] as String?,
+        code: json['code'] as String?,
+        bankName: json['bankName'] as String?,
+        transferReference: json['transferReference'] as String?,
+        receiptName: json['receiptName'] as String?,
+        receiptUrl: json['receiptUrl'] as String?,
+        rejectionReason: json['rejectionReason'] as String?,
+      );
+
+  final String? method;
+  final String? code;
+  final String? bankName;
+  final String? transferReference;
+  final String? receiptName;
+  final String? receiptUrl;
+  final String? rejectionReason;
+
+  TopUpInfo toEntity() => TopUpInfo(
+        method: TopUpMethod.fromValue(method),
+        code: code,
+        bankName: bankName,
+        transferReference: transferReference,
+        receiptName: receiptName,
+        receiptUrl: receiptUrl,
+        rejectionReason: rejectionReason,
       );
 }

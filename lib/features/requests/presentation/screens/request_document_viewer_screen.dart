@@ -43,9 +43,25 @@ class RequestDocumentViewerScreen extends StatelessWidget {
     this.createPdfRenderer,
     this.documentUrl,
     this.documentName,
-  });
+  }) : referenceLabel = null;
 
-  final RequestDetail detail;
+  /// Any single file (e.g. a top-up receipt, Figma WAL-02), not tied to a request.
+  const RequestDocumentViewerScreen.file({
+    super.key,
+    required String url,
+    required String name,
+    this.referenceLabel,
+    this.createBloc,
+    this.pagesBuilder,
+    this.createPdfRenderer,
+  })  : detail = null,
+        documentUrl = url,
+        documentName = name;
+
+  final RequestDetail? detail;
+
+  /// The subtitle of a [RequestDocumentViewerScreen.file] viewer.
+  final String? referenceLabel;
 
   /// A specific traveler document to open (Figma REQ-12) instead of the
   /// request's output document.
@@ -63,19 +79,21 @@ class RequestDocumentViewerScreen extends StatelessWidget {
   String? get _url {
     final own = documentUrl;
     if (own != null && own.isNotEmpty) return own;
-    final url = detail.outputDocumentUrl;
-    return detail.hasOutput && url != null && url.isNotEmpty ? url : null;
+    final request = detail;
+    final url = request?.outputDocumentUrl;
+    return request != null && request.hasOutput && url != null && url.isNotEmpty ? url : null;
   }
 
   @override
   Widget build(BuildContext context) {
     final url = _url;
-    if (url == null) return _NotReadyScreen(detail: detail);
+    if (url == null) return _NotReadyScreen(detail: detail!);
     return BlocProvider(
       create: (_) => (createBloc ?? InjectionContainer.instance.createDocumentViewerBloc)()
         ..add(DocumentViewerLoadRequested(url)),
       child: _ViewerScreen(
-        detail: detail,
+        reference: detail?.referenceId ?? referenceLabel ?? '',
+        serviceName: detail?.serviceName ?? '',
         url: url,
         name: documentName,
         pagesBuilder: pagesBuilder,
@@ -85,20 +103,28 @@ class RequestDocumentViewerScreen extends StatelessWidget {
   }
 }
 
-String _fileName(RequestDetail detail, String url) {
+String _fileName(String serviceName, String url) {
   final path = url.split('?').first;
   final dot = path.lastIndexOf('.');
   final ext = dot > path.lastIndexOf('/') && dot >= 0 ? path.substring(dot) : '.pdf';
-  return '${detail.serviceName}$ext';
+  return '$serviceName$ext';
 }
 
 void _openSupport(BuildContext context) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen()));
 
 class _ViewerScreen extends StatefulWidget {
-  const _ViewerScreen({required this.detail, required this.url, this.name, this.pagesBuilder, this.createPdfRenderer});
+  const _ViewerScreen({
+    required this.reference,
+    required this.serviceName,
+    required this.url,
+    this.name,
+    this.pagesBuilder,
+    this.createPdfRenderer,
+  });
 
-  final RequestDetail detail;
+  final String reference;
+  final String serviceName;
   final String url;
   final String? name;
   final DocumentPagesBuilder? pagesBuilder;
@@ -114,7 +140,7 @@ class _ViewerScreenState extends State<_ViewerScreen> {
   // The pages view could not decode the bytes (corrupt file).
   bool _undecodable = false;
 
-  late final String _name = widget.name ?? _fileName(widget.detail, widget.url);
+  late final String _name = widget.name ?? _fileName(widget.serviceName, widget.url);
 
   void _onPage(int page, int total) {
     // Called from the pages view's post-frame / async callbacks.
@@ -160,7 +186,7 @@ class _ViewerScreenState extends State<_ViewerScreen> {
                       title: ready ? _name : l10n.requestDocumentsTitle,
                       subtitle: ready
                           ? l10n.viewerPageOf(s.numeral(_page + 1), s.numeral(_total))
-                          : widget.detail.referenceId,
+                          : widget.reference,
                       trailing: ready
                           ? _RoundSvgButton(
                               asset: SeenVectors.viewerShare,

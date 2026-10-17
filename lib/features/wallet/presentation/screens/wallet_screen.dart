@@ -27,6 +27,7 @@ import '../widgets/ledger_row.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
 import 'top_up_request_screen.dart';
+import 'wallet_transaction_detail_screen.dart';
 
 /// Wallet & Ledger (Figma 11, node 18:434): title with a statement button,
 /// the balance card, the held / available usage card, Top-up and Transfer
@@ -160,6 +161,21 @@ class _LoadedViewState extends State<_LoadedView> {
 
   void _openTopUp() => Navigator.of(context).push(TopUpRequestScreen.route(context.read<WalletBloc>()));
 
+  /// Opens a ledger entry (Figma WAL-01 / 02 / 03); a cancelled top-up changed
+  /// the wallet, so the screen reloads when the detail reports it.
+  Future<void> _openTransaction(WalletTransaction transaction) async {
+    final bloc = context.read<WalletBloc>();
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: WalletTransactionDetailScreen(transaction: transaction),
+        ),
+      ),
+    );
+    if (changed == true) bloc.add(const WalletLoadRequested());
+  }
+
   Future<void> _openTransfer() async {
     final bloc = context.read<WalletBloc>();
     final done = await Navigator.of(context).push<bool>(
@@ -229,6 +245,7 @@ class _LoadedViewState extends State<_LoadedView> {
               title: l10n.walletPendingTopUpTitle(SeenFormat.usd(p.amountCents / 100)),
               subtitle: l10n.walletPendingTopUpSent(s.dayMonth(p.createdAt)),
               statusLabel: WalletLabels.transactionStatus(l10n, p.status),
+              onTap: () => _openTransaction(p),
             ),
           ],
           gap,
@@ -264,7 +281,7 @@ class _LoadedViewState extends State<_LoadedView> {
                   children: [
                     for (var i = 0; i < transactions.length; i++) ...[
                       if (i > 0) Divider(height: 1, color: c.border),
-                      _LedgerEntry(transaction: transactions[i]),
+                      _LedgerEntry(transaction: transactions[i], onTap: () => _openTransaction(transactions[i])),
                     ],
                   ],
                 ),
@@ -277,9 +294,10 @@ class _LoadedViewState extends State<_LoadedView> {
 }
 
 class _LedgerEntry extends StatelessWidget {
-  const _LedgerEntry({required this.transaction});
+  const _LedgerEntry({required this.transaction, required this.onTap});
 
   final WalletTransaction transaction;
+  final VoidCallback onTap;
 
   /// Figma tiles: a bank for top-ups, the transfer arrows for money coming
   /// back (refund / release), the request glyph for charges. The API does not
@@ -304,6 +322,7 @@ class _LedgerEntry extends StatelessWidget {
       meta: '${s.dayMonth(transaction.createdAt)} · ${SeenFormat.time(transaction.createdAt)}',
       amount: transaction.amountCents / 100,
       iconAsset: _icon(transaction),
+      onTap: onTap,
       // Approved is the expected resting state — only flag the exceptions.
       statusChip: flagged
           ? SeenStatusChip(

@@ -22,12 +22,25 @@ import '../widgets/topup_widgets.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
 
+/// The data a resubmission starts from (a rejected top-up, Figma WAL-03). The
+/// receipt is not part of it: the form has no receipt upload yet.
+class TopUpPrefill {
+  const TopUpPrefill({required this.amountCents, required this.method, this.referenceNumber});
+
+  final int amountCents;
+  final TopUpMethod method;
+  final String? referenceNumber;
+}
+
 /// Figma 12 (node 18:619) — full-page top-up request: payment method cards,
 /// the bank details card, the amount with preset chips, the receipt slot and a
 /// sticky submit bar. The wallet screen owns the [WalletBloc]; this route
 /// re-provides it with `BlocProvider.value`.
 class TopUpRequestScreen extends StatefulWidget {
-  const TopUpRequestScreen({super.key, this.bankDetails});
+  const TopUpRequestScreen({super.key, this.bankDetails, this.prefill});
+
+  /// Starts the form from a rejected request's data (Figma WAL-03).
+  final TopUpPrefill? prefill;
 
   /// The company account the agent wires money to. The backend does not expose
   /// it yet, so release builds show a "support will send it" note instead of
@@ -40,8 +53,12 @@ class TopUpRequestScreen extends StatefulWidget {
     iban: 'XX00 0000 0000 0000 0000',
   );
 
-  static Route<void> route(WalletBloc bloc, {TopUpBankDetails? bankDetails}) => MaterialPageRoute<void>(
-        builder: (_) => BlocProvider.value(value: bloc, child: TopUpRequestScreen(bankDetails: bankDetails)),
+  static Route<void> route(WalletBloc bloc, {TopUpBankDetails? bankDetails, TopUpPrefill? prefill}) =>
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: TopUpRequestScreen(bankDetails: bankDetails, prefill: prefill),
+        ),
       );
 
   @override
@@ -58,6 +75,17 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
   final _amountController = TextEditingController();
   final _referenceController = TextEditingController();
   TopUpMethod _method = TopUpMethod.bankTransfer;
+
+  @override
+  void initState() {
+    super.initState();
+    final prefill = widget.prefill;
+    if (prefill != null) {
+      _amountController.text = MoneyParser.decimalStringFromCents(prefill.amountCents);
+      _referenceController.text = prefill.referenceNumber ?? '';
+      if (prefill.method != TopUpMethod.unknown) _method = prefill.method;
+    }
+  }
 
   @override
   void dispose() {

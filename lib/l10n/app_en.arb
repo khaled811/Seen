@@ -3249,5 +3249,150 @@
   "requestDocsTravelerEmpty": "No documents for this traveler yet.",
   "@requestDocsTravelerEmpty": {
     "description": "Requests search and documents copy."
+  },
+  "walletTxnTitle": "Transaction details",
+  "@walletTxnTitle": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnRowType": "Type",
+  "@walletTxnRowType": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnRowRequest": "Linked request",
+  "@walletTxnRowRequest": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnRowDate": "Date",
+  "@walletTxnRowDate": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnRowBalanceAfter": "Available balance after",
+  "@walletTxnRowBalanceAfter": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnReference": "Reference {ref}",
+  "@walletTxnReference": {
+    "description": "Wallet transaction and top-up detail copy.",
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "walletTxnCopy": "Copy",
+  "@walletTxnCopy": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnCopied": "Reference copied.",
+  "@walletTxnCopied": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnViewRequest": "View request",
+  "@walletTxnViewRequest": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnTypeHoldRow": "Amount hold",
+  "@walletTxnTypeHoldRow": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTxnHoldCaption": "Held until the request is done",
+  "@walletTxnHoldCaption": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlHeld": "Amount held",
+  "@walletTlHeld": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlHoldDeduct": "Deducted when the request is done",
+  "@walletTlHoldDeduct": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlHoldRefund": "Or returned if the request is rejected",
+  "@walletTlHoldRefund": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlAutomatic": "Automatically",
+  "@walletTlAutomatic": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlDeducted": "Amount deducted",
+  "@walletTlDeducted": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlRefunded": "Amount returned",
+  "@walletTlRefunded": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlReleased": "Amount released",
+  "@walletTlReleased": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpDetailTitle": "Top-up request",
+  "@walletTopUpDetailTitle": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletReceiptView": "View",
+  "@walletReceiptView": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlSent": "Request sent",
+  "@walletTlSent": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlFinanceReview": "With finance for review",
+  "@walletTlFinanceReview": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlAddedToBalance": "Added to your balance",
+  "@walletTlAddedToBalance": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTlAfterApproval": "After approval",
+  "@walletTlAfterApproval": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpRowMethod": "Method",
+  "@walletTopUpRowMethod": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpRowTransferNo": "Transfer number",
+  "@walletTopUpRowTransferNo": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpCancelAction": "Cancel top-up request",
+  "@walletTopUpCancelAction": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpCancelConfirmTitle": "Cancel this top-up request?",
+  "@walletTopUpCancelConfirmTitle": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpCancelConfirmMessage": "The request is withdrawn and nothing is added to your balance.",
+  "@walletTopUpCancelConfirmMessage": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpCancelled": "Top-up request cancelled.",
+  "@walletTopUpCancelled": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletTopUpNotCancellable": "Finance has already reviewed this request, so it cannot be cancelled now.",
+  "@walletTopUpNotCancellable": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletRejectedReasonTitle": "Reason for rejection",
+  "@walletRejectedReasonTitle": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletRejectedNoReason": "No reason was given. Contact support for details.",
+  "@walletRejectedNoReason": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletRejectedReuseNote": "We will reuse the same details; you can edit them before sending.",
+  "@walletRejectedReuseNote": {
+    "description": "Wallet transaction and top-up detail copy."
+  },
+  "walletResubmitAction": "Resubmit",
+  "@walletResubmitAction": {
+    "description": "Wallet transaction and top-up detail copy."
   }
 }

@@ -29,6 +29,19 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
   final List<WalletTransactionDto> _mockTransactions = _seedTransactions(DateTime.now());
 
   @override
+  Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) async {
+    final result = await _real.cancelTopUp(transactionId);
+    if (!(kDebugMode && result.isLeft())) return result;
+    final index = _mockTransactions.indexWhere((t) => t.id == transactionId);
+    if (index < 0) return const Left(ServerFailure('Top-up not found.'));
+    // Demo: only a request finance has not decided yet can be withdrawn.
+    if (_mockTransactions[index].status != TransactionStatus.pending.value) {
+      return const Left(ServerFailure('Not cancellable', code: 'NOT_CANCELLABLE'));
+    }
+    return Right(_mockTransactions.removeAt(index));
+  }
+
+  @override
   Future<Either<Failure, WalletBalanceDto>> getBalance() async {
     final result = await _real.getBalance();
     if (kDebugMode && result.isLeft()) return const Right(_mockBalance);
@@ -106,6 +119,13 @@ List<WalletTransactionDto> _seedTransactions(DateTime now) => [
         createdAt: now.subtract(const Duration(days: 6)),
         referenceId: 'TXN-1001',
         notes: 'Bank transfer top-up',
+        balanceAfter: '5420.00',
+        topUp: const TopUpInfoDto(
+          method: 'bank_transfer',
+          code: 'TU-2270',
+          bankName: 'بنك الكريمي',
+          transferReference: 'KR-77100112',
+        ),
       ),
       WalletTransactionDto(
         id: 'debug-txn-2',
@@ -117,6 +137,31 @@ List<WalletTransactionDto> _seedTransactions(DateTime now) => [
         createdAt: now.subtract(const Duration(days: 3)),
         referenceId: 'TXN-1002',
         notes: 'Exchange house top-up, awaiting approval',
+        topUp: const TopUpInfoDto(
+          method: 'bank_transfer',
+          code: 'TU-2281',
+          bankName: 'بنك الكريمي',
+          transferReference: 'KR-77120934',
+          receiptName: 'receipt_kuraimi.jpg',
+          receiptUrl: 'mock://documents/receipt_kuraimi.jpg',
+        ),
+      ),
+      WalletTransactionDto(
+        id: 'debug-txn-6',
+        type: TransactionType.topup.value,
+        side: LedgerSide.credit.value,
+        status: TransactionStatus.rejected.value,
+        amount: '1000.00',
+        currency: WalletCurrency.usd.value,
+        createdAt: now.subtract(const Duration(days: 4)),
+        referenceId: 'TXN-1006',
+        topUp: const TopUpInfoDto(
+          method: 'bank_transfer',
+          code: 'TU-2274',
+          bankName: 'بنك الكريمي',
+          transferReference: 'KR-77098765',
+          rejectionReason: 'المبلغ في الإيصال (900.00 USD) لا يطابق المبلغ المدخل. أعد الإرسال بالمبلغ الصحيح أو أرفق الإيصال الصحيح.',
+        ),
       ),
       WalletTransactionDto(
         id: 'debug-txn-3',
@@ -126,8 +171,10 @@ List<WalletTransactionDto> _seedTransactions(DateTime now) => [
         amount: '450.00',
         currency: WalletCurrency.usd.value,
         createdAt: now.subtract(const Duration(days: 2)),
-        referenceId: 'REQ-EG-2201',
+        referenceId: 'TX-88201',
         notes: 'Egypt tourist visa — Ahmed Hassan',
+        balanceAfter: '3420.00',
+        request: const LinkedRequestDto(id: 'req-3', referenceId: 'SB-1003', serviceName: 'Egypt National Security Approval'),
       ),
       WalletTransactionDto(
         id: 'debug-txn-4',
@@ -137,8 +184,10 @@ List<WalletTransactionDto> _seedTransactions(DateTime now) => [
         amount: '275.00',
         currency: WalletCurrency.usd.value,
         createdAt: now.subtract(const Duration(days: 1)),
-        referenceId: 'REQ-EG-2214',
+        referenceId: 'TX-88214',
         notes: 'Egypt tourist visa — Sara Ali',
+        balanceAfter: '3145.00',
+        request: const LinkedRequestDto(id: 'req-2', referenceId: 'SB-1002', serviceName: 'Egypt Military Intelligence Approval'),
       ),
       WalletTransactionDto(
         id: 'debug-txn-5',
@@ -148,7 +197,9 @@ List<WalletTransactionDto> _seedTransactions(DateTime now) => [
         amount: '350.00',
         currency: WalletCurrency.usd.value,
         createdAt: now,
-        referenceId: 'REQ-EG-2230',
+        referenceId: 'TX-88213',
         notes: 'Egypt visa request under review',
+        balanceAfter: '5420.00',
+        request: const LinkedRequestDto(id: 'req-9', referenceId: 'SB-1009', serviceName: 'حجز طيران'),
       ),
     ];

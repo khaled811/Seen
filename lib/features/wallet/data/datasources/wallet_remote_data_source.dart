@@ -17,6 +17,9 @@ import '../models/wallet_transaction_dto.dart';
 /// upload is deliberately not wired here yet — mocked/decoupled until the
 /// backend's Supabase mutations are active (per Task 06).
 abstract interface class WalletRemoteDataSource {
+  /// Withdraws a top-up request that finance has not decided yet.
+  Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId);
+
   Future<Either<Failure, WalletBalanceDto>> getBalance();
 
   Future<Either<Failure, List<WalletTransactionDto>>> getTransactions({
@@ -41,6 +44,31 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
 
   final GraphQLService _graphQLService;
 
+  // TODO(backend-contract): `balanceAfter`, `request` and `topUp` are placeholders
+  // (docs/BACKEND_MIGRATION_GAPS.md, section 23).
+  static const _transactionFields = r'''
+        id
+        type
+        side
+        status
+        amount
+        currency
+        referenceId
+        notes
+        createdAt
+        balanceAfter
+        request { id referenceId serviceName }
+        topUp { method code bankName transferReference receiptName receiptUrl rejectionReason }
+  ''';
+
+  static final _cancelTopUpDocument = gql('''
+    mutation CancelTopUp(\$transactionId: ID!) {
+      cancelTopUp(transactionId: \$transactionId) {
+        $_transactionFields
+      }
+    }
+  ''');
+
   static final _balanceDocument = gql(r'''
     query WalletBalance {
       walletBalance {
@@ -52,59 +80,55 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
     }
   ''');
 
-  static final _transactionsDocument = gql(r'''
+  static final _transactionsDocument = gql('''
     query WalletTransactions(
-      $type: String
-      $fromDate: String
-      $toDate: String
-      $page: Int!
-      $pageSize: Int!
+      \$type: String
+      \$fromDate: String
+      \$toDate: String
+      \$page: Int!
+      \$pageSize: Int!
     ) {
       walletTransactions(
-        type: $type
-        fromDate: $fromDate
-        toDate: $toDate
-        page: $page
-        pageSize: $pageSize
+        type: \$type
+        fromDate: \$fromDate
+        toDate: \$toDate
+        page: \$page
+        pageSize: \$pageSize
       ) {
-        id
-        type
-        side
-        status
-        amount
-        currency
-        referenceId
-        notes
-        createdAt
+        $_transactionFields
       }
     }
   ''');
 
-  static final _requestTopUpDocument = gql(r'''
+  static final _requestTopUpDocument = gql('''
     mutation RequestTopUp(
-      $amount: String!
-      $method: String!
-      $referenceNumber: String!
-      $notes: String
+      \$amount: String!
+      \$method: String!
+      \$referenceNumber: String!
+      \$notes: String
     ) {
       requestTopUp(
-        amount: $amount
-        method: $method
-        referenceNumber: $referenceNumber
-        notes: $notes
+        amount: \$amount
+        method: \$method
+        referenceNumber: \$referenceNumber
+        notes: \$notes
       ) {
-        id
-        type
-        side
-        status
-        amount
-        currency
-        referenceId
-        notes
-        createdAt
+        $_transactionFields
       }
     }
   ''');
+
+  @override
+  Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) {
+    return _graphQLService.mutate<WalletTransactionDto>(
+      MutationOptions<WalletTransactionDto>(
+        document: _cancelTopUpDocument,
+        variables: {'transactionId': transactionId},
+        parserFn: (json) =>
+            WalletTransactionDto.fromJson(json['cancelTopUp'] as Map<String, dynamic>),
+      ),
+    );
+  }
 
   @override
   Future<Either<Failure, WalletBalanceDto>> getBalance() {

@@ -810,3 +810,34 @@ other) with a refund note, and a dialog explains when the request cannot be with
   newest, with a "clear" link) because they can contain traveler names. Nothing is sent to
   the server.
 - The dashboard's inline search field was replaced by the dedicated search screen.
+
+## 23. Transaction detail, pending and rejected top-ups (Figma WAL-01 / 02 / 03)
+
+Tapping a ledger row (or the pending top-up card) opens a detail screen. All the new
+fields below are placeholders (`TODO(backend-contract)`); the screen shows only what
+arrives and omits the rest.
+
+- **`walletTransactions[]` / `requestTopUp` / `cancelTopUp` return**, besides today's fields:
+  - `balanceAfter` (decimal string): the available balance right after the entry posted.
+  - `request { id referenceId serviceName }`: the request a hold / deduction / refund /
+    release belongs to. Gives the "linked request" row and the "View request" button.
+  - `topUp { method code bankName transferReference receiptName receiptUrl rejectionReason }`
+    for top-ups: `code` is the request's own number (TU-2281), `receiptUrl` must be a link
+    the document viewer can fetch, `rejectionReason` is finance's free text.
+- **Meaning of `referenceId`:** the app now shows it as the transaction's reference ("TX-88213")
+  with a copy button, separate from the linked request's number. The old demo data used it for
+  the request number; the backend should pick one meaning (transaction reference).
+- **`cancelTopUp(transactionId)`** (new mutation, placeholder): withdraws a top-up finance has
+  not decided. When it was already decided, fail with `code: NOT_CANCELLABLE`; the app says so
+  and reloads the wallet. On success the app reloads the wallet: whether a cancelled top-up
+  leaves the ledger or stays as a `cancelled` row is the backend's call (there is no such
+  `TransactionStatus` today).
+- **Timeline texts are fixed per type** (hold: held → deducted when the request is done → or
+  returned if it is rejected). The design's "expected within 72 hours" and "usually within an
+  hour" are not shown: the app never states a duration the server did not give. The pending
+  top-up shows the method's existing caption ("recorded within 1-4 working hours" for bank
+  transfer) instead.
+- **Resubmit (WAL-03)** reopens the top-up form with the same amount, method and transfer
+  reference. The form has no receipt upload yet (docs section on top-ups), so the receipt is NOT
+  reused and the note says only "the same details". When the receipt upload exists, the
+  prefill should carry the receipt too.

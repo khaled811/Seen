@@ -139,11 +139,18 @@ class SeenWalletUsageCard extends StatelessWidget {
 /// Figma "Pending top-up" (node 18:507): soft violet gradient, a white clock
 /// tile, the amount and when it was sent, and the review chip at the far end.
 class SeenPendingTopUpCard extends StatelessWidget {
-  const SeenPendingTopUpCard({super.key, required this.title, required this.subtitle, required this.statusLabel});
+  const SeenPendingTopUpCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.statusLabel,
+    this.onTap,
+  });
 
   final String title;
   final String subtitle;
   final String statusLabel;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +162,12 @@ class SeenPendingTopUpCard extends StatelessWidget {
         borderRadius: const BorderRadius.all(SeenRadius.r18),
         border: Border.all(color: c.border),
       ),
-      child: Padding(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: const BorderRadius.all(SeenRadius.r18),
+          child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
@@ -181,6 +193,8 @@ class SeenPendingTopUpCard extends StatelessWidget {
             const SizedBox(width: 8),
             SeenStatusChip(status: SeenRequestStatus.underReview, label: statusLabel),
           ],
+        ),
+      ),
         ),
       ),
     );
