@@ -819,5 +819,20 @@
   "contactSupportCall": "اتصال مباشر",
   "contactSupportEmail": "بريد إلكتروني",
   "contactSupportCopiedNumber": "تم نسخ الرقم.",
-  "contactSupportCopiedEmail": "تم نسخ البريد الإلكتروني."
+  "contactSupportCopiedEmail": "تم نسخ البريد الإلكتروني.",
+  "helpCenterTitle": "مركز المساعدة",
+  "helpSearchHint": "ابحث في المساعدة",
+  "helpTopicWallet": "المحفظة",
+  "helpTopicRequests": "الطلبات",
+  "helpTopicAccount": "الحساب",
+  "helpNoResultsTitle": "لا توجد نتائج مطابقة.",
+  "helpNoResultsContact": "لا نتائج؟ تواصل مع الدعم مباشرة",
+  "helpFaqDeductionQ": "متى يُخصم مبلغ الطلب من رصيدي؟",
+  "helpFaqDeductionA": "عند تقديم الطلب يُحجز مبلغه من رصيدك المتاح. يُخصم نهائيًا عند إنجاز الطلب، ويعود إلى رصيدك تلقائيًا إن رُفض الطلب أو أُلغي.",
+  "helpFaqMissingDocQ": "كيف أرفع مستندًا ناقصًا؟",
+  "helpFaqMissingDocA": "افتح الطلب من قائمة الطلبات، ثم اضغط «رفع المستند المطلوب» وأرفق الملف. عند قبوله يتابع الطلب مساره.",
+  "helpFaqPassportQ": "ما قاعدة صلاحية الجواز ٦ أشهر؟",
+  "helpFaqPassportA": "يجب أن يكون الجواز صالحًا لستة أشهر على الأقل. الجواز الذي تنتهي صلاحيته قبل ذلك قد يُرفض طلبه.",
+  "helpFaqSubAgentQ": "كيف أضيف وكيلًا فرعيًا؟",
+  "helpFaqSubAgentA": "من تبويب الوكلاء اضغط زر الإضافة، ثم أدخل بيانات الوكيل وحدّد سقفه الائتماني."
 }

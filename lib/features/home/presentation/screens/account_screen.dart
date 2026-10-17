@@ -23,6 +23,7 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../support/presentation/screens/notifications_screen.dart';
+import '../../../support/presentation/screens/help_center_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 
 /// Figma 14 — account hub (node 18:835): title + bell, profile card, the
@@ -158,6 +159,11 @@ class AccountScreen extends StatelessWidget {
                   asset: SeenVectors.accountSettings,
                   title: l10n.accountItemSettings,
                   onTap: () => _openSettings(context),
+                ),
+                _MenuItem(
+                  asset: SeenVectors.accountDocument,
+                  title: l10n.helpCenterTitle,
+                  onTap: () => _push(context, const HelpCenterScreen()),
                 ),
                 _MenuItem(
                   asset: SeenVectors.accountSupport,

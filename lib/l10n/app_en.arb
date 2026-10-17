@@ -3764,5 +3764,65 @@
   "contactSupportCopiedEmail": "Email address copied.",
   "@contactSupportCopiedEmail": {
     "description": "Contact support sheet copy."
+  },
+  "helpCenterTitle": "Help centre",
+  "@helpCenterTitle": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpSearchHint": "Search help",
+  "@helpSearchHint": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpTopicWallet": "Wallet",
+  "@helpTopicWallet": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpTopicRequests": "Requests",
+  "@helpTopicRequests": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpTopicAccount": "Account",
+  "@helpTopicAccount": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpNoResultsTitle": "No matching results.",
+  "@helpNoResultsTitle": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpNoResultsContact": "No results? Contact support directly",
+  "@helpNoResultsContact": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqDeductionQ": "When is the request amount deducted from my balance?",
+  "@helpFaqDeductionQ": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqDeductionA": "When you submit a request its amount is held from your available balance. It is deducted for good when the request is done, and returned to your balance automatically if the request is rejected or cancelled.",
+  "@helpFaqDeductionA": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqMissingDocQ": "How do I upload a missing document?",
+  "@helpFaqMissingDocQ": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqMissingDocA": "Open the request from the requests list, tap “Upload the required document” and attach the file. Once accepted, the request carries on.",
+  "@helpFaqMissingDocA": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqPassportQ": "What is the 6-month passport validity rule?",
+  "@helpFaqPassportQ": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqPassportA": "The passport must be valid for at least six more months. A request with a passport that expires sooner may be rejected.",
+  "@helpFaqPassportA": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqSubAgentQ": "How do I add a sub-agent?",
+  "@helpFaqSubAgentQ": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
+  },
+  "helpFaqSubAgentA": "From the Agents tab tap the add button, then enter the agent details and set their credit limit.",
+  "@helpFaqSubAgentA": {
+    "description": "Help centre copy (draft answers: support owns the wording)."
   }
 }

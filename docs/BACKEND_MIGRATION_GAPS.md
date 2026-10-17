@@ -967,3 +967,20 @@ The three screens were redone to the design. New placeholder contract (`TODO(bac
   compute open / closed.
 - **Where it opens:** from the pending-approval screen's "Contact support" button and from the password
   recovery "Contact support" links (both went to a "later" message before).
+
+## 29. Help centre (Figma SUP-04)
+
+- **The content is bundled in the app, and the answers are my draft.** The design shows only four
+  questions; the answers (in `app_ar.arb` / `app_en.arb`, keys `helpFaq…`) were written from how the app
+  behaves (hold then deduct then return on rejection; upload from the request page; the 6-month passport
+  rule; add a sub-agent from the Agents tab). **The support team should review and own the wording**, and
+  more questions are needed: today there are four, split over the three topics (Wallet 1, Requests 2,
+  Account 1).
+- **Better source: the backend.** A `helpArticles { id topic question answer }` query (localized) would let
+  support edit the articles without an app release; the screen already works over a list of `HelpArticle`,
+  so only `helpArticles(l10n)` would be replaced. Say if you want that contract.
+- Search is local (question and answer text, case-insensitive, no diacritics folding); the topic cards
+  filter and toggle off on a second tap; one answer is open at a time.
+- "No results? Contact support directly" opens the support tickets (signed-in). Before sign-in the
+  contact sheet of section 28 is the way.
+- Opens from Account > "Help centre" (a new row above "Help & support").
