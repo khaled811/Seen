@@ -24,6 +24,9 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/widgets/logout_confirm_dialog.dart';
+import '../../../profile/presentation/screens/agency_details_screen.dart';
+import '../../../profile/presentation/screens/profit_margin_screen.dart';
+import '../../../profile/presentation/screens/team_screen.dart';
 import '../../../support/presentation/screens/notifications_screen.dart';
 import '../../../support/presentation/screens/help_center_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
@@ -43,12 +46,6 @@ class AccountScreen extends StatelessWidget {
   static Future<String> _loadVersion() async => (await PackageInfo.fromPlatform()).version;
 
   static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const AccountScreen());
-
-  void _comingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.comingSoon)));
-  }
 
   void _push(BuildContext context, Widget page) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
@@ -134,14 +131,18 @@ class AccountScreen extends StatelessWidget {
                 _MenuItem(
                   asset: SeenVectors.accountDocument,
                   title: l10n.accountAgencyDetails,
-                  onTap: () => showSeenSheet<void>(
-                    context: context,
-                    title: l10n.accountAgencyDetails,
-                    builder: (_) => Text(l10n.accountAgencyDetailsSoonBody),
-                  ),
+                  onTap: () => Navigator.of(context).push(AgencyDetailsScreen.route()),
                 ),
-                _MenuItem(asset: SeenVectors.accountCash, title: l10n.accountItemMargin, onTap: () => _comingSoon(context)),
-                _MenuItem(asset: SeenVectors.accountAgents, title: l10n.accountItemUsers, onTap: () => _comingSoon(context)),
+                _MenuItem(
+                  asset: SeenVectors.accountCash,
+                  title: l10n.accountItemMargin,
+                  onTap: () => Navigator.of(context).push(ProfitMarginScreen.route()),
+                ),
+                _MenuItem(
+                  asset: SeenVectors.accountAgents,
+                  title: l10n.accountItemUsers,
+                  onTap: () => Navigator.of(context).push(TeamScreen.route()),
+                ),
               ]),
               _SectionLabel(l10n.accountSectionApp),
               _MenuCard(items: [

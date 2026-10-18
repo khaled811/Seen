@@ -1064,3 +1064,35 @@ plain message exactly as before.
   contract; one request per refusal on the screen. The server should de-duplicate repeated requests and say who was told.
 - **Debug only.** `--dart-define=DEBUG_APP_STATUS=maintenance|update|soft` forces those screens in a debug build so they
   can be looked at on a device without a backend. Release builds ignore it.
+
+## 33. Account: agency details, profit margin, users (Figma ACC-01 / 02 / 03)
+All three use placeholder contracts (`agencyProfile`, `serviceMargins` / `saveServiceMargins`, `teamMembers` and
+the invite / role / active mutations). In a debug build, when the call fails, they answer from sample data held in
+memory so the screens can be used; nothing is saved.
+- **Agency details (ACC-01).** `agencyProfile { name licenseNumber city managerName verification verifiedAt documents { id kind expiresAt viewUrl } }`.
+  `verification` is `verified | pending | rejected | unverified`; `kind` is `commercial_register | tourism_license | other`.
+  - A document within 30 days of `expiresAt` (or past it) shows the amber / red line and **Renew**. 30 days is the app's
+    choice, not the design's: say if the server owns that threshold.
+  - **Edit** and **Renew** have no in-app flow: there is no edit frame and no document-upload contract (same gap as
+    registration and tickets). Both open a note and the support channels. Needs: an update mutation for the agency
+    data (and which fields the agency may change itself) and an upload for the renewed file.
+  - **View** opens `viewUrl` outside the app; there is no in-app PDF viewer. The URL must be a signed, short-lived link.
+- **Profit margin (ACC-02).** `serviceMargins { margins { serviceId serviceName kind value editable iconKey } history { serviceName kind from to at by } }`.
+  `kind` is `fixed` (`value` = USD cents) or `percent` (`value` = basis points, 3% = 300). `editable: false` rows are
+  shown locked (flight booking is Jubari's). `saveServiceMargins(changes: [{serviceId, value}])` returns the same
+  overview, which replaces what is shown (the log comes from the server).
+  - The app checks only "a number, 0 or more". Maximums, steps and the percent range are the server's: answer
+    `INVALID_MARGIN` (or a validation error) and the app says the server refused the value.
+  - Only the account owner can edit in the app; branch managers and staff see it read-only. The server must enforce it (403).
+  - The margin applies to sub-agents only, as the design says; nothing in the app computes prices from it.
+- **Users and permissions (ACC-03).** `teamMembers { id name role status branchName }` (`role`: `owner | branch_manager | staff`;
+  `status`: `active | invited | disabled`; `branchName` null = all branches), plus `inviteMember(name, phone, role, branchName)`,
+  `changeMemberRole(id, role)`, `setMemberActive(id, active)`, `resendInvite(id)`, `cancelInvite(id)`.
+  - Only the owner opens this screen; branch managers and staff get the no-permission screen with "request access"
+    (area `team`, same mutation as the wallet). The server must enforce it.
+  - The **branch** in the invite is typed text because there is no branch list yet (ACC-07). It should become a select
+    over real branch ids. Say if the invite should carry an id instead of a name.
+  - The owner role cannot be given or removed from the app (one owner); the owner's row has no actions.
+  - The role descriptions on the screen are the design's wording, not read from the server: they must match what the
+    server really allows.
+  - Disabling a user should also end their sessions on the server.

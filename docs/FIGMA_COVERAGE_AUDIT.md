@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–32).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–33).
 
 ## Not built to the design (39 frames)
 
@@ -51,9 +51,9 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 ### Account (7)
 | Frame | Priority | What is missing |
 |---|---|---|
-| ACC-01 Agency details & commercial register | P1 | Verification status, documents, expiry. Today a "soon" sheet. |
-| ACC-02 Profit margin | P1 | Per-service margin, read-only vs editable, change history. Today "coming soon". |
-| ACC-03 Users and permissions | P1 | Roles list, invite, edit role, deactivate. Today "coming soon". |
+| ACC-01 Agency details & commercial register | P1 | **Done** except edit and renew, which point to support (no contract). See gaps section 33. |
+| ACC-02 Profit margin | P1 | **Done.** Per-service margins, read-only rows, change log (section 33). |
+| ACC-03 Users and permissions | P1 | **Done.** Team list, roles, invite, change role, disable; owner only (section 33). |
 | ACC-04 Settings | P1 | Language and theme exist as a sheet; missing biometric login, hide balance by default, notification toggles, change phone. Partly. |
 | ACC-05 Language switch confirmation | P2 | The RTL → LTR confirmation dialog. |
 | ACC-06 About / legal | P2 | Version, licences, rate the app, legal links. |

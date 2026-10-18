@@ -62,9 +62,9 @@ SUP-02,SUP,Screen,P1,إنشاء تذكرة,Create ticket,Tickets list,Category (
 SUP-03,SUP,Screen,P1,محادثة الدعم,Support chat / ticket thread,Ticket row,Bubbles; timestamps; attachments; sending/failed/retry; closed read-only; reopen; long text,Designed - Implemented (Flutter)
 SUP-04,SUP,Screen,P2,مركز المساعدة / الأسئلة الشائعة,Help centre / FAQ,Account > Help & support,Search; categories; no result,Designed - Implemented (Flutter; draft answers)
 SUP-05,SUP,Sheet,P1,تواصل مع الدعم قبل تسجيل الدخول,Contact support (signed out),"Pending approval (16), Login",Phone / email / chat options,Designed - Implemented (Flutter; channels from build settings; rows open the phone apps)
-ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Agency details and commercial register,Account (14) row,View vs edit; verification status; documents; expiry,Designed - Not implemented
-ACC-02,ACC,Screen,P1,هامش الربح,Profit margin,Account (14) row,Per service; read-only vs editable; history,Designed - Not implemented
-ACC-03,ACC,Screen,P1,المستخدمون والصلاحيات,Users and permissions,Account (14) row,Roles owner/branch manager/staff; invite; edit role; deactivate; empty,Designed - Not implemented
+ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Agency details and commercial register,Account (14) row,View vs edit; verification status; documents; expiry,Designed - Implemented (Flutter)
+ACC-02,ACC,Screen,P1,هامش الربح,Profit margin,Account (14) row,Per service; read-only vs editable; history,Designed - Implemented (Flutter)
+ACC-03,ACC,Screen,P1,المستخدمون والصلاحيات,Users and permissions,Account (14) row,Roles owner/branch manager/staff; invite; edit role; deactivate; empty,Designed - Implemented (Flutter)
 ACC-04,ACC,Screen,P1,الإعدادات,Settings,Account (14) row,Language; appearance; notification toggles,Designed - Not implemented
 ACC-05,ACC,Dialog,P2,تأكيد تغيير اللغة,Language switch confirmation,Settings,RTL/LTR flip; restart,Designed - Not implemented
 ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licences; links,Designed - Not implemented

@@ -95,6 +95,11 @@ import '../../features/services/domain/repositories/services_repository.dart';
 import '../../features/services/domain/usecases/get_available_services_usecase.dart';
 import '../../features/services/domain/usecases/submit_booking_usecase.dart';
 import '../../features/services/presentation/bloc/service_booking_bloc.dart';
+import '../../features/profile/data/datasources/profile_remote_data_source.dart';
+import '../../features/profile/data/datasources/profile_remote_data_source_debug_fallback.dart';
+import '../../features/profile/data/repositories/profile_repository_impl.dart';
+import '../../features/profile/domain/usecases/profile_usecases.dart';
+import '../../features/profile/presentation/bloc/profile_cubits.dart';
 import '../../features/system_status/data/datasources/system_status_remote_data_source.dart';
 import '../../features/system_status/data/datasources/system_status_remote_data_source_debug_fallback.dart';
 import '../../features/system_status/data/repositories/system_status_repository_impl.dart';
@@ -218,6 +223,10 @@ class InjectionContainer {
   late final UpdateCreditLimitUseCase updateCreditLimitUseCase;
 
   late final SupportRemoteDataSource supportRemoteDataSource;
+  late final GetAgencyProfileUseCase getAgencyProfileUseCase;
+  late final GetMarginsUseCase getMarginsUseCase;
+  late final SaveMarginsUseCase saveMarginsUseCase;
+  late final TeamUseCases teamUseCases;
   late final GetAppStatusUseCase getAppStatusUseCase;
   late final RequestAccessUseCase requestAccessUseCase;
   late final StoreLauncher storeLauncher;
@@ -365,6 +374,13 @@ class InjectionContainer {
       SupportRemoteDataSourceImpl(graphQLService: graphQLService),
     );
     supportRepository = SupportRepositoryImpl(remote: supportRemoteDataSource);
+    final profileRepository = ProfileRepositoryImpl(
+      remote: DebugFallbackProfileRemoteDataSource(ProfileRemoteDataSourceImpl(graphQLService: graphQLService)),
+    );
+    getAgencyProfileUseCase = GetAgencyProfileUseCase(profileRepository);
+    getMarginsUseCase = GetMarginsUseCase(profileRepository);
+    saveMarginsUseCase = SaveMarginsUseCase(profileRepository);
+    teamUseCases = TeamUseCases(profileRepository);
     final systemStatusRepository = SystemStatusRepositoryImpl(
       remote: DebugFallbackSystemStatusRemoteDataSource(
         SystemStatusRemoteDataSourceImpl(graphQLService: graphQLService),
@@ -482,6 +498,14 @@ class InjectionContainer {
         getRequestDetailUseCase: getRequestDetailUseCase,
         cancelRequestUseCase: cancelRequestUseCase,
       );
+
+  /// Builds the cubits of the account screens (agency details, margins, team); each screen owns its own.
+  AgencyDetailsCubit createAgencyDetailsCubit() => AgencyDetailsCubit(getAgencyProfileUseCase);
+
+  MarginsCubit createMarginsCubit({required bool canEdit}) =>
+      MarginsCubit(get: getMarginsUseCase, save: saveMarginsUseCase, canEdit: canEdit);
+
+  TeamCubit createTeamCubit() => TeamCubit(teamUseCases);
 
   /// Builds the app-wide [AppStatusCubit] (maintenance / update gate); the root provider owns it.
   AppStatusCubit createAppStatusCubit() => AppStatusCubit(
