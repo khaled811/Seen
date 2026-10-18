@@ -24,6 +24,8 @@ import '../bloc/traveler_attachment_cubit.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../domain/entities/booking_draft.dart';
 import '../utils/draft_summary.dart';
+import '../../../manifest/presentation/screens/manifest_build_screen.dart';
+import '../../../manifest/presentation/widgets/manifest_strings.dart';
 import '../widgets/save_draft_sheet.dart';
 import '../../../dynamic_forms/domain/validators/passport_validators.dart';
 import '../widgets/seen_attachment_slot.dart';
@@ -209,6 +211,16 @@ class _Body extends StatelessWidget {
             style: SeenType.of(context)
                 .caption
                 .copyWith(color: SeenColors.of(context).inkMuted)),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: SeenTextLink(
+            label: SeenStrings.of(context).openGroupManifest,
+            onTap: () => Navigator.of(context).push(ManifestBuildScreen.route(
+              serviceId: state.service.id,
+              serviceLabel: state.service.name,
+            )),
+          ),
+        ),
         const SizedBox(height: SeenSpace.s3),
         // A fresh card per traveler, cross-faded (add / remove / switch).
         AnimatedSize(

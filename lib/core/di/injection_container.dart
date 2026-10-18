@@ -104,6 +104,11 @@ import '../../features/auth/data/datasources/account_security_remote_data_source
 import '../../features/auth/domain/repositories/account_security_repository.dart';
 import '../../features/auth/presentation/bloc/account_security_cubits.dart';
 import '../../features/legal/data/datasources/legal_data_sources.dart';
+import '../../features/manifest/data/datasources/manifest_data_source.dart';
+import '../../features/manifest/data/services/external_url_opener.dart';
+import '../../features/manifest/domain/repositories/manifest_repository.dart';
+import '../../features/manifest/presentation/bloc/manifest_build_cubit.dart';
+import '../../features/manifest/presentation/bloc/manifest_summary_cubit.dart';
 import '../../features/services/data/datasources/hospital_data_source.dart';
 import '../../features/services/domain/repositories/hospital_repository.dart';
 import '../../features/services/presentation/bloc/hospital_picker_cubit.dart';
@@ -253,6 +258,7 @@ class InjectionContainer {
   late final TeamUseCases teamUseCases;
   late final AccountSecurityRepository accountSecurityRepository;
   late final HospitalRepository hospitalRepository;
+  late final ManifestRepository manifestRepository;
   late final BranchRepository branchRepository;
   late final ServiceInterestRepository serviceInterestRepository;
   late final NotificationPreferencesRepository notificationPreferencesRepository;
@@ -421,6 +427,7 @@ class InjectionContainer {
     serviceInterestRepository = ServiceInterestRepositoryImpl(graphQLService: graphQLService);
     branchRepository = DebugFallbackBranchRepository(BranchRemoteDataSource(graphQLService: graphQLService));
     hospitalRepository = DebugFallbackHospitalRepository(HospitalRemoteDataSource(graphQLService: graphQLService));
+    manifestRepository = DebugFallbackManifestRepository(ManifestRemoteDataSource(graphQLService: graphQLService));
     getLegalDocumentUseCase = GetLegalDocumentUseCase(
       LegalRepositoryImpl(
         remote: DebugFallbackLegalRemoteDataSource(LegalRemoteDataSourceImpl(graphQLService: graphQLService)),
@@ -568,6 +575,14 @@ class InjectionContainer {
 
   /// Builds the cubit of the branches screen; the screen owns it.
   BranchesCubit createBranchesCubit() => BranchesCubit(branches: branchRepository, team: teamUseCases);
+
+  /// Builds the cubit of the manifest being built; the screen owns it.
+  ManifestBuildCubit createManifestBuildCubit(String serviceId, String serviceLabel) =>
+      ManifestBuildCubit(manifestRepository, PluginManifestImportPicker(), serviceId: serviceId, serviceLabel: serviceLabel);
+
+  /// Builds the cubit of a sent manifest's summary; the screen owns it.
+  ManifestSummaryCubit createManifestSummaryCubit(String manifestId) =>
+      ManifestSummaryCubit(manifestRepository, launchExternalUrl, manifestId: manifestId);
 
   /// Builds the hospital picker's cubit for a medical service; the sheet owns it.
   HospitalPickerCubit createHospitalPickerCubit(String serviceId) =>

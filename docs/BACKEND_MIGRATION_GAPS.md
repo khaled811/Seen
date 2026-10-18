@@ -1282,3 +1282,27 @@ Placeholder contracts; in a debug build, when a call fails, the three hospitals 
 - **Per-traveler.** One hospital per request, as designed; capacity is counted per traveler on the server (a request of 3 travelers needs 3 places): `remaining` should be compared with the traveler count,
   and the app does not stop an agent from adding more travelers than the places left. The design does not show that case.
 - **Medical-specific fields** (diagnosis, referral letter, companion) are not in the design, so the request carries only the passport fields.
+
+## 45. Group manifest: build and summary (Figma REQ-14, REQ-14b)
+Placeholder contracts; in a debug build, when a call fails, an in-memory copy of the Figma sample is used (10 travelers: 8 ready, 2 incomplete; then the same manifest sent: 6 issued, 3 with the authority, 1 rejected).
+The feature lives in `lib/features/manifest/`. It opens from the traveler form (a link under the "1 to 9 travelers" note).
+- **Open.** `openManifest(serviceId)` returns the agent's open manifest for the service, creating it when there is none: `{ id serviceLabel travelers { id name passportNumber problem monthsLeft } }`.
+  `problem` is decided by the server: `MISSING_PASSPORT`, `PASSPORT_EXPIRING` (with `monthsLeft`) or null. The app does not judge a passport itself.
+- **Add one traveler.** `addManifestTraveler(draftId, name, passportNumber?)` answers the whole manifest. The design has no form for this, so the app asks only for a name and an optional passport number;
+  the rest of the traveler's data (nationality, dates, photo) is not collected here. Say how those are completed (a link to send the traveler, or a full form).
+- **Import.** `importManifestList(draftId, fileName, contentBase64)`: the app sends the file as base64 in the GraphQL body (CSV, XLSX or XLS, **5 MB at most**, checked on the device first). A multipart or pre-signed upload is better for big files;
+  say which one you want. The server parses the file and answers the whole manifest, and must say which rows it could not read (the app only shows "could not import" today).
+  **The template** ("ready-made template to download") needs a download link; the design shows the caption only, so there is no button yet.
+- **Limit.** The design says "larger lists" but gives no maximum. Say the maximum travelers per manifest. The list is built lazily, so a long one is fine on the device.
+- **Save and send.** `saveManifestDraft(draftId)`, `submitManifest(draftId) { id }`. "Review the manifest" opens a short confirmation (not in the design) that says how many will be sent.
+  **The app assumes incomplete travelers are not sent** until completed, and the confirmation says so. If the server refuses a manifest with incomplete lines, or sends them anyway, this must change.
+  The review step shows no price: say if the manifest has a total to confirm and how the wallet is charged (per traveler, only for the ones sent?).
+- **Draft list.** A saved manifest draft is not listed anywhere yet (the drafts screen shows booking drafts only): say if it should join the same list.
+- **Summary.** `manifestSummary(id) { id reference title travelers { id name outcome doneSteps rejectionReason } }`, never cached. `outcome`: `ISSUED`, `AT_AUTHORITY`, `REJECTED`;
+  `doneSteps` is 0 to 5 (the five segments of the design; say what each step means). The card chip says "processing" while any traveler is with the authority, else "completed" (the app's rule; say if the server has a manifest status).
+  `title` and `reference` (GM-0412) come from the server.
+- **Re-submit.** `resubmitManifestTraveler(manifestId, travelerId)` answers the summary. The design has no way to fix the passport first, so the app just sends again: the server should refuse a re-submit of a traveler whose
+  data is still the same as when it was rejected, with a clear reason.
+- **Download.** `manifestIssuedVisasUrl(id) { url }`: one archive of the issued visas. The app opens it outside the app and **only if it is `https`**. Say how long the link lives.
+- **Not built.** No entry from the requests list or request detail to a manifest summary (the list has no "this is a manifest" flag); the summary opens only right after sending. Say how a manifest appears in `requests`.
+  Notifications for a traveler's status change are not designed. Editing or removing a line of the manifest is not designed.
