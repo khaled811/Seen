@@ -1,3 +1,6 @@
+import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../legal/domain/entities/legal_document.dart';
+import '../../../legal/presentation/screens/legal_document_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -96,6 +99,20 @@ class WelcomeScreen extends StatelessWidget {
                             l10n.welcomeTerms,
                             textAlign: TextAlign.center,
                             style: type.caption.copyWith(color: c.inkMuted),
+                          ),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 16,
+                            children: [
+                              SeenTextLink(
+                                label: SeenStrings.of(context).termsTitle,
+                                onTap: () => Navigator.of(context).push(LegalDocumentScreen.route(LegalKind.terms)),
+                              ),
+                              SeenTextLink(
+                                label: SeenStrings.of(context).privacyTitle,
+                                onTap: () => Navigator.of(context).push(LegalDocumentScreen.route(LegalKind.privacy)),
+                              ),
+                            ],
                           ),
                         ],
                       ),

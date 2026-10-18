@@ -1,3 +1,5 @@
+import '../../../legal/domain/entities/legal_document.dart';
+import '../../../legal/presentation/screens/legal_document_screen.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -555,10 +557,7 @@ class _TermsScreenState extends State<_TermsScreen> {
   bool _privacy = false;
   bool _marketing = false;
 
-  // The readers (Figma AUTH-09 / 10) are not designed or served yet.
-  void _readSoon() => ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.registrationReadSoon)));
+  void _read(LegalKind kind) => Navigator.of(context).push(LegalDocumentScreen.route(kind));
 
   @override
   Widget build(BuildContext context) {
@@ -632,7 +631,7 @@ class _TermsScreenState extends State<_TermsScreen> {
               checked: _terms,
               onChanged: (v) => setState(() => _terms = v),
               readLabel: l10n.registrationRead,
-              onRead: _readSoon,
+              onRead: () => _read(LegalKind.terms),
             ),
             const SizedBox(height: 16),
             _ConsentRow(
@@ -640,7 +639,7 @@ class _TermsScreenState extends State<_TermsScreen> {
               checked: _privacy,
               onChanged: (v) => setState(() => _privacy = v),
               readLabel: l10n.registrationRead,
-              onRead: _readSoon,
+              onRead: () => _read(LegalKind.privacy),
             ),
             const SizedBox(height: 16),
             _ConsentRow(

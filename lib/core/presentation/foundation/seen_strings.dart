@@ -275,6 +275,14 @@ class SeenStrings {
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
   String get loadingLabel => _t('جارٍ التحميل', 'Loading');
 
+  // Legal texts (Figma AUTH-09 / 10).
+  String get termsTitle => _t('الشروط والأحكام', 'Terms and conditions');
+  String get privacyTitle => _t('سياسة الخصوصية', 'Privacy policy');
+  String legalUpdated(DateTime d) =>
+      _t('آخر تحديث ${dayMonth(d)} ${numeral(d.year)}', 'Last updated ${dayMonth(d)} ${d.year}');
+  String get legalOfflineCopy => _t('أنت غير متصل. نعرض النسخة المحفوظة.', 'You are offline. Showing the saved copy.');
+  String get legalLoadFailed => _t('تعذّر تحميل النص. تحقق من الاتصال وحاول مرة أخرى.', 'Could not load the text. Check your connection and try again.');
+
   // Camera / photos permission (Figma SYS-07).
   String get cameraAllowTitle => _t('اسمح بالوصول إلى الكاميرا', 'Allow camera access');
   String get cameraAllowBody => _t('نحتاجها لتصوير الجواز والمستندات مباشرة. لا نصل إلى صورك الأخرى.',

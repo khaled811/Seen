@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–36).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–37).
 
 ## Not built to the design (39 frames)
 
@@ -24,8 +24,8 @@ the same thing that does not follow the frame.
 | Frame | Priority | What is missing |
 |---|---|---|
 | AUTH-08 Registration field errors | P1 | **Done** except the file-too-large error (no CR upload yet). See gaps section 30. |
-| AUTH-09 Terms of use | P1 | Long-text screen with the update date, language switch, offline state. |
-| AUTH-10 Privacy policy | P1 | Same as AUTH-09. |
+| AUTH-09 Terms of use | P1 | **Done.** Reader with update date, language switch, saved offline copy (gaps section 37). |
+| AUTH-10 Privacy policy | P1 | **Done.** Same reader (gaps section 37). |
 | AUTH-11 Login failure states | P1 | **Done.** |
 | AUTH-14 Logout confirmation | P1 | **Done.** |
 | AUTH-15 Change password | P2 | Whole screen. |

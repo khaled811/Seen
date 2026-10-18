@@ -100,6 +100,10 @@ import '../../features/profile/data/datasources/profile_remote_data_source_debug
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/usecases/profile_usecases.dart';
 import '../../features/profile/presentation/bloc/profile_cubits.dart';
+import '../../features/legal/data/datasources/legal_data_sources.dart';
+import '../../features/legal/data/repositories/legal_repository_impl.dart';
+import '../../features/legal/domain/entities/legal_document.dart';
+import '../../features/legal/presentation/bloc/legal_cubit.dart';
 import '../../features/system_status/data/datasources/system_status_remote_data_source.dart';
 import '../../features/system_status/data/datasources/system_status_remote_data_source_debug_fallback.dart';
 import '../../features/system_status/data/repositories/system_status_repository_impl.dart';
@@ -232,6 +236,7 @@ class InjectionContainer {
   late final GetMarginsUseCase getMarginsUseCase;
   late final SaveMarginsUseCase saveMarginsUseCase;
   late final TeamUseCases teamUseCases;
+  late final GetLegalDocumentUseCase getLegalDocumentUseCase;
   late final GetAppStatusUseCase getAppStatusUseCase;
   late final RequestAccessUseCase requestAccessUseCase;
   late final StoreLauncher storeLauncher;
@@ -388,6 +393,12 @@ class InjectionContainer {
     getMarginsUseCase = GetMarginsUseCase(profileRepository);
     saveMarginsUseCase = SaveMarginsUseCase(profileRepository);
     teamUseCases = TeamUseCases(profileRepository);
+    getLegalDocumentUseCase = GetLegalDocumentUseCase(
+      LegalRepositoryImpl(
+        remote: DebugFallbackLegalRemoteDataSource(LegalRemoteDataSourceImpl(graphQLService: graphQLService)),
+        cache: const SharedPreferencesLegalCache(),
+      ),
+    );
     final systemStatusRepository = SystemStatusRepositoryImpl(
       remote: DebugFallbackSystemStatusRemoteDataSource(
         SystemStatusRemoteDataSourceImpl(graphQLService: graphQLService),
@@ -518,6 +529,10 @@ class InjectionContainer {
       MarginsCubit(get: getMarginsUseCase, save: saveMarginsUseCase, canEdit: canEdit);
 
   TeamCubit createTeamCubit() => TeamCubit(teamUseCases);
+
+  /// Builds the cubit of a legal text screen (terms or privacy); the screen owns it.
+  LegalCubit createLegalCubit(LegalKind kind, LegalLanguage initial) =>
+      LegalCubit(kind: kind, initial: initial, get: getLegalDocumentUseCase);
 
   /// Builds the app-wide [AppStatusCubit] (maintenance / update gate); the root provider owns it.
   AppStatusCubit createAppStatusCubit() => AppStatusCubit(

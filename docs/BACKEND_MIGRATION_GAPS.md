@@ -1166,3 +1166,18 @@ memory so the screens can be used; nothing is saved.
   The sheet and dialog the frame points to (AUTH-13, REQ-10, WAL-07b) already exist.
 - **Components page.** A development page showing every component in its states, opened from Settings in debug builds only.
 - No backend work in this batch.
+
+## 37. Terms of use and privacy policy (Figma AUTH-09 / 10)
+- **Query.** `legalDocument(kind: "terms" | "privacy", language: "ar" | "en") { updatedAt sections { heading body } }`, **public** (no token:
+  it is read before sign-in) and never cached by the client's HTTP layer. Placeholder contract. The text is the server's: the app
+  ships no legal wording of its own. In a debug build, when the call fails, the Figma sample text is shown so the screens can be seen.
+- **Plain text only.** A section is a heading and a body paragraph, as in the design. Lists, links or bold inside a paragraph are not
+  supported; say if the real texts need them (then `body` becomes a small markup or a list of blocks).
+- **Offline.** The last successfully loaded text of each kind and language is saved on the device. If the server cannot be reached the saved
+  copy is shown with "You are offline, showing the saved copy". With no saved copy there is an error and "try again".
+- **Language.** The reader has its own Arabic / English switch, independent of the app language; it opens in the app's language.
+  An English text is laid out left-to-right even in the Arabic app.
+- **Where it opens from.** The welcome screen (two links under the consent sentence) and the "Read" links of the registration consent step.
+  Registering still sends only "I agree"; **the server should record which version of each text was accepted** (`updatedAt` or a version id)
+  with the consent, otherwise there is no proof of what the agency agreed to. The registration contract has no such field today.
+- Not built: showing the update date as a "what changed" note, and asking signed-in users to re-accept after an update.
