@@ -168,7 +168,7 @@ void main() {
       expect(find.text('لا توجد خدمات مطابقة'), findsOneWidget);
     });
 
-    testWidgets('tapping a bookable tile starts a booking; the soon tile does nothing', (tester) async {
+    testWidgets('tapping a bookable tile starts a booking; the soon tile does not start one (it opens the coming-soon sheet)', (tester) async {
       final bloc = await pumpCatalog(tester);
       await tester.tap(find.text('تعميم شركات الطيران'), warnIfMissed: false);
       await tester.pump();
@@ -271,6 +271,67 @@ void main() {
       expect(repo.submitted, hasLength(1));
       expect(repo.submitted.single.serviceId, 's1');
       expect(find.text(lookupAppLocalizations(const Locale('ar')).bookingSuccessTitle), findsOneWidget);
+    });
+  });
+
+  group('SYS-09 passport 6-month rule', () {
+    Future<ServiceBookingBloc> pump(WidgetTester tester, {int travelers = 1}) async {
+      await _size(tester);
+      final made = _makeBloc();
+      addTearDown(() => made.bloc.close().ignore());
+      _select(made.bloc, _nationalSecurity);
+      for (var i = 1; i < travelers; i++) {
+        made.bloc.add(const TravelerAdded());
+      }
+      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen())));
+      await tester.pumpAndSettle();
+      return made.bloc;
+    }
+
+    void setExpiry(ServiceBookingBloc bloc, int index, DateTime d) =>
+        bloc.add(TravelerFieldChanged(travelerIndex: index, fieldKey: 'passportExpiryDate', value: d));
+
+    testWidgets('an expiry under 6 months shows the rule, the error, and blocks Next', (tester) async {
+      final bloc = await pump(tester);
+      _fillTraveler(bloc, 0);
+      setExpiry(bloc, 0, DateTime.now().add(const Duration(days: 60)));
+      await tester.pumpAndSettle();
+      expect(find.text('قاعدة الـ ٦ أشهر'), findsOneWidget);
+      expect(find.textContaining('أقل من ٦ أشهر من تاريخ السفر'), findsOneWidget);
+      expect(find.text('≥ ٦ أشهر · مقبول'), findsOneWidget);
+      final next = tester.widget<SeenButton>(find.widgetWithText(SeenButton, 'التالي'));
+      expect(next.onPressed, isNull);
+    });
+
+    testWidgets('a valid expiry shows no rule and Next works', (tester) async {
+      final bloc = await pump(tester);
+      _fillTraveler(bloc, 0);
+      await tester.pumpAndSettle();
+      expect(find.text('قاعدة الـ ٦ أشهر'), findsNothing);
+      final next = tester.widget<SeenButton>(find.widgetWithText(SeenButton, 'التالي'));
+      expect(next.onPressed, isNotNull);
+    });
+
+    testWidgets('with several travelers the blocked one can be removed from the bar', (tester) async {
+      final bloc = await pump(tester, travelers: 2);
+      _fillTraveler(bloc, 0);
+      _fillTraveler(bloc, 1);
+      setExpiry(bloc, 1, DateTime.now().add(const Duration(days: 30)));
+      bloc.add(const ActiveTravelerChanged(1));
+      await tester.pumpAndSettle();
+      expect(find.text('إزالة المسافر'), findsOneWidget);
+      await tester.tap(find.text('إزالة المسافر'));
+      await tester.pumpAndSettle();
+      expect((bloc.state as ServiceBookingInProgress).travelers, hasLength(1));
+      expect(find.text('قاعدة الـ ٦ أشهر'), findsNothing);
+    });
+
+    testWidgets('a future issue date is flagged as the user types', (tester) async {
+      final bloc = await pump(tester);
+      _fillTraveler(bloc, 0);
+      bloc.add(TravelerFieldChanged(travelerIndex: 0, fieldKey: 'passportIssueDate', value: DateTime.now().add(const Duration(days: 90))));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('تاريخ الإصدار في المستقبل'), findsOneWidget);
     });
   });
 }

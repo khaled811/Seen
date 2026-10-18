@@ -276,6 +276,18 @@ class SeenStrings {
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
   String get loadingLabel => _t('جارٍ التحميل', 'Loading');
 
+  // Passport 6-month rule (Figma SYS-09).
+  String get issueDateInFuture => _t('تاريخ الإصدار في المستقبل. أدخل التاريخ كما في الجواز.', 'The issue date is in the future. Enter it as shown on the passport.');
+  String expiryRuleError(DateTime travel) => _t(
+      'صلاحية الجواز أقل من ٦ أشهر من تاريخ السفر (${dayMonth(travel)} ${year(travel.year)}). لا يمكن تقديم الطلب.',
+      'The passport is valid for less than 6 months from the travel date (${dayMonth(travel)} ${year(travel.year)}). The request cannot be submitted.');
+  String get sixMonthRuleTitle => _t('قاعدة الـ ٦ أشهر', 'The 6-month rule');
+  String get sixMonthRuleBody => _t('تشترط الجهات أن يكون الجواز صالحًا ٦ أشهر على الأقل من تاريخ السفر. جدّد الجواز أو أزل المسافر من الطلب.',
+      'The authorities require the passport to be valid for at least 6 months from the travel date. Renew the passport or remove the traveler from the request.');
+  String get sixMonthLegendOk => _t('≥ ٦ أشهر · مقبول', '6+ months · accepted');
+  String get sixMonthLegendBad => _t('< ٦ أشهر · مرفوض', 'Under 6 months · rejected');
+  String get removeTravelerButton => _t('إزالة المسافر', 'Remove traveler');
+
   // Service coming soon (Figma BOOK-09).
   String get hotelBookingName => _t('حجز الفنادق', 'Hotel booking');
   String comingSoonTitle(String name) => _t('$name قريبًا', '$name is coming soon');

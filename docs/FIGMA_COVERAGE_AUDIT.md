@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–41).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–42).
 
 ## Not built to the design (39 frames)
 
@@ -76,7 +76,7 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 | SYS-06 Loading skeletons | P1 | **Done** on the main screens: one shared pulse that honours reduced motion (gaps section 36). |
 | SYS-07 Camera / photos permission | P1 | **Mostly done.** The refused-for-good sheet works on both upload flows; "open settings" is iOS only; no pre-permission variant (section 36). |
 | SYS-08 Missing components | P1 | **Mostly done.** Toast, list row, checkbox, switch, progress, badge, info banner added and used in the new screens; older screens still hand-draw some (section 36). |
-| SYS-09 Passport expiry rule (blocking) | — | The blocking state on the passport step (no tracker row; the validator exists). Partly. |
+| SYS-09 Passport expiry rule (blocking) | — | **Done.** Live error, rule card, Next disabled, remove traveler (gaps section 42; uses today as the travel date). |
 
 ### Roles (1)
 ROLE-01 Role-based views (staff, branch manager): **Done** for the agent shell: faded tabs, role home, hidden menu rows, one permissions table. The name and branch need the session to carry them (gaps section 34).

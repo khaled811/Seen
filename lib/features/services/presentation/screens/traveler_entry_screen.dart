@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
@@ -24,6 +25,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../domain/entities/booking_draft.dart';
 import '../utils/draft_summary.dart';
 import '../widgets/save_draft_sheet.dart';
+import '../../../dynamic_forms/domain/validators/passport_validators.dart';
 import '../widgets/seen_attachment_slot.dart';
 import '../widgets/seen_dynamic_field.dart';
 import '../widgets/seen_traveler_chips.dart' show SeenTravelerState;
@@ -32,7 +34,14 @@ import '../widgets/seen_validity_hint.dart';
 import 'booking_review_screen.dart';
 
 const _passportExpiryFieldKey = 'passportExpiryDate';
+const _passportIssueFieldKey = 'passportIssueDate';
 const _gutter = 20.0;
+
+/// The traveler's passport fails the 6-month rule against today (the travel date the app uses).
+bool _passportBlocked(TravelerInfo t, DateTime now) {
+  final expiry = t.fieldValues[_passportExpiryFieldKey];
+  return expiry is DateTime && !PassportValidators.isValidExpiryDate(expiry, now: now);
+}
 
 /// Fields whose value is a Latin-script run (passport data).
 const _ltrFieldKeys = {'passportNumber'};
@@ -329,9 +338,16 @@ class _TravelerCard extends StatelessWidget {
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
     final traveler = state.activeTraveler;
-    final errors =
-        state.travelerErrors[traveler.id] ?? const <String, String>{};
+    final now = DateTime.now();
     final expiry = traveler.fieldValues[_passportExpiryFieldKey];
+    final issue = traveler.fieldValues[_passportIssueFieldKey];
+    final blocked = _passportBlocked(traveler, now);
+    // Shown as the user types (Figma SYS-09), on top of what "Next" reported.
+    final errors = {
+      ...(state.travelerErrors[traveler.id] ?? const <String, String>{}),
+      if (issue is DateTime && issue.isAfter(now)) _passportIssueFieldKey: s.issueDateInFuture,
+      if (blocked) _passportExpiryFieldKey: s.expiryRuleError(now),
+    };
 
     final (chipStatus, chipLabel) = errors.isNotEmpty
         ? (SeenRequestStatus.rejected, l10n.travelerStateIncomplete)
@@ -365,6 +381,7 @@ class _TravelerCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             ..._fieldWidgets(context, state, traveler, errors, expiry),
+            if (blocked) ...[const _SixMonthRule(), const SizedBox(height: 14)],
             // No booking-attachment upload API yet: the file stays on the device
             // and the slot says so (see TravelerAttachmentCubit).
             SeenAttachmentSlot(
@@ -397,21 +414,114 @@ class _ActionsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return SeenActionBar(
-      actions: [
-        SeenButton(
+    final s = SeenStrings.of(context);
+    return BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
+      builder: (context, state) {
+        final progress = state is ServiceBookingInProgress ? state : null;
+        final now = DateTime.now();
+        // A passport under the 6-month rule blocks "Next" for the whole request (Figma SYS-09).
+        final blocked = progress != null && progress.travelers.any((t) => _passportBlocked(t, now));
+        final activeBlocked = progress != null && _passportBlocked(progress.activeTraveler, now);
+        final canRemove = progress != null && activeBlocked && progress.travelers.length > 1;
+        final next = SeenButton(
           label: l10n.bookingNextAction,
           expand: true,
-          onPressed: () => context
-              .read<ServiceBookingBloc>()
-              .add(const TravelerContinuePressed()),
-        ),
-        SeenButton.secondary(
-          label: l10n.bookingBackAction,
-          expand: true,
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-      ],
+          onPressed: blocked
+              ? null
+              : () => context.read<ServiceBookingBloc>().add(const TravelerContinuePressed()),
+        );
+        if (blocked) {
+          return SeenActionBar(
+            actions: [
+              canRemove
+                  ? SeenButton.outline(
+                      label: s.removeTravelerButton,
+                      expand: true,
+                      onPressed: () => context
+                          .read<ServiceBookingBloc>()
+                          .add(TravelerRemoved(progress.activeTravelerIndex)),
+                    )
+                  : SeenButton.outline(
+                      label: l10n.bookingBackAction,
+                      expand: true,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+              next,
+            ],
+          );
+        }
+        return SeenActionBar(
+          actions: [
+            next,
+            SeenButton.secondary(
+              label: l10n.bookingBackAction,
+              expand: true,
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Why the request cannot go on, and what is accepted (Figma SYS-09).
+class _SixMonthRule extends StatelessWidget {
+  const _SixMonthRule();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = SeenStrings.of(context);
+    final t = SeenType.of(context);
+    final bad = SeenRequestStatus.rejected.colors;
+    final ok = SeenRequestStatus.completed.colors;
+    Widget chip(String label, SeenStatusColors colors) => Expanded(
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: colors.bg, borderRadius: const BorderRadius.all(SeenRadius.full)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Row(
+                children: [
+                  Flexible(child: Text(label, style: t.caption.copyWith(color: colors.fg, fontWeight: FontWeight.w500))),
+                  const SizedBox(width: 6),
+                  DecoratedBox(
+                    decoration: BoxDecoration(color: colors.fg, shape: BoxShape.circle),
+                    child: const SizedBox(width: 6, height: 6),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(color: bad.bg, borderRadius: const BorderRadius.all(Radius.circular(16))),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(SeenIcons.alert, size: 18, color: bad.fg),
+                      const SizedBox(width: 8),
+                      Text(s.sixMonthRuleTitle, style: t.label.copyWith(color: bad.fg)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(s.sixMonthRuleBody, style: t.caption.copyWith(color: bad.fg)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(children: [chip(s.sixMonthLegendOk, ok), const SizedBox(width: 8), chip(s.sixMonthLegendBad, bad)]),
+        ],
+      ),
     );
   }
 }

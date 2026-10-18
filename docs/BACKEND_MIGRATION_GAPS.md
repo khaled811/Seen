@@ -1240,3 +1240,13 @@ Both need a session. All names below are placeholders; in a debug build, when th
   everyone who asked. The app does not know yet which services the agency already asked about after a restart: the button is shown again (the server's repeat answer makes this harmless).
   A query `myServiceInterests` would let the sheet open as "registered".
 - Not built: a coming-soon service page (the design is only the sheet), and a launch date.
+
+## 42. Passport 6-month rule, blocking (Figma SYS-09)
+- **What the app does.** As the traveler's passport expiry is entered, if it is under 6 months from **today** the expiry field shows the rule error, a red "6-month rule" card
+  explains it with the accepted / rejected legend, and **Next is disabled** for the whole request while any traveler is in that state. With more than one traveler the bar offers
+  "Remove traveler" for the active one. A passport issue date in the future is flagged as it is typed.
+- **Travel date.** The design measures from the **travel date**; the app has no travel date field, so it uses today (same limit as section 31). If the rule must use the real
+  travel date the request needs one (a field in the booking and in `submitBooking`), and the server must apply the same rule per service and answer
+  `PASSPORT_EXPIRY_TOO_SOON` with the traveler index. The server stays the authority; the app's check only saves a round trip.
+- **Same validator.** The rule itself is the existing `PassportValidators.isValidExpiryDate`; the 6 months are the app's default per field (`minMonthsInFuture`), the server
+  may want to publish it per service so the two cannot disagree.

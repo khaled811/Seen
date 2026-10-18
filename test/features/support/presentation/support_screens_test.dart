@@ -31,7 +31,8 @@ import 'package:seen_booking/features/support/presentation/screens/create_ticket
 import 'package:seen_booking/features/support/presentation/screens/support_tickets_screen.dart';
 import 'package:seen_booking/features/support/presentation/screens/ticket_detail_screen.dart';
 
-final _now = DateTime.now();
+// Midday today, so "minutes ago" offsets never cross midnight (the tests used to fail between 00:00 and 01:00).
+final _now = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 12);
 
 TicketMessage _msg(String id, String body, {bool support = false, String author = 'You', int minutesAgo = 30}) =>
     TicketMessage(
