@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–43).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–44).
 
 ## Not built to the design (39 frames)
 
@@ -42,7 +42,7 @@ the same thing that does not follow the frame.
 | BOOK-07 Field types | P1 | **Partly.** Select uses the sheet; counter, phone country code and read-only look are not built. |
 | BOOK-08 Review: insufficient balance | P1 | **Done.** Shortfall card, top-up shortcut, blocked submit. |
 | BOOK-09 Service coming soon | P2 | **Done.** Sheet with "notify me at launch" from the service list and the Home hotels tile (gaps section 41). |
-| BOOK-10 Hospital quota & availability | — | Whole screen (medical service). |
+| BOOK-10 Hospital quota & availability | — | **Done.** Hospital picker with places left, full ones disabled, hospital carried by the request and drafts (gaps section 44). |
 
 ### Requests (4, no tracker rows)
 REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · REQ-15 / 15b Airline circular

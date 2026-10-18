@@ -60,6 +60,8 @@ abstract final class BookingDraftJson {
         'serviceName': d.serviceName,
         'category': d.category.value,
         'updatedAt': d.updatedAt.toIso8601String(),
+        'hospitalId': d.hospitalId,
+        'hospitalName': d.hospitalName,
         'travelers': [
           for (final t in d.travelers)
             {
@@ -75,6 +77,8 @@ abstract final class BookingDraftJson {
         serviceName: json['serviceName'] as String,
         category: ServiceCategory.fromValue(json['category'] as String?),
         updatedAt: DateTime.parse(json['updatedAt'] as String),
+        hospitalId: json['hospitalId'] as String?,
+        hospitalName: json['hospitalName'] as String?,
         travelers: [
           for (final t in json['travelers'] as List<dynamic>)
             TravelerInfo(

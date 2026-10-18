@@ -104,6 +104,9 @@ import '../../features/auth/data/datasources/account_security_remote_data_source
 import '../../features/auth/domain/repositories/account_security_repository.dart';
 import '../../features/auth/presentation/bloc/account_security_cubits.dart';
 import '../../features/legal/data/datasources/legal_data_sources.dart';
+import '../../features/services/data/datasources/hospital_data_source.dart';
+import '../../features/services/domain/repositories/hospital_repository.dart';
+import '../../features/services/presentation/bloc/hospital_picker_cubit.dart';
 import '../../features/profile/data/datasources/branch_data_source.dart';
 import '../../features/profile/domain/repositories/branch_repository.dart';
 import '../../features/profile/presentation/bloc/branches_cubit.dart';
@@ -249,6 +252,7 @@ class InjectionContainer {
   late final SaveMarginsUseCase saveMarginsUseCase;
   late final TeamUseCases teamUseCases;
   late final AccountSecurityRepository accountSecurityRepository;
+  late final HospitalRepository hospitalRepository;
   late final BranchRepository branchRepository;
   late final ServiceInterestRepository serviceInterestRepository;
   late final NotificationPreferencesRepository notificationPreferencesRepository;
@@ -416,6 +420,7 @@ class InjectionContainer {
     );
     serviceInterestRepository = ServiceInterestRepositoryImpl(graphQLService: graphQLService);
     branchRepository = DebugFallbackBranchRepository(BranchRemoteDataSource(graphQLService: graphQLService));
+    hospitalRepository = DebugFallbackHospitalRepository(HospitalRemoteDataSource(graphQLService: graphQLService));
     getLegalDocumentUseCase = GetLegalDocumentUseCase(
       LegalRepositoryImpl(
         remote: DebugFallbackLegalRemoteDataSource(LegalRemoteDataSourceImpl(graphQLService: graphQLService)),
@@ -563,6 +568,10 @@ class InjectionContainer {
 
   /// Builds the cubit of the branches screen; the screen owns it.
   BranchesCubit createBranchesCubit() => BranchesCubit(branches: branchRepository, team: teamUseCases);
+
+  /// Builds the hospital picker's cubit for a medical service; the sheet owns it.
+  HospitalPickerCubit createHospitalPickerCubit(String serviceId) =>
+      HospitalPickerCubit(hospitalRepository, serviceId: serviceId);
 
   /// Builds the cubits of the change-password / change-phone screens; each screen owns its own.
   ChangePasswordCubit createChangePasswordCubit() => ChangePasswordCubit(accountSecurityRepository);

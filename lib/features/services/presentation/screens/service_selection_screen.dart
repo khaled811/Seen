@@ -1,4 +1,6 @@
+import '../../domain/entities/hospital.dart';
 import '../widgets/coming_soon_sheet.dart';
+import '../widgets/hospital_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -341,13 +343,20 @@ class _ServiceTile extends StatelessWidget {
       soonLabel: service.isBookable ? null : l10n.serviceComingSoonBadge,
       // Not bookable yet: the coming-soon sheet with "notify me" (Figma BOOK-09).
       onTap: service.isBookable
-          ? () => context.read<ServiceBookingBloc>().add(
-                ServiceSelected(
-                  service: service,
-                  travelerFields:
-                      ServiceTravelerFields.forCategory(service.category, l10n),
-                ),
-              )
+          ? () async {
+              final bloc = context.read<ServiceBookingBloc>();
+              HospitalChoice? hospital;
+              if (service.category == ServiceCategory.medicalJordan) {
+                // Medical treatment: pick the hospital first (Figma BOOK-10).
+                hospital = await showHospitalPickerSheet(context, serviceId: service.id);
+                if (hospital == null) return;
+              }
+              bloc.add(ServiceSelected(
+                service: service,
+                travelerFields: ServiceTravelerFields.forCategory(service.category, l10n),
+                hospital: hospital,
+              ));
+            }
           : () => showServiceComingSoonSheet(
                 context,
                 serviceKey: service.id,

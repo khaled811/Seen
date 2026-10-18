@@ -16,7 +16,8 @@ abstract final class ServiceTravelerFields {
   ) =>
       switch (category) {
         ServiceCategory.egyptNationalSecurity ||
-        ServiceCategory.egyptMilitaryIntelligence =>
+        ServiceCategory.egyptMilitaryIntelligence ||
+        ServiceCategory.medicalJordan =>
           _egyptApprovalFields(l10n),
         ServiceCategory.egyptAirlineCircular ||
         ServiceCategory.jordanApprovals ||

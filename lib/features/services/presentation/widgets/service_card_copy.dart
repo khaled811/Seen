@@ -39,6 +39,12 @@ abstract final class ServiceCardCopy {
             processing: l10n.serviceProcessingEgyptMilitaryIntelligence,
             documents: l10n.serviceDocumentsEgyptMilitaryIntelligence,
           ),
+        ServiceCategory.medicalJordan => ServiceCardFacts(
+            icon: SeenIcons.bed,
+            iconAsset: SeenVectors.iconHotel,
+            processing: l10n.serviceFactUnavailable,
+            documents: l10n.serviceFactUnavailable,
+          ),
         ServiceCategory.egyptAirlineCircular ||
         ServiceCategory.jordanApprovals ||
         ServiceCategory.unknown =>

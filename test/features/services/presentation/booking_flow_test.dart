@@ -11,6 +11,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/presentation/widgets/actions.dart';
+import 'package:seen_booking/features/services/domain/entities/hospital.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/services/domain/entities/service_booking_request.dart';
 import 'package:seen_booking/features/services/domain/entities/service_booking_result.dart';
@@ -332,6 +333,35 @@ void main() {
       bloc.add(TravelerFieldChanged(travelerIndex: 0, fieldKey: 'passportIssueDate', value: DateTime.now().add(const Duration(days: 90))));
       await tester.pumpAndSettle();
       expect(find.textContaining('تاريخ الإصدار في المستقبل'), findsOneWidget);
+    });
+  });
+
+  group('BOOK-10 hospital carried by the booking', () {
+    test('the chosen hospital is sent with the request', () async {
+      final made = _makeBloc();
+      addTearDown(() => made.bloc.close().ignore());
+      made.bloc.add(ServiceSelected(
+        service: _nationalSecurity,
+        travelerFields: ServiceTravelerFields.forCategory(_nationalSecurity.category, lookupAppLocalizations(const Locale('ar'))),
+        hospital: const HospitalChoice(id: 'h1', name: 'مستشفى الأردن'),
+      ));
+      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress);
+      _fillTraveler(made.bloc, 0);
+      made.bloc.add(const BookingSubmitted());
+      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress && s.submissionResult != null);
+      expect(made.repo.submitted.single.hospitalId, 'h1');
+      expect((made.bloc.state as ServiceBookingInProgress).hospital?.name, 'مستشفى الأردن');
+    });
+
+    test('a service without a hospital sends none', () async {
+      final made = _makeBloc();
+      addTearDown(() => made.bloc.close().ignore());
+      _select(made.bloc, _nationalSecurity);
+      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress);
+      _fillTraveler(made.bloc, 0);
+      made.bloc.add(const BookingSubmitted());
+      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress && s.submissionResult != null);
+      expect(made.repo.submitted.single.hospitalId, isNull);
     });
   });
 }

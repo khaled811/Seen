@@ -13,6 +13,8 @@ class BookingDraft extends Equatable {
     required this.category,
     required this.travelers,
     required this.updatedAt,
+    this.hospitalId,
+    this.hospitalName,
   });
 
   /// Drafts older than this (since their last edit) are deleted automatically.
@@ -27,6 +29,10 @@ class BookingDraft extends Equatable {
   final ServiceCategory category;
   final List<TravelerInfo> travelers;
   final DateTime updatedAt;
+
+  /// The hospital chosen for a medical service (Figma BOOK-10), kept so a resumed draft is complete.
+  final String? hospitalId;
+  final String? hospitalName;
 
   DateTime get expiresAt => updatedAt.add(lifetime);
 
@@ -45,10 +51,12 @@ class BookingDraft extends Equatable {
         category: category,
         travelers: travelers ?? this.travelers,
         updatedAt: updatedAt ?? this.updatedAt,
+        hospitalId: hospitalId,
+        hospitalName: hospitalName,
       );
 
   @override
-  List<Object?> get props => [id, serviceId, serviceName, category, travelers, updatedAt];
+  List<Object?> get props => [id, serviceId, serviceName, category, travelers, updatedAt, hospitalId, hospitalName];
 }
 
 /// The result of saving a draft.

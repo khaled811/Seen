@@ -128,6 +128,8 @@ class TravelerEntryScreen extends StatelessWidget {
           category: state.service.category,
           travelers: state.travelers,
           updatedAt: DateTime.now(),
+          hospitalId: state.hospital?.id,
+          hospitalName: state.hospital?.name,
         ));
         final ok = saved.fold((_) => false, (r) => r == SaveDraftResult.saved);
         messenger

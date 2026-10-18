@@ -1,3 +1,4 @@
+import '../../domain/entities/hospital.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -73,6 +74,7 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
         travelers: [TravelerInfo(id: _newTravelerId(), fieldValues: const {})],
         activeTravelerIndex: 0,
         walletBalanceLoading: true,
+        hospital: event.hospital,
       ),
     );
 
@@ -99,6 +101,9 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
         activeTravelerIndex: 0,
         walletBalanceLoading: true,
         draftId: event.draft.id,
+        hospital: event.draft.hospitalId == null
+            ? null
+            : HospitalChoice(id: event.draft.hospitalId!, name: event.draft.hospitalName ?? ''),
       ),
     );
     final balanceResult = await _getWalletBalanceUseCase();
@@ -255,6 +260,7 @@ class ServiceBookingBloc extends Bloc<ServiceBookingEvent, ServiceBookingState> 
     final request = ServiceBookingRequest(
       serviceId: current.service.id,
       travelers: current.travelers,
+      hospitalId: current.hospital?.id,
     );
     final result = await _submitBookingUseCase(request);
     // Sent: the draft it came from is no longer needed.

@@ -174,7 +174,9 @@ class _ReviewBodyState extends State<_ReviewBody> {
               SeenReviewServiceCard(
                 iconAsset: facts.iconAsset,
                 title: state.service.name,
-                subtitle: '${s.travelerCount(state.travelers.length)} · ${facts.processing}',
+                subtitle: state.hospital != null
+                    ? '${s.travelerCount(state.travelers.length)} · ${state.hospital!.name}'
+                    : '${s.travelerCount(state.travelers.length)} · ${facts.processing}',
                 editLabel: l10n.reviewEditAction,
                 // Back to the catalog: this review and the traveler form both pop.
                 onEdit: () {

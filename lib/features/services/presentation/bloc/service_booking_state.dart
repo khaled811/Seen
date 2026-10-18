@@ -1,3 +1,4 @@
+import '../../domain/entities/hospital.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
@@ -64,9 +65,13 @@ final class ServiceBookingInProgress extends ServiceBookingState {
     this.submissionError,
     this.submissionResult,
     this.draftId,
+    this.hospital,
   });
 
   final ServiceDefinition service;
+
+  /// The hospital chosen for a medical service; null for the others.
+  final HospitalChoice? hospital;
   final List<DynamicFormField> travelerFields;
   final List<TravelerInfo> travelers;
   final int activeTravelerIndex;
@@ -136,6 +141,7 @@ final class ServiceBookingInProgress extends ServiceBookingState {
         submissionError: clearSubmissionError ? null : (submissionError ?? this.submissionError),
         submissionResult: submissionResult ?? this.submissionResult,
         draftId: draftId ?? this.draftId,
+        hospital: hospital,
       );
 
   @override

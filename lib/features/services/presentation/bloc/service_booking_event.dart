@@ -1,3 +1,4 @@
+import '../../domain/entities/hospital.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
@@ -20,13 +21,16 @@ final class ServiceCatalogRequested extends ServiceBookingEvent {
 /// resolved by the caller (needs `AppLocalizations` for labels — see
 /// `ServiceTravelerFields`), so the Bloc itself never needs l10n.
 final class ServiceSelected extends ServiceBookingEvent {
-  const ServiceSelected({required this.service, required this.travelerFields});
+  const ServiceSelected({required this.service, required this.travelerFields, this.hospital});
 
   final ServiceDefinition service;
   final List<DynamicFormField> travelerFields;
 
+  /// Chosen first for a medical service (Figma BOOK-10).
+  final HospitalChoice? hospital;
+
   @override
-  List<Object?> get props => [service, travelerFields];
+  List<Object?> get props => [service, travelerFields, hospital];
 }
 
 /// Opens the traveler form with the data of a saved draft (Figma REQ-01).

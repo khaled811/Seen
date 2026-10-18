@@ -1266,3 +1266,19 @@ Placeholder contracts; in a debug build, when a call fails, they answer from an 
 - **Invite now picks a real branch.** The invite sheet offers the branches from `branches`; the draft sends `branchId` (and still `branchName`). With no list available it falls back to a typed name as before.
   The server should prefer `branchId` and refuse an unknown one.
 - **Not built:** renaming, merging, or closing a branch, and moving a branch under another (no frames for them); a branch manager's assignment to a branch (the user list's "role" and "branch" remain separate edits).
+
+## 44. Hospital quota and availability (Figma BOOK-10)
+Placeholder contracts; in a debug build, when a call fails, the three hospitals of the Figma frame are shown.
+- **New service category** `medical_jordan` ("Medimap, treatment in Jordan"). Tapping it in the service list opens the hospital picker first, then the traveler form
+  (the same passport fields as the Egypt approvals) and the review. If the server uses another word for this category it must be mapped in `ServiceCategory`.
+- **Query.** `hospitalAvailability(serviceId) { id name capacity remaining }`, never cached (places change by the hour). `capacity` and `remaining` are for **this week**
+  (the design says "places left this week"): say how the week is counted (calendar week, rolling 7 days, or the travel week).
+- **Picker rules (app side).** `remaining == 0` = full: dimmed, cannot be chosen. Under 20% left = amber. The first hospital with places is pre-selected. When all are full the sheet says so
+  and "Continue" stays off (the design has no such state; the message is the app's wording). The bar shows how much of the week's capacity is taken.
+- **Submit.** `submitBooking(serviceId, travelers, hospitalId)`: `hospitalId` is new (optional). **The server must re-check the hospital's places at submit time** and answer a
+  specific error (`HOSPITAL_FULL`) if it filled up while the agent was filling the form; the app does not handle that code yet (it shows the generic failure) and does not hold a place while
+  the form is open. Say if a place should be reserved for a few minutes (then a reservation call is needed).
+- **Drafts** keep the chosen hospital (name and id) so a resumed draft is complete. If the hospital filled up meanwhile, nothing tells the agent until submit.
+- **Per-traveler.** One hospital per request, as designed; capacity is counted per traveler on the server (a request of 3 travelers needs 3 places): `remaining` should be compared with the traveler count,
+  and the app does not stop an agent from adding more travelers than the places left. The design does not show that case.
+- **Medical-specific fields** (diagnosis, referral letter, companion) are not in the design, so the request carries only the passport fields.

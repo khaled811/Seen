@@ -42,8 +42,8 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
   ''');
 
   static final _submitBookingDocument = gql(r'''
-    mutation SubmitBooking($serviceId: ID!, $travelers: [TravelerInput!]!) {
-      submitBooking(serviceId: $serviceId, travelers: $travelers) {
+    mutation SubmitBooking($serviceId: ID!, $travelers: [TravelerInput!]!, $hospitalId: ID) {
+      submitBooking(serviceId: $serviceId, travelers: $travelers, hospitalId: $hospitalId) {
         requestId
         status
         totalPriceAmount
@@ -74,6 +74,7 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
         variables: {
           'serviceId': request.serviceId,
           'travelers': request.travelers.map(_travelerToJson).toList(),
+          'hospitalId': request.hospitalId,
         },
         parserFn: (json) => ServiceBookingResultDto.fromJson(
           json['submitBooking'] as Map<String, dynamic>,

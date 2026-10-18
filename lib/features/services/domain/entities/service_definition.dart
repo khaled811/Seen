@@ -15,6 +15,9 @@ enum ServiceCategory {
   /// Subtask 7.3 — scaffolded, not yet bookable.
   jordanApprovals('jordan_approvals'),
 
+  /// Treatment in Jordan (Figma BOOK-10): a hospital is chosen first, then the medical visa request.
+  medicalJordan('medical_jordan'),
+
   unknown('');
 
   const ServiceCategory(this.value);
