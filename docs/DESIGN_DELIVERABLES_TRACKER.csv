@@ -37,7 +37,7 @@ BOOK-05,BOOK,Sheet,P1,قائمة الاختيار,Select options sheet,Form (09)
 BOOK-06,BOOK,Sheet,P1,إرفاق مستند (كاميرا / معرض / ملفات),Attachment source sheet,"Form (09), Top-up (12), Registration (15)",Permission denied; size/type error; crop; replace; remove,Designed - Implemented (Flutter)
 BOOK-07,BOOK,Component,P1,أنواع الحقول: نص طويل / رقم / هاتف / بريد / قائمة,"Field types: textarea, number, phone, email, select",Dynamic form fields,Counter; keyboard type; inline error; read-only,Designed - Partly implemented (Flutter)
 BOOK-08,BOOK,State,P1,المراجعة: رصيد غير كافٍ,Review: insufficient balance,Review (10),Blocked submit; shortfall amount; top-up shortcut; credit limit,Designed - Implemented (Flutter)
-BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / Home (05) soon tile,Notify me; info only,Designed - Not implemented
+BOOK-09,BOOK,Sheet,P2,خدمة قريبًا,Service coming soon,Catalog (08) / Home (05) soon tile,Notify me; info only,Designed - Implemented (Flutter)
 WAL-01,WAL,Screen,P1,تفاصيل العملية,Transaction detail,Wallet (11) ledger row,Hold vs final deduction vs refund; linked request; reference copy,Designed - Implemented (Flutter)
 WAL-02,WAL,Screen,P1,تفاصيل الشحن المعلّق,Pending top-up detail / status,Wallet (11) pending card,Receipt preview; review status; cancel request,Designed - Implemented (Flutter)
 WAL-03,WAL,State,P1,شحن مرفوض,Rejected top-up with reason,"Wallet (11), top-up detail",Reason; retry with same data,Designed - Implemented (Flutter)

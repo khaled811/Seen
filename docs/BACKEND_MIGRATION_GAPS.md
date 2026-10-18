@@ -1229,3 +1229,14 @@ Both need a session. All names below are placeholders; in a debug build, when th
 - **Behaviour.** A switch moves at once and is saved in the background, one request at a time with the latest state; if the server refuses, the switch goes back with a message.
 - **Device permission.** If the device has notifications off, a banner at the top leads to the permission screen (section 35); the switches still save.
 - Not built: per-channel choice (push, in-app, e-mail), and sound / vibration choices.
+
+## 41. Service coming soon (Figma BOOK-09)
+- **Where it shows.** Tapping a service that is not bookable yet (service list: `availability: coming soon`; Home: the Hotels tile) opens a sheet
+  "<service> is coming soon" with **Notify me at launch** and Close. The title and text use the service's name; the design's wording is for hotels.
+- **Mutation.** `notifyWhenServiceAvailable(serviceKey) { success }`: records that this agency (or user) wants to be told. `serviceKey` is the service id; the Home hotels tile
+  sends `hotels` (it is a fixed tile with no backend service behind it yet). The server should answer success again for a repeat.
+  Placeholder contract; in a debug build, when the call fails, it counts as done.
+- **Telling them.** The launch notice needs an event type of its own in the feed and push (`service_available`, not among the 8 of section 35), and the server must send it to
+  everyone who asked. The app does not know yet which services the agency already asked about after a restart: the button is shown again (the server's repeat answer makes this harmless).
+  A query `myServiceInterests` would let the sheet open as "registered".
+- Not built: a coming-soon service page (the design is only the sheet), and a launch date.

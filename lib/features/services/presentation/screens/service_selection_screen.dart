@@ -1,3 +1,4 @@
+import '../widgets/coming_soon_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -338,6 +339,7 @@ class _ServiceTile extends StatelessWidget {
       labelLines: 2,
       soon: !service.isBookable,
       soonLabel: service.isBookable ? null : l10n.serviceComingSoonBadge,
+      // Not bookable yet: the coming-soon sheet with "notify me" (Figma BOOK-09).
       onTap: service.isBookable
           ? () => context.read<ServiceBookingBloc>().add(
                 ServiceSelected(
@@ -346,7 +348,12 @@ class _ServiceTile extends StatelessWidget {
                       ServiceTravelerFields.forCategory(service.category, l10n),
                 ),
               )
-          : null,
+          : () => showServiceComingSoonSheet(
+                context,
+                serviceKey: service.id,
+                name: service.name,
+                icon: facts.icon,
+              ),
     );
   }
 }

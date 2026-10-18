@@ -276,6 +276,16 @@ class SeenStrings {
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
   String get loadingLabel => _t('جارٍ التحميل', 'Loading');
 
+  // Service coming soon (Figma BOOK-09).
+  String get hotelBookingName => _t('حجز الفنادق', 'Hotel booking');
+  String comingSoonTitle(String name) => _t('$name قريبًا', '$name is coming soon');
+  String comingSoonBody(String name) =>
+      _t('نعمل على إضافة $name لعملائك. فعّل التنبيه لنبلغك عند الإطلاق.', 'We are adding $name for your customers. Turn on the alert and we will tell you at launch.');
+  String get notifyMeAction => _t('نبّهني عند الإطلاق', 'Notify me at launch');
+  String get comingSoonRegistered => _t('تم تسجيل اهتمامك. سنبلغك عند الإطلاق.', 'Your interest is registered. We will tell you at launch.');
+  String get comingSoonFailed => _t('تعذّر تسجيل التنبيه. حاول مرة أخرى.', 'Could not register the alert. Try again.');
+  String get closeAction => close;
+
   // Language confirmation and About (Figma ACC-05 / 06).
   String languageSwitchTitle(bool toEnglish) =>
       _t('التبديل إلى ${toEnglish ? 'English' : 'العربية'}؟', 'Switch to ${toEnglish ? 'English' : 'العربية'}?');

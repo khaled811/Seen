@@ -1,3 +1,4 @@
+import '../../../services/presentation/widgets/coming_soon_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -420,7 +421,14 @@ class _ServicesGrid extends StatelessWidget {
                   iconAsset: tiles[i].icon,
                   soon: tiles[i].soon,
                   soonLabel: tiles[i].soon ? l10n.serviceSoonTag : null,
-                  onTap: () => _openServices(context),
+                  onTap: tiles[i].soon
+                      ? () => showServiceComingSoonSheet(
+                            context,
+                            serviceKey: 'hotels',
+                            name: SeenStrings.of(context).hotelBookingName,
+                            icon: SeenIcons.bed,
+                          )
+                      : () => _openServices(context),
                 ),
               ),
             ],

@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–40).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–41).
 
 ## Not built to the design (39 frames)
 
@@ -41,7 +41,7 @@ the same thing that does not follow the frame.
 | BOOK-06 Attachment source sheet | P1 | **Done** on the device only: the file is not sent (no upload API, section 31). |
 | BOOK-07 Field types | P1 | **Partly.** Select uses the sheet; counter, phone country code and read-only look are not built. |
 | BOOK-08 Review: insufficient balance | P1 | **Done.** Shortfall card, top-up shortcut, blocked submit. |
-| BOOK-09 Service coming soon | P2 | "Notify me" screen. |
+| BOOK-09 Service coming soon | P2 | **Done.** Sheet with "notify me at launch" from the service list and the Home hotels tile (gaps section 41). |
 | BOOK-10 Hospital quota & availability | — | Whole screen (medical service). |
 
 ### Requests (4, no tracker rows)

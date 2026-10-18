@@ -46,6 +46,7 @@ abstract final class SeenIcons {
   static IconData get camera => PhosphorIcons.camera();
   static IconData get image => PhosphorIcons.image();
   static IconData get trash => PhosphorIcons.trash();
+  static IconData get bed => PhosphorIcons.bed();
   static IconData get chat => PhosphorIcons.chatCircle();
   static IconData get plane => PhosphorIcons.airplane();
   static IconData get gear => PhosphorIcons.gear(PhosphorIconsStyle.fill);
