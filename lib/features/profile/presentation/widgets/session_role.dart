@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/preferences/balance_privacy_cubit.dart';
+import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 
@@ -16,10 +18,15 @@ AgentPosition? currentAgentPosition(BuildContext context) {
   }
 }
 
-/// Branch managers and staff only look; the owner (and a session whose position the
-/// server did not name) may change things. The server stays the authority and still
-/// answers 403 for anyone who may not.
-bool canManageAgency(BuildContext context) {
-  final p = currentAgentPosition(context);
-  return p == null || p == AgentPosition.owner || p == AgentPosition.unknown;
+/// What the signed-in role may do (everything when there is no session in scope).
+/// The server stays the authority and still answers 403 for anyone who may not.
+RolePermissions permissionsOf(BuildContext context) => RolePermissions(currentAgentPosition(context));
+
+/// The "hide the balance by default" setting; off when the app-wide cubit is not in scope.
+bool hideBalanceByDefault(BuildContext context) {
+  try {
+    return context.watch<BalancePrivacyCubit>().state;
+  } on ProviderNotFoundException {
+    return false;
+  }
 }

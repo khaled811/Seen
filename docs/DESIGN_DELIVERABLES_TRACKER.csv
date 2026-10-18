@@ -65,7 +65,7 @@ SUP-05,SUP,Sheet,P1,تواصل مع الدعم قبل تسجيل الدخول,Co
 ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Agency details and commercial register,Account (14) row,View vs edit; verification status; documents; expiry,Designed - Implemented (Flutter)
 ACC-02,ACC,Screen,P1,هامش الربح,Profit margin,Account (14) row,Per service; read-only vs editable; history,Designed - Implemented (Flutter)
 ACC-03,ACC,Screen,P1,المستخدمون والصلاحيات,Users and permissions,Account (14) row,Roles owner/branch manager/staff; invite; edit role; deactivate; empty,Designed - Implemented (Flutter)
-ACC-04,ACC,Screen,P1,الإعدادات,Settings,Account (14) row,Language; appearance; notification toggles,Designed - Not implemented
+ACC-04,ACC,Screen,P1,الإعدادات,Settings,Account (14) row,Language; appearance; notification toggles,Designed - Partly implemented (Flutter)
 ACC-05,ACC,Dialog,P2,تأكيد تغيير اللغة,Language switch confirmation,Settings,RTL/LTR flip; restart,Designed - Not implemented
 ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licences; links,Designed - Not implemented
 NOTIF-01,NOTIF,State,P1,الإشعارات فارغة,Notifications empty,Notifications (17),No notifications; all read filter,Designed - Not implemented
@@ -80,7 +80,7 @@ SYS-05,SYS,Screen,P1,تحديث إجباري,Force update,Version check,Store li
 SYS-06,SYS,Component,P1,هياكل التحميل,Loading skeletons,"Balance, request cards, ledger, agents, notifications, catalog",Pulse; reduced motion,Designed - Not implemented
 SYS-07,SYS,Sheet,P1,أذونات الكاميرا والصور,Camera / photos permission,Attachment sheet,Denied; permanently denied > settings,Designed - Not implemented
 SYS-08,SYS,Component,P1,المكوّنات الناقصة,"Missing components: sheet, dialog, toast, banner, list row, checkbox, switch, avatar, badge, progress",Component library,"All states (default, pressed, disabled, error)",Designed - Not implemented
-ROLE-01,ROLE,Screen,P1,واجهة الموظف / مدير الفرع,"Role-based views (staff, branch manager)",Session role and permission codes,Hidden tabs; disabled actions; no-permission screen; per-role home,Designed - Not implemented
+ROLE-01,ROLE,Screen,P1,واجهة الموظف / مدير الفرع,"Role-based views (staff, branch manager)",Session role and permission codes,Hidden tabs; disabled actions; no-permission screen; per-role home,Designed - Implemented (Flutter)
 ROLE-02,ROLE,State,P2,نسخة إنجليزية LTR,English / LTR versions of key frames,Language = English,Mirrored icons and progress; numerals; long strings,Pending Design
 ROLE-03,ROLE,State,P2,الوضع الداكن,Dark theme,Settings > Appearance,Status chip colours; gradients; shadows,Pending Design
 REQ-14,REQ,Flow,TBD,كشف جماعي: بناء وملخص,"Group manifest (build, summary)",Requests (06) / Booking,Import Excel/CSV; per-traveler status; rejected traveler does not stop the rest,Designed - Not implemented

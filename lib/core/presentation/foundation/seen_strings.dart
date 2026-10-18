@@ -276,8 +276,8 @@ class SeenStrings {
   // System states (Figma SYS-03 / 04 / 05).
   String get forbiddenTitle => _t('ليس لديك صلاحية', 'You do not have permission');
   String get forbiddenWallet => _t(
-      'صلاحية المحفظة متاحة لمالك الحساب ومديري الفروع. اطلب الصلاحية من مالك الحساب.',
-      'The wallet is available to the account owner and branch managers. Ask the account owner for access.');
+      'المحفظة متاحة لمالك الحساب فقط. اطلب الصلاحية من مالك الحساب.',
+      'The wallet is for the account owner only. Ask the account owner for access.');
   String get requestAccess => _t('طلب الصلاحية', 'Request access');
   String get accessRequestSent => _t('أرسلنا طلبك لمالك الحساب.', 'We sent your request to the account owner.');
   String get accessRequestFailed => _t('تعذّر إرسال الطلب. حاول مرة أخرى.', 'Could not send the request. Try again.');

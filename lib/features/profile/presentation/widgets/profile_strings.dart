@@ -153,6 +153,6 @@ extension ProfileStrings on SeenStrings {
   String get cancelInviteAction => _t('إلغاء الدعوة', 'Cancel invite');
   String disableTitle(String name) => _t('تعطيل $name؟', 'Disable $name?');
   String get disableBody => _t('لن يتمكن من الدخول حتى تعيد تفعيله.', 'They cannot sign in until you reactivate them.');
-  String get teamForbidden => _t('إدارة المستخدمين لمالك الحساب فقط. اطلب الصلاحية من مالك الحساب.',
-      'Only the account owner manages users. Ask the account owner for access.');
+  String get teamForbidden => _t('إدارة المستخدمين لمالك الحساب ومديري الفروع. اطلب الصلاحية من مالك الحساب.',
+      'Users are managed by the account owner and branch managers. Ask the account owner for access.');
 }

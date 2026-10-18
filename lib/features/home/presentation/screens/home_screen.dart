@@ -38,7 +38,10 @@ import '../../../wallet/presentation/bloc/wallet_event.dart';
 import '../../../wallet/presentation/bloc/wallet_state.dart';
 import '../../../wallet/presentation/screens/top_up_request_screen.dart';
 import '../../../wallet/presentation/widgets/wallet_balance_widgets.dart';
+import '../../../auth/domain/entities/role_permissions.dart';
+import '../../../profile/presentation/widgets/session_role.dart';
 import 'account_screen.dart';
+import 'role_home_screen.dart';
 
 /// Home dashboard (Figma 05): header, greeting, balance card, primary actions,
 /// promo banner, services grid and the latest requests. Owns fresh
@@ -56,6 +59,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Branch managers and staff get their own home (Figma ROLE-01); it needs no wallet.
+    final permissions = RolePermissions.fromSession(session);
+    if (permissions.isRestricted) {
+      return RoleHomeScreen(position: session.agentPosition!);
+    }
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -346,6 +354,7 @@ class _BalanceSection extends StatelessWidget {
           ),
         WalletLoaded(:final balance) when balance.isOverLimit => SeenOverLimitCard(balance: balance),
         WalletLoaded(:final balance) => SeenBalanceCard(
+            initiallyHidden: hideBalanceByDefault(context),
             hint: balance.isZero ? l10n.walletBalanceZeroHint : null,
             hiddenHint: l10n.walletBalanceHiddenHint,
             available: balance.availableCents / 100,

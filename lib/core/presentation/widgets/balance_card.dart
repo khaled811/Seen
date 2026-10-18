@@ -14,6 +14,7 @@ import '../foundation/seen_vectors.dart';
 class SeenBalanceCard extends StatefulWidget {
   const SeenBalanceCard({
     super.key,
+    this.initiallyHidden = false,
     required this.available,
     required this.hold,
     required this.caption,
@@ -50,13 +51,23 @@ class SeenBalanceCard extends StatefulWidget {
   final String hideSemanticLabel;
   final VoidCallback? onTap;
 
+  /// Starts masked (the "hide the balance by default" setting).
+  final bool initiallyHidden;
+
   @override
   State<SeenBalanceCard> createState() => _SeenBalanceCardState();
 }
 
 class _SeenBalanceCardState extends State<SeenBalanceCard> {
-  // Display preference only (privacy at a glance); not persisted.
-  bool _hidden = false;
+  // The eye toggles this for now; the starting value is the saved preference.
+  late bool _hidden = widget.initiallyHidden;
+
+  @override
+  void didUpdateWidget(covariant SeenBalanceCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The preference finished loading after the card appeared.
+    if (oldWidget.initiallyHidden != widget.initiallyHidden) _hidden = widget.initiallyHidden;
+  }
 
   static const _mask = '••••••';
 

@@ -21,6 +21,7 @@ import '../../../../core/theme/seen_typography.dart';
 import '../../domain/entities/service_margin.dart';
 import '../bloc/profile_cubits.dart';
 import '../widgets/profile_strings.dart';
+import '../../../auth/domain/entities/role_permissions.dart';
 import '../widgets/session_role.dart';
 
 /// Server error code when a margin value is refused.
@@ -39,7 +40,7 @@ class ProfitMarginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = SeenStrings.of(context);
     return BlocProvider(
-      create: (_) => (createCubit ?? () => InjectionContainer.instance.createMarginsCubit(canEdit: canManageAgency(context)))()..load(),
+      create: (_) => (createCubit ?? () => InjectionContainer.instance.createMarginsCubit(canEdit: permissionsOf(context).can(Capability.margins)))()..load(),
       child: BlocConsumer<MarginsCubit, MarginsState>(
         listenWhen: (p, c) => p.save != c.save && (c.save == MarginSaveStatus.saved || c.save == MarginSaveStatus.failed),
         listener: (context, state) {

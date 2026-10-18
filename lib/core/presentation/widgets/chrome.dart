@@ -161,10 +161,19 @@ class SeenTopBar extends StatelessWidget implements PreferredSizeWidget {
 /// Five-tab bottom navigation: Home, Requests, Wallet, Sub-agents, Account.
 /// Flows (booking, detail) hide it and show a [SeenActionBar] instead.
 class SeenBottomNav extends StatelessWidget {
-  const SeenBottomNav({super.key, required this.selectedIndex, required this.onSelected});
+  const SeenBottomNav({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelected,
+    this.dimmed = const {},
+  });
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+
+  /// Tabs the signed-in role cannot use: drawn faded (Figma ROLE-01). They still open,
+  /// onto the no-permission view, so the reason is one tap away.
+  final Set<int> dimmed;
 
   static const _icons = [
     SeenVectors.iconHome,
@@ -201,10 +210,13 @@ class SeenBottomNav extends StatelessWidget {
           onDestinationSelected: onSelected,
           destinations: [
             for (var i = 0; i < 5; i++)
-              NavigationDestination(
-                icon: SeenSvgIcon(_icons[i], color: SeenBrand.tabIconInactive),
-                selectedIcon: SeenSvgIcon(_icons[i], color: c.primary),
-                label: labels[i],
+              Opacity(
+                opacity: dimmed.contains(i) ? .25 : 1,
+                child: NavigationDestination(
+                  icon: SeenSvgIcon(_icons[i], color: SeenBrand.tabIconInactive),
+                  selectedIcon: SeenSvgIcon(_icons[i], color: c.primary),
+                  label: labels[i],
+                ),
               ),
           ],
         ),

@@ -1096,3 +1096,31 @@ memory so the screens can be used; nothing is saved.
   - The role descriptions on the screen are the design's wording, not read from the server: they must match what the
     server really allows.
   - Disabling a user should also end their sessions on the server.
+
+## 34. Settings and role-based views (Figma ACC-04 / ROLE-01)
+- **Who can do what (ROLE-01).** One table in the app (`RolePermissions`), the same one the "what each role can do"
+  list on the staff home is drawn from:
+  - **Owner:** everything.
+  - **Branch manager:** create requests, the whole branch's requests, users and branches. No wallet, no sub-agents, no profit margin.
+  - **Staff:** create requests and follow their own. Nothing else.
+  - A session whose position the server did not name (or is not an agent) is treated as the owner in the app; the
+    server still answers 403. **The server must enforce exactly these rules**; the app only decides what to show.
+- **Contradiction in the designs, resolved.** SYS-03 said the wallet is for "the owner and branch managers"; ROLE-01 and
+  ACC-03 both say a branch manager has no main wallet. The app follows ROLE-01 / ACC-03 (owner only), and the SYS-03
+  message now says "the account owner only". Please confirm which is right.
+- **What a restricted role sees.** Wallet and Sub-agents tabs are faded (as drawn) and open onto the no-permission
+  view with "request access" (areas `wallet`, `sub_agents`, same `requestAccess` mutation as section 32). The home is
+  replaced by the role home. The Account menu hides Profit margin (owner only) and Users (owner and manager).
+  The server must scope the requests list by role (staff: their own; manager: their branch) because the app does not filter.
+- **Missing from the session.** The role home cannot show the person's name or branch (the design shows "Huda Salem · Staff"
+  and a branch chip): the session carries only `userId`, `positionRaw` and `branchId`. Needs `fullName` and `branchName` on the login result.
+- **Settings (ACC-04).**
+  - Language and appearance work and are saved on the device. "Hide the balance by default" works (saved on the device,
+    applied when the balance card appears).
+  - **Fingerprint sign-in is shown off and "not available yet".** It needs a device-authentication plugin (`local_auth`) the app
+    does not include. That is a dependency decision: say if you want it added; the secure-storage plumbing is ready.
+  - Notifications, Branches, Change password, Change phone and About show "coming soon": their screens (NOTIF-04, ACC-07,
+    AUTH-15, AUTH-16, ACC-06) are not built.
+  - Branches is shown only to roles that can manage users.
+  - The preferences live on the device only. If they should follow the user across devices, the server needs a preferences object.
+- **Shell with the spiritual hub.** The dual-mode shell (`ModeShell`, off by default) still shows every tab; role gating is in `AgentShell`.

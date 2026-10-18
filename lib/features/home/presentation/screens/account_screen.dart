@@ -3,22 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/constants/enums.dart';
-import '../../../../core/localization/locale_cubit.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
-import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
-import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
-import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
-import '../../../../core/theme/theme_mode_cubit.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -26,7 +20,10 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/widgets/logout_confirm_dialog.dart';
 import '../../../profile/presentation/screens/agency_details_screen.dart';
 import '../../../profile/presentation/screens/profit_margin_screen.dart';
+import '../../../auth/domain/entities/role_permissions.dart';
+import '../../../profile/presentation/screens/settings_screen.dart';
 import '../../../profile/presentation/screens/team_screen.dart';
+import '../../../profile/presentation/widgets/session_role.dart';
 import '../../../support/presentation/screens/notifications_screen.dart';
 import '../../../support/presentation/screens/help_center_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
@@ -50,35 +47,6 @@ class AccountScreen extends StatelessWidget {
   void _push(BuildContext context, Widget page) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
 
-  void _openSettings(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final s = SeenStrings.of(context);
-    final localeCubit = context.read<LocaleCubit>();
-    final themeCubit = context.read<ThemeModeCubit>();
-    showSeenSheet<void>(
-      context: context,
-      title: l10n.accountItemSettings,
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SeenButton.secondary(
-            label: '${l10n.accountLanguageTitle} · ${s.languageLabel}',
-            icon: SeenIcons.globe,
-            expand: true,
-            onPressed: localeCubit.toggleLocale,
-          ),
-          const SizedBox(height: SeenSpace.s2),
-          SeenButton.secondary(
-            label: l10n.accountThemeTitle,
-            icon: PhosphorIconsRegular.circleHalf,
-            expand: true,
-            onPressed: themeCubit.toggleThemeMode,
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _confirmSignOut(BuildContext context) async {
     final authBloc = context.read<AuthBloc>();
     final navigator = Navigator.of(context);
@@ -97,6 +65,7 @@ class AccountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final t = SeenType.of(context);
+    final permissions = permissionsOf(context);
     final authState = context.read<AuthBloc>().state;
     final role = authState is AuthAuthenticated
         ? switch (authState.session.agentPosition) {
@@ -133,16 +102,18 @@ class AccountScreen extends StatelessWidget {
                   title: l10n.accountAgencyDetails,
                   onTap: () => Navigator.of(context).push(AgencyDetailsScreen.route()),
                 ),
-                _MenuItem(
-                  asset: SeenVectors.accountCash,
-                  title: l10n.accountItemMargin,
-                  onTap: () => Navigator.of(context).push(ProfitMarginScreen.route()),
-                ),
-                _MenuItem(
-                  asset: SeenVectors.accountAgents,
-                  title: l10n.accountItemUsers,
-                  onTap: () => Navigator.of(context).push(TeamScreen.route()),
-                ),
+                if (permissions.can(Capability.margins))
+                  _MenuItem(
+                    asset: SeenVectors.accountCash,
+                    title: l10n.accountItemMargin,
+                    onTap: () => Navigator.of(context).push(ProfitMarginScreen.route()),
+                  ),
+                if (permissions.can(Capability.team))
+                  _MenuItem(
+                    asset: SeenVectors.accountAgents,
+                    title: l10n.accountItemUsers,
+                    onTap: () => Navigator.of(context).push(TeamScreen.route()),
+                  ),
               ]),
               _SectionLabel(l10n.accountSectionApp),
               _MenuCard(items: [
@@ -154,7 +125,7 @@ class AccountScreen extends StatelessWidget {
                 _MenuItem(
                   asset: SeenVectors.accountSettings,
                   title: l10n.accountItemSettings,
-                  onTap: () => _openSettings(context),
+                  onTap: () => Navigator.of(context).push(SettingsScreen.route()),
                 ),
                 _MenuItem(
                   asset: SeenVectors.accountDocument,

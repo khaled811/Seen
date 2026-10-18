@@ -15,13 +15,13 @@ import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/selection.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/status.dart';
-import '../../../../core/presentation/widgets/system_state.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/latin_digits.dart';
-import '../../../system_status/presentation/bloc/access_request_cubit.dart';
+import '../../../auth/domain/entities/role_permissions.dart';
+import '../../../system_status/presentation/widgets/access_denied_view.dart';
 import '../../domain/entities/team_member.dart';
 import '../bloc/profile_cubits.dart';
 import '../widgets/profile_strings.dart';
@@ -39,7 +39,7 @@ class TeamScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = SeenStrings.of(context);
-    final allowed = canManage ?? canManageAgency(context);
+    final allowed = canManage ?? permissionsOf(context).can(Capability.team);
     return Scaffold(
       backgroundColor: SeenColors.of(context).card,
       body: SeenScreenBackground(
@@ -53,51 +53,18 @@ class TeamScreen extends StatelessWidget {
               : Column(
                   children: [
                     SeenScreenHeader(title: s.teamTitle),
-                    const Expanded(child: _Forbidden()),
+                    Expanded(
+                      child: AccessDeniedView(
+                        area: 'team',
+                        message: s.teamForbidden,
+                        onBack: () {
+                          Navigator.of(context).maybePop();
+                          ShellTabRequest.show(0);
+                        },
+                      ),
+                    ),
                   ],
                 ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Branch managers and staff do not manage users (Figma SYS-03 pattern).
-class _Forbidden extends StatelessWidget {
-  const _Forbidden();
-
-  @override
-  Widget build(BuildContext context) {
-    final s = SeenStrings.of(context);
-    return BlocProvider(
-      create: (_) => InjectionContainer.instance.createAccessRequestCubit('team'),
-      child: BlocConsumer<AccessRequestCubit, AccessRequestState>(
-        listenWhen: (p, c) => p.status != c.status,
-        listener: (context, state) {
-          final message = switch (state.status) {
-            AccessRequestStatus.sent => s.accessRequestSent,
-            AccessRequestStatus.failed => s.accessRequestFailed,
-            _ => null,
-          };
-          if (message != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(message)));
-          }
-        },
-        builder: (context, state) => SeenForbiddenView(
-          icon: SeenIcons.gear,
-          title: s.forbiddenTitle,
-          message: s.teamForbidden,
-          requestLabel: s.requestAccess,
-          requesting: state.status == AccessRequestStatus.sending,
-          requested: state.status == AccessRequestStatus.sent,
-          onRequest: () => context.read<AccessRequestCubit>().send(),
-          backLabel: s.backToHome,
-          onBack: () {
-            Navigator.of(context).maybePop();
-            ShellTabRequest.show(0);
-          },
         ),
       ),
     );

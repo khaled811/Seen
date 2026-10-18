@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/config/feature_flags.dart';
 import 'core/di/injection_container.dart';
+import 'core/preferences/balance_privacy_cubit.dart';
 import 'core/presentation/connectivity/connectivity_shell.dart';
 import 'core/localization/locale_cubit.dart';
 import 'core/presentation/foundation/seen_icons.dart';
@@ -47,6 +48,7 @@ class App extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
         BlocProvider(create: (_) => ThemeModeCubit()),
+        BlocProvider(create: (_) => BalancePrivacyCubit()),
         BlocProvider(create: (_) => InjectionContainer.instance.createConnectivityCubit()),
         // Asks the server once at start (fail-open); the gate shows maintenance / update.
         BlocProvider(create: (_) => InjectionContainer.instance.createAppStatusCubit()..check()),

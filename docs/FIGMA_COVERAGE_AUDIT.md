@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–33).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–34).
 
 ## Not built to the design (39 frames)
 
@@ -54,7 +54,7 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 | ACC-01 Agency details & commercial register | P1 | **Done** except edit and renew, which point to support (no contract). See gaps section 33. |
 | ACC-02 Profit margin | P1 | **Done.** Per-service margins, read-only rows, change log (section 33). |
 | ACC-03 Users and permissions | P1 | **Done.** Team list, roles, invite, change role, disable; owner only (section 33). |
-| ACC-04 Settings | P1 | Language and theme exist as a sheet; missing biometric login, hide balance by default, notification toggles, change phone. Partly. |
+| ACC-04 Settings | P1 | **Mostly done.** Language, appearance, hide balance by default work; fingerprint is off (needs a plugin); notifications, branches, password, phone, about say "coming soon". See gaps section 34. |
 | ACC-05 Language switch confirmation | P2 | The RTL → LTR confirmation dialog. |
 | ACC-06 About / legal | P2 | Version, licences, rate the app, legal links. |
 | ACC-07 Branch management & hierarchy | — | Whole screen (no tracker row). |
@@ -79,8 +79,7 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 | SYS-09 Passport expiry rule (blocking) | — | The blocking state on the passport step (no tracker row; the validator exists). Partly. |
 
 ### Roles (1)
-ROLE-01 Role-based views (staff, branch manager): hidden tabs, disabled actions, per-role home. Whole. It
-depends on the session carrying a role the app can use (today it has `positionRaw`).
+ROLE-01 Role-based views (staff, branch manager): **Done** for the agent shell: faded tabs, role home, hidden menu rows, one permissions table. The name and branch need the session to carry them (gaps section 34).
 
 ## Tracker
 `docs/DESIGN_DELIVERABLES_TRACKER.csv` said "Pending Design" for 32 of these; they are designed, just not
