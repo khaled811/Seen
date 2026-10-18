@@ -21,7 +21,9 @@ import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/theme/theme_mode_cubit.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../home/presentation/widgets/role_strings.dart';
+import '../widgets/language_confirm_dialog.dart';
 import '../widgets/session_role.dart';
+import 'about_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, this.versionLoader = _loadVersion, this.permissions});
@@ -35,6 +37,15 @@ class SettingsScreen extends StatelessWidget {
   static Future<String> _loadVersion() async => (await PackageInfo.fromPlatform()).version;
 
   static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const SettingsScreen());
+
+  /// Asks first (Figma ACC-05): the direction of the whole interface flips.
+  Future<void> _switchLanguage(BuildContext context, String current) async {
+    final cubit = context.read<LocaleCubit>();
+    final confirmed = await showLanguageConfirmDialog(context, toEnglish: current != 'en');
+    if (confirmed) {
+      await cubit.toggleLocale();
+    }
+  }
 
   void _soon(BuildContext context) {
     ScaffoldMessenger.of(context)
@@ -71,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
                         icon: SeenIcons.globe,
                         title: s.languageRow,
                         value: s.languageName(lang),
-                        onTap: context.read<LocaleCubit>().toggleLocale,
+                        onTap: () => _switchLanguage(context, lang),
                       ),
                       _Row(
                         icon: SeenIcons.eye,
@@ -120,7 +131,7 @@ class SettingsScreen extends StatelessWidget {
                         title: s.aboutRow,
                         subtitle: snap.hasData ? s.versionLine(snap.data!) : null,
                         chevron: true,
-                        onTap: () => _soon(context),
+                        onTap: () => Navigator.of(context).push(AboutScreen.route()),
                         last: true,
                         flat: true,
                       ),

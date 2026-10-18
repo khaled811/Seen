@@ -66,8 +66,8 @@ ACC-01,ACC,Screen,P1,بيانات الوكالة والسجل التجاري,Age
 ACC-02,ACC,Screen,P1,هامش الربح,Profit margin,Account (14) row,Per service; read-only vs editable; history,Designed - Implemented (Flutter)
 ACC-03,ACC,Screen,P1,المستخدمون والصلاحيات,Users and permissions,Account (14) row,Roles owner/branch manager/staff; invite; edit role; deactivate; empty,Designed - Implemented (Flutter)
 ACC-04,ACC,Screen,P1,الإعدادات,Settings,Account (14) row,Language; appearance; notification toggles,Designed - Partly implemented (Flutter)
-ACC-05,ACC,Dialog,P2,تأكيد تغيير اللغة,Language switch confirmation,Settings,RTL/LTR flip; restart,Designed - Not implemented
-ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licences; links,Designed - Not implemented
+ACC-05,ACC,Dialog,P2,تأكيد تغيير اللغة,Language switch confirmation,Settings,RTL/LTR flip; restart,Designed - Implemented (Flutter)
+ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licences; links,Designed - Implemented (Flutter)
 NOTIF-01,NOTIF,State,P1,الإشعارات فارغة,Notifications empty,Notifications (17),No notifications; all read filter,Designed - Implemented (Flutter)
 NOTIF-02,NOTIF,Component,P1,تصميم لكل نوع إشعار (8),Notification type set (8 events),Notifications (17),"new request, status update, info required, rejected, SLA breach, top-up, new agent, ticket update; icon tone; deep link",Designed - Implemented (Flutter)
 NOTIF-03,NOTIF,Sheet,P1,طلب إذن الإشعارات,Push permission prompt,First launch / after login,Denied; settings deep link,Designed - Partly implemented (Flutter)

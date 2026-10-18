@@ -15,6 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 import '../../theme/seen_colors.dart';
+import '../../theme/seen_format.dart';
 import '../../utils/latin_digits.dart';
 
 class SeenStrings {
@@ -61,7 +62,7 @@ class SeenStrings {
   String monthYear(DateTime d) {
     const ar = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${(isArabic ? ar : en)[d.month - 1]} ${numeral(d.year)}';
+    return '${(isArabic ? ar : en)[d.month - 1]} ${year(d.year)}';
   }
 
   /// "ساعتين" / "٢٤ ساعة" / "2 h": a short wait.
@@ -275,11 +276,27 @@ class SeenStrings {
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
   String get loadingLabel => _t('جارٍ التحميل', 'Loading');
 
+  // Language confirmation and About (Figma ACC-05 / 06).
+  String languageSwitchTitle(bool toEnglish) =>
+      _t('التبديل إلى ${toEnglish ? 'English' : 'العربية'}؟', 'Switch to ${toEnglish ? 'English' : 'العربية'}?');
+  String languageSwitchBody(bool toEnglish) => toEnglish
+      ? _t('سيتحوّل اتجاه الواجهة إلى اليسار → اليمين.', 'The interface will become left-to-right.')
+      : _t('سيتحوّل اتجاه الواجهة إلى اليمين ← اليسار.', 'The interface will become right-to-left.');
+  String get languageSwitchAction => _t('تبديل', 'Switch');
+  String get cancelAction => _t('إلغاء', 'Cancel');
+  String get appName => _t('سين Business', 'Seen Business');
+  String versionWithBuild(String v, String build) => _t('الإصدار ${SeenFormat.isolate('$v ($build)')}', 'Version $v ($build)');
+  String get openSourceLicences => _t('تراخيص البرمجيات مفتوحة المصدر', 'Open-source licences');
+  String get rateApp => _t('قيّم التطبيق', 'Rate the app');
+  /// A year without a thousands separator ("٢٠٢٦" / "2026").
+  String year(int y) => isArabic ? toArabicIndicDigits('$y') : '$y';
+  String copyrightLine(int year) => _t('© ${this.year(year)} جُباري للسياحة والسفر', '© $year Jubari Travel & Tourism');
+
   // Legal texts (Figma AUTH-09 / 10).
   String get termsTitle => _t('الشروط والأحكام', 'Terms and conditions');
   String get privacyTitle => _t('سياسة الخصوصية', 'Privacy policy');
   String legalUpdated(DateTime d) =>
-      _t('آخر تحديث ${dayMonth(d)} ${numeral(d.year)}', 'Last updated ${dayMonth(d)} ${d.year}');
+      _t('آخر تحديث ${dayMonth(d)} ${year(d.year)}', 'Last updated ${dayMonth(d)} ${d.year}');
   String get legalOfflineCopy => _t('أنت غير متصل. نعرض النسخة المحفوظة.', 'You are offline. Showing the saved copy.');
   String get legalLoadFailed => _t('تعذّر تحميل النص. تحقق من الاتصال وحاول مرة أخرى.', 'Could not load the text. Check your connection and try again.');
 

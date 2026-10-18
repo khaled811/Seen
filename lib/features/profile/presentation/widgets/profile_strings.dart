@@ -27,7 +27,7 @@ extension ProfileStrings on SeenStrings {
   String verificationLine(AgencyVerification v, DateTime? at) => switch (v) {
         AgencyVerification.verified => at == null
             ? _t('تم توثيق الوكالة', 'The agency is verified')
-            : _t('تم توثيق الوكالة · ${dayMonth(at)} ${numeral(at.year)}',
+            : _t('تم توثيق الوكالة · ${dayMonth(at)} ${year(at.year)}',
                 'The agency was verified · ${dayMonth(at)} ${at.year}'),
         AgencyVerification.pending => _t('مستنداتك قيد المراجعة. سنبلغك عند اكتمال التوثيق.',
             'Your documents are under review. We will tell you when verification is done.'),

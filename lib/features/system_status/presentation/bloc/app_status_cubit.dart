@@ -75,6 +75,10 @@ class AppStatusCubit extends Cubit<AppStatusState> {
   bool _checking = false;
   DateTime? _lastChecked;
   String? _postponedVersion;
+  String? _storeUrl;
+
+  /// The store link of the last status answer (used by "Rate the app"); null until one arrives.
+  String? get storeUrl => _storeUrl;
 
   /// Asks the server. A second call while one is running is ignored.
   Future<void> check() async {
@@ -104,6 +108,7 @@ class AppStatusCubit extends Cubit<AppStatusState> {
         },
         (status) {
           _lastChecked = _now();
+          _storeUrl = status.storeUrl ?? _storeUrl;
           emit(_stateFor(status, current));
         },
       );

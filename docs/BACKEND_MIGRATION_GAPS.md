@@ -1181,3 +1181,14 @@ memory so the screens can be used; nothing is saved.
   Registering still sends only "I agree"; **the server should record which version of each text was accepted** (`updatedAt` or a version id)
   with the consent, otherwise there is no proof of what the agency agreed to. The registration contract has no such field today.
 - Not built: showing the update date as a "what changed" note, and asking signed-in users to re-accept after an update.
+
+## 38. Language confirmation and About (Figma ACC-05 / 06)
+- **Language switch (ACC-05).** Changing language in Settings now asks first ("Switch to English?"), because the direction of the whole interface flips.
+  The design's second line also says the app **restarts**; it does not (the language changes live), so that sentence and the "Switch and restart"
+  label were dropped: "Switch" is the button. No server change; the choice is saved on the device as before.
+- **About (ACC-06).** Logo, "Version 2.4.0 (318)" (version and build from the installed app), Terms and Privacy (the readers from section 37),
+  open-source licences (Flutter's standard licence page, in its own look and language) and "Rate the app".
+  - **"Rate the app" needs the store link.** It uses `storeUrl` from the app-status answer (section 32), one link per platform. If the server sends
+    none, the row says the store could not be opened. A store listing URL must exist and be returned.
+  - The copyright line is "(c) <current year> Jubari Travel & Tourism" as drawn; the owner name should be confirmed.
+- **Fix found on the way.** Years were written with a thousands separator in Arabic ("2,026" in Arabic digits) in month-and-year lines. They now read 2026.
