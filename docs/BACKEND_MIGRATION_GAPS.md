@@ -1124,3 +1124,27 @@ memory so the screens can be used; nothing is saved.
   - Branches is shown only to roles that can manage users.
   - The preferences live on the device only. If they should follow the user across devices, the server needs a preferences object.
 - **Shell with the spiritual hub.** The dual-mode shell (`ModeShell`, off by default) still shows every tab; role gating is in `AgentShell`.
+
+## 35. Notifications: unread filter, event types, push permission (Figma NOTIF-01 / 02 / 03)
+- **Unread filter (NOTIF-01).** Done on the device over the loaded feed: "Unread" / "All", and the "all caught up" state when
+  nothing is unread. Reading a notification while "Unread" is on removes it from view. No server change.
+- **Event types and where a tap leads (NOTIF-02).** The feed row of each of the 8 event types has the design's icon and tone and
+  a "-> where it leads" hint. Destinations: request events -> the request (needs `relatedRequestId`); SLA breach -> the support
+  tickets list; top-up -> the Wallet tab; new agent -> the Sub-agents tab; ticket reply -> the conversation (needs the new
+  `relatedEntityId` = the ticket id, otherwise the tickets list).
+  - **New field `relatedEntityId`** on `notifications { ... }`. A generic `target { kind id }` would be cleaner: say if you prefer it.
+  - "Upload the document" (info required) and "Tracking" (status update) open the request page, where those actions are: there is
+    no direct deep link to the upload screen or the tracker from a notification yet.
+  - "Agent profile" opens the Sub-agents tab, not the profile: the profile screen needs the agent's name and status, which the
+    notification does not carry. Either add them to the notification or give the app an `agent(id)` query.
+  - Which event types the server sends, and their `type` words (`new_request`, `status_update`, `info_required`, `rejected`,
+    `sla_breach`, `top_up`, `new_agent_signup`, `ticket_update`), are the app's assumption: confirm.
+- **Push permission (NOTIF-03).** After sign-in, once per install and only when the device has never been asked, the app shows the
+  pre-permission screen; "Turn on notifications" shows the system prompt. "Later" is final for that automatic offer.
+  - **There is no push delivery yet.** The app has no push service (no FCM / APNs token) and does not register a device with the
+    server, so turning notifications on does not by itself make anything arrive. Needs: a push provider chosen, the token
+    registered (`registerDevice(token, platform)`), and the server sending the 8 event types above as pushes with the same data.
+  - After a refusal the screen shows the "turn it on in device settings" banner. The **Settings** button works on iOS (`app-settings:`);
+    on Android the app cannot open its settings page without a settings plugin (`app_settings` or `permission_handler`), so it shows
+    a message telling the user to open the device settings. Adding that plugin is a dependency decision: say if you want it.
+  - The Settings row "Notifications" (ACC-04) still says "coming soon": its real destination is the preferences screen (NOTIF-04).

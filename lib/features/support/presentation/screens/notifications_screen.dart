@@ -6,16 +6,18 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
-import '../../../../core/presentation/widgets/feedback.dart' show SeenNotificationKind;
+import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
+import '../../../../core/presentation/widgets/filters.dart';
+import '../../../../core/presentation/widgets/system_state.dart';
 import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
-import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/navigation/shell_tab_request.dart';
 import '../../../requests/presentation/bloc/requests_event.dart';
 import '../../../requests/presentation/screens/request_detail_screen.dart';
 import '../../domain/entities/in_app_notification.dart';
@@ -23,6 +25,8 @@ import '../bloc/notifications_bloc.dart';
 import '../bloc/notifications_event.dart';
 import '../bloc/notifications_state.dart';
 import '../widgets/notification_kind_mapping.dart';
+import 'support_tickets_screen.dart';
+import 'ticket_detail_screen.dart';
 
 /// Notifications center (Figma 17): chronological groups (today / yesterday /
 /// earlier), unread markers, mark-all-read and deep links into a request.
@@ -74,7 +78,12 @@ class NotificationsView extends StatelessWidget {
                   builder: (context, state) => switch (state) {
                     NotificationsInitial() || NotificationsLoading() => const Center(child: SeenLoader()),
                     NotificationsFailure(:final message) => _ErrorView(message: message),
-                    NotificationsLoaded() => _LoadedView(state: state),
+                    NotificationsLoaded() => Column(
+                        children: [
+                          _FilterChips(unreadOnly: state.unreadOnly),
+                          Expanded(child: _LoadedView(state: state)),
+                        ],
+                      ),
                   },
                 ),
               ),
@@ -131,16 +140,32 @@ class _LoadedView extends StatelessWidget {
     if (!notification.isRead) {
       context.read<NotificationsBloc>().add(NotificationMarkReadRequested(notification.id));
     }
-    final requestId = notification.relatedRequestId;
-    if (requestId == null) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider(
-          create: (_) => InjectionContainer.instance.createRequestsBloc()..add(RequestDetailRequested(requestId)),
-          child: const RequestDetailScreen(),
-        ),
-      ),
-    );
+    final navigator = Navigator.of(context);
+    switch (notificationTarget(notification)) {
+      case null:
+        return;
+      case NotificationTarget.request:
+        final requestId = notification.relatedRequestId!;
+        navigator.push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => InjectionContainer.instance.createRequestsBloc()..add(RequestDetailRequested(requestId)),
+              child: const RequestDetailScreen(),
+            ),
+          ),
+        );
+      case NotificationTarget.ticket:
+        navigator.push(
+          MaterialPageRoute(builder: (_) => TicketDetailScreen(ticketId: notification.relatedEntityId!)),
+        );
+      case NotificationTarget.support:
+        navigator.push(MaterialPageRoute(builder: (_) => const SupportTicketsScreen()));
+      case NotificationTarget.wallet:
+      case NotificationTarget.agents:
+        // These are tabs of the shell: leave this screen and ask the shell to show one.
+        navigator.popUntil((route) => route.isFirst);
+        ShellTabRequest.show(notificationTarget(notification) == NotificationTarget.wallet ? 2 : 3);
+    }
   }
 
   @override
@@ -149,7 +174,11 @@ class _LoadedView extends StatelessWidget {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final now = DateTime.now();
-    final notifications = state.notifications;
+    final notifications = state.visible;
+    if (notifications.isEmpty && state.unreadOnly && state.notifications.isNotEmpty) {
+      // Everything is read: say so (Figma NOTIF-01) instead of an empty feed.
+      return const _AllReadState();
+    }
     if (notifications.isEmpty) {
       return SeenEmptyState(
         iconAsset: SeenVectors.iconChat,
@@ -198,32 +227,20 @@ class _NotificationCard extends StatelessWidget {
   final DateTime now;
   final VoidCallback onTap;
 
-  (String, Color) _icon() => switch (notification.type.toSeenKind) {
-        SeenNotificationKind.approved => (SeenVectors.notifCheck, SeenRequestStatus.completed.colors.bg),
-        SeenNotificationKind.wallet => (SeenVectors.notifWallet, SeenRequestStatus.completed.colors.bg),
-        SeenNotificationKind.action || SeenNotificationKind.sla => (
-            SeenVectors.notifAlert,
-            SeenRequestStatus.actionRequired.colors.bg
-          ),
-        SeenNotificationKind.agent => (SeenVectors.notifAgents, SeenRequestStatus.newRequest.colors.bg),
-        SeenNotificationKind.review || SeenNotificationKind.system => (
-            SeenVectors.notifReview,
-            SeenRequestStatus.underReview.colors.bg
-          ),
-      };
-
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final s = SeenStrings.of(context);
     final unread = !notification.isRead;
-    final (asset, tileColor) = _icon();
+    final visual = notification.type.visual;
+    final target = notificationTarget(notification);
+    final hint = notification.type.hint(s);
     final meta = [
       if (notification.relatedRequestId != null) SeenFormat.isolate(notification.relatedRequestId!),
       if (notification.body.isNotEmpty) notification.body,
       s.timeAgo(notification.createdAt, now: now),
-    ].join(' · ');
+    ].join(' · ') + (target != null && hint.isNotEmpty ? ' → $hint' : '');
     const radius = BorderRadius.all(SeenRadius.r18);
     return Semantics(
       button: true,
@@ -248,8 +265,12 @@ class _NotificationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DecoratedBox(
-                    decoration: BoxDecoration(color: tileColor, borderRadius: const BorderRadius.all(SeenRadius.r12)),
-                    child: SizedBox(width: 40, height: 40, child: Center(child: SeenSvgIcon(asset, size: 20))),
+                    decoration: BoxDecoration(color: visual.tone.colors.bg, borderRadius: const BorderRadius.all(SeenRadius.r12)),
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Center(child: Icon(visual.icon, size: 20, color: visual.tone.colors.fg)),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -273,6 +294,10 @@ class _NotificationCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
+                  if (target != null) ...[
+                    Icon(SeenIcons.forward(context), size: 16, color: c.inkMuted),
+                    const SizedBox(width: 6),
+                  ],
                   SizedBox(
                     width: 8,
                     height: 8,
@@ -286,6 +311,46 @@ class _NotificationCard extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Unread" and "All" (Figma NOTIF-01). The choice lives in the bloc.
+class _FilterChips extends StatelessWidget {
+  const _FilterChips({required this.unreadOnly});
+
+  final bool unreadOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = SeenStrings.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: SeenSegmentChips(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        items: [SeenSegment(label: s.unreadFilter), SeenSegment(label: s.allFilter)],
+        selectedIndex: unreadOnly ? 0 : 1,
+        onSelected: (i) => context.read<NotificationsBloc>().add(NotificationsFilterChanged(unreadOnly: i == 0)),
+      ),
+    );
+  }
+}
+
+class _AllReadState extends StatelessWidget {
+  const _AllReadState();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = SeenStrings.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: SeenSystemMessage(
+          illustration: SeenSystemIllustration(icon: SeenIcons.bell),
+          title: s.noUnreadTitle,
+          body: s.noUnreadBody,
         ),
       ),
     );

@@ -122,6 +122,7 @@ class SupportRemoteDataSourceImpl implements SupportRemoteDataSource {
         createdAt
         isRead
         relatedRequestId
+        relatedEntityId
       }
     }
   ''');

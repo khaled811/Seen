@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–34).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–35).
 
 ## Not built to the design (39 frames)
 
@@ -62,9 +62,9 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 ### Notifications (4)
 | Frame | Priority | What is missing |
 |---|---|---|
-| NOTIF-01 Empty | P1 | "Unread" filter and its empty state; the screen has a plain empty state. Partly. |
-| NOTIF-02 Event types | P1 | The 8 event kinds with their icon tones and deep links. Partly (feed exists). |
-| NOTIF-03 Push permission prompt | P1 | Pre-permission screen and the denied state. |
+| NOTIF-01 Empty | P1 | **Done.** Unread / All chips and the "all caught up" state. See gaps section 35. |
+| NOTIF-02 Event types | P1 | **Done** for the feed: 8 icons and tones, deep links (some land on a nearby screen, section 35). |
+| NOTIF-03 Push permission prompt | P1 | **Partly.** The pre-permission screen and the refused state work; no push delivery exists yet, and Android cannot open its settings page (section 35). |
 | NOTIF-04 Preferences | P2 | Per-event toggles, quiet hours. |
 
 ### System (7)

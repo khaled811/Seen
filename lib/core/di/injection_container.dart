@@ -103,7 +103,10 @@ import '../../features/profile/presentation/bloc/profile_cubits.dart';
 import '../../features/system_status/data/datasources/system_status_remote_data_source.dart';
 import '../../features/system_status/data/datasources/system_status_remote_data_source_debug_fallback.dart';
 import '../../features/system_status/data/repositories/system_status_repository_impl.dart';
+import '../../features/system_status/data/services/plugin_push_permission_service.dart';
 import '../../features/system_status/data/services/url_store_launcher.dart';
+import '../../features/system_status/domain/services/push_permission_service.dart';
+import '../../features/system_status/presentation/bloc/push_permission_cubit.dart';
 import '../../features/system_status/domain/services/store_launcher.dart';
 import '../../features/system_status/domain/usecases/system_status_usecases.dart';
 import '../../features/system_status/presentation/bloc/access_request_cubit.dart';
@@ -230,6 +233,7 @@ class InjectionContainer {
   late final GetAppStatusUseCase getAppStatusUseCase;
   late final RequestAccessUseCase requestAccessUseCase;
   late final StoreLauncher storeLauncher;
+  late final PushPermissionService pushPermissionService;
   late final SupportRepository supportRepository;
   late final GetTicketsUseCase getTicketsUseCase;
   late final CreateTicketUseCase createTicketUseCase;
@@ -389,6 +393,7 @@ class InjectionContainer {
     getAppStatusUseCase = GetAppStatusUseCase(systemStatusRepository);
     requestAccessUseCase = RequestAccessUseCase(systemStatusRepository);
     storeLauncher = const UrlStoreLauncher();
+    pushPermissionService = PluginPushPermissionService();
     getTicketsUseCase = GetTicketsUseCase(supportRepository);
     createTicketUseCase = CreateTicketUseCase(supportRepository);
     replyToTicketUseCase = ReplyToTicketUseCase(supportRepository);
@@ -498,6 +503,9 @@ class InjectionContainer {
         getRequestDetailUseCase: getRequestDetailUseCase,
         cancelRequestUseCase: cancelRequestUseCase,
       );
+
+  /// Builds the cubit of the notification-permission screen; the screen owns it.
+  PushPermissionCubit createPushPermissionCubit() => PushPermissionCubit(pushPermissionService);
 
   /// Builds the cubits of the account screens (agency details, margins, team); each screen owns its own.
   AgencyDetailsCubit createAgencyDetailsCubit() => AgencyDetailsCubit(getAgencyProfileUseCase);

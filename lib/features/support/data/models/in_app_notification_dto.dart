@@ -14,6 +14,7 @@ class InAppNotificationDto {
     required this.isRead,
     this.type,
     this.relatedRequestId,
+    this.relatedEntityId,
   });
 
   factory InAppNotificationDto.fromJson(Map<String, dynamic> json) => InAppNotificationDto(
@@ -24,6 +25,7 @@ class InAppNotificationDto {
         createdAt: DateTime.parse(json['createdAt'] as String),
         isRead: json['isRead'] as bool,
         relatedRequestId: json['relatedRequestId'] as String?,
+        relatedEntityId: json['relatedEntityId'] as String?,
       );
 
   final String id;
@@ -33,6 +35,7 @@ class InAppNotificationDto {
   final DateTime createdAt;
   final bool isRead;
   final String? relatedRequestId;
+  final String? relatedEntityId;
 
   InAppNotification toEntity() => InAppNotification(
         id: id,
@@ -42,5 +45,6 @@ class InAppNotificationDto {
         createdAt: createdAt,
         isRead: isRead,
         relatedRequestId: relatedRequestId,
+        relatedEntityId: relatedEntityId,
       );
 }

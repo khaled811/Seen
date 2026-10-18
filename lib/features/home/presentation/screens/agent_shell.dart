@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/navigation/shell_tab_request.dart';
 
 import '../../../../core/presentation/foundation/seen_strings.dart';
@@ -8,6 +9,8 @@ import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../agents/presentation/screens/sub_agents_list_screen.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../auth/domain/entities/user_session.dart';
+import '../../../system_status/domain/services/push_permission_service.dart';
+import '../../../system_status/presentation/screens/push_permission_screen.dart';
 import '../../../system_status/presentation/widgets/access_denied_view.dart';
 import '../widgets/role_strings.dart';
 import '../../../requests/presentation/screens/requests_dashboard_screen.dart';
@@ -48,6 +51,25 @@ class _AgentShellState extends State<AgentShell> {
   void initState() {
     super.initState();
     ShellTabRequest.notifier.addListener(_onTabRequested);
+    // Stubbed pages are tests: only the real shell offers notifications.
+    if (widget.pageBuilders == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _offerNotifications());
+    }
+  }
+
+  /// Once per install, when the device has not been asked yet: the pre-permission screen
+  /// (Figma NOTIF-03). "Later" is final for the automatic offer.
+  Future<void> _offerNotifications() async {
+    final service = InjectionContainer.instance.pushPermissionService;
+    final status = await service.status();
+    if (!mounted || status != PushPermissionStatus.notDetermined || await service.promptShown()) {
+      return;
+    }
+    await service.markPromptShown();
+    if (!mounted) {
+      return;
+    }
+    await Navigator.of(context).push(PushPermissionScreen.route());
   }
 
   @override

@@ -23,3 +23,12 @@ final class NotificationMarkReadRequested extends NotificationsEvent {
 final class NotificationsMarkAllReadRequested extends NotificationsEvent {
   const NotificationsMarkAllReadRequested();
 }
+
+final class NotificationsFilterChanged extends NotificationsEvent {
+  const NotificationsFilterChanged({required this.unreadOnly});
+
+  final bool unreadOnly;
+
+  @override
+  List<Object?> get props => [unreadOnly];
+}

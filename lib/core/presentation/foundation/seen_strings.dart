@@ -273,6 +273,24 @@ class SeenStrings {
   String get attachRemove => _t('حذف المرفق', 'Remove attachment');
   String get attachTypes => _t('الأنواع المقبولة: JPG وPNG وPDF', 'Accepted: JPG, PNG, PDF');
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
+  // Notifications (Figma NOTIF-01 / 03).
+  String get unreadFilter => _t('غير المقروءة', 'Unread');
+  String get allFilter => _t('الكل', 'All');
+  String get noUnreadTitle => _t('لا إشعارات غير مقروءة', 'No unread notifications');
+  String get noUnreadBody => _t('قرأت كل شيء. سنبلغك هنا عند أي تحديث على طلباتك أو محفظتك.',
+      'You are all caught up. We will tell you here about any update on your requests or wallet.');
+  String get pushTitle => _t('لا تفوّت أي تحديث', 'Never miss an update');
+  String get pushBody => _t('فعّل الإشعارات لنبلغك فور صدور التأشيرة، أو عند طلب مستند قبل انتهاء المهلة.',
+      'Turn on notifications and we will tell you as soon as a visa is issued, or when a document is needed before the deadline.');
+  String get pushExampleIssued => _t('صدرت تأشيرة عميلك', 'Your customer\'s visa was issued');
+  String pushExampleDocument(int hours) => _t('مستند مطلوب · يتبقى ${numeral(hours)} ساعة', 'Document needed · $hours h left');
+  String get pushDeniedBanner => _t('رفضت الإذن سابقًا. فعّله من إعدادات الجهاز.', 'You declined this before. Turn it on in the device settings.');
+  String get deviceSettings => _t('الإعدادات', 'Settings');
+  String get enableNotifications => _t('تفعيل الإشعارات', 'Turn on notifications');
+  String get maybeLater => _t('لاحقًا', 'Later');
+  String get pushEnabled => _t('الإشعارات مفعّلة.', 'Notifications are on.');
+  String get pushSettingsHint => _t('افتح إعدادات الجهاز وفعّل الإشعارات لسين.', 'Open the device settings and turn notifications on for Seen.');
+
   // System states (Figma SYS-03 / 04 / 05).
   String get forbiddenTitle => _t('ليس لديك صلاحية', 'You do not have permission');
   String get forbiddenWallet => _t(
