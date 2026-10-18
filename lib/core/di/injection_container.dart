@@ -100,6 +100,9 @@ import '../../features/profile/data/datasources/profile_remote_data_source_debug
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/usecases/profile_usecases.dart';
 import '../../features/profile/presentation/bloc/profile_cubits.dart';
+import '../../features/auth/data/datasources/account_security_remote_data_source.dart';
+import '../../features/auth/domain/repositories/account_security_repository.dart';
+import '../../features/auth/presentation/bloc/account_security_cubits.dart';
 import '../../features/legal/data/datasources/legal_data_sources.dart';
 import '../../features/legal/data/repositories/legal_repository_impl.dart';
 import '../../features/legal/domain/entities/legal_document.dart';
@@ -236,6 +239,7 @@ class InjectionContainer {
   late final GetMarginsUseCase getMarginsUseCase;
   late final SaveMarginsUseCase saveMarginsUseCase;
   late final TeamUseCases teamUseCases;
+  late final AccountSecurityRepository accountSecurityRepository;
   late final GetLegalDocumentUseCase getLegalDocumentUseCase;
   late final GetAppStatusUseCase getAppStatusUseCase;
   late final RequestAccessUseCase requestAccessUseCase;
@@ -393,6 +397,8 @@ class InjectionContainer {
     getMarginsUseCase = GetMarginsUseCase(profileRepository);
     saveMarginsUseCase = SaveMarginsUseCase(profileRepository);
     teamUseCases = TeamUseCases(profileRepository);
+    accountSecurityRepository =
+        DebugFallbackAccountSecurityRepository(AccountSecurityRemoteDataSource(graphQLService: graphQLService));
     getLegalDocumentUseCase = GetLegalDocumentUseCase(
       LegalRepositoryImpl(
         remote: DebugFallbackLegalRemoteDataSource(LegalRemoteDataSourceImpl(graphQLService: graphQLService)),
@@ -529,6 +535,11 @@ class InjectionContainer {
       MarginsCubit(get: getMarginsUseCase, save: saveMarginsUseCase, canEdit: canEdit);
 
   TeamCubit createTeamCubit() => TeamCubit(teamUseCases);
+
+  /// Builds the cubits of the change-password / change-phone screens; each screen owns its own.
+  ChangePasswordCubit createChangePasswordCubit() => ChangePasswordCubit(accountSecurityRepository);
+
+  ChangePhoneCubit createChangePhoneCubit() => ChangePhoneCubit(accountSecurityRepository);
 
   /// Builds the cubit of a legal text screen (terms or privacy); the screen owns it.
   LegalCubit createLegalCubit(LegalKind kind, LegalLanguage initial) =>

@@ -21,6 +21,8 @@ import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/theme/theme_mode_cubit.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../home/presentation/widgets/role_strings.dart';
+import '../../../auth/presentation/screens/change_password_screen.dart';
+import '../../../auth/presentation/screens/change_phone_screen.dart';
 import '../widgets/language_confirm_dialog.dart';
 import '../widgets/session_role.dart';
 import 'about_screen.dart';
@@ -96,8 +98,18 @@ class SettingsScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 12),
                     _Card(rows: [
-                      _Row(icon: SeenIcons.lock, title: s.changePasswordRow, chevron: true, onTap: () => _soon(context)),
-                      _Row(icon: SeenIcons.passport, title: s.changePhoneRow, chevron: true, onTap: () => _soon(context)),
+                      _Row(
+                        icon: SeenIcons.lock,
+                        title: s.changePasswordRow,
+                        chevron: true,
+                        onTap: () => Navigator.of(context).push(ChangePasswordScreen.route()),
+                      ),
+                      _Row(
+                        icon: SeenIcons.passport,
+                        title: s.changePhoneRow,
+                        chevron: true,
+                        onTap: () => Navigator.of(context).push(ChangePhoneScreen.route()),
+                      ),
                     ]),
                     const SizedBox(height: 12),
                     _Card(rows: [

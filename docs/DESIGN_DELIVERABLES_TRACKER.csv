@@ -13,8 +13,8 @@ AUTH-11,AUTH,State,P1,تسجيل الدخول: أخطاء,Login: failure states,
 AUTH-12,AUTH,State,P1,رمز التحقق: خطأ,OTP: error state,OTP (04),Error boxes + message; expired; verifying/disabled,Designed (as AUTH-02b) - Implemented (Flutter)
 AUTH-13,AUTH,Dialog,P0,انتهاء الجلسة,Session expired (401),Any call returning 401,Where the user lands; unsaved form data; background refresh,Designed - Implemented (Flutter)
 AUTH-14,AUTH,Dialog,P1,تأكيد تسجيل الخروج,Logout confirmation,Account (14) > Sign out,Pending uploads; offline logout,Designed - Implemented (Flutter)
-AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Designed - Not implemented
-AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Designed - Not implemented
+AUTH-15,AUTH,Screen,P2,تغيير كلمة المرور,Change password,Account > Settings,Current password check; rules; success,Designed - Implemented (Flutter)
+AUTH-16,AUTH,Screen,P2,تغيير رقم الجوال,Change phone number,Account > Settings,OTP on new number; duplicate,Designed - Implemented (Flutter)
 REQ-01,REQ,Screen,P1,المسودات,Drafts list,Requests (06) filter/section,Empty; many drafts; draft older than N days; offline,Designed - Implemented (Flutter)
 REQ-02,REQ,Component,P1,"بطاقة مسودة وشارة ""مسودة""",Draft card and chip,"Drafts list, Requests (06)",Missing data in draft; resume vs delete,Designed - Implemented (Flutter)
 REQ-03,REQ,Dialog,P1,حذف مسودة,Delete draft confirmation,Draft card,Undo; last draft,Designed - Implemented (Flutter)

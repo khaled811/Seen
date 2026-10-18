@@ -1192,3 +1192,25 @@ memory so the screens can be used; nothing is saved.
     none, the row says the store could not be opened. A store listing URL must exist and be returned.
   - The copyright line is "(c) <current year> Jubari Travel & Tourism" as drawn; the owner name should be confirmed.
 - **Fix found on the way.** Years were written with a thousands separator in Arabic ("2,026" in Arabic digits) in month-and-year lines. They now read 2026.
+
+## 39. Change password and change phone number (Figma AUTH-15 / 16)
+Both need a session. All names below are placeholders; in a debug build, when the call fails, canned answers let the flows and their errors be tried
+(current password `Old@12345` is wrong, new password `Used@12345` was used before, a new number ending `0711` is taken, code `123456` is right,
+`000000` expired, anything else wrong with 3 tries).
+- **Change password.** `changePassword(currentPassword, newPassword) { success }`. Error codes: `WRONG_CURRENT_PASSWORD` (marks the current field),
+  `PASSWORD_REUSED`, `PASSWORD_WEAK` (banners). The app checks the same rules as recovery (8+ characters, upper and lower case, a digit) before sending.
+  - **The server must sign the user out of every other device** on success (the screen promises it), and keep this device signed in with the new
+    password/session. If the server also rotates this device's token, the answer should carry the new session.
+  - Rate-limit wrong current passwords on the server (`RATE_LIMITED`); the app only shows a generic message for it here.
+- **Change phone.** Three calls:
+  - `me { maskedPhone }`: the current number with the middle hidden, shown read-only. If it fails or is empty the field is simply not shown.
+  - `requestPhoneChange(newPhone)` (E.164, `+967` is the app's fixed country code, as on Login) -> `{ challengeToken resendCooldownSeconds }`; sends a code
+    **to the new number**. `PHONE_ALREADY_REGISTERED` shows "used by another account"; `RATE_LIMITED` with `retryAfterSeconds`.
+  - `confirmPhoneChange(challengeToken, code)` -> `{ success }`; `OTP_INVALID` (+ `attemptsLeft`), `OTP_EXPIRED`, `OTP_ATTEMPTS_EXHAUSTED` (+ `lockoutMinutes`).
+    `resendPhoneChange(challengeToken)` gives a new token and cooldown.
+  - **Security:** changing the sign-in number is account takeover territory. The server should also require a fresh proof of the current user
+    (the current password or a code to the **old** number) before it sends a code to the new one; the screen does not ask for it (the design has no such step).
+    Say if you want a step added. It should also notify the old number, and end the other sessions.
+  - After success the app only shows "use the new number to sign in"; the session keeps working. If the sign-in identifier is the phone, the saved
+    login on the device is now stale.
+- Not built: changing the e-mail, and the country picker (fixed `+967`, as on Login).

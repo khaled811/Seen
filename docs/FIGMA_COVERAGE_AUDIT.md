@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–38).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–39).
 
 ## Not built to the design (39 frames)
 
@@ -28,8 +28,8 @@ the same thing that does not follow the frame.
 | AUTH-10 Privacy policy | P1 | **Done.** Same reader (gaps section 37). |
 | AUTH-11 Login failure states | P1 | **Done.** |
 | AUTH-14 Logout confirmation | P1 | **Done.** |
-| AUTH-15 Change password | P2 | Whole screen. |
-| AUTH-16 Change phone number | P2 | Whole flow (OTP on the new number). |
+| AUTH-15 Change password | P2 | **Done.** Per-field marks, rules, success banner (gaps section 39). |
+| AUTH-16 Change phone number | P2 | **Done.** New number, code to it, errors (section 39: the server should also verify the current user). |
 
 ### Booking (9, + BOOK-10 with no tracker row)
 | Frame | Priority | What is missing |
@@ -54,7 +54,7 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 | ACC-01 Agency details & commercial register | P1 | **Done** except edit and renew, which point to support (no contract). See gaps section 33. |
 | ACC-02 Profit margin | P1 | **Done.** Per-service margins, read-only rows, change log (section 33). |
 | ACC-03 Users and permissions | P1 | **Done.** Team list, roles, invite, change role, disable; owner only (section 33). |
-| ACC-04 Settings | P1 | **Mostly done.** Language (with confirmation), appearance, hide balance by default and About work; fingerprint is off (needs a plugin); notifications, branches, password and phone say "coming soon". See gaps section 34. |
+| ACC-04 Settings | P1 | **Mostly done.** Language (confirmed), appearance, hide balance, About, Change password and Change phone work; fingerprint is off (needs a plugin); notifications and branches say "coming soon". See gaps section 34. |
 | ACC-05 Language switch confirmation | P2 | **Done** (no restart: the app switches live, gaps section 38). |
 | ACC-06 About / legal | P2 | **Done.** Needs a store link from the server for "Rate the app" (section 38). |
 | ACC-07 Branch management & hierarchy | — | Whole screen (no tracker row). |
