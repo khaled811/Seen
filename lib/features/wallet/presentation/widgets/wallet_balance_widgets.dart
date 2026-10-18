@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
@@ -329,49 +330,34 @@ class WalletLoadingSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget bar(double w, double h, double r) => DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.centerRight,
-              end: Alignment.centerLeft,
-              colors: [Color(0xFFEFEBF8), Color(0xFFF7F5FC)],
-            ),
-            borderRadius: BorderRadius.all(Radius.circular(r)),
-          ),
-          child: SizedBox(width: w, height: h),
-        );
     return Semantics(
       label: AppLocalizations.of(context)!.loading,
       child: ExcludeSemantics(
-        child: ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 24),
-          children: [
-            DecoratedBox(
-              decoration: const BoxDecoration(color: SeenBrand.violet05, borderRadius: BorderRadius.all(SeenRadius.r20)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [bar(120, 10, 5), const SizedBox(height: 8), bar(200, 24, 8)],
-                ),
-              ),
-            ),
-            for (var i = 0; i < 4; i++) ...[
-              const SizedBox(height: 12),
+        child: SeenSkeletonGroup(
+          child: ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 24),
+            children: [
               const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                    colors: [Color(0xFFEFEBF8), Color(0xFFF7F5FC)],
+                decoration: BoxDecoration(color: SeenBrand.violet05, borderRadius: BorderRadius.all(SeenRadius.r20)),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SeenSkeletonBox(width: 120, height: 10, radius: 5),
+                      SizedBox(height: 8),
+                      SeenSkeletonBox(width: 200, height: 24, radius: 8),
+                    ],
                   ),
-                  borderRadius: BorderRadius.all(SeenRadius.r18),
                 ),
-                child: SizedBox(height: 64),
               ),
+              for (var i = 0; i < 4; i++) ...[
+                const SizedBox(height: 12),
+                const SeenSkeletonBox(height: 64, radius: 18),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

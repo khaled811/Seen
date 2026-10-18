@@ -14,6 +14,7 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../domain/entities/missing_document.dart';
+import '../../../system_status/presentation/widgets/permission_denied_sheet.dart';
 import '../bloc/missing_document_bloc.dart';
 import '../widgets/seen_deadline_card.dart';
 
@@ -147,8 +148,37 @@ String _megabytes(int bytes) {
   return mb == mb.roundToDouble() ? mb.toStringAsFixed(0) : mb.toStringAsFixed(1);
 }
 
+/// Wraps the body so a permission refused for good opens the explanation (Figma SYS-07).
 class _Body extends StatelessWidget {
   const _Body({required this.request, required this.state, this.onNewRequest});
+
+  final MissingDocumentRequest request;
+  final MissingDocumentState state;
+  final VoidCallback? onNewRequest;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<MissingDocumentBloc, MissingDocumentState>(
+      listenWhen: (p, c) =>
+          p.issue != c.issue &&
+          (c.issue?.kind == DocumentIssueKind.cameraDenied || c.issue?.kind == DocumentIssueKind.photosDenied),
+      listener: (context, state) async {
+        final bloc = context.read<MissingDocumentBloc>();
+        final choice = await showPermissionDeniedSheet(
+          context,
+          permission: state.issue!.kind == DocumentIssueKind.cameraDenied ? DeniedPermission.camera : DeniedPermission.photos,
+        );
+        if (choice == PermissionSheetChoice.chooseFile) {
+          bloc.add(const MissingDocumentSourceChosen(DocumentSource.file));
+        }
+      },
+      child: _BodyContent(request: request, state: state, onNewRequest: onNewRequest),
+    );
+  }
+}
+
+class _BodyContent extends StatelessWidget {
+  const _BodyContent({required this.request, required this.state, this.onNewRequest});
 
   final MissingDocumentRequest request;
   final MissingDocumentState state;
@@ -179,7 +209,9 @@ class _Body extends StatelessWidget {
         DocumentIssueKind.tooLarge =>
           SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.uploadErrTooLarge(_megabytes(request.maxBytes))),
         DocumentIssueKind.wrongType => SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.uploadErrWrongType),
-        DocumentIssueKind.pickerUnavailable =>
+        DocumentIssueKind.pickerUnavailable ||
+        DocumentIssueKind.cameraDenied ||
+        DocumentIssueKind.photosDenied =>
           SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.uploadErrPicker),
         DocumentIssueKind.uploadFailed || DocumentIssueKind.loadFailed =>
           SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.uploadErrFailed),

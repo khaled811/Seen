@@ -8,6 +8,7 @@ import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
+import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/system_state.dart';
 import '../../../../core/theme/seen_colors.dart';
@@ -162,23 +163,12 @@ class _DeniedBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = SeenType.of(context);
     final s = SeenStrings.of(context);
-    final tone = SeenRequestStatus.underReview.colors;
-    return DecoratedBox(
-      decoration: BoxDecoration(color: tone.bg, borderRadius: const BorderRadius.all(Radius.circular(16))),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Icon(SeenIcons.info, size: 20, color: tone.fg),
-            const SizedBox(width: 10),
-            Expanded(child: Text(s.pushDeniedBanner, style: t.label.copyWith(color: tone.fg))),
-            const SizedBox(width: 8),
-            SeenTextLink(label: s.deviceSettings, onTap: onSettings),
-          ],
-        ),
-      ),
+    return SeenInlineBanner(
+      tone: SeenBannerTone.info,
+      message: s.pushDeniedBanner,
+      actionLabel: s.deviceSettings,
+      onAction: onSettings,
     );
   }
 }

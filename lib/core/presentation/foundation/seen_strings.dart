@@ -273,6 +273,22 @@ class SeenStrings {
   String get attachRemove => _t('حذف المرفق', 'Remove attachment');
   String get attachTypes => _t('الأنواع المقبولة: JPG وPNG وPDF', 'Accepted: JPG, PNG, PDF');
   String attachTooLarge(int mb) => _t('الملف أكبر من ${numeral(mb)} ميغابايت.', 'The file is larger than $mb MB.');
+  String get loadingLabel => _t('جارٍ التحميل', 'Loading');
+
+  // Camera / photos permission (Figma SYS-07).
+  String get cameraAllowTitle => _t('اسمح بالوصول إلى الكاميرا', 'Allow camera access');
+  String get cameraAllowBody => _t('نحتاجها لتصوير الجواز والمستندات مباشرة. لا نصل إلى صورك الأخرى.',
+      'We need it to photograph the passport and documents right here. We do not access your other photos.');
+  String get cameraDeniedBanner => _t('الإذن مرفوض نهائيًا. فعّله من الإعدادات > سين Business > الكاميرا.',
+      'The permission is blocked. Turn it on in Settings > Seen Business > Camera.');
+  String get photosAllowTitle => _t('اسمح بالوصول إلى الصور', 'Allow photo access');
+  String get photosAllowBody => _t('نحتاجها لاختيار صورة الجواز والمستندات من معرضك.',
+      'We need it to pick the passport and document photos from your gallery.');
+  String get photosDeniedBanner => _t('الإذن مرفوض نهائيًا. فعّله من الإعدادات > سين Business > الصور.',
+      'The permission is blocked. Turn it on in Settings > Seen Business > Photos.');
+  String get openSettings => _t('فتح الإعدادات', 'Open settings');
+  String get chooseFileInstead => _t('اختيار ملف بدلًا من ذلك', 'Choose a file instead');
+
   // Notifications (Figma NOTIF-01 / 03).
   String get unreadFilter => _t('غير المقروءة', 'Unread');
   String get allFilter => _t('الكل', 'All');

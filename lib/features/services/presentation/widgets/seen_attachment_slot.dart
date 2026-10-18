@@ -13,6 +13,7 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../requests/domain/entities/missing_document.dart';
+import '../../../system_status/presentation/widgets/permission_denied_sheet.dart';
 import '../bloc/traveler_attachment_cubit.dart';
 
 Future<DocumentSource?> showAttachmentSourceSheet(BuildContext context) {
@@ -59,7 +60,22 @@ class SeenAttachmentSlot extends StatelessWidget {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     final s = SeenStrings.of(context);
-    return BlocBuilder<TravelerAttachmentCubit, TravelerAttachmentState>(
+    return BlocConsumer<TravelerAttachmentCubit, TravelerAttachmentState>(
+      // A permission refused for good opens the explanation (Figma SYS-07).
+      listenWhen: (a, b) =>
+          a.error != b.error &&
+          b.errorTravelerId == travelerId &&
+          (b.error == AttachmentError.cameraDenied || b.error == AttachmentError.photosDenied),
+      listener: (context, state) async {
+        final cubit = context.read<TravelerAttachmentCubit>();
+        final choice = await showPermissionDeniedSheet(
+          context,
+          permission: state.error == AttachmentError.cameraDenied ? DeniedPermission.camera : DeniedPermission.photos,
+        );
+        if (choice == PermissionSheetChoice.chooseFile) {
+          await cubit.pick(travelerId, DocumentSource.file);
+        }
+      },
       buildWhen: (a, b) =>
           a.files[travelerId] != b.files[travelerId] || a.error != b.error || a.errorTravelerId != b.errorTravelerId,
       builder: (context, state) {
@@ -122,7 +138,7 @@ class SeenAttachmentSlot extends StatelessWidget {
                 message: switch (error) {
                   AttachmentError.tooLarge => s.attachTooLarge(attachmentMaxBytes ~/ (1024 * 1024)),
                   AttachmentError.wrongType => s.attachBadType,
-                  AttachmentError.unavailable => s.attachUnavailable,
+                  AttachmentError.unavailable || AttachmentError.cameraDenied || AttachmentError.photosDenied => s.attachUnavailable,
                 },
               ),
             ],

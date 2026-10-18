@@ -12,6 +12,7 @@ import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/balance_card.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/loader.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/presentation/widgets/promo_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/service_tile.dart';
@@ -346,7 +347,10 @@ class _BalanceSection extends StatelessWidget {
       builder: (context, state) => switch (state) {
         WalletInitial() ||
         WalletLoading() =>
-          const SizedBox(height: 196, child: Center(child: SeenLoader())),
+          Semantics(
+            label: l10n.loading,
+            child: const ExcludeSemantics(child: SeenSkeletonGroup(child: SeenBalanceSkeleton())),
+          ),
         WalletFailure(:final message) => _InlineError(
             message: message,
             onRetry: () =>

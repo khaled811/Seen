@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
@@ -114,7 +114,7 @@ class _Body extends StatelessWidget {
               ),
             );
           }
-          return const Center(child: SeenLoader());
+          return SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel);
         }
         return RefreshIndicator(
           onRefresh: () => context.read<AgencyDetailsCubit>().load(),

@@ -104,6 +104,8 @@ import '../../features/system_status/data/datasources/system_status_remote_data_
 import '../../features/system_status/data/datasources/system_status_remote_data_source_debug_fallback.dart';
 import '../../features/system_status/data/repositories/system_status_repository_impl.dart';
 import '../../features/system_status/data/services/plugin_push_permission_service.dart';
+import '../../features/system_status/data/services/url_app_settings_launcher.dart';
+import '../../features/system_status/domain/services/app_settings_launcher.dart';
 import '../../features/system_status/data/services/url_store_launcher.dart';
 import '../../features/system_status/domain/services/push_permission_service.dart';
 import '../../features/system_status/presentation/bloc/push_permission_cubit.dart';
@@ -234,6 +236,7 @@ class InjectionContainer {
   late final RequestAccessUseCase requestAccessUseCase;
   late final StoreLauncher storeLauncher;
   late final PushPermissionService pushPermissionService;
+  late final AppSettingsLauncher appSettingsLauncher;
   late final SupportRepository supportRepository;
   late final GetTicketsUseCase getTicketsUseCase;
   late final CreateTicketUseCase createTicketUseCase;
@@ -394,6 +397,7 @@ class InjectionContainer {
     requestAccessUseCase = RequestAccessUseCase(systemStatusRepository);
     storeLauncher = const UrlStoreLauncher();
     pushPermissionService = PluginPushPermissionService();
+    appSettingsLauncher = const UrlAppSettingsLauncher();
     getTicketsUseCase = GetTicketsUseCase(supportRepository);
     createTicketUseCase = CreateTicketUseCase(supportRepository);
     replyToTicketUseCase = ReplyToTicketUseCase(supportRepository);

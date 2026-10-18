@@ -7,6 +7,7 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/services/pending_uploads.dart';
 import '../../domain/entities/missing_document.dart';
+import '../../domain/services/document_picker.dart' show cameraDeniedCode, photosDeniedCode;
 import '../../domain/usecases/missing_document_usecases.dart';
 
 sealed class MissingDocumentEvent extends Equatable {
@@ -155,7 +156,13 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
     if (request == null || state.uploading || state.deadlinePassed) return;
     final result = await _pick(event.source, allowedExtensions: request.allowedExtensions);
     result.match(
-      (failure) => emit(state.copyWith(issue: const DocumentIssue(DocumentIssueKind.pickerUnavailable))),
+      (failure) => emit(state.copyWith(
+        issue: DocumentIssue(switch (failure is ServerFailure ? failure.code : null) {
+          cameraDeniedCode => DocumentIssueKind.cameraDenied,
+          photosDeniedCode => DocumentIssueKind.photosDenied,
+          _ => DocumentIssueKind.pickerUnavailable,
+        }),
+      )),
       (doc) {
         if (doc == null) return; // cancelled
         if (!request.allowedExtensions.contains(doc.extension)) {

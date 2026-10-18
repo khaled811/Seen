@@ -8,18 +8,21 @@ import '../../theme/seen_typography.dart';
 
 /// 40px avatar: initial (circle) or icon (square tile), on primarySoft.
 class SeenAvatar extends StatelessWidget {
-  const SeenAvatar({super.key, this.initial, this.icon, this.square = false});
+  const SeenAvatar({super.key, this.initial, this.icon, this.square = false, this.size = 40});
 
   final String? initial;
   final IconData? icon;
   final bool square;
 
+  /// 40 by default; 32 for dense rows.
+  final double size;
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     return Container(
-      width: 40,
-      height: 40,
+      width: size,
+      height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: c.primarySoft,

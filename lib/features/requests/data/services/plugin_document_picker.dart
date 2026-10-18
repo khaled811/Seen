@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,8 +44,16 @@ class PluginDocumentPicker implements DocumentPicker {
           final size = await File(image.path).length();
           return Right(PickedDocument(path: image.path, fileName: image.name, sizeBytes: size));
       }
+    } on PlatformException catch (e) {
+      // Refused for good: the screen explains and offers the settings (Figma SYS-07).
+      final code = switch (e.code) {
+        'camera_access_denied' => cameraDeniedCode,
+        'photo_access_denied' => photosDeniedCode,
+        _ => 'PICKER_UNAVAILABLE',
+      };
+      return Left(ServerFailure(e.toString(), code: code));
     } catch (e) {
-      // Permission denied, no camera, plugin error: surfaced, never swallowed.
+      // No camera, plugin error: surfaced, never swallowed.
       return Left(ServerFailure(e.toString(), code: 'PICKER_UNAVAILABLE'));
     }
   }

@@ -1,6 +1,7 @@
 // Settings (Figma ACC-04): language, appearance, notifications, branches, security,
 // "hide the balance by default" and about. Rows whose destination is not built yet say
 // so instead of leading nowhere.
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -9,7 +10,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/localization/locale_cubit.dart';
 import '../../../../core/preferences/balance_privacy_cubit.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/gallery/components_gallery_screen.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/widgets/components.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/theme/seen_colors.dart';
@@ -99,6 +102,17 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ]),
                     const SizedBox(height: 12),
+                    if (kDebugMode) ...[
+                      _Card(rows: [
+                        _Row(
+                          icon: SeenIcons.list,
+                          title: 'Components (debug)',
+                          chevron: true,
+                          onTap: () => Navigator.of(context).push(ComponentsGalleryScreen.route()),
+                        ),
+                      ]),
+                      const SizedBox(height: 12),
+                    ],
                     FutureBuilder<String>(
                       future: versionLoader(),
                       builder: (context, snap) => _Row(
@@ -230,7 +244,7 @@ class _Toggle extends StatelessWidget {
                 ],
               ),
             ),
-            Switch(value: value, onChanged: onChanged),
+            SeenSwitch(value: value, onChanged: onChanged, semanticLabel: title),
           ],
         ),
       ),

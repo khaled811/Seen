@@ -1148,3 +1148,21 @@ memory so the screens can be used; nothing is saved.
     on Android the app cannot open its settings page without a settings plugin (`app_settings` or `permission_handler`), so it shows
     a message telling the user to open the device settings. Adding that plugin is a dependency decision: say if you want it.
   - The Settings row "Notifications" (ACC-04) still says "coming soon": its real destination is the preferences screen (NOTIF-04).
+
+## 36. Skeletons, camera / photos permission, shared components (Figma SYS-06 / 07 / 08)
+- **Skeletons (SYS-06).** One shared pulse (1.6 s, one ticker per screen area) stopped when the device asks to reduce motion.
+  Used by Home's balance, Wallet, Notifications, Top-up history, Agency details, Margins and Team. Requests keeps its own
+  skeleton (already on a pulse that honours reduced motion). Other lists still show the spinner. No server change.
+- **Camera / photos refused for good (SYS-07).** When the picker reports "camera access denied" (or "photo access denied") the app opens
+  the explanation sheet with "Open settings" and "Choose a file instead". Wired to the booking attachment (BOOK-06) and the
+  missing-document upload (REQ-05). The sheet's path text (Settings > Seen Business > Camera) is the design's wording.
+  - **"Open settings" works on iOS only.** On Android the app cannot open its own settings page without a settings plugin
+    (`app_settings` or `permission_handler`); the same open item as the notification permission (section 35). Say if you want it added.
+  - The registration commercial-register upload has no picker yet, so it has no permission flow.
+  - The "not asked yet" pre-permission variant of the camera sheet is not built: the system prompt appears directly the first time.
+- **Shared components (SYS-08).** Added to the shared set: toast (with action), list row, checkbox, switch, progress bar, count
+  badge, an info banner tone, and a size option on the avatar. Existing screens that drew the info banner and the switch by hand
+  now use them (margins, notification permission, settings). Other screens still draw their own rows and checkboxes; they move over as they are touched.
+  The sheet and dialog the frame points to (AUTH-13, REQ-10, WAL-07b) already exist.
+- **Components page.** A development page showing every component in its states, opened from Settings in debug builds only.
+- No backend work in this batch.

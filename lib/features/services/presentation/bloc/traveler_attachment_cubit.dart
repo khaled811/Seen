@@ -4,10 +4,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../../requests/domain/entities/missing_document.dart';
 import '../../../requests/domain/services/document_picker.dart';
 
-enum AttachmentError { tooLarge, wrongType, unavailable }
+enum AttachmentError { tooLarge, wrongType, unavailable, cameraDenied, photosDenied }
 
 const attachmentAllowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
 const attachmentMaxBytes = 5 * 1024 * 1024;
@@ -38,8 +39,14 @@ class TravelerAttachmentCubit extends Cubit<TravelerAttachmentState> {
       final result = await _picker().pick(source, allowedExtensions: attachmentAllowedExtensions);
       if (isClosed) return;
       result.fold(
-        (_) => emit(TravelerAttachmentState(
-            files: state.files, error: AttachmentError.unavailable, errorTravelerId: travelerId)),
+        (failure) => emit(TravelerAttachmentState(
+            files: state.files,
+            error: switch (failure is ServerFailure ? failure.code : null) {
+              cameraDeniedCode => AttachmentError.cameraDenied,
+              photosDeniedCode => AttachmentError.photosDenied,
+              _ => AttachmentError.unavailable,
+            },
+            errorTravelerId: travelerId)),
         (doc) {
           if (doc == null) return; // cancelled
           final error = !attachmentAllowedExtensions.contains(doc.extension)

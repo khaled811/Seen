@@ -56,7 +56,19 @@ class PickedDocument extends Equatable {
 enum DocumentSource { file, gallery, camera }
 
 /// What went wrong on the upload screens, in the vocabulary of Figma REQ-05b.
-enum DocumentIssueKind { tooLarge, wrongType, offline, uploadFailed, deadlinePassed, pickerUnavailable, loadFailed }
+enum DocumentIssueKind {
+  tooLarge,
+  wrongType,
+  offline,
+  uploadFailed,
+  deadlinePassed,
+  pickerUnavailable,
+  loadFailed,
+
+  /// The camera / photo-library permission was refused for good (Figma SYS-07).
+  cameraDenied,
+  photosDenied,
+}
 
 class DocumentIssue extends Equatable {
   const DocumentIssue(this.kind);

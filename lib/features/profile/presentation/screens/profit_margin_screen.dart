@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
-import '../../../../core/presentation/widgets/loader.dart';
+import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
@@ -140,7 +141,7 @@ class _Body extends StatelessWidget {
           ),
         );
       }
-      return const Center(child: SeenLoader());
+      return SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel);
     }
     final locked = [for (final m in state.margins) if (!m.editable) m.serviceName];
     return RefreshIndicator(
@@ -148,24 +149,7 @@ class _Body extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, SeenSpace.s6),
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: SeenRequestStatus.underReview.colors.bg,
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              child: Row(
-                children: [
-                  Icon(SeenIcons.info, size: 20, color: SeenRequestStatus.underReview.colors.fg),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(s.marginBanner, style: t.label.copyWith(color: SeenRequestStatus.underReview.colors.fg)),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          SeenInlineBanner(tone: SeenBannerTone.info, message: s.marginBanner),
           const SizedBox(height: 12),
           DecoratedBox(
             decoration: BoxDecoration(

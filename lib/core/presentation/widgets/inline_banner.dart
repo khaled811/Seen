@@ -11,7 +11,7 @@ import '../../theme/seen_typography.dart';
 import '../foundation/seen_vectors.dart';
 import 'svg_icon.dart';
 
-enum SeenBannerTone { offline, warn, error, ok }
+enum SeenBannerTone { offline, warn, error, ok, info }
 
 class SeenInlineBanner extends StatelessWidget {
   const SeenInlineBanner({
@@ -39,11 +39,13 @@ class SeenInlineBanner extends StatelessWidget {
       SeenBannerTone.warn => SeenRequestStatus.actionRequired.colors,
       SeenBannerTone.error => SeenRequestStatus.rejected.colors,
       SeenBannerTone.ok => SeenRequestStatus.completed.colors,
+      SeenBannerTone.info => SeenRequestStatus.underReview.colors,
     };
     final asset = iconAsset ??
         switch (tone) {
           SeenBannerTone.warn => SeenVectors.walletClock,
           SeenBannerTone.ok => SeenVectors.walletCheck,
+          SeenBannerTone.info => SeenVectors.notifReview,
           _ => SeenVectors.notifAlert,
         };
     return Semantics(
