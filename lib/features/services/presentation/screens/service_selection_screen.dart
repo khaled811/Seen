@@ -1,4 +1,9 @@
 import '../../domain/entities/hospital.dart';
+import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/widgets/components.dart' show SeenListRow;
+import '../../../airline_circular/presentation/screens/airline_circular_screen.dart';
+import '../../../airline_circular/presentation/widgets/circular_strings.dart';
 import '../widgets/coming_soon_sheet.dart';
 import '../widgets/hospital_picker_sheet.dart';
 import 'package:flutter/material.dart';
@@ -280,6 +285,16 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
               ]),
               gap,
             ],
+        ],
+        // Airline circular: not a catalog service, it links to an issued security approval.
+        if (query.isEmpty) ...[
+          SeenListRow(
+            icon: SeenIcons.plane,
+            title: SeenStrings.of(context).circularTitle,
+            subtitle: SeenStrings.of(context).circularEntrySubtitle,
+            onTap: () => Navigator.of(context).push(AirlineCircularScreen.route()),
+          ),
+          gap,
         ],
         SeenHelpCard(
           title: l10n.servicesHelpTitle,

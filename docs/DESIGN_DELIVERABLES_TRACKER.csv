@@ -84,9 +84,9 @@ ROLE-01,ROLE,Screen,P1,واجهة الموظف / مدير الفرع,"Role-based
 ROLE-02,ROLE,State,P2,نسخة إنجليزية LTR,English / LTR versions of key frames,Language = English,Mirrored icons and progress; numerals; long strings,Pending Design
 ROLE-03,ROLE,State,P2,الوضع الداكن,Dark theme,Settings > Appearance,Status chip colours; gradients; shadows,Pending Design
 REQ-14,REQ,Flow,TBD,كشف جماعي: بناء وملخص,"Group manifest (build, summary)",Requests (06) / Booking,Import Excel/CSV; per-traveler status; rejected traveler does not stop the rest,Designed - Implemented (Flutter)
-REQ-15,REQ,Flow,TBD,تعميم شركة طيران,"Airline circular (pick approved security request, auto-filled)",Requests (06),Only an issued security approval; travelers auto-filled,Designed - Not implemented
+REQ-15,REQ,Flow,TBD,تعميم شركة طيران,"Airline circular (pick approved security request, auto-filled)",Requests (06),Only an issued security approval; travelers auto-filled,Designed - Implemented (Flutter)
 SYS-09,SYS,State,TBD,قاعدة صلاحية الجواز ٦ أشهر (حاجبة),Passport 6-month rule (blocking),Booking traveler form,Issue date in the future; expiry < 6 months from travel date,Designed - Implemented (Flutter)
 ACC-07,ACC,Screen,TBD,إدارة الفروع والهرمية,Branch management and hierarchy,Account (ACC),Filter requests by branch; staff and request counts,Designed - Implemented (Flutter)
 BOOK-10,BOOK,Screen,TBD,حصة المستشفى والتوفر,Hospital quota and availability,Booking (medical service),Remaining capacity this week; choose hospital,Designed - Implemented (Flutter)
 REQ-14b,REQ,State,TBD,ملخص الكشف الجماعي,Group manifest summary,REQ-14,GM-code; per-traveler status,Designed - Implemented (Flutter)
-REQ-15b,REQ,State,TBD,تعميم الطيران: معبّأ تلقائيًا,Airline circular auto-filled,REQ-15,Linked to the security approval; ticket only,Designed - Not implemented
+REQ-15b,REQ,State,TBD,تعميم الطيران: معبّأ تلقائيًا,Airline circular auto-filled,REQ-15,Linked to the security approval; ticket only,Designed - Implemented (Flutter)

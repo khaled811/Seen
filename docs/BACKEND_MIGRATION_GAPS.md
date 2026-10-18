@@ -1306,3 +1306,19 @@ The feature lives in `lib/features/manifest/`. It opens from the traveler form (
 - **Download.** `manifestIssuedVisasUrl(id) { url }`: one archive of the issued visas. The app opens it outside the app and **only if it is `https`**. Say how long the link lives.
 - **Not built.** No entry from the requests list or request detail to a manifest summary (the list has no "this is a manifest" flag); the summary opens only right after sending. Say how a manifest appears in `requests`.
   Notifications for a traveler's status change are not designed. Editing or removing a line of the manifest is not designed.
+
+## 46. Airline circular (Figma REQ-15, REQ-15b)
+Placeholder contracts; in a debug build, when a call fails, the three approvals of the Figma frame are used and the send is accepted (nothing is sent).
+The feature lives in `lib/features/airline_circular/`. It opens from a row at the bottom of the service catalog (it is not a catalog service).
+- **List.** `approvedSecurityRequests { id reference leadName travelerCount issuedAt }`: only **issued** security approvals of the agent, newest first, never cached. The app trusts the server to filter
+  (it does not check a status). Say if an approval can be linked to more than one circular, and whether one that already has a circular must be hidden or marked.
+- **Search.** The design has a search box (request number or traveler name). The app filters **the list it already has**, by reference or by the lead traveler only. If an agent can have hundreds of approvals the query needs
+  `search` and paging; the search by any traveler name needs the server (the list carries the lead name only).
+- **Prefill.** `circularPrefill(approvalId) { approval { ... } travelers { name passportNumber } }`: the travelers are copied into the circular and shown **locked** ("the fields are locked because they come from the original approval").
+  One name/passport pair per traveler (the design shows only the first of the approval); the app does not let the agent edit, add or remove a traveler.
+- **Send.** `submitAirlineCircular(approvalId, flightNumber, flightDate, ticketFileName, ticketBase64) { id }`. The ticket goes as base64 in the body (JPG, PNG or PDF, **5 MB at most**, checked on the device);
+  a multipart or pre-signed upload is better, say which. `flightDate` is `YYYY-MM-DD`.
+- **Flight.** The design shows **one** field, "RJ 615 · 18 October", already valid (a green check). The app has two fields, the flight number and a date picker (today or later, up to a year), because a free text cannot carry a date
+  reliably. If the server reads the number and date from the ticket, the fields should be dropped and the server should answer what it read, to confirm. The number is accepted as 2 characters (one a letter) then 1 to 4 digits, upper-cased.
+- **After sending.** The design has no success screen: the app goes back and says "the circular was sent". There is no list of circulars and no status for one; say where an agent follows a circular (a request in `requests`?).
+- **Airline.** The circular is for a flight, but the airline is not chosen anywhere in the design; say if it is derived from the flight number.

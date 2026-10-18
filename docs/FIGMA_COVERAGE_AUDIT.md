@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–45).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–46).
 
 ## Not built to the design (39 frames)
 
@@ -46,7 +46,7 @@ the same thing that does not follow the frame.
 
 ### Requests (4, no tracker rows)
 REQ-14 / 14b Group manifest (build, then summary with per-traveler status): **Done** (gaps section 45).
-REQ-15 / 15b Airline circular (pick an approved security request, then auto-filled): not built; needs new backend contracts.
+REQ-15 / 15b Airline circular (pick an approved security request, then auto-filled): **Done** (gaps section 46).
 
 ### Account (7)
 | Frame | Priority | What is missing |
