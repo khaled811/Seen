@@ -31,13 +31,16 @@ class TeamMember extends Equatable {
 
 /// What the invite sheet collects.
 class InviteDraft extends Equatable {
-  const InviteDraft({required this.name, required this.phone, required this.role, required this.branchName});
+  const InviteDraft({required this.name, required this.phone, required this.role, required this.branchName, this.branchId});
 
   final String name;
   final String phone;
   final TeamRole role;
   final String branchName;
 
+  /// Set when the branch was picked from the real list (Figma ACC-07); null when typed.
+  final String? branchId;
+
   @override
-  List<Object?> get props => [name, phone, role, branchName];
+  List<Object?> get props => [name, phone, role, branchName, branchId];
 }

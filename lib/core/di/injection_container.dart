@@ -104,6 +104,9 @@ import '../../features/auth/data/datasources/account_security_remote_data_source
 import '../../features/auth/domain/repositories/account_security_repository.dart';
 import '../../features/auth/presentation/bloc/account_security_cubits.dart';
 import '../../features/legal/data/datasources/legal_data_sources.dart';
+import '../../features/profile/data/datasources/branch_data_source.dart';
+import '../../features/profile/domain/repositories/branch_repository.dart';
+import '../../features/profile/presentation/bloc/branches_cubit.dart';
 import '../../features/services/data/datasources/service_interest_data_source.dart';
 import '../../features/services/domain/repositories/service_interest_repository.dart';
 import '../../features/services/presentation/bloc/service_interest_cubit.dart';
@@ -246,6 +249,7 @@ class InjectionContainer {
   late final SaveMarginsUseCase saveMarginsUseCase;
   late final TeamUseCases teamUseCases;
   late final AccountSecurityRepository accountSecurityRepository;
+  late final BranchRepository branchRepository;
   late final ServiceInterestRepository serviceInterestRepository;
   late final NotificationPreferencesRepository notificationPreferencesRepository;
   late final GetLegalDocumentUseCase getLegalDocumentUseCase;
@@ -411,6 +415,7 @@ class InjectionContainer {
       NotificationPreferencesRemoteDataSource(graphQLService: graphQLService),
     );
     serviceInterestRepository = ServiceInterestRepositoryImpl(graphQLService: graphQLService);
+    branchRepository = DebugFallbackBranchRepository(BranchRemoteDataSource(graphQLService: graphQLService));
     getLegalDocumentUseCase = GetLegalDocumentUseCase(
       LegalRepositoryImpl(
         remote: DebugFallbackLegalRemoteDataSource(LegalRemoteDataSourceImpl(graphQLService: graphQLService)),
@@ -555,6 +560,9 @@ class InjectionContainer {
   /// Builds the "notify me at launch" cubit of the coming-soon sheet; the sheet owns it.
   ServiceInterestCubit createServiceInterestCubit(String serviceKey) =>
       ServiceInterestCubit(serviceInterestRepository, serviceKey: serviceKey);
+
+  /// Builds the cubit of the branches screen; the screen owns it.
+  BranchesCubit createBranchesCubit() => BranchesCubit(branches: branchRepository, team: teamUseCases);
 
   /// Builds the cubits of the change-password / change-phone screens; each screen owns its own.
   ChangePasswordCubit createChangePasswordCubit() => ChangePasswordCubit(accountSecurityRepository);

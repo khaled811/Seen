@@ -1250,3 +1250,19 @@ Both need a session. All names below are placeholders; in a debug build, when th
   `PASSPORT_EXPIRY_TOO_SOON` with the traveler index. The server stays the authority; the app's check only saves a round trip.
 - **Same validator.** The rule itself is the existing `PassportValidators.isValidExpiryDate`; the 6 months are the app's default per field (`minMonthsInFuture`), the server
   may want to publish it per service so the two cannot disagree.
+
+## 43. Branches (Figma ACC-07)
+Placeholder contracts; in a debug build, when a call fails, they answer from an in-memory copy of the Figma sample so the screen can be used.
+- **Queries and mutations.**
+  - `branches { id name staffCount requestCount parentId }`: the main branch has `parentId: null`; the others hang under it (the design shows two levels; a deeper tree is not drawn).
+  - `branchStaff(branchId) { id name role }`.
+  - `createBranch(name)` (under the main branch) -> the branch.
+  - `assignMemberToBranch(memberId, branchId) { success }`: used for both "assign" and "move".
+- **Who.** The branch tree and its actions are **owner only** (`Capability.branches`); a branch manager manages users of their branch from the Users screen. The server must enforce this (403).
+  The owner is not assignable (they belong to the whole agency).
+- **"View requests by branch" is applied.** The choice is kept in the app (memory only) and sent as `requests(branchId: ID)`; `null` = all branches. **The `requests` query must accept `branchId`** and a branch manager should be
+  scoped to their own branch by the server regardless. The requests tab reloads when the choice changes. The choice resets when the app restarts.
+  Counts on the tree (`requestCount`) should be for the same period the requests list shows (say which: all time, or recent).
+- **Invite now picks a real branch.** The invite sheet offers the branches from `branches`; the draft sends `branchId` (and still `branchName`). With no list available it falls back to a typed name as before.
+  The server should prefer `branchId` and refuse an unknown one.
+- **Not built:** renaming, merging, or closing a branch, and moving a branch under another (no frames for them); a branch manager's assignment to a branch (the user list's "role" and "branch" remain separate edits).

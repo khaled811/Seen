@@ -4,7 +4,6 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/localization/locale_cubit.dart';
@@ -27,6 +26,7 @@ import '../../../support/presentation/screens/notification_preferences_screen.da
 import '../widgets/language_confirm_dialog.dart';
 import '../widgets/session_role.dart';
 import 'about_screen.dart';
+import 'branches_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, this.versionLoader = _loadVersion, this.permissions});
@@ -48,12 +48,6 @@ class SettingsScreen extends StatelessWidget {
     if (confirmed) {
       await cubit.toggleLocale();
     }
-  }
-
-  void _soon(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.comingSoon)));
   }
 
   @override
@@ -99,8 +93,13 @@ class SettingsScreen extends StatelessWidget {
                         chevron: true,
                         onTap: () => Navigator.of(context).push(NotificationPreferencesScreen.route()),
                       ),
-                      if (perms.can(Capability.team))
-                        _Row(icon: SeenIcons.building, title: s.branchesRow, chevron: true, onTap: () => _soon(context)),
+                      if (perms.can(Capability.branches))
+                        _Row(
+                          icon: SeenIcons.building,
+                          title: s.branchesRow,
+                          chevron: true,
+                          onTap: () => Navigator.of(context).push(BranchesScreen.route()),
+                        ),
                     ]),
                     const SizedBox(height: 12),
                     _Card(rows: [

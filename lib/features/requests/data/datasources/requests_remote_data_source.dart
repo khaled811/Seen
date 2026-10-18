@@ -3,6 +3,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../../../core/network/graphql_service.dart';
+import '../../../../core/state/branch_scope.dart';
 import '../../domain/entities/cancel_reason.dart';
 import '../models/request_detail_dto.dart';
 import '../models/request_summary_dto.dart';
@@ -25,10 +26,14 @@ abstract interface class RequestsRemoteDataSource {
 }
 
 class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
-  RequestsRemoteDataSourceImpl({required GraphQLService graphQLService})
-      : _graphQLService = graphQLService;
+  RequestsRemoteDataSourceImpl({required GraphQLService graphQLService, BranchScope? branchScope})
+      : _graphQLService = graphQLService,
+        _branchScope = branchScope ?? BranchScope.shared;
 
   final GraphQLService _graphQLService;
+
+  /// The branch the agent chose to view requests of (Figma ACC-07); null = all.
+  final BranchScope _branchScope;
 
   static const _travelerAndTimelineFields = r'''
     travelers { name passportNumber status documents { name url status } }
@@ -40,8 +45,8 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
   ''';
 
   static final _requestsDocument = gql(r'''
-    query Requests {
-      requests {
+    query Requests($branchId: ID) {
+      requests(branchId: $branchId) {
         id
         referenceId
         serviceName
@@ -94,6 +99,7 @@ class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
     return _graphQLService.query<List<RequestSummaryDto>>(
       QueryOptions<List<RequestSummaryDto>>(
         document: _requestsDocument,
+        variables: {'branchId': _branchScope.value},
         parserFn: (json) => (json['requests'] as List<dynamic>)
             .map((e) => RequestSummaryDto.fromJson(e as Map<String, dynamic>))
             .toList(),

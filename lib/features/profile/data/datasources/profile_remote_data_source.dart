@@ -69,8 +69,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   ''');
 
   static final _inviteDoc = gql('''
-    mutation InviteMember(\$name: String!, \$phone: String!, \$role: String!, \$branchName: String!) {
-      inviteMember(name: \$name, phone: \$phone, role: \$role, branchName: \$branchName) { $_memberFields }
+    mutation InviteMember(\$name: String!, \$phone: String!, \$role: String!, \$branchName: String!, \$branchId: ID) {
+      inviteMember(name: \$name, phone: \$phone, role: \$role, branchName: \$branchName, branchId: \$branchId) { $_memberFields }
     }
   ''');
 
@@ -141,7 +141,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<Either<Failure, TeamMember>> inviteMember(InviteDraft d) => _g.mutate<TeamMember>(
         MutationOptions<TeamMember>(
           document: _inviteDoc,
-          variables: {'name': d.name, 'phone': d.phone, 'role': roleWire(d.role), 'branchName': d.branchName},
+          variables: {'name': d.name, 'phone': d.phone, 'role': roleWire(d.role), 'branchName': d.branchName, 'branchId': d.branchId},
           parserFn: (j) => teamMemberFromJson(j['inviteMember'] as Map<String, dynamic>),
         ),
       );

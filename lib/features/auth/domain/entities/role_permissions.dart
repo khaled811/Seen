@@ -9,6 +9,9 @@ enum Capability {
   subAgents,
   team,
   margins,
+
+  /// The branch tree and moving people between branches (owner only).
+  branches,
 }
 
 /// The one place that says which role may do what, so menus, tabs and screens

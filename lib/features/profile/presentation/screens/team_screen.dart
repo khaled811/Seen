@@ -22,17 +22,22 @@ import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/latin_digits.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../system_status/presentation/widgets/access_denied_view.dart';
+import '../../domain/entities/branch.dart';
 import '../../domain/entities/team_member.dart';
+import '../widgets/branch_strings.dart' show BranchStrings;
 import '../bloc/profile_cubits.dart';
 import '../widgets/profile_strings.dart';
 import '../widgets/session_role.dart';
 
 class TeamScreen extends StatelessWidget {
-  const TeamScreen({super.key, this.createCubit, this.canManage});
+  const TeamScreen({super.key, this.createCubit, this.canManage, this.loadBranches});
 
   /// Test seams: default to the DI container and the signed-in position.
   final TeamCubit Function()? createCubit;
   final bool? canManage;
+
+  /// The branches offered when inviting; defaults to the server's list.
+  final Future<List<Branch>> Function()? loadBranches;
 
   static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const TeamScreen());
 
@@ -48,7 +53,7 @@ class TeamScreen extends StatelessWidget {
           child: allowed
               ? BlocProvider(
                   create: (_) => (createCubit ?? InjectionContainer.instance.createTeamCubit)()..load(),
-                  child: const _Allowed(),
+                  child: _Allowed(loadBranches: loadBranches),
                 )
               : Column(
                   children: [
@@ -72,14 +77,22 @@ class TeamScreen extends StatelessWidget {
 }
 
 class _Allowed extends StatelessWidget {
-  const _Allowed();
+  const _Allowed({this.loadBranches});
+
+  final Future<List<Branch>> Function()? loadBranches;
 
   Future<void> _invite(BuildContext context) async {
     final cubit = context.read<TeamCubit>();
+    // The real branches when the server has them; otherwise the branch is typed.
+    final branches = await (loadBranches ??
+        () async => (await InjectionContainer.instance.branchRepository.list()).getOrElse((_) => const <Branch>[]))();
+    if (!context.mounted) {
+      return;
+    }
     final draft = await showSeenSheet<InviteDraft>(
       context: context,
       title: SeenStrings.of(context).inviteUser,
-      builder: (_) => const _InviteForm(),
+      builder: (_) => _InviteForm(branches: branches),
     );
     if (draft != null) {
       await cubit.invite(draft);
@@ -391,7 +404,10 @@ class _RolePicker extends StatelessWidget {
 
 /// The invite sheet's body. Owns its controllers (created here, disposed here).
 class _InviteForm extends StatefulWidget {
-  const _InviteForm();
+  const _InviteForm({this.branches = const []});
+
+  /// Branches to pick from; empty = a text field.
+  final List<Branch> branches;
 
   @override
   State<_InviteForm> createState() => _InviteFormState();
@@ -402,6 +418,7 @@ class _InviteFormState extends State<_InviteForm> {
   final _phone = TextEditingController();
   final _branch = TextEditingController();
   TeamRole _role = TeamRole.staff;
+  Branch? _picked;
   String? _nameError;
   String? _phoneError;
   String? _branchError;
@@ -414,11 +431,38 @@ class _InviteFormState extends State<_InviteForm> {
     super.dispose();
   }
 
+  Future<void> _pickBranch() async {
+    final s = SeenStrings.of(context);
+    final picked = await showSeenSheet<Branch>(
+      context: context,
+      title: s.chooseBranch,
+      builder: (sheet) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final b in widget.branches)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(b.name),
+              trailing: SeenRadioDot(selected: b.id == _picked?.id),
+              onTap: () => Navigator.of(sheet).pop(b),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _picked = picked;
+        _branch.text = picked.name;
+        _branchError = null;
+      });
+    }
+  }
+
   void _submit() {
     final s = SeenStrings.of(context);
     final name = _name.text.trim();
     final phone = _phone.text.trim();
-    final branch = _branch.text.trim();
+    final branch = _picked?.name ?? _branch.text.trim();
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     setState(() {
       _nameError = name.isEmpty ? s.fieldRequired : null;
@@ -428,7 +472,7 @@ class _InviteFormState extends State<_InviteForm> {
     if (_nameError != null || _phoneError != null || _branchError != null) {
       return;
     }
-    Navigator.of(context).pop(InviteDraft(name: name, phone: phone, role: _role, branchName: branch));
+    Navigator.of(context).pop(InviteDraft(name: name, phone: phone, role: _role, branchName: branch, branchId: _picked?.id));
   }
 
   @override
@@ -467,7 +511,18 @@ class _InviteFormState extends State<_InviteForm> {
             ),
           ),
         const SizedBox(height: 4),
-        SeenTextField(label: s.inviteBranch, controller: _branch, errorText: _branchError, onSubmitted: (_) => _submit()),
+        if (widget.branches.isEmpty)
+          SeenTextField(label: s.inviteBranch, controller: _branch, errorText: _branchError, onSubmitted: (_) => _submit())
+        else
+          SeenTextField(
+            label: s.inviteBranch,
+            controller: _branch,
+            readOnly: true,
+            picker: true,
+            errorText: _branchError,
+            onTap: _pickBranch,
+            suffix: Icon(SeenIcons.forward(context), size: 16),
+          ),
         const SizedBox(height: SeenSpace.s4),
         SeenButton(label: s.inviteSend, expand: true, onPressed: _submit),
       ],

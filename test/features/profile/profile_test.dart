@@ -343,7 +343,7 @@ void main() {
   group('TeamScreen', () {
     testWidgets('lists the team with status chips, the roles, and invites a user', (tester) async {
       final repo = _Repo();
-      await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true));
+      await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true, loadBranches: () async => const []));
       expect(find.text('المستخدمون والصلاحيات'), findsOneWidget);
       expect(find.text('وليد ناصر'), findsOneWidget);
       expect(find.text('دعوة مُرسلة'), findsOneWidget);
@@ -371,7 +371,7 @@ void main() {
 
     testWidgets('a row opens its actions; the owner row does not', (tester) async {
       final repo = _Repo();
-      await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true));
+      await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true, loadBranches: () async => const []));
       await tester.tap(find.text('Majd Alhakeem'));
       await tester.pumpAndSettle();
       expect(find.text('تغيير الدور'), findsNothing);
@@ -386,7 +386,7 @@ void main() {
 
     testWidgets('disabling asks first', (tester) async {
       final repo = _Repo();
-      await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true));
+      await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true, loadBranches: () async => const []));
       await tester.tap(find.text('وليد ناصر'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('تعطيل المستخدم'));

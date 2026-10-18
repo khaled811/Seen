@@ -33,6 +33,7 @@ extension RoleStrings on SeenStrings {
         Capability.subAgents => _t('الوكلاء الفرعيون', 'Sub-agents'),
         Capability.team => _t('المستخدمون والفروع', 'Users and branches'),
         Capability.margins => _t('هامش الربح', 'Profit margin'),
+        Capability.branches => _t('إدارة الفروع', 'Branch management'),
       };
   String get subAgentsOwnerOnly =>
       _t('الوكلاء الفرعيون متاحون لمالك الحساب فقط. اطلب الصلاحية من مالك الحساب.',

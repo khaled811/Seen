@@ -8,6 +8,7 @@ import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/error_patterns.dart';
+import '../../../../core/state/branch_scope.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
 import '../../../../core/presentation/widgets/filters.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -43,7 +44,8 @@ class RequestsDashboardScreen extends StatelessWidget {
     final c = SeenColors.of(context);
     return BlocProvider(
       create: (_) => InjectionContainer.instance.createRequestsBloc()..add(const RequestsLoadRequested()),
-      child: Scaffold(
+      child: _ReloadOnBranchChange(
+        child: Scaffold(
         backgroundColor: c.card,
         body: SeenScreenBackground(
           child: SafeArea(
@@ -62,8 +64,41 @@ class RequestsDashboardScreen extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
+}
+
+/// Loads the requests again when the agent picks another branch to view (Figma ACC-07).
+/// Listens while shown, removes the listener in dispose.
+class _ReloadOnBranchChange extends StatefulWidget {
+  const _ReloadOnBranchChange({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ReloadOnBranchChange> createState() => _ReloadOnBranchChangeState();
+}
+
+class _ReloadOnBranchChangeState extends State<_ReloadOnBranchChange> {
+  @override
+  void initState() {
+    super.initState();
+    BranchScope.shared.addListener(_reload);
+  }
+
+  @override
+  void dispose() {
+    BranchScope.shared.removeListener(_reload);
+    super.dispose();
+  }
+
+  void _reload() {
+    if (mounted) context.read<RequestsBloc>().add(const RequestsLoadRequested());
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 Future<void> _openCatalog(BuildContext context) async {

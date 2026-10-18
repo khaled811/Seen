@@ -243,15 +243,8 @@ void main() {
       expect(privacy.state, isTrue);
     });
 
-    testWidgets('rows without a destination say so instead of doing nothing', (tester) async {
-      await open(tester);
-      await tester.tap(find.text('الفروع'));
-      await tester.pump();
-      expect(find.text('هذه الخدمة ستتوفر قريبًا.'), findsOneWidget);
-    });
-
-    testWidgets('staff do not see Branches', (tester) async {
-      await open(tester, permissions: const RolePermissions(AgentPosition.staff));
+    testWidgets('only the owner sees Branches (a manager or staff do not)', (tester) async {
+      await open(tester, permissions: const RolePermissions(AgentPosition.branchManager));
       expect(find.text('الفروع'), findsNothing);
     });
   });
