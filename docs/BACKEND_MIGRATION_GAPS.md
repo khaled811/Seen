@@ -1214,3 +1214,18 @@ Both need a session. All names below are placeholders; in a debug build, when th
   - After success the app only shows "use the new number to sign in"; the session keeps working. If the sign-in identifier is the phone, the saved
     login on the device is now stale.
 - Not built: changing the e-mail, and the country picker (fixed `+967`, as on Login).
+
+## 40. Notification preferences (Figma NOTIF-04)
+- **Server-side, not on the device.** Preferences decide which pushes the server sends, so they live on the server:
+  `notificationPreferences { categories { key enabled } quietHours { enabled startMinutes endMinutes } }` and
+  `saveNotificationPreferences(categories, quietHours)` returning what it now holds. Placeholder contract; in a debug build, when the call fails, they are
+  kept in memory. Defaults before the user changes anything (from the design): everything on except `promotions`; quiet hours on, 23:00 to 07:00.
+- **Categories.** `status_updates`, `documents`, `wallet`, `sub_agents`, `support`, `promotions`. The server maps event types onto them. The app assumes:
+  status update and rejected -> status updates; info required and SLA breach -> documents and deadlines; top-up -> wallet; new request and new agent -> sub-agents;
+  ticket reply -> support. Confirm or correct the mapping. Wallet and sub-agent categories are hidden for roles that cannot see those sections (section 34).
+- **Quiet hours** are minutes after midnight, in the **device's local time** (the end may be before the start: it crosses midnight). Only "urgent" pushes pass
+  during them; **which events are urgent is the server's call** (the design only says "urgent notifications only", e.g. a deadline under 24 h).
+  If quiet hours should follow the user's time zone rather than the phone's, the server needs the zone.
+- **Behaviour.** A switch moves at once and is saved in the background, one request at a time with the latest state; if the server refuses, the switch goes back with a message.
+- **Device permission.** If the device has notifications off, a banner at the top leads to the permission screen (section 35); the switches still save.
+- Not built: per-channel choice (push, in-app, e-mail), and sound / vibration choices.

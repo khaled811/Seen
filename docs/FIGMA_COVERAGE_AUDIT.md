@@ -13,7 +13,7 @@ REQ-01 … 13 (incl. 05b, 10b, 11b) · SUP-01 … 05 · SYS-01, 02, 02b · WAL-0
 
 Known limits inside these (not gaps in the frames): PDF preview needs a PDF plugin; receipts and ticket
 attachments have no upload API; the contact numbers come from build settings; every backend call uses
-a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–39).
+a placeholder contract (`docs/BACKEND_MIGRATION_GAPS.md`, sections 1–40).
 
 ## Not built to the design (39 frames)
 
@@ -54,7 +54,7 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 | ACC-01 Agency details & commercial register | P1 | **Done** except edit and renew, which point to support (no contract). See gaps section 33. |
 | ACC-02 Profit margin | P1 | **Done.** Per-service margins, read-only rows, change log (section 33). |
 | ACC-03 Users and permissions | P1 | **Done.** Team list, roles, invite, change role, disable; owner only (section 33). |
-| ACC-04 Settings | P1 | **Mostly done.** Language (confirmed), appearance, hide balance, About, Change password and Change phone work; fingerprint is off (needs a plugin); notifications and branches say "coming soon". See gaps section 34. |
+| ACC-04 Settings | P1 | **Mostly done.** Everything works except fingerprint (needs a plugin) and Branches (ACC-07 not built). See gaps section 34. |
 | ACC-05 Language switch confirmation | P2 | **Done** (no restart: the app switches live, gaps section 38). |
 | ACC-06 About / legal | P2 | **Done.** Needs a store link from the server for "Rate the app" (section 38). |
 | ACC-07 Branch management & hierarchy | — | Whole screen (no tracker row). |
@@ -65,7 +65,7 @@ REQ-14 / 14b Group manifest (build, then summary with per-traveler status) · RE
 | NOTIF-01 Empty | P1 | **Done.** Unread / All chips and the "all caught up" state. See gaps section 35. |
 | NOTIF-02 Event types | P1 | **Done** for the feed: 8 icons and tones, deep links (some land on a nearby screen, section 35). |
 | NOTIF-03 Push permission prompt | P1 | **Partly.** The pre-permission screen and the refused state work; no push delivery exists yet, and Android cannot open its settings page (section 35). |
-| NOTIF-04 Preferences | P2 | Per-event toggles, quiet hours. |
+| NOTIF-04 Preferences | P2 | **Done.** Six categories and quiet hours, saved on the server (gaps section 40). |
 
 ### System (7)
 | Frame | Priority | What is missing |

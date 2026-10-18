@@ -245,7 +245,7 @@ void main() {
 
     testWidgets('rows without a destination say so instead of doing nothing', (tester) async {
       await open(tester);
-      await tester.tap(find.text('الإشعارات'));
+      await tester.tap(find.text('الفروع'));
       await tester.pump();
       expect(find.text('هذه الخدمة ستتوفر قريبًا.'), findsOneWidget);
     });

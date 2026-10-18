@@ -104,6 +104,9 @@ import '../../features/auth/data/datasources/account_security_remote_data_source
 import '../../features/auth/domain/repositories/account_security_repository.dart';
 import '../../features/auth/presentation/bloc/account_security_cubits.dart';
 import '../../features/legal/data/datasources/legal_data_sources.dart';
+import '../../features/support/data/datasources/notification_preferences_data_source.dart';
+import '../../features/support/domain/repositories/notification_preferences_repository.dart';
+import '../../features/support/presentation/bloc/notification_preferences_cubit.dart';
 import '../../features/legal/data/repositories/legal_repository_impl.dart';
 import '../../features/legal/domain/entities/legal_document.dart';
 import '../../features/legal/presentation/bloc/legal_cubit.dart';
@@ -240,6 +243,7 @@ class InjectionContainer {
   late final SaveMarginsUseCase saveMarginsUseCase;
   late final TeamUseCases teamUseCases;
   late final AccountSecurityRepository accountSecurityRepository;
+  late final NotificationPreferencesRepository notificationPreferencesRepository;
   late final GetLegalDocumentUseCase getLegalDocumentUseCase;
   late final GetAppStatusUseCase getAppStatusUseCase;
   late final RequestAccessUseCase requestAccessUseCase;
@@ -399,6 +403,9 @@ class InjectionContainer {
     teamUseCases = TeamUseCases(profileRepository);
     accountSecurityRepository =
         DebugFallbackAccountSecurityRepository(AccountSecurityRemoteDataSource(graphQLService: graphQLService));
+    notificationPreferencesRepository = DebugFallbackNotificationPreferencesRepository(
+      NotificationPreferencesRemoteDataSource(graphQLService: graphQLService),
+    );
     getLegalDocumentUseCase = GetLegalDocumentUseCase(
       LegalRepositoryImpl(
         remote: DebugFallbackLegalRemoteDataSource(LegalRemoteDataSourceImpl(graphQLService: graphQLService)),
@@ -535,6 +542,10 @@ class InjectionContainer {
       MarginsCubit(get: getMarginsUseCase, save: saveMarginsUseCase, canEdit: canEdit);
 
   TeamCubit createTeamCubit() => TeamCubit(teamUseCases);
+
+  /// Builds the cubit of the notification-preferences screen; the screen owns it.
+  NotificationPreferencesCubit createNotificationPreferencesCubit() =>
+      NotificationPreferencesCubit(notificationPreferencesRepository);
 
   /// Builds the cubits of the change-password / change-phone screens; each screen owns its own.
   ChangePasswordCubit createChangePasswordCubit() => ChangePasswordCubit(accountSecurityRepository);

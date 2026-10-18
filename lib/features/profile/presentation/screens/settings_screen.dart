@@ -23,6 +23,7 @@ import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../home/presentation/widgets/role_strings.dart';
 import '../../../auth/presentation/screens/change_password_screen.dart';
 import '../../../auth/presentation/screens/change_phone_screen.dart';
+import '../../../support/presentation/screens/notification_preferences_screen.dart';
 import '../widgets/language_confirm_dialog.dart';
 import '../widgets/session_role.dart';
 import 'about_screen.dart';
@@ -92,7 +93,12 @@ class SettingsScreen extends StatelessWidget {
                         value: s.themeValue(light),
                         onTap: context.read<ThemeModeCubit>().toggleThemeMode,
                       ),
-                      _Row(icon: SeenIcons.bell, title: s.notificationsRow, chevron: true, onTap: () => _soon(context)),
+                      _Row(
+                        icon: SeenIcons.bell,
+                        title: s.notificationsRow,
+                        chevron: true,
+                        onTap: () => Navigator.of(context).push(NotificationPreferencesScreen.route()),
+                      ),
                       if (perms.can(Capability.team))
                         _Row(icon: SeenIcons.building, title: s.branchesRow, chevron: true, onTap: () => _soon(context)),
                     ]),

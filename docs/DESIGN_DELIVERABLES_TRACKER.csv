@@ -71,7 +71,7 @@ ACC-06,ACC,Screen,P2,حول التطبيق,About / legal,Settings,Version; licen
 NOTIF-01,NOTIF,State,P1,الإشعارات فارغة,Notifications empty,Notifications (17),No notifications; all read filter,Designed - Implemented (Flutter)
 NOTIF-02,NOTIF,Component,P1,تصميم لكل نوع إشعار (8),Notification type set (8 events),Notifications (17),"new request, status update, info required, rejected, SLA breach, top-up, new agent, ticket update; icon tone; deep link",Designed - Implemented (Flutter)
 NOTIF-03,NOTIF,Sheet,P1,طلب إذن الإشعارات,Push permission prompt,First launch / after login,Denied; settings deep link,Designed - Partly implemented (Flutter)
-NOTIF-04,NOTIF,Screen,P2,تفضيلات الإشعارات,Notification preferences,Settings,Per event toggle; quiet hours,Designed - Not implemented
+NOTIF-04,NOTIF,Screen,P2,تفضيلات الإشعارات,Notification preferences,Settings,Per event toggle; quiet hours,Designed - Implemented (Flutter)
 SYS-01,SYS,Component,P0,شريط انقطاع الاتصال,Offline banner,Any screen offline,Stale data marker; retry; queued actions,Designed - Implemented (Flutter; partial: see gaps section 16)
 SYS-02,SYS,Component,P0,أخطاء الشبكة والخادم,Network and server error patterns,Any failed call,Inline + retry; full screen; error sheet for failed mutations; timeout,Designed - Implemented (Flutter; partial: see gaps section 16)
 SYS-03,SYS,State,P1,غير مصرّح (403),Forbidden / no permission,Action or screen without permission,Hidden vs disabled; explanation; request access,Designed - Implemented (Flutter)
