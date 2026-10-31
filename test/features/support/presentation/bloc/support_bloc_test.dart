@@ -29,9 +29,11 @@ SupportTicket _ticket(String id, {List<TicketMessage> messages = const []}) => S
 class _FakeSupportRepository implements SupportRepository {
   Either<Failure, List<SupportTicket>> ticketsResult = Right([_ticket('1')]);
   Either<Failure, SupportTicket>? createResult;
-  Either<Failure, SupportTicket>? replyResult;
+  Either<Failure, TicketMessage>? replyResult;
   String? lastCreateSubject;
   String? lastReplyMessage;
+  String? lastCreateAttachment;
+  String? lastReplyAttachment;
 
   @override
   Future<Either<Failure, List<SupportTicket>>> getTickets() async => ticketsResult;
@@ -43,8 +45,11 @@ class _FakeSupportRepository implements SupportRepository {
     required String message,
     String? requestId,
     TicketPriority priority = TicketPriority.normal,
+    String? attachmentFileId,
+      String? categoryCode,
   }) async {
     lastCreateSubject = subject;
+    lastCreateAttachment = attachmentFileId;
     return createResult ??
         Right(
           SupportTicket(
@@ -70,39 +75,47 @@ class _FakeSupportRepository implements SupportRepository {
   }
 
   @override
-  Future<Either<Failure, SupportTicket>> replyToTicket({
+  Future<Either<Failure, TicketMessage>> replyToTicket({
     required String ticketId,
     required String message,
+    String? attachmentFileId,
   }) async {
     lastReplyMessage = message;
+    lastReplyAttachment = attachmentFileId;
     return replyResult ??
         Right(
-          _ticket(
-            ticketId,
-            messages: [
-              TicketMessage(
-                id: '$ticketId-msg-new',
-                authorName: 'You',
-                isSupportReply: false,
-                body: message,
-                sentAt: DateTime(2026, 1, 3),
-              ),
-            ],
+          TicketMessage(
+            id: '$ticketId-msg-new',
+            authorName: 'You',
+            isSupportReply: false,
+            body: message,
+            sentAt: DateTime(2026, 1, 3),
           ),
         );
   }
 
+  Either<Failure, SupportTicket>? ticketResult;
+  final opened = <String>[];
+
   @override
-  Future<Either<Failure, List<InAppNotification>>> getNotifications() =>
+  Future<Either<Failure, SupportTicket>> getTicket(String ticketId) async {
+    opened.add(ticketId);
+    return ticketResult ?? Right(_ticket(ticketId));
+  }
+
+  @override
+  Future<Either<Failure, NotificationsPage>> getNotifications({bool unreadOnly = false, int limit = 20, int offset = 0}) =>
       throw UnimplementedError('Not used by SupportBloc');
 
   @override
-  Future<Either<Failure, void>> markNotificationRead(String notificationId) =>
+  Future<Either<Failure, int>> getUnreadNotificationCount() => throw UnimplementedError('Not used by SupportBloc');
+
+  @override
+  Future<Either<Failure, bool>> markNotificationRead(String notificationId) =>
       throw UnimplementedError('Not used by SupportBloc');
 
   @override
-  Future<Either<Failure, void>> markAllNotificationsRead() =>
-      throw UnimplementedError('Not used by SupportBloc');
+  Future<Either<Failure, int>> markAllNotificationsRead() => throw UnimplementedError('Not used by SupportBloc');
 }
 
 void main() {
@@ -115,6 +128,7 @@ void main() {
       getTicketsUseCase: GetTicketsUseCase(repository),
       createTicketUseCase: CreateTicketUseCase(repository),
       replyToTicketUseCase: ReplyToTicketUseCase(repository),
+      getTicketUseCase: GetTicketUseCase(repository),
     );
   });
 
@@ -203,6 +217,34 @@ void main() {
       final updated = done.ticketById('1')!;
       expect(updated.messages, hasLength(1));
       expect(updated.messages.first.body, 'Following up');
+    });
+
+    test('a staged file travels with the reply, and again when a failed one is retried', () async {
+      await load();
+      repository.replyResult = const Left(NetworkFailure('offline'));
+      bloc.add(const SupportTicketReplySubmitted(ticketId: '1', message: 'See file', attachmentFileId: 'file-3'));
+      final failed = await bloc.stream.firstWhere(
+        (s) => s is SupportLoaded && s.replyStatus == ReplyStatus.failure,
+      ) as SupportLoaded;
+      expect(repository.lastReplyAttachment, 'file-3');
+
+      repository.replyResult = null;
+      repository.lastReplyAttachment = null;
+      bloc.add(SupportOutboxRetryRequested(failed.outbox.single.localId));
+      await bloc.stream.firstWhere((s) => s is SupportLoaded && s.replyStatus == ReplyStatus.success);
+      expect(repository.lastReplyAttachment, 'file-3');
+    });
+
+    test('a new ticket carries its staged file', () async {
+      await load();
+      bloc.add(const SupportTicketCreateSubmitted(
+        category: TicketCategory.general,
+        subject: 'S',
+        message: 'M',
+        attachmentFileId: 'file-9',
+      ));
+      await bloc.stream.firstWhere((s) => s is SupportLoaded && s.createdTicketId != null);
+      expect(repository.lastCreateAttachment, 'file-9');
     });
   });
 }

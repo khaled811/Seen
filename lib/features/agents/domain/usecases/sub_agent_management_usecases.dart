@@ -14,16 +14,6 @@ class CreateSubAgentUseCase {
       _repository.createSubAgent(newSubAgent);
 }
 
-class UpdateCreditLimitUseCase {
-  const UpdateCreditLimitUseCase(this._repository);
-  final AgentsRepository _repository;
-
-  Future<Either<Failure, SubAgent>> call(
-          {required String subAgentId, required int limitCents}) =>
-      _repository.updateCreditLimit(
-          subAgentId: subAgentId, limitCents: limitCents);
-}
-
 class GetSubAgentProfileUseCase {
   const GetSubAgentProfileUseCase(this._repository);
   final AgentsRepository _repository;
@@ -36,8 +26,6 @@ class SetSubAgentActiveUseCase {
   const SetSubAgentActiveUseCase(this._repository);
   final AgentsRepository _repository;
 
-  Future<Either<Failure, SubAgent>> call(
-          {required String subAgentId, required bool active, String? reason}) =>
-      _repository.setSubAgentActive(
-          subAgentId: subAgentId, active: active, reason: reason);
+  Future<Either<Failure, void>> call({required String subAgentId, required bool active}) =>
+      _repository.setSubAgentActive(subAgentId: subAgentId, active: active);
 }

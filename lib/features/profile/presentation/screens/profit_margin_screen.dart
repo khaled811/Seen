@@ -19,36 +19,44 @@ import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../domain/entities/service_margin.dart';
 import '../bloc/profile_cubits.dart';
 import '../widgets/profile_strings.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../widgets/session_role.dart';
 
-/// Server error code when a margin value is refused.
-/// TODO(backend-contract): confirm the name (docs/BACKEND_MIGRATION_GAPS.md section 33).
-const marginInvalidCode = 'INVALID_MARGIN';
+/// Server error codes of `setAgentServiceEnablement` when a margin is refused.
+const marginRefusedCodes = {'margin_invalid', 'margin_out_of_range', 'margin_conflict'};
 
 class ProfitMarginScreen extends StatelessWidget {
-  const ProfitMarginScreen({super.key, this.createCubit});
+  const ProfitMarginScreen({super.key, required this.agentId, this.agentName, this.createCubit});
+
+  /// The sub-agency whose margins these are.
+  final String agentId;
+  final String? agentName;
 
   /// Test seam; defaults to the DI container.
   final MarginsCubit Function()? createCubit;
 
-  static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const ProfitMarginScreen());
+  static Route<void> route({required String agentId, String? agentName}) =>
+      MaterialPageRoute<void>(builder: (_) => ProfitMarginScreen(agentId: agentId, agentName: agentName));
 
   @override
   Widget build(BuildContext context) {
     final s = SeenStrings.of(context);
     return BlocProvider(
-      create: (_) => (createCubit ?? () => InjectionContainer.instance.createMarginsCubit(canEdit: permissionsOf(context).can(Capability.margins)))()..load(),
+      create: (_) => (createCubit ??
+          () => InjectionContainer.instance.createMarginsCubit(agentId: agentId, canEdit: permissionsOf(context).can(Capability.margins)))()
+        ..load(),
       child: BlocConsumer<MarginsCubit, MarginsState>(
         listenWhen: (p, c) => p.save != c.save && (c.save == MarginSaveStatus.saved || c.save == MarginSaveStatus.failed),
         listener: (context, state) {
           final failure = state.failure;
           final message = state.save == MarginSaveStatus.saved
               ? s.marginSaved
-              : (failure is ServerFailure && failure.code == marginInvalidCode || failure is ValidationFailure
+              : (failure is ServerFailure && marginRefusedCodes.contains(failure.code) || failure is ValidationFailure
                   ? s.marginRejected
                   : s.marginSaveFailed);
           ScaffoldMessenger.of(context)
@@ -77,7 +85,7 @@ class ProfitMarginScreen extends StatelessWidget {
                   bottom: false,
                   child: Column(
                     children: [
-                      SeenScreenHeader(title: s.marginTitle),
+                      SeenScreenHeader(title: s.marginTitle, subtitle: agentName),
                       Expanded(child: _Body(state: state)),
                       if (state.status == LoadStatus.loaded && cubit.canEdit)
                         SeenActionBar(
@@ -129,6 +137,10 @@ class _Body extends StatelessWidget {
     final c = SeenColors.of(context);
     final cubit = context.read<MarginsCubit>();
     if (state.margins.isEmpty) {
+      if (state.status == LoadStatus.loaded) {
+        // Loaded, but no service is enabled for this sub-agency: nothing to set.
+        return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(s.marginNoServices, textAlign: TextAlign.center)));
+      }
       if (state.status == LoadStatus.failure) {
         return Center(
           child: Column(
@@ -141,10 +153,13 @@ class _Body extends StatelessWidget {
           ),
         );
       }
-      return SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel);
+      return SeenWaitPolicy.loading(
+        loading: SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel),
+        onRetry: cubit.load,
+      );
     }
     final locked = [for (final m in state.margins) if (!m.editable) m.serviceName];
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: cubit.load,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, SeenSpace.s6),

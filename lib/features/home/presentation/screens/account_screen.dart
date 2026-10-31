@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -6,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
@@ -19,23 +22,29 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/widgets/logout_confirm_dialog.dart';
 import '../../../profile/presentation/screens/agency_details_screen.dart';
-import '../../../profile/presentation/screens/profit_margin_screen.dart';
+import '../../../profile/presentation/screens/margin_agent_picker_screen.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../profile/presentation/screens/settings_screen.dart';
 import '../../../profile/presentation/screens/team_screen.dart';
 import '../../../profile/presentation/widgets/session_role.dart';
+import '../../../support/presentation/bloc/unread_notifications_cubit.dart';
 import '../../../support/presentation/screens/notifications_screen.dart';
 import '../../../support/presentation/screens/help_center_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
+import '../../../profile/presentation/widgets/avatar_flow.dart';
+import '../../../profile/presentation/widgets/profile_photo.dart';
 
 /// Figma 14 — account hub (node 18:835): title + bell, profile card, the
 /// "Agency" and "App" menus, a sign-out block. Lives as the fifth tab of
 /// [AgentShell] (`embedded: true`, bottom bar stays) and can also be pushed
 /// standalone from the Home avatar.
-class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key, this.embedded = false, this.versionLoader = _loadVersion});
+class AccountScreen extends StatefulWidget {
+  const AccountScreen({super.key, this.embedded = false, this.versionLoader = _loadVersion, this.pollUnread = true});
 
   final bool embedded;
+
+  /// Poll the unread notification count (foreground only). Tests turn it off.
+  final bool pollUnread;
 
   /// Resolves the app version string; tests pass a stub.
   final Future<String> Function() versionLoader;
@@ -44,8 +53,52 @@ class AccountScreen extends StatelessWidget {
 
   static Route<void> route() => MaterialPageRoute<void>(builder: (_) => const AccountScreen());
 
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  // Created here (when polling is on), closed in dispose(): it polls only while
+  // the app is in the foreground and stops with this screen.
+  late final UnreadNotificationsCubit? _unread =
+      widget.pollUnread ? (InjectionContainer.instance.createUnreadNotificationsCubit()..start()) : null;
+
+  /// The agency's name from `portalAccount`; until it is read (or when it cannot
+  /// be) the card keeps the generic title.
+  String? _agencyName;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.pollUnread) unawaited(_loadAgencyName());
+  }
+
+  Future<void> _loadAgencyName() async {
+    try {
+      final result = await InjectionContainer.instance.getAgencyProfileUseCase();
+      if (!mounted) return;
+      result.fold((_) {}, (profile) {
+        if (profile.name.isNotEmpty) setState(() => _agencyName = profile.name);
+      });
+    } on Object {
+      // No container in scope (a bare widget test): the generic title stays.
+    }
+  }
+
+  @override
+  void dispose() {
+    _unread?.close();
+    super.dispose();
+  }
+
   void _push(BuildContext context, Widget page) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+
+  /// Opens the inbox and reads the count again when it is closed (it was read there).
+  Future<void> _openNotifications(BuildContext context) async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()));
+    unawaited(_unread?.refresh());
+  }
 
   Future<void> _confirmSignOut(BuildContext context) async {
     final authBloc = context.read<AuthBloc>();
@@ -76,7 +129,7 @@ class AccountScreen extends StatelessWidget {
           }
         : null;
 
-    return Scaffold(
+    final screen = Scaffold(
       body: SeenScreenBackground(
         child: SafeArea(
           bottom: false,
@@ -89,12 +142,18 @@ class AccountScreen extends StatelessWidget {
                   Expanded(child: Text(l10n.accountTitle, style: t.h1)),
                   _BellButton(
                     label: l10n.notificationsTitle,
-                    onTap: () => _push(context, const NotificationsScreen()),
+                    unread: widget.pollUnread,
+                    onTap: () => _openNotifications(context),
                   ),
                 ],
               ),
               const SizedBox(height: SeenSpace.s5),
-              _ProfileCard(title: l10n.accountAgencyFallback, subtitle: role),
+              _ProfileCard(
+                title: _agencyName ?? l10n.accountAgencyFallback,
+                subtitle: role,
+                onPhotoTap: () => changeProfilePhoto(context),
+              ),
+              const AvatarStatusCard(),
               _SectionLabel(l10n.accountSectionAgency),
               _MenuCard(items: [
                 _MenuItem(
@@ -106,7 +165,7 @@ class AccountScreen extends StatelessWidget {
                   _MenuItem(
                     asset: SeenVectors.accountCash,
                     title: l10n.accountItemMargin,
-                    onTap: () => Navigator.of(context).push(ProfitMarginScreen.route()),
+                    onTap: () => Navigator.of(context).push(MarginAgentPickerScreen.route()),
                   ),
                 if (permissions.can(Capability.team))
                   _MenuItem(
@@ -120,7 +179,7 @@ class AccountScreen extends StatelessWidget {
                 _MenuItem(
                   asset: SeenVectors.accountBell,
                   title: l10n.notificationsTitle,
-                  onTap: () => _push(context, const NotificationsScreen()),
+                  onTap: () => _openNotifications(context),
                 ),
                 _MenuItem(
                   asset: SeenVectors.accountSettings,
@@ -141,29 +200,32 @@ class AccountScreen extends StatelessWidget {
               const SizedBox(height: 18),
               _SignOutBlock(label: l10n.accountSignOutAction, onTap: () => _confirmSignOut(context)),
               const SizedBox(height: 18),
-              _VersionLine(loader: versionLoader),
-              SizedBox(height: embedded ? 0 : MediaQuery.paddingOf(context).bottom),
+              _VersionLine(loader: widget.versionLoader),
+              SizedBox(height: widget.embedded ? 0 : MediaQuery.paddingOf(context).bottom),
             ],
           ),
         ),
       ),
     );
+    final unread = _unread;
+    return unread == null ? screen : BlocProvider<UnreadNotificationsCubit>.value(value: unread, child: screen);
   }
 }
 
 class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.title, this.subtitle});
+  const _ProfileCard({required this.title, this.subtitle, required this.onPhotoTap});
 
   final String title;
   final String? subtitle;
+  final VoidCallback onPhotoTap;
 
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
     const radius = BorderRadius.all(SeenRadius.r22);
-    // The session has no agency / agent name yet, so the card shows the
-    // account kind and role; the avatar carries a building glyph, not initials.
+    // The title is the agency's name once `portalAccount` answered; the avatar
+    // carries a building glyph (the API has no picture to show here).
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: SeenBrand.gradientPromo,
@@ -185,13 +247,17 @@ class _ProfileCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 25),
               child: Row(
                 children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: c.card,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: SeenBrand.violet40, width: 2),
+                  ProfilePhoto(
+                    size: 64,
+                    onTap: onPhotoTap,
+                    fallback: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: c.card,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: SeenBrand.violet40, width: 2),
+                      ),
+                      child: SizedBox(width: 64, height: 64, child: Icon(SeenIcons.building, size: 28, color: c.primary)),
                     ),
-                    child: SizedBox(width: 64, height: 64, child: Icon(SeenIcons.building, size: 28, color: c.primary)),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -400,29 +466,56 @@ class _Chevron extends StatelessWidget {
 
 /// Header bell: 44 px circle (Figma "Icon button · bell") with the exported icon.
 class _BellButton extends StatelessWidget {
-  const _BellButton({required this.label, required this.onTap});
+  const _BellButton({required this.label, required this.onTap, this.unread = false});
 
   final String label;
   final VoidCallback onTap;
 
+  /// Shows the unread count (needs an [UnreadNotificationsCubit] above).
+  final bool unread;
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
-    return Semantics(
-      button: true,
-      label: label,
-      excludeSemantics: true,
-      child: Material(
-        color: SeenBrand.violet10,
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 44,
-            height: 44,
-            child: Center(child: SeenSvgIcon(SeenVectors.accountBell, size: 22, color: c.primary)),
-          ),
+    final bell = Material(
+      color: SeenBrand.violet10,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(child: SeenSvgIcon(SeenVectors.accountBell, size: 22, color: c.primary)),
+        ),
+      ),
+    );
+    if (!unread) return Semantics(button: true, label: label, excludeSemantics: true, child: bell);
+    return BlocBuilder<UnreadNotificationsCubit, int>(
+      builder: (context, count) => Semantics(
+        button: true,
+        label: count > 0 ? '$label, ${SeenStrings.of(context).unreadCount(count)}' : label,
+        excludeSemantics: true,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            bell,
+            if (count > 0)
+              PositionedDirectional(
+                top: -2,
+                end: -2,
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(color: SeenBrand.violet, borderRadius: BorderRadius.all(SeenRadius.full)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    child: Text(
+                      count > 99 ? '99+' : SeenStrings.of(context).numeral(count),
+                      style: SeenType.of(context).caption.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

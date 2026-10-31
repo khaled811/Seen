@@ -1,33 +1,29 @@
 import '../../../legal/domain/entities/legal_document.dart';
 import '../../../legal/presentation/screens/legal_document_screen.dart';
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
-import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
-import '../../../../core/presentation/widgets/feedback.dart';
 import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
-import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
-import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../domain/entities/agency_registration.dart';
 import '../bloc/agency_registration_bloc.dart';
 import 'forgot_password_flow.dart' show SeenMotionlessEye;
+import '../../../../core/presentation/widgets/svg_icon.dart';
 
-/// Registration after the agency form (Figma AUTH-05 … AUTH-07, steps 2–4 of 4):
-/// create a password, verify the phone with a code, accept the terms. Owns an
+/// Registration after the agency form (Figma AUTH-05 / AUTH-07, steps 2–3 of 3):
+/// create a password, accept the terms (which registers the agency; the server
+/// e-mails a confirmation link, there is no phone code). Owns an
 /// [AgencyRegistrationBloc]; the system back gesture steps back inside the flow
 /// and leaves it (to the form, with its data kept) from the first step.
 class AgencyRegistrationFlow extends StatelessWidget {
@@ -88,12 +84,6 @@ class AgencyRegistrationFlow extends StatelessWidget {
               child: switch (step) {
                 RegistrationStep.password =>
                   _PasswordScreen(key: const ValueKey('registration-password'), onBack: onExit, onSignIn: onSignIn),
-                RegistrationStep.otp => _PhoneScreen(
-                    key: const ValueKey('registration-otp'),
-                    onBack: back,
-                    onEditPhone: onExit,
-                    onSignIn: onSignIn,
-                  ),
                 _ => _TermsScreen(key: const ValueKey('registration-terms'), onBack: back),
               },
             ),
@@ -104,8 +94,8 @@ class AgencyRegistrationFlow extends StatelessWidget {
   }
 }
 
-/// Shared frame: gradient wash, centred title + "step n of 4" with a back
-/// button, the 4-segment progress, a scrolling body and a sticky action bar.
+/// Shared frame: gradient wash, centred title + "step n of 3" with a back
+/// button, the 3-segment progress, a scrolling body and a sticky action bar.
 class _Frame extends StatelessWidget {
   const _Frame({
     required this.title,
@@ -136,7 +126,7 @@ class _Frame extends StatelessWidget {
             children: [
               SeenScreenHeader(
                 title: title,
-                subtitle: l10n.registrationStepOf(s.numeral(step), s.numeral(4)),
+                subtitle: l10n.registrationStepOf(s.numeral(step), s.numeral(3)),
                 onBack: onBack,
               ),
               Expanded(
@@ -158,7 +148,7 @@ class _Frame extends StatelessWidget {
   }
 }
 
-/// Four segments; the first [step] (from the start edge) are done.
+/// Three segments; the first [step] (from the start edge) are done.
 class _Progress extends StatelessWidget {
   const _Progress({required this.step});
 
@@ -169,7 +159,7 @@ class _Progress extends StatelessWidget {
     return ExcludeSemantics(
       child: Row(
         children: [
-          for (var i = 0; i < 4; i++) ...[
+          for (var i = 0; i < 3; i++) ...[
             if (i > 0) const SizedBox(width: 4),
             Expanded(
               child: DecoratedBox(
@@ -213,7 +203,7 @@ class _PasswordScreenState extends State<_PasswordScreen> {
   }
 
   String get _text => _password.text;
-  bool get _hasLength => _text.length >= 8;
+  bool get _hasLength => _text.length >= 12; // the contract's minimum
   bool get _hasCase => RegExp('[a-z]').hasMatch(_text) && RegExp('[A-Z]').hasMatch(_text);
   bool get _hasDigit => RegExp('[0-9]').hasMatch(_text);
   bool get _hasSymbol => RegExp('[^A-Za-z0-9]').hasMatch(_text);
@@ -255,7 +245,7 @@ class _PasswordScreenState extends State<_PasswordScreen> {
               child: SizedBox(
                 width: 16,
                 height: 16,
-                child: ok ? Icon(SeenIcons.check, size: 10, color: Colors.white) : null,
+                child: ok ? const SeenCheckGlyph(size: 10, color: Colors.white) : null,
               ),
             ),
             const SizedBox(width: 8),
@@ -362,183 +352,17 @@ class _PasswordScreenState extends State<_PasswordScreen> {
   }
 }
 
-/// The banner for any [RegistrationIssue] that is not a code problem.
+/// The banner for a [RegistrationIssue] (the e-mail conflict goes back to the form instead).
 Widget _issueBanner(AppLocalizations l10n, SeenStrings s, RegistrationIssue issue, VoidCallback? onSignIn) {
   return switch (issue.kind) {
-    RegistrationIssueKind.phoneTaken => SeenInlineBanner(
-        tone: SeenBannerTone.error,
-        message: l10n.registrationPhoneTaken,
-        actionLabel: l10n.loginAction,
-        onAction: onSignIn,
-      ),
-    RegistrationIssueKind.rateLimited => SeenInlineBanner(
-        tone: SeenBannerTone.warn,
-        message: l10n.recoveryRateLimited(s.clockMs(issue.seconds ?? 60)),
-      ),
+    RegistrationIssueKind.rateLimited =>
+      SeenInlineBanner(tone: SeenBannerTone.warn, message: l10n.errorTooManyAttempts('${issue.minutes ?? 60}')),
     RegistrationIssueKind.offline => SeenInlineBanner(tone: SeenBannerTone.offline, message: l10n.recoveryOffline),
     RegistrationIssueKind.weakPassword =>
-      SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.recoveryPasswordWeak),
-    RegistrationIssueKind.expiredCode => SeenInlineBanner(tone: SeenBannerTone.warn, message: l10n.recoveryExpired),
-    RegistrationIssueKind.attemptsExhausted =>
-      SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.recoveryExhausted(s.numeral(issue.minutes ?? 15))),
-    RegistrationIssueKind.wrongCode ||
-    RegistrationIssueKind.licenseTaken ||
-    RegistrationIssueKind.emailTaken ||
-    RegistrationIssueKind.generic =>
+      SeenInlineBanner(tone: SeenBannerTone.error, message: passwordRuleMessage(l10n, issue.passwordRule)),
+    RegistrationIssueKind.emailTaken || RegistrationIssueKind.generic =>
       SeenInlineBanner(tone: SeenBannerTone.error, message: l10n.recoveryServerError),
   };
-}
-
-// ---------------------------------------------------------------- AUTH-06
-
-class _PhoneScreen extends StatefulWidget {
-  const _PhoneScreen({super.key, required this.onBack, required this.onEditPhone, this.onSignIn});
-
-  final VoidCallback onBack;
-  final VoidCallback onEditPhone;
-  final VoidCallback? onSignIn;
-
-  @override
-  State<_PhoneScreen> createState() => _PhoneScreenState();
-}
-
-class _PhoneScreenState extends State<_PhoneScreen> {
-  // Owned here, cancelled / disposed in dispose().
-  final _code = TextEditingController();
-  Timer? _timer;
-  int _remaining = 0;
-  bool _seeded = false;
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _code.dispose();
-    super.dispose();
-  }
-
-  void _restartCountdown(int seconds) {
-    _timer?.cancel();
-    setState(() => _remaining = seconds);
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted || _remaining <= 0) return t.cancel();
-      setState(() => _remaining--);
-    });
-  }
-
-  void _verify([String? code]) {
-    final value = code ?? _code.text.trim();
-    if (value.length != 6) return;
-    context.read<AgencyRegistrationBloc>().add(RegistrationCodeSubmitted(value));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final s = SeenStrings.of(context);
-    final c = SeenColors.of(context);
-    final t = SeenType.of(context);
-    final errorColors = SeenRequestStatus.rejected.colors;
-    return BlocConsumer<AgencyRegistrationBloc, AgencyRegistrationState>(
-      listenWhen: (previous, current) => previous.codesSent != current.codesSent,
-      listener: (context, state) {
-        _code.clear();
-        _restartCountdown(state.challenge?.resendCooldownSeconds ?? 60);
-      },
-      builder: (context, state) {
-        if (!_seeded) {
-          _seeded = true;
-          // First build of this screen: seed from the challenge that opened it.
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _restartCountdown(state.challenge?.resendCooldownSeconds ?? 60);
-          });
-        }
-        final issue = state.issue;
-        final wrong = issue?.kind == RegistrationIssueKind.wrongCode;
-        void resend() => context.read<AgencyRegistrationBloc>().add(const RegistrationResendRequested());
-        return _Frame(
-          title: l10n.registrationVerifyTitle,
-          step: 3,
-          showProgress: false,
-          onBack: widget.onBack,
-          actions: [
-            SeenButton(
-              label: state.busy ? l10n.loading : l10n.registrationVerifyAction,
-              loading: state.busy,
-              expand: true,
-              onPressed: state.busy ? null : _verify,
-            ),
-          ],
-          children: [
-            const _IconTile(asset: SeenVectors.iconChat),
-            const SizedBox(height: 16),
-            Text(l10n.registrationVerifyHeading, style: t.h1),
-            const SizedBox(height: 16),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 4,
-              children: [
-                Text(
-                  l10n.registrationVerifySent(SeenFormat.isolate(state.challenge?.maskedPhone ?? '')),
-                  style: t.body.copyWith(color: c.inkSecondary),
-                ),
-                Text(l10n.registrationWrongNumber, style: t.body.copyWith(color: c.inkSecondary)),
-                SeenTextLink(label: l10n.registrationEditNumber, onTap: widget.onEditPhone),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SeenOtpInput(
-              controller: _code,
-              compact: true,
-              error: wrong,
-              onChanged: (_) {
-                if (issue != null) context.read<AgencyRegistrationBloc>().add(const RegistrationIssueDismissed());
-              },
-              onCompleted: _verify,
-            ),
-            const SizedBox(height: 8),
-            if (wrong)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  '${l10n.recoveryWrongCodeHeading}. ${s.attemptsLeft(issue?.attemptsLeft ?? 0)}.',
-                  style: t.label.copyWith(color: errorColors.fg),
-                ),
-              ),
-            Row(
-              children: [
-                Expanded(child: Text(l10n.registrationResendQuestion, style: t.label.copyWith(color: c.inkSecondary))),
-                SeenTextLink(
-                  label: _remaining > 0 ? l10n.registrationResendIn(s.clockMs(_remaining)) : l10n.registrationResend,
-                  onTap: (_remaining > 0 || state.busy) ? null : resend,
-                ),
-              ],
-            ),
-            if (issue != null && !wrong) ...[
-              const SizedBox(height: 16),
-              _issueBanner(l10n, s, issue, widget.onSignIn),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _IconTile extends StatelessWidget {
-  const _IconTile({required this.asset});
-
-  final String asset;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: AlignmentDirectional.centerStart,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(color: SeenBrand.violet10, borderRadius: BorderRadius.all(Radius.circular(17))),
-        child: SizedBox(width: 56, height: 56, child: Center(child: SeenSvgIcon(asset, size: 31))),
-      ),
-    );
-  }
 }
 
 // ---------------------------------------------------------------- AUTH-07
@@ -570,7 +394,7 @@ class _TermsScreenState extends State<_TermsScreen> {
         final issue = state.issue;
         return _Frame(
           title: l10n.registrationTermsTitle,
-          step: 4,
+          step: 3,
           showProgress: false,
           onBack: widget.onBack,
           actions: [
@@ -710,7 +534,7 @@ class _ConsentRow extends StatelessWidget {
                         child: SizedBox(
                           width: 22,
                           height: 22,
-                          child: checked ? Icon(SeenIcons.check, size: 14, color: Colors.white) : null,
+                          child: checked ? const SeenCheckGlyph(size: 14, color: Colors.white) : null,
                         ),
                       ),
                       const SizedBox(width: 10),

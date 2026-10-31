@@ -10,6 +10,8 @@ class CancelRequestUseCase {
 
   final RequestsRepository _repository;
 
-  Future<Either<Failure, RequestDetail>> call(String requestId, {CancelReason? reason}) =>
+  /// The refreshed detail, or null when the request was cancelled but could not
+  /// be reloaded.
+  Future<Either<Failure, RequestDetail?>> call(String requestId, {CancelReason? reason}) =>
       _repository.cancelRequest(requestId, reason: reason);
 }

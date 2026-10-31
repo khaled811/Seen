@@ -4,9 +4,7 @@ import '../../domain/entities/wallet_transaction.dart';
 
 /// Wire shape of one ledger entry.
 ///
-/// TODO(backend-contract): field names are placeholders pending the real
-/// Seen Booking GraphQL schema — update here and in
-/// `wallet_remote_data_source.dart` once confirmed.
+/// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
 class WalletTransactionDto {
   const WalletTransactionDto({
     required this.id,
@@ -53,7 +51,7 @@ class WalletTransactionDto {
   final String? referenceId;
   final String? notes;
 
-  /// TODO(backend-contract): placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 23).
+  /// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
   final String? balanceAfter;
   final LinkedRequestDto? request;
   final TopUpInfoDto? topUp;

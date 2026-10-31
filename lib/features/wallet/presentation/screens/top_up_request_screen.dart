@@ -1,14 +1,15 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/presentation/failure_message.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
-import '../../../../core/presentation/widgets/dropzone.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
@@ -19,16 +20,21 @@ import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/money.dart';
 import '../../../../core/validators/form_validators.dart';
+import '../../../../core/presentation/widgets/loading/seen_blocking_overlay.dart';
+import '../../../../core/presentation/widgets/loading/loading_strings.dart';
+import '../../../requests/presentation/bloc/staged_attachment_cubit.dart';
+import '../../domain/entities/top_up_options.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
+import '../widgets/seen_receipt_slot.dart';
 import '../widgets/topup_widgets.dart';
 import 'top_up_submitted_screen.dart';
 import '../widgets/wallet_cards.dart';
 import '../widgets/wallet_labels.dart';
 
 /// The data a resubmission starts from (a rejected top-up, Figma WAL-03). The
-/// receipt is not part of it: the form has no receipt upload yet.
+/// receipt is not part of it: a new one is attached to the new request.
 class TopUpPrefill {
   const TopUpPrefill({required this.amountCents, required this.method, this.referenceNumber});
 
@@ -41,6 +47,9 @@ class TopUpPrefill {
 /// the bank details card, the amount with preset chips, the receipt slot and a
 /// sticky submit bar. The wallet screen owns the [WalletBloc]; this route
 /// re-provides it with `BlocProvider.value`.
+/// The server refuses a transfer reference longer than this (`submitTopUp`).
+const topUpReferenceMaxLength = 64;
+
 class TopUpRequestScreen extends StatefulWidget {
   const TopUpRequestScreen({super.key, this.bankDetails, this.alternativeDetails, this.prefill});
 
@@ -56,18 +65,6 @@ class TopUpRequestScreen extends StatefulWidget {
   /// Like [bankDetails]: not exposed by the backend yet, so release builds show a
   /// "support will send it" note and debug builds an obvious placeholder.
   final TopUpAlternativeDetails? alternativeDetails;
-
-  static const _debugAlternative = TopUpAlternativeDetails(
-    recipientName: 'Sample Beneficiary (debug)',
-    agentCode: 'AG-0000',
-    branchAddress: 'Sample branch (debug)',
-  );
-
-  static const _debugSample = TopUpBankDetails(
-    bankName: 'Sample Bank (debug)',
-    accountName: 'Sample Beneficiary',
-    iban: 'XX00 0000 0000 0000 0000',
-  );
 
   static Route<void> route(
     WalletBloc bloc, {
@@ -97,6 +94,9 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
   final _referenceController = TextEditingController();
   TopUpMethod _method = TopUpMethod.bankTransfer;
 
+  // Created here, closed in dispose(): the receipt is sent as soon as it is picked.
+  late final StagedAttachmentCubit _receipt = InjectionContainer.instance.createStagedAttachmentCubit();
+
   @override
   void initState() {
     super.initState();
@@ -112,6 +112,7 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
   void dispose() {
     _amountController.dispose();
     _referenceController.dispose();
+    _receipt.close();
     super.dispose();
   }
 
@@ -120,13 +121,36 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
     return value == null ? -1 : _presets.indexOf(value.toInt() == value ? value.toInt() : -1);
   }
 
+  /// The top-up options the wallet loaded (accounts, methods, minimum); null
+  /// while unknown.
+  TopUpOptions? _options() {
+    final state = context.read<WalletBloc>().state;
+    return state is WalletLoaded ? state.topUpOptions : null;
+  }
+
+  /// The methods to offer: the server's list when there is one, otherwise all.
+  static List<TopUpMethod> _methodsFor(TopUpOptions? options) {
+    final fromServer = [for (final m in options?.methods ?? const <TopUpMethodOption>[]) m.method];
+    return fromServer.isEmpty
+        ? const [TopUpMethod.bankTransfer, TopUpMethod.cash, TopUpMethod.exchangeHouse]
+        : fromServer;
+  }
+
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final options = _options();
+    if (options != null && !options.canRequest) return;
+    // A receipt still being sent is waited for, not dropped.
+    if (_receipt.state.uploading) return;
+    final methods = _methodsFor(options);
+    final method = methods.contains(_method) ? _method : methods.first;
     context.read<WalletBloc>().add(
           WalletTopUpSubmitted(
             amountCents: MoneyParser.centsFromDecimalString(_amountController.text.trim()),
-            method: _method,
+            method: method,
             referenceNumber: _referenceController.text.trim(),
+            paymentAccountId: options?.accountsFor(method).firstOrNull?.id,
+            receiptFileId: _receipt.state.fileId,
           ),
         );
   }
@@ -140,9 +164,34 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    final bank = widget.bankDetails ?? (kDebugMode ? TopUpRequestScreen._debugSample : null);
-    final alternative = widget.alternativeDetails ?? (kDebugMode ? TopUpRequestScreen._debugAlternative : null);
-    final exchange = _method == TopUpMethod.exchangeHouse;
+    // Where to pay comes from the server (`portalTopUpOptions`); the app never
+    // invents account details. Constructor values win (callers and tests).
+    final options = context.select<WalletBloc, TopUpOptions?>((b) {
+      final s = b.state;
+      return s is WalletLoaded ? s.topUpOptions : null;
+    });
+    final methods = _methodsFor(options);
+    final method = methods.contains(_method) ? _method : methods.first;
+    final bankAccount = options?.accountsFor(TopUpMethod.bankTransfer).firstOrNull;
+    final bank = widget.bankDetails ??
+        (bankAccount == null
+            ? null
+            : TopUpBankDetails(
+                bankName: bankAccount.bankName.isEmpty ? bankAccount.title : bankAccount.bankName,
+                accountName: bankAccount.holder,
+                iban: bankAccount.accountNumber,
+                currency: bankAccount.currency.isEmpty ? 'USD' : bankAccount.currency,
+              ));
+    final otherAccount = options?.accountsFor(method).firstOrNull;
+    final alternative = widget.alternativeDetails ??
+        (otherAccount == null || method == TopUpMethod.bankTransfer
+            ? null
+            : TopUpAlternativeDetails(
+                recipientName: otherAccount.holder.isEmpty ? otherAccount.title : otherAccount.holder,
+                branchAddress: otherAccount.instructions.isEmpty ? null : otherAccount.instructions,
+              ));
+    final currency = (options?.currency.isNotEmpty ?? false) ? options!.currency : 'USD';
+    final exchange = method == TopUpMethod.exchangeHouse;
     const gap = SizedBox(height: 18);
 
     return BlocListener<WalletBloc, WalletState>(
@@ -166,14 +215,19 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
               );
             }
           case TopUpSubmissionStatus.failure:
-            _toast(loaded.topUpError ?? l10n.error);
+            _toast(failureTextOr(l10n, loaded.topUpFailure, loaded.topUpError ?? l10n.error));
             context.read<WalletBloc>().add(const WalletTopUpStatusCleared());
           case TopUpSubmissionStatus.idle:
           case TopUpSubmissionStatus.submitting:
             break;
         }
       },
-      child: Scaffold(
+      child: BlocSelector<WalletBloc, WalletState, bool>(
+        selector: (state) => state is WalletLoaded && state.topUpStatus == TopUpSubmissionStatus.submitting,
+        builder: (context, submitting) => SeenBlockingOverlay(
+          visible: submitting,
+          title: SeenStrings.of(context).submittingTopUp,
+          child: Scaffold(
         body: SeenScreenBackground(
           child: SafeArea(
             bottom: false,
@@ -189,27 +243,22 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                         Text(l10n.topUpPaymentMethodLabel, style: t.h2),
                         gap,
                         SeenMethodCards<TopUpMethod>(
-                          value: _method,
+                          value: method,
                           onChanged: (v) => setState(() => _method = v),
                           options: [
-                            SeenMethodCardOption(
-                              value: TopUpMethod.bankTransfer,
-                              iconAsset: SeenVectors.walletBank,
-                              label: WalletLabels.topUpMethod(l10n, TopUpMethod.bankTransfer),
-                            ),
-                            SeenMethodCardOption(
-                              value: TopUpMethod.cash,
-                              iconAsset: SeenVectors.walletCash,
-                              label: WalletLabels.topUpMethod(l10n, TopUpMethod.cash),
-                            ),
-                            SeenMethodCardOption(
-                              value: TopUpMethod.exchangeHouse,
-                              iconAsset: SeenVectors.walletIcon,
-                              label: WalletLabels.topUpMethod(l10n, TopUpMethod.exchangeHouse),
-                            ),
+                            for (final m in methods)
+                              SeenMethodCardOption(
+                                value: m,
+                                iconAsset: switch (m) {
+                                  TopUpMethod.bankTransfer => SeenVectors.walletBank,
+                                  TopUpMethod.cash => SeenVectors.walletCash,
+                                  _ => SeenVectors.walletIcon,
+                                },
+                                label: WalletLabels.topUpMethod(l10n, m),
+                              ),
                           ],
                         ),
-                        if (_method == TopUpMethod.bankTransfer) ...[
+                        if (method == TopUpMethod.bankTransfer) ...[
                           gap,
                           if (bank != null)
                             SeenBankDetailsCard(
@@ -234,10 +283,11 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                             controller: _referenceController,
                             mono: true,
                             ltr: true,
+                            inputFormatters: [LengthLimitingTextInputFormatter(topUpReferenceMaxLength)],
                             onChanged: (_) => setState(() {}),
                             prefix: _referenceController.text.trim().isEmpty
                                 ? null
-                                : Icon(SeenIcons.check, size: 20, color: SeenRequestStatus.completed.colors.fg),
+                                : SeenCheckGlyph(size: 20, color: SeenRequestStatus.completed.colors.fg),
                             validator: (v) => FormValidators.required(v, message: l10n.validationRequired),
                           ),
                           if (alternative != null) ...[
@@ -250,20 +300,23 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                               initialValue: alternative.recipientName,
                             ),
                             gap,
-                            SeenTextField(
-                              key: const ValueKey('topUpAgentCode'),
-                              label: l10n.topUpAgentCodeLabel,
-                              readOnly: true,
-                              mono: true,
-                              ltr: true,
-                              initialValue: alternative.agentCode,
-                            ),
+                            if (alternative.agentCode != null) ...[
+                              gap,
+                              SeenTextField(
+                                key: const ValueKey('topUpAgentCode'),
+                                label: l10n.topUpAgentCodeLabel,
+                                readOnly: true,
+                                mono: true,
+                                ltr: true,
+                                initialValue: alternative.agentCode,
+                              ),
+                            ],
                           ] else ...[
                             gap,
                             Text(l10n.topUpAlternativeUnavailable, style: t.body.copyWith(color: c.inkSecondary)),
                           ],
                         ],
-                        if (_method == TopUpMethod.cash) ...[
+                        if (method == TopUpMethod.cash) ...[
                           gap,
                           if (alternative != null)
                             _CashInstructions(details: alternative)
@@ -280,15 +333,23 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           mono: true,
                           ltr: true,
-                          suffixText: 'USD',
+                          suffixText: currency,
                           onChanged: (_) => setState(() {}),
-                          validator: (v) => FormValidators.positiveAmount(v, message: l10n.validationInvalidAmount),
+                          validator: (v) {
+                            final invalid = FormValidators.positiveAmount(v, message: l10n.validationInvalidAmount);
+                            if (invalid != null) return invalid;
+                            final min = options?.minimumAmountCents;
+                            if (min != null && MoneyParser.centsFromDecimalString(v!.trim()) < min) {
+                              return l10n.topUpBelowMinimum('${MoneyParser.decimalStringFromCents(min)} $currency');
+                            }
+                            return null;
+                          },
                         ),
                         gap,
                         SeenAmountChips(
                           labels: _presetLabels,
                           selectedIndex: _selectedPreset,
-                          onSelected: (i) => setState(() => _amountController.text = _presets[i].toStringAsFixed(2)),
+                          onSelected: (i) => setState(() => _amountController.text = '${_presets[i]}.00'),
                         ),
                         gap,
                         // The API requires the bank's transfer reference; Figma has no field for it.
@@ -300,17 +361,19 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                             controller: _referenceController,
                             mono: true,
                             ltr: true,
+                            inputFormatters: [LengthLimitingTextInputFormatter(topUpReferenceMaxLength)],
                             validator: (v) => FormValidators.required(v, message: l10n.validationRequired),
                           ),
                           gap,
                         ],
                         Text(l10n.topUpReceiptSection, style: t.h2),
                         gap,
-                        // No picker or upload API yet: say so, never fake an attachment.
-                        SeenDropzone(
-                          title: l10n.topUpReceiptLabel,
-                          caption: l10n.topUpReceiptComingSoon,
-                          onTap: () => _toast(l10n.topUpReceiptComingSoon),
+                        BlocProvider<StagedAttachmentCubit>.value(
+                          value: _receipt,
+                          child: SeenReceiptSlot(
+                            title: l10n.topUpReceiptLabel,
+                            caption: SeenStrings.of(context).attachTypes,
+                          ),
                         ),
                       ],
                     ),
@@ -320,13 +383,16 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
                   buildWhen: (p, c) => c is WalletLoaded && (p is! WalletLoaded || p.topUpStatus != c.topUpStatus),
                   builder: (context, state) {
                     final submitting = state is WalletLoaded && state.topUpStatus == TopUpSubmissionStatus.submitting;
+                    // The server says whether this person may request a top-up.
+                    final allowed = state is! WalletLoaded || (state.topUpOptions?.canRequest ?? true);
                     return SeenActionBar(
                       actions: [
+                        if (!allowed) Text(l10n.errorForbidden, style: t.body.copyWith(color: c.inkSecondary)),
                         SeenButton(
                           label: submitting ? l10n.loading : l10n.topUpSubmitAction,
                           loading: submitting,
                           expand: true,
-                          onPressed: submitting ? null : _submit,
+                          onPressed: submitting || !allowed ? null : _submit,
                         ),
                       ],
                     );
@@ -337,6 +403,8 @@ class _TopUpRequestScreenState extends State<TopUpRequestScreen> {
           ),
         ),
       ),
+    ),
+    ),
     );
   }
 }
@@ -354,7 +422,7 @@ class _CashInstructions extends StatelessWidget {
     final t = SeenType.of(context);
     final steps = [
       if (details.branchAddress != null) l10n.topUpCashStepBranch(details.branchAddress!),
-      l10n.topUpCashStepCode(SeenFormat.isolate(details.agentCode)),
+      if (details.agentCode != null) l10n.topUpCashStepCode(SeenFormat.isolate(details.agentCode!)),
       l10n.topUpCashStepReceipt,
     ];
     return DecoratedBox(

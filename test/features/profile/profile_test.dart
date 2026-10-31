@@ -56,13 +56,13 @@ class _Repo implements AgencyRepository, MarginsRepository, TeamRepository {
   Future<Either<Failure, AgencyProfile>> getProfile() async => profileFailure ?? Right(profile);
 
   @override
-  Future<Either<Failure, MarginsOverview>> getMargins() async => Right(MarginsOverview(margins: margins));
+  Future<Either<Failure, MarginsOverview>> getMargins(String agentId) async => Right(MarginsOverview(margins: margins));
 
   @override
-  Future<Either<Failure, MarginsOverview>> saveMargins(Map<String, int> changes) async {
+  Future<Either<Failure, MarginsOverview>> saveMargins(String agentId, Map<String, int> changes) async {
     saved = changes;
     if (saveFails) {
-      return const Left(ServerFailure('x', code: 'INVALID_MARGIN'));
+      return const Left(ServerFailure('x', code: 'margin_out_of_range'));
     }
     margins = [for (final m in margins) changes.containsKey(m.serviceId) ? m.withValue(changes[m.serviceId]!) : m];
     return Right(MarginsOverview(margins: margins, history: [
@@ -84,26 +84,6 @@ class _Repo implements AgencyRepository, MarginsRepository, TeamRepository {
     calls.add('role:$id:${role.name}');
     final m = team.firstWhere((x) => x.id == id);
     return Right(TeamMember(id: id, name: m.name, role: role, status: m.status, branchName: m.branchName));
-  }
-
-  @override
-  Future<Either<Failure, TeamMember>> setActive(String id, {required bool active}) async {
-    calls.add('active:$id:$active');
-    final m = team.firstWhere((x) => x.id == id);
-    return Right(TeamMember(
-        id: id, name: m.name, role: m.role, status: active ? TeamMemberStatus.active : TeamMemberStatus.disabled, branchName: m.branchName));
-  }
-
-  @override
-  Future<Either<Failure, void>> resendInvite(String id) async {
-    calls.add('resend:$id');
-    return const Right(null);
-  }
-
-  @override
-  Future<Either<Failure, void>> cancelInvite(String id) async {
-    calls.add('cancel:$id');
-    return const Right(null);
   }
 }
 
@@ -177,7 +157,7 @@ void main() {
 
   group('MarginsCubit', () {
     MarginsCubit make(_Repo repo, {bool canEdit = true}) =>
-        MarginsCubit(get: GetMarginsUseCase(repo), save: SaveMarginsUseCase(repo), canEdit: canEdit);
+        MarginsCubit(get: GetMarginsUseCase(repo), save: SaveMarginsUseCase(repo), agentId: 'a1', canEdit: canEdit);
 
     test('edits track dirty; setting the saved value back clears; read-only rows ignored', () async {
       final repo = _Repo();
@@ -227,21 +207,17 @@ void main() {
   });
 
   group('TeamCubit', () {
-    test('invite adds an invited member; role change and disable update the row; the owner is untouched', () async {
+    test('invite adds an invited member; a role change updates the row; the owner is untouched', () async {
       final repo = _Repo();
       final cubit = TeamCubit(TeamUseCases(repo));
       await cubit.load();
-      await cubit.invite(const InviteDraft(name: 'سلمى', phone: '777', role: TeamRole.staff, branchName: 'فرع صنعاء'));
+      await cubit.invite(const InviteDraft(name: 'سلمى', email: 'salma@example.com', password: 'Abcdef12-long-pw', role: TeamRole.staff, branchName: 'فرع صنعاء'));
       expect(cubit.state.members.last.status, TeamMemberStatus.invited);
       expect(cubit.state.notice, TeamNotice.invited);
       await cubit.changeRole('m', TeamRole.staff);
       expect(cubit.state.members.firstWhere((m) => m.id == 'm').role, TeamRole.staff);
-      await cubit.setActive('m', active: false);
-      expect(cubit.state.members.firstWhere((m) => m.id == 'm').status, TeamMemberStatus.disabled);
-      await cubit.setActive('o', active: false);
-      expect(repo.calls.where((c) => c.startsWith('active:o')), isEmpty);
-      await cubit.cancelInvite('i');
-      expect(cubit.state.members.any((m) => m.id == 'i'), isFalse);
+      await cubit.changeRole('o', TeamRole.staff); // the owner is never touched
+      expect(repo.calls.where((c) => c.startsWith('role:o')), isEmpty);
       await cubit.close();
     });
   });
@@ -293,11 +269,11 @@ void main() {
 
   group('ProfitMarginScreen', () {
     MarginsCubit make(_Repo repo) =>
-        MarginsCubit(get: GetMarginsUseCase(repo), save: SaveMarginsUseCase(repo));
+        MarginsCubit(get: GetMarginsUseCase(repo), save: SaveMarginsUseCase(repo), agentId: 'a1');
 
     testWidgets('edit a margin in the sheet, save, and see the server result', (tester) async {
       final repo = _Repo();
-      await _pump(tester, ProfitMarginScreen(createCubit: () => make(repo)));
+      await _pump(tester, ProfitMarginScreen(agentId: 'a1', createCubit: () => make(repo)));
       expect(find.textContaining('لوكلائك الفرعيين'), findsOneWidget);
       expect(find.textContaining('تحدده جُباري'), findsOneWidget);
 
@@ -319,7 +295,7 @@ void main() {
 
     testWidgets('an invalid number is refused in the sheet', (tester) async {
       final repo = _Repo();
-      await _pump(tester, ProfitMarginScreen(createCubit: () => make(repo)));
+      await _pump(tester, ProfitMarginScreen(agentId: 'a1', createCubit: () => make(repo)));
       await tester.tap(find.textContaining('10 USD'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField), '.');
@@ -330,7 +306,7 @@ void main() {
 
     testWidgets('the Save button is off until something changed; the read-only row has no editor', (tester) async {
       final repo = _Repo();
-      await _pump(tester, ProfitMarginScreen(createCubit: () => make(repo)));
+      await _pump(tester, ProfitMarginScreen(agentId: 'a1', createCubit: () => make(repo)));
       await tester.tap(find.text('حفظ التغييرات'), warnIfMissed: false);
       await tester.pump();
       expect(repo.saved, isNull);
@@ -349,24 +325,31 @@ void main() {
       expect(find.text('دعوة مُرسلة'), findsOneWidget);
       expect(find.text('الأدوار'), findsOneWidget);
 
-      await tester.tap(find.text('دعوة مستخدم'));
+      await tester.tap(find.text('إضافة مستخدم'));
       await tester.pumpAndSettle();
       // Empty form: required errors, nothing sent.
-      await tester.ensureVisible(find.text('إرسال الدعوة'));
-      await tester.tap(find.text('إرسال الدعوة'));
+      await tester.ensureVisible(find.text('إضافة المستخدم'));
+      await tester.tap(find.text('إضافة المستخدم'));
       await tester.pumpAndSettle();
       expect(find.text('هذا الحقل مطلوب.'), findsWidgets);
       expect(repo.calls, isEmpty);
 
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'سلمى');
-      await tester.enterText(fields.at(1), '777123456');
-      await tester.enterText(fields.at(2), 'فرع صنعاء');
-      await tester.ensureVisible(find.text('إرسال الدعوة'));
-      await tester.tap(find.text('إرسال الدعوة'));
+      await tester.enterText(fields.at(1), 'salma@example.com');
+      await tester.enterText(fields.at(2), 'short');
+      await tester.ensureVisible(find.text('إضافة المستخدم'));
+      await tester.tap(find.text('إضافة المستخدم'));
       await tester.pumpAndSettle();
-      expect(repo.calls, ['invite:سلمى:staff:فرع صنعاء']);
-      expect(find.text('أرسلنا الدعوة.'), findsOneWidget);
+      expect(find.text('استخدم ١٢ حرفًا على الأقل.'), findsOneWidget); // a short password is refused
+      expect(repo.calls, isEmpty);
+
+      await tester.enterText(fields.at(2), 'Abcdef12-long-pw');
+      await tester.ensureVisible(find.text('إضافة المستخدم'));
+      await tester.tap(find.text('إضافة المستخدم'));
+      await tester.pumpAndSettle();
+      expect(repo.calls, ['invite:سلمى:staff:']);
+      expect(find.text('تمت إضافة المستخدم.'), findsOneWidget);
     });
 
     testWidgets('a row opens its actions; the owner row does not', (tester) async {
@@ -376,33 +359,31 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('تغيير الدور'), findsNothing);
 
-      await tester.tap(find.text('أنور'));
+      // The API can only change a role: no disabling, enabling or invitations.
+      await tester.tap(find.text('وليد ناصر'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('إلغاء الدعوة'));
-      await tester.pumpAndSettle();
-      expect(repo.calls, ['cancel:i']);
-      expect(find.text('أنور'), findsNothing);
+      expect(find.text('تغيير الدور'), findsOneWidget);
+      expect(find.text('تعطيل المستخدم'), findsNothing);
+      expect(find.text('إلغاء الدعوة'), findsNothing);
+      expect(find.text('إعادة إرسال الدعوة'), findsNothing);
     });
 
-    testWidgets('disabling asks first', (tester) async {
+    testWidgets('choosing another role sends the change', (tester) async {
       final repo = _Repo();
       await _pump(tester, TeamScreen(createCubit: () => TeamCubit(TeamUseCases(repo)), canManage: true, loadBranches: () async => const []));
       await tester.tap(find.text('وليد ناصر'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تعطيل المستخدم'));
+      await tester.tap(find.text('تغيير الدور'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('لن يتمكن من الدخول'), findsOneWidget);
-      expect(repo.calls, isEmpty);
-      await tester.tap(find.text('تعطيل المستخدم').last);
+      await tester.tap(find.text('موظف').last);
       await tester.pumpAndSettle();
-      expect(repo.calls, ['active:m:false']);
-      expect(find.text('معطّل'), findsOneWidget);
+      expect(repo.calls, ['role:m:staff']);
     });
 
     testWidgets('someone who is not the owner sees the no-permission screen', (tester) async {
       await _pump(tester, const TeamScreen(canManage: false));
       expect(find.text('ليس لديك صلاحية'), findsOneWidget);
-      expect(find.text('دعوة مستخدم'), findsNothing);
+      expect(find.text('إضافة مستخدم'), findsNothing);
     });
   });
 }

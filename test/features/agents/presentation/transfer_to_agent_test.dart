@@ -25,12 +25,13 @@ import 'package:seen_booking/features/agents/presentation/screens/transfer_to_ag
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 
 class _World {
   int masterCents = 132200;
   int agentCents = 42000;
-  Either<Failure, SubAgent>? fundOverride;
+  Either<Failure, void>? fundOverride;
   int? lastAmount;
   String? lastNote;
   int funds = 0;
@@ -59,9 +60,10 @@ class _AgentsRepo implements AgentsRepository {
   Future<Either<Failure, void>> rejectRequest(String requestId, {required String reason}) async => const Right(null);
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+  Future<Either<Failure, void>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   }) async {
     w.funds++;
@@ -70,7 +72,7 @@ class _AgentsRepo implements AgentsRepository {
     if (w.fundOverride != null) return w.fundOverride!;
     w.masterCents -= amountCents;
     w.agentCents += amountCents;
-    return Right(_agents.first);
+    return const Right(null);
   }
 
   @override
@@ -78,20 +80,15 @@ class _AgentsRepo implements AgentsRepository {
       const Right(SubAgent(id: 'new', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 
   @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
-      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
-
-  @override
   Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId) async =>
       const Right(SubAgentProfile(agent: SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true)));
 
   @override
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
   }) async =>
-      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+      const Right(null);
 }
 
 class _WalletRepo implements WalletRepository {
@@ -114,11 +111,16 @@ class _WalletRepo implements WalletRepository {
       throw UnimplementedError();
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError();
 }

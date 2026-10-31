@@ -2,122 +2,60 @@ import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../domain/entities/agency_registration.dart';
-import '../models/registration_challenge_dto.dart';
 
-/// Raw GraphQL access for agency self-registration.
-///
-/// TODO(backend-contract): the mutation names (`startAgencyRegistration`,
-/// `resendRegistrationCode`, `verifyRegistrationPhone`,
-/// `completeAgencyRegistration`), their arguments and the error codes mapped in
-/// `RegistrationIssue` are a placeholder until the real schema exists
-/// (docs/BACKEND_MIGRATION_GAPS.md, section 9).
+/// `registerMainAgent(input)` (public): creates a pending Main Agent and its
+/// Owner and e-mails a confirmation link. The agency can sign in only after the
+/// owner confirms the e-mail and Seen approves it (contract 3.2).
 abstract interface class AgencyRegistrationRemoteDataSource {
-  Future<Either<Failure, RegistrationChallengeDto>> start({
+  Future<Either<Failure, void>> register({
     required AgencyRegistrationDraft draft,
     required String password,
+    required RegistrationConsent consent,
   });
-
-  Future<Either<Failure, RegistrationChallengeDto>> resendCode({required String challengeToken});
-
-  Future<Either<Failure, String>> verifyPhone({required String challengeToken, required String code});
-
-  Future<Either<Failure, void>> complete({required String verificationToken, required RegistrationConsent consent});
 }
 
 class AgencyRegistrationRemoteDataSourceImpl implements AgencyRegistrationRemoteDataSource {
-  AgencyRegistrationRemoteDataSourceImpl({required GraphQLService graphQLService}) : _graphQLService = graphQLService;
+  AgencyRegistrationRemoteDataSourceImpl({required GraphQLService graphQLService, required AppLanguage language})
+      : _graphQLService = graphQLService,
+        _language = language;
 
   final GraphQLService _graphQLService;
+  final AppLanguage _language;
 
-  static const _challengeFields = r'''
-    challengeToken
-    maskedPhone
-    resendCooldownSeconds
-  ''';
-
-  static final _startDocument = gql('''
-    mutation StartAgencyRegistration(\$input: AgencyRegistrationInput!) {
-      startAgencyRegistration(input: \$input) { $_challengeFields }
-    }
-  ''');
-
-  static final _resendDocument = gql('''
-    mutation ResendRegistrationCode(\$challengeToken: String!) {
-      resendRegistrationCode(challengeToken: \$challengeToken) { $_challengeFields }
-    }
-  ''');
-
-  static final _verifyDocument = gql(r'''
-    mutation VerifyRegistrationPhone($challengeToken: String!, $code: String!) {
-      verifyRegistrationPhone(challengeToken: $challengeToken, code: $code) { verificationToken }
-    }
-  ''');
-
-  static final _completeDocument = gql(r'''
-    mutation CompleteAgencyRegistration($verificationToken: String!, $consent: RegistrationConsentInput!) {
-      completeAgencyRegistration(verificationToken: $verificationToken, consent: $consent) { success }
+  static final _registerDocument = gql(r'''
+    mutation RegisterMainAgent($input: MainAgentSignupInput!) {
+      registerMainAgent(input: $input) { id status }
     }
   ''');
 
   @override
-  Future<Either<Failure, RegistrationChallengeDto>> start({
+  Future<Either<Failure, void>> register({
     required AgencyRegistrationDraft draft,
     required String password,
-  }) =>
-      _graphQLService.mutate<RegistrationChallengeDto>(MutationOptions<RegistrationChallengeDto>(
-        document: _startDocument,
-        variables: {
-          'input': {
-            'agencyName': draft.agencyName,
-            'managerName': draft.managerName,
-            'phone': draft.phone,
-            'email': draft.email,
-            'city': draft.city,
-            'licenseNumber': draft.licenseNumber,
-            'password': password,
-          },
-        },
-        parserFn: (json) =>
-            RegistrationChallengeDto.fromJson(json['startAgencyRegistration'] as Map<String, dynamic>),
-      ));
-
-  @override
-  Future<Either<Failure, RegistrationChallengeDto>> resendCode({required String challengeToken}) =>
-      _graphQLService.mutate<RegistrationChallengeDto>(MutationOptions<RegistrationChallengeDto>(
-        document: _resendDocument,
-        variables: {'challengeToken': challengeToken},
-        parserFn: (json) =>
-            RegistrationChallengeDto.fromJson(json['resendRegistrationCode'] as Map<String, dynamic>),
-      ));
-
-  @override
-  Future<Either<Failure, String>> verifyPhone({required String challengeToken, required String code}) =>
-      _graphQLService.mutate<String>(MutationOptions<String>(
-        document: _verifyDocument,
-        variables: {'challengeToken': challengeToken, 'code': code},
-        parserFn: (json) =>
-            (json['verifyRegistrationPhone'] as Map<String, dynamic>)['verificationToken'] as String,
-      ));
-
-  @override
-  Future<Either<Failure, void>> complete({
-    required String verificationToken,
     required RegistrationConsent consent,
   }) async {
     final result = await _graphQLService.mutate<bool>(MutationOptions<bool>(
-      document: _completeDocument,
+      document: _registerDocument,
       variables: {
-        'verificationToken': verificationToken,
-        'consent': {
-          'acceptedTerms': consent.acceptedTerms,
-          'acceptedPrivacy': consent.acceptedPrivacy,
-          'marketing': consent.marketing,
+        'input': {
+          'name': draft.agencyName,
+          'ownerFullName': draft.managerName,
+          'ownerEmail': draft.email,
+          'ownerPassword': password,
+          'ownerPhone': draft.phone,
+          'city': draft.city,
+          'licenseNumber': draft.licenseNumber,
+          'locale': _language.code == 'en' ? 'en' : 'ar',
+          // The server records the accepted versions of both texts.
+          'acceptedTerms': consent.acceptedTerms && consent.acceptedPrivacy,
         },
       },
-      parserFn: (json) => (json['completeAgencyRegistration'] as Map<String, dynamic>)['success'] as bool? ?? false,
+      fetchPolicy: FetchPolicy.noCache,
+      parserFn: (json) => (json['registerMainAgent'] as Map<String, dynamic>)['id'] != null,
     ));
-    return result.flatMap((ok) => ok ? const Right(null) : const Left(ServerFailure('Registration was not submitted.')));
+    return result.flatMap((created) => created ? const Right(null) : const Left(ServerFailure('Registration was not created.')));
   }
 }

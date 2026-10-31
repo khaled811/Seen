@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,9 +40,49 @@ LegalDocument? _fromJson(LegalKind kind, LegalLanguage lang, Object? raw) {
   );
 }
 
-/// Raw GraphQL access to the legal texts.
-///
-/// TODO(backend-contract): placeholder schema; see docs/BACKEND_MIGRATION_GAPS.md section 37.
+/// Turns the plain body of a legal page into sections (contract 3.2): a blank line
+/// starts a new paragraph, a line starting `## ` is a heading, a line starting
+/// `- ` is a bullet. It is text, never HTML: nothing here is interpreted as markup.
+List<LegalSection> parseLegalBody(String body) {
+  final sections = <LegalSection>[];
+  var heading = '';
+  final paragraphs = <String>[];
+  final current = <String>[];
+
+  void endParagraph() {
+    if (current.isNotEmpty) {
+      paragraphs.add(current.join('\n'));
+      current.clear();
+    }
+  }
+
+  void endSection() {
+    endParagraph();
+    if (heading.isNotEmpty || paragraphs.isNotEmpty) {
+      sections.add(LegalSection(heading: heading, body: paragraphs.join('\n\n')));
+    }
+    heading = '';
+    paragraphs.clear();
+  }
+
+  for (final raw in body.replaceAll('\r\n', '\n').split('\n')) {
+    final line = raw.trimRight();
+    if (line.startsWith('## ')) {
+      endSection();
+      heading = line.substring(3).trim();
+    } else if (line.trim().isEmpty) {
+      endParagraph();
+    } else if (line.startsWith('- ')) {
+      current.add('\u2022 ${line.substring(2).trim()}');
+    } else {
+      current.add(line.trim());
+    }
+  }
+  endSection();
+  return sections;
+}
+
+/// Raw GraphQL access to the legal texts: `legalPage(kind)` (public, no token).
 abstract interface class LegalRemoteDataSource {
   Future<Either<Failure, LegalDocument>> fetch(LegalKind kind, LegalLanguage language);
 }
@@ -53,11 +93,8 @@ class LegalRemoteDataSourceImpl implements LegalRemoteDataSource {
   final GraphQLService _graphQL;
 
   static final _document = gql(r'''
-    query LegalDocument($kind: String!, $language: String!) {
-      legalDocument(kind: $kind, language: $language) {
-        updatedAt
-        sections { heading body }
-      }
+    query LegalPage($kind: String!) {
+      legalPage(kind: $kind) { kind titleAr titleEn bodyAr bodyEn version updatedAt }
     }
   ''');
 
@@ -66,10 +103,20 @@ class LegalRemoteDataSourceImpl implements LegalRemoteDataSource {
     return _graphQL.query<LegalDocument>(
       QueryOptions<LegalDocument>(
         document: _document,
-        variables: {'kind': _kind(kind), 'language': _lang(language)},
+        variables: {'kind': _kind(kind)},
         fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (json) =>
-            _fromJson(kind, language, json['legalDocument']) ?? (throw const FormatException('legalDocument')),
+        parserFn: (json) {
+          final page = json['legalPage'] as Map<String, dynamic>;
+          final ar = language == LegalLanguage.ar;
+          final preferred = (ar ? page['bodyAr'] : page['bodyEn']) as String? ?? '';
+          final other = (ar ? page['bodyEn'] : page['bodyAr']) as String? ?? '';
+          return LegalDocument(
+            kind: kind,
+            language: language,
+            updatedAt: DateTime.parse(page['updatedAt'] as String).toLocal(),
+            sections: parseLegalBody(preferred.trim().isEmpty ? other : preferred),
+          );
+        },
       ),
     );
   }
@@ -86,7 +133,7 @@ class DebugFallbackLegalRemoteDataSource implements LegalRemoteDataSource {
   @override
   Future<Either<Failure, LegalDocument>> fetch(LegalKind kind, LegalLanguage language) async {
     final result = await _real.fetch(kind, language);
-    if (kDebugMode && result.isLeft()) {
+    if (debugFallbacksEnabled && result.isLeft()) {
       return Right(_sample(kind, language));
     }
     return result;

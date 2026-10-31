@@ -182,6 +182,7 @@ enum TopUpMethod implements ApiEnum {
   bankTransfer('bank_transfer'),
   cash('cash'),
   exchangeHouse('exchange_house'),
+  eWallet('e_wallet'),
   unknown('');
 
   const TopUpMethod(this.value);

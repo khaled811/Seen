@@ -24,6 +24,8 @@ class BookingSuccessScreen extends StatelessWidget {
   const BookingSuccessScreen({
     super.key,
     required this.requestId,
+    this.referenceCode,
+    this.holdDeferred = false,
     this.serviceName,
     this.travelerCount,
     this.heldCents,
@@ -31,6 +33,13 @@ class BookingSuccessScreen extends StatelessWidget {
   });
 
   final String requestId;
+
+  /// The confirmation number (like `SB-20481`); null while the server has not
+  /// assigned it yet (then the request id is never shown in its place).
+  final String? referenceCode;
+
+  /// No money was held (the service waits for approval first).
+  final bool holdDeferred;
   final String? serviceName;
   final int? travelerCount;
   final int? heldCents;
@@ -143,17 +152,21 @@ class BookingSuccessScreen extends StatelessWidget {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(l10n.bookingReceiptRef, style: t.caption.copyWith(color: c.inkMuted)),
-                                            Directionality(
-                                              textDirection: TextDirection.ltr,
-                                              child: Text(requestId, style: t.h2.copyWith(color: SeenBrand.violet)),
-                                            ),
+                                            if (referenceCode != null)
+                                              Directionality(
+                                                textDirection: TextDirection.ltr,
+                                                child: Text(referenceCode!, style: t.h2.copyWith(color: SeenBrand.violet)),
+                                              )
+                                            else
+                                              Text(l10n.bookingReferencePending, style: t.caption.copyWith(color: c.inkSecondary)),
                                           ],
                                         ),
                                       ),
-                                      SeenTextLink(
-                                        label: l10n.bookingReceiptCopy,
-                                        onTap: () => _copyReference(context, l10n),
-                                      ),
+                                      if (referenceCode != null)
+                                        SeenTextLink(
+                                          label: l10n.bookingReceiptCopy,
+                                          onTap: () => _copyReference(context, l10n),
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -178,7 +191,7 @@ class BookingSuccessScreen extends StatelessWidget {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          l10n.bookingReceiptHoldNote,
+                                          holdDeferred ? l10n.reviewHoldDeferredNote : l10n.bookingReceiptHoldNote,
                                           style: t.label.copyWith(color: review.fg),
                                         ),
                                       ),
@@ -224,7 +237,7 @@ class BookingSuccessScreen extends StatelessWidget {
   }
 
   Future<void> _copyReference(BuildContext context, AppLocalizations l10n) async {
-    await Clipboard.setData(ClipboardData(text: requestId));
+    await Clipboard.setData(ClipboardData(text: referenceCode ?? ''));
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

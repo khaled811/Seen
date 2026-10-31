@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../domain/entities/user_session.dart';
 
 /// Which screen/step an [AuthFailure] belongs to, so each screen can react
@@ -18,6 +19,15 @@ enum LoginFailureReason {
 
   /// Too many wrong attempts: locked for a while.
   locked,
+
+  /// The API signs in with an e-mail address only (a phone number was typed).
+  emailRequired,
+
+  /// Two-step verification must be set up with the e-mailed link, on the web.
+  enrollmentLinkRequired,
+
+  /// The second step timed out (the server forgot the challenge): sign in again.
+  verificationExpired,
 }
 
 sealed class AuthState extends Equatable {
@@ -42,10 +52,14 @@ final class AuthOtpRequired extends AuthState {
     required this.challengeToken,
     required this.resendCooldownSeconds,
     this.identifier,
+    this.canResend = true,
   });
 
   final String challengeToken;
   final int resendCooldownSeconds;
+
+  /// False when the code comes from an authenticator app (nothing to resend).
+  final bool canResend;
 
   /// The login identifier (phone/email) the code was sent to, so the OTP
   /// screen can say where it went. Display only (masked by the UI); null when
@@ -53,7 +67,7 @@ final class AuthOtpRequired extends AuthState {
   final String? identifier;
 
   @override
-  List<Object?> get props => [challengeToken, resendCooldownSeconds, identifier];
+  List<Object?> get props => [challengeToken, resendCooldownSeconds, identifier, canResend];
 }
 
 final class AuthAuthenticated extends AuthState {
@@ -99,6 +113,8 @@ final class AuthFailure extends AuthState {
     this.reason = LoginFailureReason.generic,
     this.attemptsLeft,
     this.retryAfterSeconds,
+    this.cause,
+    this.canResend = true,
   });
 
   final String message;
@@ -116,6 +132,14 @@ final class AuthFailure extends AuthState {
   /// [LoginFailureReason.locked]: how long until the next try is allowed.
   final int? retryAfterSeconds;
 
+  /// The underlying failure; the UI turns it into localized text (the
+  /// server's message is never shown).
+  final Failure? cause;
+
+  /// Carried through an OTP-stage failure so the screen keeps its resend row
+  /// hidden when the code comes from an authenticator app.
+  final bool canResend;
+
   @override
-  List<Object?> get props => [message, stage, challengeToken, reason, attemptsLeft, retryAfterSeconds];
+  List<Object?> get props => [message, stage, challengeToken, reason, attemptsLeft, retryAfterSeconds, cause, canResend];
 }

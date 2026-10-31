@@ -1,9 +1,4 @@
 import '../../domain/entities/hospital.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
-import '../../../../core/presentation/foundation/seen_strings.dart';
-import '../../../../core/presentation/widgets/components.dart' show SeenListRow;
-import '../../../airline_circular/presentation/screens/airline_circular_screen.dart';
-import '../../../airline_circular/presentation/widgets/circular_strings.dart';
 import '../widgets/coming_soon_sheet.dart';
 import '../widgets/hospital_picker_sheet.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +10,6 @@ import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
 import '../../../../core/presentation/widgets/help_card.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/search_field.dart';
@@ -23,16 +17,16 @@ import '../../../../core/presentation/widgets/service_tile.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../dynamic_forms/domain/validators/dynamic_field_validator.dart';
 import '../../../dynamic_forms/domain/validators/form_validation_messages.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
-import '../../domain/entities/booking_draft.dart';
 import '../../domain/entities/service_definition.dart';
 import '../bloc/service_booking_bloc.dart';
 import '../bloc/service_booking_event.dart';
 import '../bloc/service_booking_state.dart';
 import '../widgets/service_card_copy.dart';
-import '../widgets/service_traveler_fields.dart';
 import 'traveler_entry_screen.dart';
 
 const _gutter = 20.0;
@@ -41,11 +35,7 @@ const _gutter = 20.0;
 /// [ServiceDefinition] the backend returns as Figma service tiles, with a live
 /// search, group chips and a support card.
 class ServiceSelectionScreen extends StatelessWidget {
-  const ServiceSelectionScreen({super.key, this.resumeDraft});
-
-  /// Opens the traveler form straight away with this saved draft (Figma
-  /// REQ-01 "Continue"); backing out of it returns to the drafts list.
-  final BookingDraft? resumeDraft;
+  const ServiceSelectionScreen({super.key});
 
   static DynamicFieldValidator buildValidator(AppLocalizations l10n) =>
       DynamicFieldValidator(
@@ -73,36 +63,7 @@ class ServiceSelectionScreen extends StatelessWidget {
       create: (_) => InjectionContainer.instance.createServiceBookingBloc(
         validator: buildValidator(l10n),
       )..add(const ServiceCatalogRequested()),
-      child: MultiBlocListener(
-        listeners: [
-          if (resumeDraft != null)
-            BlocListener<ServiceBookingBloc, ServiceBookingState>(
-              listenWhen: (previous, current) =>
-                  previous is! ServiceCatalogLoaded &&
-                  current is ServiceCatalogLoaded,
-              listener: (context, state) {
-                final services = (state as ServiceCatalogLoaded).services;
-                final match = services.where(
-                    (s) => s.id == resumeDraft!.serviceId && s.isBookable);
-                if (match.isEmpty) {
-                  // The service was withdrawn since the draft was saved.
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                        SnackBar(content: Text(l10n.draftServiceGone)));
-                  Navigator.of(context).pop();
-                  return;
-                }
-                context.read<ServiceBookingBloc>().add(BookingDraftResumed(
-                      service: match.first,
-                      travelerFields: ServiceTravelerFields.forCategory(
-                          match.first.category, l10n),
-                      draft: resumeDraft!,
-                    ));
-              },
-            ),
-        ],
-        child: BlocListener<ServiceBookingBloc, ServiceBookingState>(
+      child: BlocListener<ServiceBookingBloc, ServiceBookingState>(
           // Only the transition INTO an in-progress booking should push the
           // next screen — this widget stays mounted underneath
           // TravelerEntryScreen, so without the `previous is!` guard every
@@ -131,12 +92,7 @@ class ServiceSelectionScreen extends StatelessWidget {
               // state, which would keep this screen on a spinner (and block
               // selecting again): bring the catalog back.
               if (!context.mounted) return;
-              // Resumed from the drafts list: go back to it, not to the catalog.
-              if (resumeDraft != null) {
-                Navigator.of(context).pop();
-              } else {
-                bloc.add(const ServiceCatalogRequested());
-              }
+              bloc.add(const ServiceCatalogRequested());
             });
           },
           child: Scaffold(
@@ -156,7 +112,10 @@ class ServiceSelectionScreen extends StatelessWidget {
                           ServiceBookingInitial() ||
                           ServiceCatalogLoading() ||
                           ServiceBookingInProgress() =>
-                            const Center(child: SeenLoader()),
+                            SeenWaitPolicy.loading(
+                              loading: const _CatalogSkeleton(),
+                              onRetry: () => context.read<ServiceBookingBloc>().add(const ServiceCatalogRequested()),
+                            ),
                           ServiceCatalogFailure(:final message) =>
                             _ErrorView(message: message),
                           ServiceCatalogLoaded(:final services) =>
@@ -170,7 +129,6 @@ class ServiceSelectionScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
@@ -286,16 +244,6 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
               gap,
             ],
         ],
-        // Airline circular: not a catalog service, it links to an issued security approval.
-        if (query.isEmpty) ...[
-          SeenListRow(
-            icon: SeenIcons.plane,
-            title: SeenStrings.of(context).circularTitle,
-            subtitle: SeenStrings.of(context).circularEntrySubtitle,
-            onTap: () => Navigator.of(context).push(AirlineCircularScreen.route()),
-          ),
-          gap,
-        ],
         SeenHelpCard(
           title: l10n.servicesHelpTitle,
           subtitle: l10n.servicesHelpSubtitle,
@@ -304,6 +252,38 @@ class _ServiceCatalogViewState extends State<ServiceCatalogView> {
               MaterialPageRoute(builder: (_) => const SupportTicketsScreen())),
         ),
       ],
+    );
+  }
+}
+
+/// The catalog while it loads: the search pill, a section title and two rows of three tiles,
+/// at the sizes of the real ones (tiles are 104 px at least, 8 px apart).
+class _CatalogSkeleton extends StatelessWidget {
+  const _CatalogSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget row() => const Row(children: [
+          Expanded(child: SeenSkeletonBox(height: 104, radius: 20)),
+          SizedBox(width: 8),
+          Expanded(child: SeenSkeletonBox(height: 104, radius: 20)),
+          SizedBox(width: 8),
+          Expanded(child: SeenSkeletonBox(height: 104, radius: 20)),
+        ]);
+    return SeenSkeletonGroup(
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(_gutter, 8, _gutter, SeenSpace.s8),
+        children: [
+          const SeenSkeletonBox(height: 48, radius: 24),
+          const SizedBox(height: 18),
+          const SeenSkeletonBox(width: 120, height: 16, radius: 6),
+          const SizedBox(height: 18),
+          row(),
+          const SizedBox(height: 8),
+          row(),
+        ],
+      ),
     );
   }
 }
@@ -368,7 +348,6 @@ class _ServiceTile extends StatelessWidget {
               }
               bloc.add(ServiceSelected(
                 service: service,
-                travelerFields: ServiceTravelerFields.forCategory(service.category, l10n),
                 hospital: hospital,
               ));
             }

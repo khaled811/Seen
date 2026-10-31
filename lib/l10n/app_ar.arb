@@ -15,17 +15,12 @@
   "validationInvalidEmail": "أدخل بريدًا إلكترونيًا صالحًا.",
   "validationInvalidPhone": "أدخل رقم جوال صحيحًا.",
   "validationMinLength": "يجب ألا يقل عن {count} أحرف.",
-  "languageEnglish": "الإنجليزية",
-  "languageArabic": "العربية",
   "loginTitle": "تسجيل الدخول",
-  "loginIdentifierLabel": "البريد الإلكتروني أو رقم الهاتف",
   "loginPasswordLabel": "كلمة المرور",
   "otpTitle": "رمز التحقق",
   "otpInstructions": "أدخل رمز التحقق المُرسَل إليك.",
-  "otpCodeLabel": "رمز التحقق",
   "otpResendIn": "إعادة الإرسال خلال {seconds} ثانية",
   "otpResendAction": "إعادة إرسال الرمز",
-  "validationInvalidOtp": "أدخل رمزًا مكونًا من {length} أرقام.",
   "validationMaxLength": "يجب ألا يزيد عن {count} أحرف.",
   "validationInvalidNumber": "أدخل رقمًا صالحًا.",
   "validationNumberTooSmall": "يجب أن يكون {min} على الأقل.",
@@ -34,35 +29,9 @@
   "validationInvalidSelection": "اختر خيارًا صالحًا.",
   "validationExpiryTooSoon": "يجب أن يكون بعد {months} أشهر على الأقل من اليوم.",
   "validationDateInFuture": "يجب ألا يكون {fieldLabel} في المستقبل.",
-  "wizardNext": "التالي",
-  "wizardBack": "السابق",
-  "wizardFinish": "إنهاء",
-  "wizardStepIndicator": "الخطوة {current} من {total}",
-  "wizardCompleted": "تم إكمال جميع الخطوات بنجاح.",
-  "formsGalleryTitle": "معرض النماذج الديناميكية",
-  "stepPersonalInfoTitle": "المعلومات الشخصية",
-  "stepPassportInfoTitle": "معلومات جواز السفر",
-  "stepPreferencesTitle": "التفضيلات",
-  "fieldFullNameLabel": "الاسم الكامل",
-  "fieldEmailLabel": "البريد الإلكتروني",
-  "fieldPhoneLabel": "رقم الهاتف",
-  "fieldPassportIssueDateLabel": "تاريخ إصدار الجواز",
-  "fieldPassportExpiryDateLabel": "تاريخ انتهاء الجواز",
-  "fieldBirthDateLabel": "تاريخ الميلاد",
-  "fieldTravelClassLabel": "درجة السفر",
-  "fieldNotesLabel": "ملاحظات",
-  "optionEconomy": "اقتصادية",
-  "optionBusiness": "رجال الأعمال",
   "validationInvalidAmount": "أدخل مبلغًا أكبر من 0.",
   "walletTitle": "المحفظة",
-  "walletAvailableBalance": "الرصيد المتاح",
-  "walletHoldBalance": "الرصيد المحجوز",
-  "walletTotalBalance": "الرصيد الإجمالي",
-  "walletCreditLimit": "حد الائتمان",
-  "walletTransactionsTitle": "المعاملات",
   "walletFilterAll": "جميع الأنواع",
-  "walletEmptyTransactions": "لا توجد معاملات بعد.",
-  "walletRequestTopUp": "طلب شحن رصيد",
   "transactionTypeTopup": "شحن رصيد",
   "transactionTypeHold": "حجز",
   "transactionTypeFinalDeduction": "خصم نهائي",
@@ -72,38 +41,19 @@
   "transactionStatusPending": "قيد الانتظار",
   "transactionStatusApproved": "موافق عليه",
   "transactionStatusRejected": "مرفوض",
-  "topUpSheetTitle": "طلب شحن رصيد",
   "topUpAmountLabel": "المبلغ (دولار أمريكي)",
   "topUpPaymentMethodLabel": "طريقة الدفع",
   "topUpReferenceNumberLabel": "الرقم المرجعي",
-  "topUpNotesLabel": "ملاحظات",
   "topUpMethodBankTransfer": "تحويل بنكي",
   "topUpMethodCash": "نقدًا",
   "topUpMethodExchangeHouse": "شركة صرافة",
   "topUpReceiptLabel": "الإيصال",
-  "topUpReceiptComingSoon": "الإرفاق قريبًا",
   "topUpSuccessMessage": "تم إرسال طلب شحن الرصيد.",
-  "travelerPassportNumberLabel": "رقم جواز السفر",
-  "travelerNationalityLabel": "الجنسية",
   "servicesTitle": "الخدمات",
   "serviceComingSoonBadge": "قريبًا",
-  "servicePerPersonPrice": "{amount} / للشخص",
-  "travelerEntryTitle": "بيانات المسافرين",
-  "travelerTabLabel": "المسافر {number}",
   "addTravelerAction": "إضافة مسافر",
-  "removeTravelerAction": "إزالة المسافر",
-  "continueToReviewAction": "المتابعة إلى المراجعة",
-  "travelerAttachmentLabel": "نسخة جواز السفر",
-  "attachmentComingSoon": "الإرفاق قريبًا",
   "reviewTitle": "المراجعة والتأكيد",
-  "reviewTravelerCountLabel": "المسافرون",
-  "reviewPerPersonPriceLabel": "السعر للشخص",
-  "reviewTotalPriceLabel": "السعر الإجمالي",
-  "reviewInsufficientBalanceWarning": "قد لا يغطي رصيد محفظتك المتاح هذا الإجمالي. يمكنك المتابعة رغم ذلك — سيتحقق الخادم من ذلك.",
-  "confirmSubmitAction": "تأكيد وإرسال",
   "bookingSuccessTitle": "تم إرسال الطلب",
-  "bookingSuccessMessage": "الرقم المرجعي: {id}",
-  "bookingBackToHomeAction": "العودة إلى الرئيسية",
   "requestStatusDraft": "مسودة",
   "requestStatusSubmitted": "تم الإرسال",
   "requestStatusPendingAgentApproval": "بانتظار موافقة الوكيل",
@@ -114,56 +64,28 @@
   "requestStatusCompleted": "مكتمل",
   "requestStatusRejected": "مرفوض",
   "requestStatusCancelled": "ملغى",
-  "slaOverdue": "تجاوز الموعد النهائي",
-  "slaTimeRemaining": "متبقٍ {time}",
   "requestsDashboardTitle": "طلباتي",
   "requestsFilterAll": "الكل",
   "requestsFilterPendingUnderReview": "قيد المراجعة",
   "requestsFilterCompleted": "مكتمل",
   "requestsFilterActionRequired": "مطلوب إجراء",
   "requestsEmptyMessage": "لا توجد طلبات مطابقة لهذا الفلتر.",
-  "requestsSearchHint": "ابحث بالمرجع أو اسم الخدمة",
   "requestsSearchAction": "بحث",
   "requestsEmptySearchTitle": "لا توجد طلبات مطابقة",
   "requestsEmptySearchMessage": "جرّب مرجعًا أو اسم خدمة مختلف.",
   "requestsBookNewAction": "حجز موافقة جديدة",
-  "requestDetailCopyReferenceAction": "نسخ المرجع",
   "requestDetailContactSupportAction": "تواصل مع الدعم",
   "requestDetailReferenceCopiedMessage": "تم نسخ الرقم المرجعي.",
-  "requestDetailDownloadApprovalsAction": "تحميل الموافقات الصادرة ({count})",
-  "requestDetailDownloadApprovalsUnavailable": "تتاح الموافقات عند صدورها",
-  "requestDetailSubmittedPrefix": "أُرسل",
-  "requestDetailHeldPrefix": "محجوز",
-  "requestCardTravelersLabel": "{count, plural, one{مسافر واحد} other{{count} مسافرين}}",
-  "requestDetailTitle": "تفاصيل الطلب",
   "requestDetailTravelersSection": "المسافرون",
-  "requestDetailTimelineSection": "الجدول الزمني",
-  "requestDetailOutputSection": "تسليم المخرجات",
   "requestDetailDownloadAction": "تنزيل مستند الموافقة",
   "requestDetailCancelAction": "إلغاء الطلب",
-  "requestDetailCancelConfirmTitle": "هل تريد إلغاء هذا الطلب؟",
-  "requestDetailCancelConfirmMessage": "لا يمكن التراجع عن هذا الإجراء. سيتم تحديد الطلب كملغى.",
-  "requestDetailCancelSuccessMessage": "تم إلغاء الطلب.",
   "yes": "نعم",
   "no": "لا",
   "validationInvalidMaxAmount": "لا يمكن أن يتجاوز المبلغ رصيدك المتاح ({max}).",
-  "subAgentsTitle": "الوكلاء الفرعيون",
-  "subAgentCodeLabel": "الرمز: {code}",
-  "subAgentActiveStatus": "نشط",
-  "subAgentInactiveStatus": "غير نشط",
-  "subAgentMarginLabel": "الهامش: {percent}٪",
-  "subAgentFundAction": "شحن المحفظة",
-  "subAgentApprovalsTitle": "الموافقات المعلقة",
-  "subAgentApprovalsEmptyMessage": "لا توجد طلبات بانتظار موافقتك.",
-  "subAgentApproveAction": "الموافقة",
   "subAgentRejectAction": "الرفض",
-  "subAgentApproveSuccessMessage": "تمت الموافقة على الطلب.",
-  "subAgentRejectSuccessMessage": "تم رفض الطلب.",
   "subAgentRejectDialogTitle": "هل تريد رفض هذا الطلب؟",
   "subAgentRejectReasonLabel": "السبب",
-  "fundSheetTitle": "تحويل إلى {subAgentName}",
   "fundAmountLabel": "المبلغ (دولار أمريكي)",
-  "fundAvailableBalanceLabel": "رصيدك المتاح: {amount}",
   "fundSubmitAction": "تحويل",
   "fundSuccessMessage": "تم التحويل بنجاح.",
   "supportTicketsTitle": "تذاكر الدعم",
@@ -174,32 +96,19 @@
   "ticketStatusClosed": "مغلقة",
   "ticketCategoryGeneral": "عام",
   "ticketCategoryFinancialCorrection": "تصحيح مالي",
-  "ticketLinkedRequestLabel": "مرتبطة بالطلب {referenceId}",
   "createTicketTitle": "تذكرة جديدة",
   "createTicketAction": "تذكرة جديدة",
-  "ticketCategoryFieldLabel": "الفئة",
   "ticketSubjectFieldLabel": "الموضوع",
-  "ticketMessageFieldLabel": "الرسالة",
-  "ticketRequestReferenceFieldLabel": "الرقم المرجعي للطلب (اختياري)",
   "ticketDetailTitle": "تفاصيل التذكرة",
   "ticketReplyHint": "اكتب رسالة...",
   "notificationsTitle": "الإشعارات",
   "notificationsEmptyMessage": "لا توجد إشعارات جديدة.",
   "notificationsMarkAllReadAction": "تحديد الكل كمقروء",
-  "notificationMarkReadTooltip": "وضع علامة كمقروء",
-  "homeThemeToggleLabel": "تبديل المظهر",
-  "homeQuickActionServices": "موافقات مصر",
-  "homeQuickActionRequests": "لوحة الطلبات",
-  "homeQuickActionSubAgents": "الوكلاء الفرعيون",
   "homeQuickActionSupport": "الدعم الفني",
-  "homeRecentRequestsTitle": "الطلبات العاجلة والحديثة",
   "homeSeeAllAction": "عرض الكل",
   "homeEmptyRequestsMessage": "لا توجد طلبات بعد.",
-  "homeQuickActionAccount": "الحساب",
   "accountSignOutAction": "تسجيل الخروج",
-  "reviewSubmitHoldAction": "تأكيد الحجز · {amount}",
   "bookingReferenceCopiedMessage": "تم نسخ الرقم المرجعي.",
-  "bookingCopyReferenceTooltip": "نسخ الرقم المرجعي",
   "serviceProcessingEgyptNationalSecurity": "3-5 أيام عمل",
   "serviceDocumentsEgyptNationalSecurity": "نسخة جواز السفر، صورة شخصية",
   "serviceProcessingEgyptMilitaryIntelligence": "5-7 أيام عمل",
@@ -210,11 +119,8 @@
   "topUpMethodExchangeHouseCaption": "يُقيّد بعد التحقق من الإيصال",
   "walletLedgerFilterCredits": "إيداع",
   "walletLedgerFilterDebits": "خصم",
-  "subAgentsDirectoryTitle": "الفروع",
   "fundSubmitActionNamed": "تحويل {amount} إلى {name}",
-  "notificationsUnreadFilter": "غير مقروء",
   "ticketSendMessageTooltip": "إرسال الرسالة",
-  "refreshAction": "تحديث",
   "showPasswordAction": "إظهار كلمة المرور",
   "hidePasswordAction": "إخفاء كلمة المرور",
   "splashPoweredBy": "Powered by Jubari Travel",
@@ -243,17 +149,6 @@
   "homeRequestServiceAction": "اطلب خدمة",
   "homeServicesTitle": "الخدمات",
   "homeLatestRequestsTitle": "آخر الطلبات",
-  "serviceSaudiVisa": "تأشيرة السعودية",
-  "serviceEgyptEntry": "دخول مصر",
-  "serviceFlights": "حجز طيران",
-  "serviceIndiaVisa": "تأشيرة الهند",
-  "serviceSecurityApproval": "موافقة أمنية",
-  "serviceHotels": "فنادق",
-  "serviceSoonTag": "قريبًا",
-  "promoBadge": "جديد",
-  "promoTitle": "تأشيرة السعودية خلال ٤٨ ساعة",
-  "promoSubtitle": "رسوم مخفّضة للوكلاء هذا الشهر",
-  "promoAction": "اطلب الآن",
   "homeHoldChip": "محجوز {amount}",
   "homeCreditLimitChip": "الحد الائتماني {amount}",
   "balanceHiddenLabel": "إظهار الرصيد",
@@ -283,10 +178,6 @@
   "servicesNewTitle": "طلب خدمة جديدة",
   "servicesNewSubtitle": "اختر الخدمة لبدء الطلب",
   "servicesSearchHint": "ابحث عن خدمة",
-  "servicesGroupApprovals": "الموافقات",
-  "servicesGroupTravel": "السفر",
-  "servicesGroupOther": "خدمات أخرى",
-  "servicesPerTraveler": "للمسافر",
   "servicesNoResults": "لا توجد خدمات مطابقة",
   "servicesNoResultsHint": "جرّب كلمة بحث مختلفة.",
   "servicesEmpty": "لا توجد خدمات متاحة حاليًا.",
@@ -310,12 +201,7 @@
   "reviewConfirmTerms": "أؤكد صحة البيانات والمستندات المرفقة",
   "reviewSubmitAction": "تأكيد وإرسال الطلب",
   "walletStatementAction": "كشف الحساب",
-  "walletStatementSoonBody": "تصدير كشف الحساب غير متاح بعد. تواصل مع الدعم للحصول على نسخة.",
   "walletTransferToAgent": "تحويل لوكيل",
-  "walletUsageHeldLabel": "محجوز للطلبات",
-  "walletUsageAvailableLabel": "متاح للاستخدام",
-  "walletUsageHeldValue": "محجوز {amount}",
-  "walletUsageAvailableValue": "متاح {amount}",
   "walletPendingTopUpTitle": "شحن {amount}",
   "walletPendingTopUpSent": "أُرسل {date}",
   "walletLedgerTitle": "سجل العمليات",
@@ -336,8 +222,6 @@
   "agentsStatActive": "وكيل نشط",
   "agentsStatDistributed": "إجمالي أرصدة الوكلاء · USD",
   "agentsAddAction": "إضافة وكيل",
-  "agentsAddSoon": "إضافة وكيل جديد غير متاحة بعد.",
-  "agentsNoMatch": "لا يوجد وكلاء مطابقون",
   "agentsStatusSuspended": "موقوف",
   "accountTitle": "حسابي",
   "accountAgencyFallback": "حساب الوكالة",
@@ -345,10 +229,6 @@
   "accountRoleBranchManager": "مدير فرع",
   "accountRoleStaff": "موظف",
   "accountAgencyDetails": "بيانات الوكالة",
-  "accountAgencyDetailsSoonBody": "عرض بيانات الوكالة والسجل التجاري غير متاح بعد. تواصل مع الدعم لتحديثها.",
-  "accountLanguageTitle": "اللغة",
-  "accountLanguageName": "العربية",
-  "accountThemeTitle": "المظهر",
   "accountSupportTitle": "المساعدة والدعم",
   "accountSignOutConfirmTitle": "تسجيل الخروج؟",
   "accountSignOutConfirmBody": "ستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى حسابك.",
@@ -357,7 +237,6 @@
   "notificationsGroupEarlier": "سابقًا",
   "notificationsEmptyTitle": "لا توجد إشعارات",
   "agencyCreateTitle": "إنشاء حساب وكالة",
-  "agencyCreateSubtitle": "أدخل بيانات وكالتك وسنراجعها خلال ٢٤ ساعة",
   "agencyNameLabel": "اسم الوكالة",
   "agencyCrLabel": "رقم الترخيص",
   "agencyCityLabel": "المدينة",
@@ -367,7 +246,7 @@
   "agencyCrUploadCaption": "الإرفاق غير متاح بعد",
   "agencySubmitAction": "متابعة",
   "agencyPendingTitle": "حسابك قيد المراجعة",
-  "agencyPendingBody": "استلمنا طلب تسجيل وكالتك، وسيراجعه فريق جُباري خلال يوم عمل واحد. سنبلغك فور التفعيل.",
+  "agencyPendingBody": "استلمنا طلب تسجيل وكالتك وأرسلنا إلى بريدك الإلكتروني رابط تأكيد. أكّد بريدك، ثم يراجع فريق سين الوكالة. يمكنك تسجيل الدخول بعد الموافقة عليها.",
   "agencyPendingSupportAction": "تواصل مع الدعم",
   "agencyPendingSupportNote": "يمكنك التواصل مع الدعم من داخل التطبيق بعد تسجيل الدخول.",
   "accountSectionAgency": "الوكالة",
@@ -389,46 +268,22 @@
   "agencyPendingStepActivate": "تفعيل الحساب",
   "recoveryTitle": "استعادة كلمة المرور",
   "recoveryForgotHeading": "نسيت كلمة المرور؟",
-  "recoveryRequestBody": "أدخل رقم الجوال أو البريد المسجّل، وسنرسل لك رمز تحقق لإعادة تعيين كلمة المرور.",
+  "recoveryRequestBody": "أدخل البريد الإلكتروني المسجّل، وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.",
   "recoveryMethodPhone": "رقم الجوال",
   "recoveryMethodEmail": "البريد الإلكتروني",
-  "recoveryRequestHelper": "سنرسل رمزًا من ٦ أرقام صالحًا لمدة ١٠ دقائق",
-  "recoverySendCode": "إرسال الرمز",
-  "recoveryUnknownPhone": "لا يوجد حساب مسجّل بهذا الرقم. تأكد من الرقم أو أنشئ حساب وكالة.",
-  "recoveryUnknownEmail": "لا يوجد حساب مسجّل بهذا البريد. تأكد من البريد أو أنشئ حساب وكالة.",
-  "recoveryRateLimited": "محاولات كثيرة. يمكنك طلب رمز جديد بعد {time}",
+  "recoveryRequestHelper": "يُرسل الرابط إلى هذا العنوان",
+  "recoverySendCode": "إرسال الرابط",
   "recoveryOffline": "لا يوجد اتصال بالإنترنت. تحقق من الاتصال ثم أعد المحاولة.",
   "recoveryRetry": "إعادة",
   "recoveryServerError": "تعذّر إتمام الطلب. حاول مجددًا بعد قليل.",
   "recoveryContactSupport": "تواصل مع الدعم",
-  "recoveryOtpTitle": "رمز التحقق",
-  "recoveryOtpHeading": "أدخل الرمز المرسل",
-  "recoveryOtpSent": "أرسلنا رمزًا من ٦ أرقام إلى {destination}",
-  "recoveryResendAfter": "إعادة الإرسال متاحة بعد",
-  "recoveryVerify": "تحقق",
-  "recoveryResendNow": "إرسال رمز جديد",
-  "recoveryResendAction": "إرسال",
-  "recoveryWrongCodeHeading": "الرمز غير صحيح",
-  "recoveryExpired": "انتهت صلاحية الرمز. اطلب رمزًا جديدًا.",
-  "recoveryExhausted": "استنفدت المحاولات. حاول مجددًا بعد {minutes} دقيقة أو تواصل مع الدعم.",
-  "recoveryNewPasswordTitle": "كلمة مرور جديدة",
-  "recoveryNewPasswordHeading": "اختر كلمة مرور جديدة",
-  "recoveryNewPasswordLabel": "كلمة المرور الجديدة",
   "recoveryConfirmLabel": "تأكيد كلمة المرور",
   "recoveryMismatch": "كلمتا المرور غير متطابقتين",
   "recoveryStrengthWeak": "ضعيفة",
   "recoveryStrengthFair": "مقبولة",
-  "recoveryStrengthGood": "جيدة",
-  "recoveryStrengthStrong": "قوية",
-  "recoveryRuleLength": "٨ أحرف على الأقل",
+  "recoveryRuleLength": "١٢ حرفًا على الأقل",
   "recoveryRuleCase": "حرف كبير وحرف صغير",
-  "recoveryRuleDigit": "رقم واحد على الأقل",
-  "recoveryRuleNotReused": "لا تطابق كلمة مرور سابقة",
-  "recoverySavePassword": "حفظ كلمة المرور",
-  "recoveryPasswordReused": "كلمة المرور مستخدمة سابقًا. اختر كلمة مختلفة.",
-  "recoveryPasswordWeak": "كلمة المرور لا تستوفي الشروط المطلوبة.",
-  "recoveryDoneTitle": "تم تغيير كلمة المرور",
-  "recoveryDoneBody": "سجّل الدخول بكلمة المرور الجديدة. أنهينا جلساتك المفتوحة على الأجهزة الأخرى لحماية حسابك.",
+  "recoveryPasswordWeak": "كلمة المرور مرفوضة. اختر كلمة أقوى: ١٢ حرفًا على الأقل، وليست شائعة، وليست أرقامًا فقط، وغير مشابهة لاسمك أو بريدك الإلكتروني.",
   "recoveryBackToLogin": "العودة لتسجيل الدخول",
   "registrationStepOf": "الخطوة {step} من {total}",
   "registrationPasswordHeading": "أنشئ كلمة مرور لحسابك",
@@ -438,16 +293,6 @@
   "registrationRuleDigitOrSymbol": "رقم أو رمز",
   "registrationStrengthVeryStrong": "قوية جدًا",
   "registrationStrengthGood": "جيدة",
-  "registrationVerifyTitle": "تحقق الجوال",
-  "registrationVerifyHeading": "تحقق من رقم جوالك",
-  "registrationVerifySent": "أرسلنا رمزًا إلى {phone}.",
-  "registrationWrongNumber": "الرقم غير صحيح؟",
-  "registrationEditNumber": "عدّله",
-  "registrationResendQuestion": "لم يصلك الرمز؟",
-  "registrationResend": "إعادة الإرسال",
-  "registrationResendIn": "إعادة الإرسال بعد {time}",
-  "registrationVerifyAction": "تحقق ومتابعة",
-  "registrationPhoneTaken": "هذا الرقم مرتبط بحساب آخر. سجّل الدخول أو استعد كلمة المرور.",
   "registrationTermsTitle": "الموافقة على الشروط",
   "registrationTermsHeading": "قبل إنشاء الحساب",
   "registrationTermsPoint1": "تتحمّل الوكالة صحة بيانات المسافرين ومستنداتهم.",
@@ -457,7 +302,6 @@
   "registrationConsentPrivacy": "أوافق على سياسة الخصوصية",
   "registrationConsentMarketing": "أرغب في تلقي العروض والتحديثات (اختياري)",
   "registrationRead": "قراءة",
-  "registrationReadSoon": "نص المستند سيتوفر هنا قريبًا.",
   "registrationConsentNote": "الموافقة على الشروط وسياسة الخصوصية مطلوبة لإنشاء الحساب. يمكنك الرجوع دون إنشاء حساب.",
   "registrationBack": "رجوع",
   "registrationCreate": "إنشاء الحساب",
@@ -545,38 +389,21 @@
   "agentAddTitle": "إضافة وكيل فرعي",
   "agentAddName": "اسم الوكالة",
   "agentAddManager": "اسم المسؤول",
-  "agentAddPhone": "رقم الجوال",
   "agentAddEmail": "البريد الإلكتروني",
-  "agentAddMargin": "هامش الربح",
   "agentAddCreditLimit": "حد الائتمان",
-  "agentAddInviteTitle": "إرسال دعوة دخول",
-  "agentAddInviteBody": "يصل الوكيل رابط لإنشاء كلمة مروره",
   "agentAddSubmit": "إضافة الوكيل",
-  "agentAddPhoneTaken": "هذا الرقم مسجّل لوكيل آخر. استخدم رقمًا مختلفًا.",
   "agentAddEmailTaken": "هذا البريد مسجّل لوكيل آخر. استخدم بريدًا مختلفًا.",
-  "agentAddMarginInvalid": "أدخل نسبة بين ٠ و١٠٠.",
   "agentAddDoneTitle": "أُضيف الوكيل",
-  "agentAddDoneInvited": "أرسلنا دعوة دخول إلى {name}. يظهر الوكيل كـ «قيد التفعيل» حتى يقبل الدعوة.",
-  "agentAddDoneNoInvite": "أُضيف {name} دون دعوة دخول.",
+  "agentAddDoneInvited": "أُضيف {name}. يظهر كـ «قيد التفعيل» إلى أن يُعتمد.",
+  "agentAddDoneNoInvite": "أُضيف {name}. يستطيع المالك الدخول بالبريد وكلمة المرور التي حددتها.",
   "agentAddPending": "قيد التفعيل",
   "agentAddAnother": "إضافة آخر",
   "agentAddBackToList": "العودة إلى الوكلاء",
-  "agentCreditTitle": "تعديل حد الائتمان",
-  "agentCreditUsed": "المستخدم حاليًا",
-  "agentCreditCurrent": "الحد الحالي",
-  "agentCreditNew": "الحد الجديد",
-  "agentCreditBelowUsage": "الحد الجديد أقل من المستخدم حاليًا ({used}).",
-  "agentCreditAboveBalance": "الحد يتجاوز رصيدك الرئيسي المتاح ({max}) عند إدخال أكثر من ذلك.",
-  "agentCreditAboveBalanceError": "الحد الجديد أكبر من رصيدك الرئيسي المتاح ({max}).",
-  "agentCreditSave": "حفظ الحد",
-  "agentCreditSaved": "تم تحديث حد الائتمان.",
-  "agentCreditEditAction": "تعديل حد الائتمان",
   "connectivityOffline": "أنت غير متصل. تعرض البيانات آخر تحديث {time}.",
   "connectivityOfflineNoTime": "أنت غير متصل. قد لا تكون البيانات محدّثة.",
   "connectivityRetry": "إعادة",
   "connectivityRestored": "عاد الاتصال.",
   "errorSectionLoad": "تعذّر تحميل هذا القسم",
-  "errorSlowServer": "الخادم يستغرق وقتًا أطول من المعتاد. ما زلنا نحاول…",
   "errorCancel": "إلغاء",
   "errorTryAgain": "حاول مجددًا",
   "errorUnexpectedTitle": "حدث خطأ غير متوقع",
@@ -589,7 +416,6 @@
   "agentProfileBalance": "الرصيد",
   "agentProfileMonthly": "طلبات الشهر",
   "agentProfileFund": "تمويل",
-  "agentProfileEditLimit": "تعديل الحد",
   "agentProfileSuspend": "إيقاف",
   "agentProfileReactivate": "إعادة التفعيل",
   "agentProfileLedger": "سجل الرصيد",
@@ -630,32 +456,25 @@
   "fundFromMainBalance": "من رصيدك الرئيسي {amount}",
   "fundDoneMessage": "تم التمويل · رصيد الوكيل الآن {balance}",
   "draftsTitle": "المسودات",
-  "draftsInfo": "تُحذف المسودات تلقائيًا بعد ٣٠ يومًا من آخر تعديل.",
+  "draftsInfo": "تحتفظ المسودة بالمسافرين الذين أدخلتهم. تابع لمراجعتها وإرسالها.",
   "draftsEmptyTitle": "لا توجد مسودات",
   "draftsEmptyBody": "ابدأ طلبًا واحفظه كمسودة لتكمله لاحقًا.",
   "draftsOpenAction": "المسودات",
   "draftChip": "مسودة",
   "draftContinue": "متابعة",
   "draftDelete": "حذف",
-  "draftMissing": "ينقص: {what}",
-  "draftMissingTraveler": "بيانات المسافر {i}",
-  "draftMissingTravelers": "بيانات {n} مسافرين",
   "draftDeleteTitle": "حذف المسودة؟",
   "draftDeleteBody": "ستُحذف بيانات {service} لـ {travelers}.",
   "draftDeleteLast": "هذه آخر مسودة لديك.",
   "draftDeletedToast": "حُذفت المسودة",
-  "draftUndo": "تراجع",
   "draftSaveTitle": "حفظ الطلب كمسودة؟",
   "draftSaveSubtitle": "أدخلت بيانات {done} من {total} مسافرين",
   "draftSaveSubtitleOne": "أدخلت بيانات المسافر",
   "draftSaveRowComplete": "بيانات المسافر {i} · مكتملة",
   "draftSaveRowMissing": "بيانات المسافر {i} · ناقصة",
-  "draftSaveCount": "لديك {n} من {max} مسودات. احذف مسودة قديمة لحفظ المزيد.",
-  "draftSaveFull": "وصلت إلى الحد الأقصى ({max} مسودات). احذف مسودة لحفظ هذا الطلب.",
   "draftSaveAction": "حفظ كمسودة",
   "draftDiscardAction": "تجاهل والخروج",
   "draftSaved": "حُفظت المسودة.",
-  "draftServiceGone": "هذه الخدمة لم تعد متاحة.",
   "requestWaitingAgent": "بانتظار موافقة الوكيل",
   "requestWaitingManagement": "بانتظار موافقة الإدارة",
   "requestWhoApproves": "من يوافق؟",
@@ -805,7 +624,6 @@
   "ticketDescriptionLabel": "الوصف",
   "ticketDescriptionHint": "اشرح المشكلة ورقم الطلب إن وُجد…",
   "ticketAttachOptional": "إرفاق ملف (اختياري)",
-  "ticketAttachComingSoon": "إرفاق الملفات غير متاح بعد.",
   "ticketSubmitAction": "إرسال التذكرة",
   "ticketToday": "اليوم",
   "ticketYesterday": "أمس",
@@ -813,7 +631,6 @@
   "ticketSendFailed": "فشل الإرسال",
   "ticketResend": "إعادة إرسال",
   "ticketClosedNote": "عند إغلاق التذكرة تصبح للقراءة فقط",
-  "ticketReopen": "إعادة فتح",
   "contactSupportTitle": "تواصل مع الدعم",
   "contactSupportWhatsapp": "واتساب",
   "contactSupportCall": "اتصال مباشر",
@@ -838,7 +655,7 @@
   "agencyEmailInvalid": "صيغة البريد غير صحيحة. مثال: name@agency.com",
   "agencyEmailTaken": "البريد مستخدم في حساب آخر.",
   "agencyLicenseTaken": "رقم الترخيص مسجّل لوكالة أخرى. تواصل مع الدعم إن كان هذا خطأ.",
-  "loginInvalidCredentials": "رقم الجوال أو كلمة المرور غير صحيحة.",
+  "loginInvalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
   "loginAccountPending": "الحساب قيد المراجعة. سنبلغك عند التفعيل خلال يوم عمل.",
   "loginAccountSuspended": "الحساب موقوف. تواصل مع جُباري لمعرفة السبب.",
   "loginLocked": "قُفل الدخول مؤقتًا بعد محاولات خاطئة. حاول بعد {time}.",
@@ -848,12 +665,588 @@
   "logoutPendingUpload": "لديك رفع مستند لم يكتمل ({reference}). إن خرجت الآن سيتوقف الرفع.",
   "logoutPendingUploads": "لديك {count} عمليات رفع لم تكتمل. إن خرجت الآن ستتوقف.",
   "reviewShortfallAvailable": "المتاح",
-  "reviewShortfallCredit": "حد الائتمان المتبقي",
   "reviewShortfallMissing": "النقص",
   "reviewTopUpShortfall": "شحن {amount}",
-  "bookingTravelerLimit": "الحد: ١ إلى ٩ مسافرين في الطلب الواحد. للكشوف الأكبر استخدم الكشف الجماعي.",
+  "bookingTravelerLimit": "الحد: حتى ٥٠ مسافرًا في الطلب الواحد.",
   "removeThisTravelerAction": "إزالة هذا المسافر",
   "bookingTravelerMissing": "المسافر {traveler} ينقصه {field}.",
   "bookingTravelerInvalid": "المسافر {traveler} فيه بيانات تحتاج تصحيحًا.",
-  "bookingTravelerShow": "عرض"
+  "bookingTravelerShow": "عرض",
+  "loginEmailRequired": "سجّل الدخول بالبريد الإلكتروني الخاص بحسابك.",
+  "loginEnrollmentLinkRequired": "فعّل التحقق بخطوتين عبر الرابط المرسل إلى بريدك الإلكتروني، ثم سجّل الدخول مجددًا.",
+  "loginVerificationExpired": "انتهت مهلة التحقق. سجّل الدخول مرة أخرى.",
+  "otpAuthenticatorInstructions": "أدخل الرمز المكوّن من ٦ أرقام من تطبيق المصادقة.",
+  "otpInvalidCode": "الرمز غير صحيح. حاول مرة أخرى.",
+  "otpUseRecoveryCode": "استخدام رمز الاسترداد",
+  "otpUseAuthenticatorCode": "استخدام رمز تطبيق المصادقة",
+  "otpRecoveryCodeLabel": "رمز الاسترداد",
+  "errorTooManyAttempts": "محاولات كثيرة. حاول بعد حوالي {minutes} دقيقة.",
+  "topUpBelowMinimum": "الحد الأدنى للشحن هو {amount}.",
+  "errTopupBelowMinimum": "المبلغ أقل من الحد الأدنى للشحن.",
+  "errInvalidTopupMethod": "اختر طريقة دفع صحيحة.",
+  "errPaymentAccountNotFound": "حساب الدفع هذا لم يعد متاحًا. أعد التحميل وحاول مرة أخرى.",
+  "errPaymentAccountCurrencyMismatch": "هذا الحساب يستقبل عملة مختلفة عن عملة محفظتك.",
+  "errIdempotencyKeyReused": "أُرسل هذا الطلب سابقًا بتفاصيل مختلفة. راجع النموذج وحاول مرة أخرى.",
+  "errPermissionDenied": "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
+  "validationServerRejected": "لم يتم قبول هذه القيمة. يرجى التحقق منها.",
+  "errFileTooLarge": "حجم الملف أكبر من 8 ميجابايت.",
+  "errFileTypeNotAllowed": "يُقبل فقط PDF وJPEG وPNG.",
+  "errFileContentMismatch": "محتوى الملف لا يطابق نوعه. اختر ملفًا آخر.",
+  "errFileEmpty": "الملف فارغ.",
+  "errTooManyFiles": "عدد الملفات لهذا المسافر تجاوز الحد.",
+  "errDocumentUploadNotAllowed": "لم يعد بالإمكان إضافة مستندات لهذا الطلب.",
+  "errInsufficientFunds": "رصيدك لا يغطي هذا الطلب.",
+  "reviewCannotSubmit": "لا يمكن إرسال هذا الطلب بعد. راجع المسافرين والمستندات.",
+  "reviewHoldDeferredNote": "لا يتم حجز أي مبلغ الآن. يُحجز الرسم بعد الموافقة على الطلب.",
+  "bookingReferencePending": "سيظهر رقم مرجع طلبك في قائمة طلباتك خلال لحظات.",
+  "reviewLoadFailed": "تعذّر تحميل الملخص.",
+  "draftSaveNeedsComplete": "لا يمكن حفظ مسودة إلا إذا اكتملت بيانات كل المسافرين.",
+  "uploadChangeTarget": "تغيير",
+  "uploadTargetTitle": "إرفاق الملف إلى",
+  "uploadAlreadySent": "تم رفع ملف سابقًا",
+  "topUpReceiptAttached": "تم إرفاق الإيصال، ويُرسل مع طلبك.",
+  "topUpReceiptUploading": "جارٍ رفع الإيصال…",
+  "errUnsupportedOperation": "هذه الخدمة غير متاحة بعد.",
+  "recoveryLinkSentTitle": "تحقق من بريدك الإلكتروني",
+  "recoveryLinkSentBody": "إن وُجد حساب لـ {email} فقد أرسلنا رابطًا لإعادة تعيين كلمة المرور. افتحه لاختيار كلمة مرور جديدة.",
+  "recoveryNeedsEmail": "إعادة تعيين كلمة المرور تتم عبر البريد الإلكتروني للحساب. أدخل بريدك الإلكتروني.",
+  "agentAddPassword": "كلمة المرور الأولى للمالك",
+  "agentAddPasswordHint": "١٢ حرفًا على الأقل. سلّمها للمالك ويمكنه تغييرها بعد الدخول.",
+  "agentAddPasswordShort": "استخدم ١٢ حرفًا على الأقل.",
+  "agentAddWeakPassword": "كلمة المرور مرفوضة. اختر كلمة أقوى: ١٢ حرفًا على الأقل، وليست شائعة، وليست أرقامًا فقط، وغير مشابهة لاسمك أو بريدك الإلكتروني.",
+  "agentAddNotAllowed": "لا يمكنك إضافة وكيل فرعي من هذا الحساب.",
+  "passwordRuleSimilar": "كلمة المرور تشبه اسمك أو بريدك الإلكتروني أكثر من اللازم. اختر كلمة أخرى.",
+  "passwordRuleShort": "كلمة المرور قصيرة. استخدم ١٢ حرفًا على الأقل.",
+  "passwordRuleCommon": "كلمة المرور شائعة جدًا. اختر كلمة يصعب تخمينها.",
+  "passwordRuleNumeric": "لا يجوز أن تكون كلمة المرور أرقامًا فقط. أضف حروفًا.",
+  "topUpMethodEWallet": "محفظة إلكترونية",
+  "commonRetry": "إعادة المحاولة",
+  "commonCancel": "إلغاء",
+  "commonNext": "التالي",
+  "commonDone": "تم",
+  "commonClose": "إغلاق",
+  "commonBack": "رجوع",
+  "commonErrorTitle": "حدث خطأ",
+  "commonCheckConnection": "تحقق من اتصالك ثم أعد المحاولة.",
+  "commonNoPermissionTitle": "ليس لديك صلاحية",
+  "commonRequestPermission": "اطلب الصلاحية",
+  "commonNoPermissionChip": "بلا صلاحية",
+  "commonBackHome": "العودة إلى الرئيسية",
+  "secSettingsTitle": "الأمان وتسجيل الدخول",
+  "secSectionLogin": "تسجيل الدخول",
+  "secSectionExtra": "حماية إضافية",
+  "secChangePassword": "تغيير كلمة المرور",
+  "secTfaTitle": "التحقق بخطوتين",
+  "secTfaSub": "رمز من تطبيق المصادقة عند كل دخول",
+  "secTfaOff": "غير مفعّل",
+  "secTfaOn": "مفعّل",
+  "secTfaPitch": "يحمي حسابك حتى لو عرف أحدٌ كلمة المرور.",
+  "secTfaEnable": "تفعيل التحقق بخطوتين",
+  "secRecoveryCodes": "رموز الاسترداد",
+  "secRecoveryCodesLeft": "{count, plural, =0{لا رموز استرداد متبقية} =1{رمز استرداد واحد متبقٍ} =2{رمزا استرداد متبقيان} few{{count} رموز استرداد متبقية} many{{count} رمز استرداد متبقيًا} other{{count} رمز استرداد متبقٍ}}",
+  "@secRecoveryCodesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "secRegenerate": "إنشاء رموز جديدة",
+  "secRegenerateSub": "تُلغى الرموز الحالية فور الإنشاء",
+  "secDisable": "إيقاف التحقق بخطوتين",
+  "secLoadError": "تعذّر تحميل حالة التحقق بخطوتين. تحقق من اتصالك.",
+  "secLastLogin": "آخر تسجيل دخول: {when} · {city}",
+  "@secLastLogin": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "secSetupTitle": "تفعيل التحقق بخطوتين",
+  "secStepOf": "الخطوة {step} من {total}",
+  "@secStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "secScanTitle": "امسح الرمز بتطبيق المصادقة",
+  "secScanBody": "افتح Google Authenticator أو أي تطبيق مصادقة، ثم امسح الرمز.",
+  "secManualKey": "أو أدخل المفتاح السري يدويًا",
+  "secCopyKey": "نسخ المفتاح",
+  "secKeyCopied": "نُسخ المفتاح السري",
+  "secSetupErrorTitle": "تعذّر إنشاء رمز الإعداد",
+  "secCodeTitle": "أدخل رمز التحقق",
+  "secCodeBody": "اكتب الرمز المكوّن من ٦ أرقام الظاهر في تطبيق المصادقة.",
+  "secCodeRefreshHint": "يتجدّد الرمز في التطبيق كل ٣٠ ثانية",
+  "secVerify": "تحقق",
+  "secVerifying": "جارٍ التحقق…",
+  "secCodeWrong": "{left, plural, =0{الرمز غير صحيح.} =1{الرمز غير صحيح. تبقّت محاولة واحدة.} =2{الرمز غير صحيح. تبقّت محاولتان.} few{الرمز غير صحيح. تبقّت {left} محاولات.} other{الرمز غير صحيح. تبقّت {left} محاولة.}}",
+  "@secCodeWrong": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "secCodeExpiredTitle": "انتهت صلاحية الرمز",
+  "secCodeExpiredBody": "أدخل الرمز الجديد الظاهر في التطبيق الآن.",
+  "secLockedTitle": "تجاوزت عدد المحاولات",
+  "secLockedBody": "أوقفنا الإدخال مؤقتًا لحماية حسابك. حاول مجددًا بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}}.",
+  "@secLockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "secCodesTitle": "احفظ رموز الاسترداد",
+  "secCodesBody": "استخدم أي رمز منها للدخول إذا فقدت هاتفك. كل رمز يُستخدم مرة واحدة.",
+  "secCodesOnce": "تظهر مرة واحدة — لن تتمكن من رؤيتها مجددًا بعد هذه الشاشة.",
+  "secCopyAll": "نسخ الكل",
+  "secDownload": "تنزيل",
+  "secSavedCheck": "حفظت الرموز في مكان آمن",
+  "secCodesErrorTitle": "لم تُنشأ الرموز",
+  "secCodesErrorBody": "تعذّر إنشاء رموز الاسترداد. التحقق بخطوتين مفعّل، ويمكنك إنشاء الرموز من الإعدادات لاحقًا.",
+  "secLoginTitle": "تسجيل الدخول",
+  "secLoginCodeTitle": "رمز التحقق",
+  "secLoginCodeBody": "أدخل الرمز من تطبيق المصادقة لإكمال الدخول إلى {email}",
+  "@secLoginCodeBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "secLostPhone": "فقدت هاتفك؟ استخدم رمز استرداد",
+  "secSignIn": "تسجيل الدخول",
+  "secRecoveryTitle": "رمز الاسترداد",
+  "secRecoveryBody": "أدخل أحد رموز الاسترداد التي حفظتها عند تفعيل التحقق بخطوتين.",
+  "secRecoveryField": "رمز الاسترداد",
+  "secRecoveryHelper": "كل رمز يُستخدم مرة واحدة فقط",
+  "secRecoveryWrong": "الرمز غير صحيح أو سبق استخدامه.",
+  "secUseAuthApp": "استخدم تطبيق المصادقة بدلًا من ذلك",
+  "secLoginLockedTitle": "أُقفل الدخول مؤقتًا",
+  "secLoginLockedBody": "محاولات كثيرة غير صحيحة. حاول بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}} أو تواصل مع الدعم.",
+  "@secLoginLockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "secContactSupport": "تواصل مع الدعم",
+  "privTravelerTitle": "بيانات المسافر",
+  "privSectionDoc": "بيانات الوثيقة",
+  "privSectionContact": "التواصل",
+  "privPassportNo": "رقم الجواز",
+  "privNationalId": "رقم الهوية الوطنية",
+  "privBirthDate": "تاريخ الميلاد",
+  "privNationality": "الجنسية",
+  "privEmail": "البريد الإلكتروني",
+  "privPhone": "رقم الجوال",
+  "privReveal": "إظهار",
+  "privHide": "إخفاء",
+  "privMaskedNote": "القيم الحساسة مخفية افتراضيًا، وكل إظهار يُسجَّل باسمك.",
+  "privCountdown": "{seconds} ث",
+  "@privCountdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "privCountdownA11y": "يُخفى بعد {seconds, plural, =1{ثانية واحدة} =2{ثانيتين} few{{seconds} ثوانٍ} other{{seconds} ثانية}}",
+  "@privCountdownA11y": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "privLoadErrorTitle": "لم تُحمَّل البيانات",
+  "privLoadErrorBody": "تعذّر تحميل بيانات المسافر. تحقق من اتصالك ثم أعد المحاولة.",
+  "privRateLimited": "وصلت إلى حد الإظهار (١٠ مرات في الساعة). يمكنك المحاولة بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}}.",
+  "@privRateLimited": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "privNoPermissionTitle": "ليس لديك صلاحية لإظهار هذه القيم",
+  "privNoPermissionBody": "صلاحية «إظهار البيانات الحساسة» يمنحها مدير الحساب.",
+  "privIntroTitle": "قبل إظهار القيمة",
+  "privIntroSub": "يظهر هذا التنبيه مرة واحدة",
+  "privIntroLoggedTitle": "الإظهار مسجّل ولا يُحفظ على جهازك",
+  "privIntroLoggedBody": "نسجّل من أظهر القيمة ومتى، ولا تُخزَّن في التطبيق.",
+  "privIntroTimerTitle": "تختفي تلقائيًا بعد ٣٠ ثانية",
+  "privIntroTimerBody": "ويمكنك إخفاؤها قبل ذلك بزر «إخفاء».",
+  "privIntroCopyTitle": "النسخ غير متاح",
+  "privIntroCopyBody": "لحماية بيانات المسافر لا تُنسخ القيم الحساسة.",
+  "accSettingsTitle": "إعدادات الحساب",
+  "accChangeEmail": "تغيير البريد الإلكتروني",
+  "accPendingSub": "بانتظار تأكيد {email}",
+  "@accPendingSub": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "accPendingChip": "بانتظار التأكيد",
+  "accPendingNote": "يبقى بريدك الحالي فعّالًا حتى تؤكد البريد الجديد.",
+  "accFormIntro": "سنرسل رابط تأكيد إلى بريدك الجديد، ويبقى بريدك الحالي فعّالًا حتى تؤكد.",
+  "accCurrentEmail": "البريد الحالي",
+  "accNewEmail": "البريد الجديد",
+  "accCurrentPassword": "كلمة المرور الحالية",
+  "accPasswordHint": "أدخل كلمة المرور",
+  "accSend": "إرسال رابط التأكيد",
+  "accSending": "جارٍ الإرسال…",
+  "accInvalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا، مثل name@mail.com",
+  "accSameEmail": "هذا هو بريدك الحالي",
+  "accEmailTaken": "هذا البريد مستخدم في حساب آخر",
+  "accWrongPassword": "{left, plural, =0{كلمة المرور غير صحيحة.} =1{كلمة المرور غير صحيحة. تبقّت محاولة واحدة.} =2{كلمة المرور غير صحيحة. تبقّت محاولتان.} few{كلمة المرور غير صحيحة. تبقّت {left} محاولات.} other{كلمة المرور غير صحيحة. تبقّت {left} محاولة.}}",
+  "@accWrongPassword": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "accTooManyTitle": "أوقفنا التغيير مؤقتًا",
+  "accTooManyBody": "محاولات كثيرة. حاول مجددًا بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}}.",
+  "@accTooManyBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "accCheckTitle": "تحقق من بريدك",
+  "accCheckSentTo": "أرسلنا رابط التأكيد إلى",
+  "accCheckNote": "افتح الرابط خلال ٢٤ ساعة لإكمال التغيير. يبقى بريدك الحالي فعّالًا حتى ذلك.",
+  "accEditEmail": "تعديل البريد المُدخل",
+  "accOpenMail": "فتح البريد",
+  "accResend": "إعادة الإرسال",
+  "accResendIn": "إعادة الإرسال {time}",
+  "@accResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "accResent": "أعدنا إرسال الرابط. تحقق أيضًا من مجلد الرسائل غير المرغوب فيها.",
+  "accSendFailed": "تعذّر إرسال الرابط. تحقق من اتصالك ثم أعد المحاولة.",
+  "accChanged": "تم تغيير البريد الإلكتروني",
+  "repTitle": "التقارير",
+  "repIntro": "اختر مصدر البيانات لإنشاء تقرير مخصص وتصديره.",
+  "repSourceBookings": "الحجوزات",
+  "repSourceBookingsSub": "الطلبات والمسافرون والحالات",
+  "repSourceWallet": "المحفظة",
+  "repSourceWalletSub": "العمليات والرسوم والتسويات",
+  "repSourceWalletLocked": "تحتاج صلاحية «المحفظة»",
+  "repQuick": "تقارير سريعة",
+  "repQuickThisMonth": "حجوزات هذا الشهر",
+  "repQuickCompleted": "الطلبات المكتملة",
+  "repQuickWallet": "عمليات المحفظة",
+  "repLast30": "آخر ٣٠ يومًا",
+  "repRecentFiles": "آخر الملفات المصدّرة",
+  "repRowsCount": "{count, plural, =1{صف واحد} =2{صفّان} few{{count} صفوف} many{{count} صفًا} other{{count} صف}}",
+  "@repRowsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "repLoadErrorTitle": "تعذّر تحميل التقارير",
+  "repBookingsReport": "تقرير الحجوزات",
+  "repWalletReport": "تقرير المحفظة",
+  "repBuilderSub": "منشئ التقرير",
+  "repPeriod": "الفترة",
+  "repPeriod7": "٧ أيام",
+  "repPeriod30": "٣٠ يومًا",
+  "repPeriodMonth": "هذا الشهر",
+  "repPeriodCustom": "مخصص",
+  "repFrom": "من",
+  "repTo": "إلى",
+  "repRangeInvalid": "قبل تاريخ البداية",
+  "repRangeMax": "أقصى فترة ١٢ شهرًا",
+  "repColumns": "الأعمدة",
+  "repColumnsCount": "{selected} من {total}",
+  "@repColumnsCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "repColOrder": "رقم الطلب",
+  "repColTraveler": "المسافر",
+  "repColService": "الخدمة",
+  "repColStatus": "الحالة",
+  "repColAmount": "المبلغ",
+  "repColAmountSar": "المبلغ (ر.س)",
+  "repColSubAgent": "الوكيل الفرعي",
+  "repFilters": "التصفية",
+  "repAddFilter": "إضافة تصفية",
+  "repShow": "عرض التقرير",
+  "repReset": "إعادة ضبط",
+  "repEdit": "تعديل",
+  "repKpiCount": "عدد الطلبات",
+  "repKpiTotal": "الإجمالي",
+  "repTotalRow": "الإجمالي",
+  "repExport": "تصدير",
+  "repEmptyTitle": "لا توجد نتائج",
+  "repEmptyBody": "لا حجوزات تطابق الفترة والتصفية المختارة. جرّب توسيع الفترة أو إزالة بعض عوامل التصفية.",
+  "repEditFilters": "تعديل التصفية",
+  "repTruncatedTitle": "النتيجة تتجاوز ٥٠٠٠ صف",
+  "repTruncatedBody": "يعرض التطبيق أول ٥٠٠٠ صف فقط. ضيّق الفترة، أو صدّر الملف ليصلك كاملًا.",
+  "repExportAll": "تصدير الكل",
+  "repNarrowPeriod": "تضييق الفترة",
+  "repGenerating": "جارٍ إنشاء التقرير…",
+  "repGeneratingHint": "قد يستغرق ذلك بضع ثوانٍ للفترات الطويلة.",
+  "repGenerateErrorTitle": "تعذّر إنشاء التقرير",
+  "repGenerateErrorBody": "حدث خطأ أثناء تجهيز البيانات. حاول مجددًا بعد قليل.",
+  "repExportTitle": "تصدير التقرير",
+  "repExportSub": "{rows, plural, =1{صف واحد} =2{صفّان} few{{rows} صفوف} many{{rows} صفًا} other{{rows} صف}} · {cols, plural, =1{عمود واحد} =2{عمودان} few{{cols} أعمدة} many{{cols} عمودًا} other{{cols} عمود}}",
+  "@repExportSub": {
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "repFmtPdfSub": "مناسب للطباعة والمشاركة",
+  "repFmtXlsxSub": "للتحليل والتعديل",
+  "repFmtCsvSub": "لاستيراده في أنظمة أخرى",
+  "repIncludeTotals": "تضمين صف الإجماليات",
+  "repExporting": "جارٍ التصدير…",
+  "repReadyTitle": "الملف جاهز",
+  "repReadySub": "يُحفظ في «آخر الملفات المصدّرة» لمدة ٧ أيام",
+  "repShare": "مشاركة",
+  "repDownload": "تنزيل",
+  "repExportFailed": "تعذّر تجهيز الملف. تحقق من اتصالك ثم أعد المحاولة.",
+  "repNoPermissionBody": "التقارير متاحة لمدير الحساب ولمن يملك صلاحية «التقارير». اطلبها من مدير حسابك.",
+  "passScanButton": "صوّر الجواز لقراءة البيانات",
+  "passManualHint": "أو أدخل البيانات يدويًا كما تظهر في الجواز",
+  "passApplied": "عبّأنا {count, plural, =1{حقلًا واحدًا} =2{حقلين} few{{count} حقول} many{{count} حقلًا} other{{count} حقل}} من الجواز. أكمل {missing} وراجع البيانات قبل الحفظ.",
+  "@passApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "passCaptureTitle": "تصوير الجواز",
+  "passGuideTitle": "ضع صفحة البيانات داخل الإطار",
+  "passGuideSub": "بحيث يظهر السطران السفليان كاملين",
+  "passTipLight": "إضاءة جيدة",
+  "passTipGlare": "دون انعكاس",
+  "passTipFull": "الصفحة كاملة",
+  "passCapture": "التقاط",
+  "passFromPhotos": "من الصور",
+  "passLowLight": "الإضاءة ضعيفة. اقترب من مصدر ضوء وتجنّب الظل على الصفحة.",
+  "passCameraDeniedTitle": "لا يمكن الوصول إلى الكاميرا",
+  "passCameraDeniedBody": "اسمح لسين باستخدام الكاميرا من إعدادات الجهاز، أو اختر صورة الجواز من الصور.",
+  "passOpenSettings": "فتح الإعدادات",
+  "passReading": "جارٍ قراءة البيانات…",
+  "passReadingHint": "يستغرق ذلك بضع ثوانٍ",
+  "passFailedTitle": "تعذّرت قراءة الجواز",
+  "passFailedBody": "تأكد من وضوح الصورة وظهور صفحة البيانات كاملة، ثم صوّرها مجددًا.",
+  "passRetake": "إعادة التصوير",
+  "passManual": "إدخال يدوي",
+  "passUnavailableTitle": "القراءة الآلية غير متاحة الآن",
+  "passUnavailableBody": "يمكنك إكمال بيانات المسافر يدويًا، وستعود القراءة قريبًا.",
+  "passContinueManual": "متابعة بالإدخال اليدوي",
+  "passNotImage": "الملف المختار ليس صورة. اختر صورة بصيغة JPG أو PNG.",
+  "passReviewTitle": "مراجعة البيانات",
+  "passReviewSub": "من صورة الجواز",
+  "passReadCount": "قرأنا {count, plural, =1{حقلًا واحدًا} =2{حقلين} few{{count} حقول} many{{count} حقلًا} other{{count} حقل}} من الجواز",
+  "@passReadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "passReviewHint": "حدّد ما تريد تطبيقه على النموذج",
+  "passLowConfidence": "ثقة منخفضة",
+  "passAppliedChip": "طُبّق",
+  "passLowNote": "الحقول منخفضة الثقة غير محددة افتراضيًا — راجعها قبل تطبيقها.",
+  "passApply": "تطبيق {count, plural, =1{حقل واحد} =2{حقلين} few{{count} حقول} many{{count} حقلًا} other{{count} حقل}}",
+  "@passApply": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "passFieldFirstName": "الاسم الأول",
+  "passFieldLastName": "اسم العائلة",
+  "passFieldPassportNo": "رقم الجواز",
+  "passFieldBirthDate": "تاريخ الميلاد",
+  "passFieldNationality": "الجنسية",
+  "passFieldExpiry": "تاريخ انتهاء الجواز",
+  "profChangePhoto": "تغيير الصورة",
+  "profSheetTitle": "الصورة الشخصية",
+  "profSheetSub": "JPG أو PNG بحجم أقصى ٥ م.ب",
+  "profTakePhoto": "التقاط صورة",
+  "profChoosePhoto": "اختيار من الصور",
+  "profDeletePhoto": "حذف الصورة",
+  "profCropTitle": "معاينة الصورة",
+  "profCropHint": "حرّك الصورة وكبّرها لضبطها داخل الدائرة",
+  "profUse": "استخدام",
+  "profRedo": "إعادة",
+  "profUploadProgress": "{size} · {percent}٪",
+  "@profUploadProgress": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profCancelUpload": "إلغاء الرفع",
+  "profNotUploadedTitle": "لم تُرفع الصورة",
+  "profTooLarge": "حجم الصورة {size} والحد الأقصى ٥ م.ب. اختر صورة أصغر.",
+  "@profTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "profWrongType": "الصيغة غير مدعومة. اختر صورة JPG أو PNG.",
+  "profUploadFailed": "تعذّر الرفع — تحقق من اتصالك",
+  "profUpdated": "تم تحديث الصورة",
+  "profDeleted": "حُذفت الصورة الشخصية",
+  "supTicketClosedLine": "أُغلقت التذكرة · {when}",
+  "@supTicketClosedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "supRateTitle": "كيف كانت تجربتك مع الدعم؟",
+  "supRateSub": "تقييمك يساعدنا على تحسين الخدمة",
+  "supRateA11y": "التقييم",
+  "supStarA11y": "{value} من ٥",
+  "@supStarA11y": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "supStar1": "سيئ",
+  "supStar2": "مقبول",
+  "supStar3": "جيد",
+  "supStar4": "جيد جدًا",
+  "supStar5": "ممتاز",
+  "supCommentHint": "أضف تعليقًا (اختياري)",
+  "supSendRating": "إرسال التقييم",
+  "supSending": "جارٍ الإرسال…",
+  "supRateFailed": "تعذّر إرسال التقييم. حاول مجددًا.",
+  "supRatedTitle": "تقييمك للمحادثة",
+  "supThanks": "شكرًا لتقييمك",
+  "supRatedLocked": "لا يمكن تعديل التقييم بعد إرساله.",
+  "supClosedBar": "هذه التذكرة مغلقة، ويمكنك فتح تذكرة جديدة في أي وقت.",
+  "supNewTicket": "فتح تذكرة جديدة",
+  "supNewTicketTitle": "تذكرة جديدة",
+  "supCategory": "التصنيف",
+  "supCategoryHint": "اختر التصنيف",
+  "supCategorySheetTitle": "تصنيف التذكرة",
+  "supCategorySheetSub": "اختر الأقرب لمشكلتك",
+  "supCategorySearch": "ابحث في التصنيفات",
+  "supCategoryOther": "أخرى",
+  "supCategoryOtherSub": "لم أجد التصنيف المناسب",
+  "supCategoryNoResultsTitle": "لا توجد تصنيفات مطابقة",
+  "supCategoryNoResultsBody": "اختر «أخرى» واكتب مشكلتك بالتفصيل.",
+  "supCategoryLoadError": "تعذّر تحميل التصنيفات. أعد المحاولة أو اختر «أخرى».",
+  "supUnreadA11y": "{count, plural, =1{رسالة واحدة غير مقروءة} =2{رسالتان غير مقروءتين} few{{count} رسائل غير مقروءة} other{{count} رسالة غير مقروءة}}",
+  "@supUnreadA11y": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supUnreadTickets": "{count, plural, =1{تذكرة واحدة بردود جديدة} =2{تذكرتان بردود جديدة} few{{count} تذاكر بردود جديدة} other{{count} تذكرة بردود جديدة}}",
+  "@supUnreadTickets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supMarkAllRead": "تعليم الكل كمقروء",
+  "supNoNewReplies": "لا توجد ردود جديدة",
+  "supNewMessagesDivider": "رسائل جديدة ({count})",
+  "@supNewMessagesDivider": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supSupportTeam": "فريق الدعم",
+  "privRevealing": "جارٍ الإظهار",
+  "repAllStatuses": "كل الحالات",
+  "repFilterChip": "{name}: {value}",
+  "@repFilterChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "repFilterStatus": "الحالة",
+  "repFilterService": "الخدمة",
+  "repFilterBranch": "الفرع",
+  "repFilterSubAgent": "الوكيل الفرعي",
+  "repStatusCompleted": "مكتملة",
+  "commonCurrencySar": "ر.س",
+  "commonSizeKb": "{size} ك.ب",
+  "@commonSizeKb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSizeMb": "{size} م.ب",
+  "@commonSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "supBadgeMax": "٩+"
 }

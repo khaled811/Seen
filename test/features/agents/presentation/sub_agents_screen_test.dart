@@ -29,6 +29,7 @@ import 'package:seen_booking/features/agents/presentation/screens/sub_agents_lis
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 
 const _agents = [
@@ -52,28 +53,28 @@ class _AgentsRepo implements AgentsRepository {
       const Right(null);
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({required String subAgentId, required int amountCents, String? note}) async =>
-      const Right(SubAgent(id: '1', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+  Future<Either<Failure, void>> fundSubAgentWallet({
+    required String subAgentId,
+    required int amountCents,
+    required String idempotencyKey,
+    String? note,
+  }) async =>
+      const Right(null);
 
   @override
   Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent) async =>
       const Right(SubAgent(id: 'new', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 
   @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
-      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
-
-  @override
   Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId) async =>
       const Right(SubAgentProfile(agent: SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true)));
 
   @override
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
   }) async =>
-      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+      const Right(null);
 }
 
 class _WalletRepo implements WalletRepository {
@@ -93,11 +94,16 @@ class _WalletRepo implements WalletRepository {
       throw UnimplementedError();
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError();
 }

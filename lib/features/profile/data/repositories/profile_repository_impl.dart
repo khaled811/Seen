@@ -13,14 +13,14 @@ class ProfileRepositoryImpl implements AgencyRepository, MarginsRepository, Team
   final ProfileRemoteDataSource _remote;
 
   @override
-  Future<Either<Failure, AgencyProfile>> getProfile() async => (await _remote.getAgencyProfile()).map((d) => d.entity);
+  Future<Either<Failure, AgencyProfile>> getProfile() => _remote.getAgencyProfile();
 
   @override
-  Future<Either<Failure, MarginsOverview>> getMargins() async => (await _remote.getMargins()).map((d) => d.entity);
+  Future<Either<Failure, MarginsOverview>> getMargins(String agentId) => _remote.getMargins(agentId);
 
   @override
-  Future<Either<Failure, MarginsOverview>> saveMargins(Map<String, int> changes) async =>
-      (await _remote.saveMargins(changes)).map((d) => d.entity);
+  Future<Either<Failure, MarginsOverview>> saveMargins(String agentId, Map<String, int> changes) =>
+      _remote.saveMargins(agentId, changes);
 
   @override
   Future<Either<Failure, List<TeamMember>>> getMembers() => _remote.getTeam();
@@ -32,13 +32,4 @@ class ProfileRepositoryImpl implements AgencyRepository, MarginsRepository, Team
   Future<Either<Failure, TeamMember>> changeRole(String memberId, TeamRole role) =>
       _remote.changeMemberRole(memberId, role);
 
-  @override
-  Future<Either<Failure, TeamMember>> setActive(String memberId, {required bool active}) =>
-      _remote.setMemberActive(memberId, active: active);
-
-  @override
-  Future<Either<Failure, void>> resendInvite(String memberId) async => (await _remote.resendInvite(memberId)).map((_) {});
-
-  @override
-  Future<Either<Failure, void>> cancelInvite(String memberId) async => (await _remote.cancelInvite(memberId)).map((_) {});
 }

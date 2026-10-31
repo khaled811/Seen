@@ -69,12 +69,16 @@ class _Body extends StatelessWidget {
                 const SizedBox(height: 16),
                 SeenInlineBanner(tone: SeenBannerTone.error, message: s.comingSoonFailed),
               ],
+              if (state.status == InterestStatus.unavailable) ...[
+                const SizedBox(height: 16),
+                SeenInlineBanner(tone: SeenBannerTone.warn, message: s.comingSoonUnavailable),
+              ],
               const SizedBox(height: 16),
               SeenButton(
                 label: s.notifyMeAction,
                 expand: true,
                 loading: state.status == InterestStatus.sending,
-                onPressed: done || state.status == InterestStatus.sending ? null : () => context.read<ServiceInterestCubit>().notify(),
+                onPressed: done || state.status == InterestStatus.sending || state.status == InterestStatus.unavailable ? null : () => context.read<ServiceInterestCubit>().notify(),
               ),
               const SizedBox(height: 8),
               SeenButton.ghost(label: s.closeAction, expand: true, onPressed: () => Navigator.of(context).pop()),

@@ -11,14 +11,14 @@ class MissingDocumentRepositoryImpl implements MissingDocumentRepository {
   final MissingDocumentRemoteDataSource _remote;
 
   @override
-  Future<Either<Failure, MissingDocumentRequest>> getMissingDocument(String requestId) async =>
-      (await _remote.getMissingDocument(requestId)).map((dto) => dto.toEntity());
+  Future<Either<Failure, MissingDocumentRequest>> getMissingDocument(String requestId) =>
+      _remote.getMissingDocument(requestId);
 
   @override
   Future<Either<Failure, void>> upload({
-    required String requestId,
+    required UploadTarget target,
     required PickedDocument document,
     void Function(double fraction)? onProgress,
   }) =>
-      _remote.upload(requestId: requestId, document: document, onProgress: onProgress);
+      _remote.upload(target: target, document: document, onProgress: onProgress);
 }

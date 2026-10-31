@@ -13,6 +13,7 @@ import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
+import 'svg_icon.dart';
 
 /// Labelled input bound to the Figma Input component: label ABOVE the field
 /// (never floating), 54px field, radius 16, 1.5px border, 14px body text.
@@ -129,7 +130,7 @@ class SeenTextField extends StatelessWidget {
     final hasError = errorText != null || showError;
     final mark = hasError
         ? Icon(SeenIcons.alert, size: 20, color: c.dangerFg)
-        : (success ? Icon(SeenIcons.check, size: 20, color: okColor) : null);
+        : (success ? SeenCheckGlyph(size: 20, color: okColor) : null);
     if (suffix == null) return mark;
     if (!hasError) return suffix;
     return Row(mainAxisSize: MainAxisSize.min, children: [mark!, const SizedBox(width: 8), suffix!]);

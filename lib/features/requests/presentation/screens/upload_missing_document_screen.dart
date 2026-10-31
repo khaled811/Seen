@@ -13,6 +13,10 @@ import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
+import '../../../../core/presentation/widgets/loading/seen_sky_progress.dart';
+import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
+import '../../../services/presentation/widgets/seen_options_sheet.dart';
 import '../../domain/entities/missing_document.dart';
 import '../../../system_status/presentation/widgets/permission_denied_sheet.dart';
 import '../bloc/missing_document_bloc.dart';
@@ -89,7 +93,7 @@ class _View extends StatelessWidget {
                     ),
                     Expanded(
                       child: switch (state.status) {
-                        MissingDocumentStatus.loading => const Center(child: CircularProgressIndicator()),
+                        MissingDocumentStatus.loading => const Center(child: SeenLoader()),
                         MissingDocumentStatus.loadFailed => ListView(
                             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                             children: [
@@ -223,17 +227,17 @@ class _BodyContent extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       children: [
         if (picked == null) ...[
-          if (!state.deadlinePassed) ...[
+          if (!state.deadlinePassed && request.deadline != null) ...[
             SeenDeadlineCard(
               amber: true,
-              deadline: request.deadline,
+              deadline: request.deadline!,
               title: l10n.uploadDeadlineTitle,
               subtitle: l10n.uploadDeadlineSubtitle,
               expiredLabel: '00:00:00',
             ),
             const SizedBox(height: 16),
           ],
-          _WhatAndWhy(request: request),
+          _WhatAndWhy(request: request, target: state.target!, targetIndex: state.targetIndex),
           const SizedBox(height: 16),
           _Sources(enabled: !state.deadlinePassed),
         ] else ...[
@@ -256,9 +260,32 @@ class _BodyContent extends StatelessWidget {
 }
 
 class _WhatAndWhy extends StatelessWidget {
-  const _WhatAndWhy({required this.request});
+  const _WhatAndWhy({required this.request, required this.target, required this.targetIndex});
 
   final MissingDocumentRequest request;
+  final UploadTarget target;
+  final int targetIndex;
+
+  /// "Traveler · document", for the choice sheet.
+  static String _label(UploadTarget t) =>
+      t.travelerLabel == null || t.travelerLabel!.isEmpty ? t.requirementLabel : '${t.travelerLabel} · ${t.requirementLabel}';
+
+  Future<void> _choose(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final bloc = context.read<MissingDocumentBloc>();
+    final picked = await showSeenOptionsSheet(
+      context: context,
+      title: l10n.uploadTargetTitle,
+      recentsKey: 'upload_target',
+      selected: '$targetIndex',
+      options: [
+        for (final (i, t) in request.targets.indexed)
+          FieldOption(value: '$i', label: _label(t), description: t.alreadyUploaded ? l10n.uploadAlreadySent : null),
+      ],
+    );
+    final index = picked == null ? null : int.tryParse(picked);
+    if (index != null) bloc.add(MissingDocumentTargetChosen(index));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -294,15 +321,16 @@ class _WhatAndWhy extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(request.documentTitle, style: t.title),
-                      if (request.travelerName != null)
+                      Text(target.requirementLabel, style: t.title),
+                      if (target.travelerLabel != null && target.travelerLabel!.isNotEmpty)
                         Text(
-                          l10n.uploadTraveler(request.travelerName!),
+                          l10n.uploadTraveler(target.travelerLabel!),
                           style: t.caption.copyWith(color: c.inkMuted),
                         ),
                     ],
                   ),
                 ),
+                if (request.hasChoice) SeenTextLink(label: l10n.uploadChangeTarget, onTap: () => _choose(context)),
               ],
             ),
             if (request.reason.isNotEmpty) ...[
@@ -517,30 +545,13 @@ class _UploadProgress extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(
+        child: Row(
           children: [
-            Row(
-              children: [
-                Expanded(child: Text(l10n.uploadUploading, style: t.label)),
-                Text('$percent%', style: t.label.copyWith(color: SeenBrand.violet)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: const BorderRadius.all(SeenRadius.full),
-              child: Stack(
-                children: [
-                  const SizedBox(height: 6, width: double.infinity, child: ColoredBox(color: SeenBrand.violet10)),
-                  FractionallySizedBox(
-                    widthFactor: progress.clamp(0.02, 1),
-                    child: const SizedBox(
-                      height: 6,
-                      child: DecoratedBox(decoration: BoxDecoration(gradient: SeenBrand.gradientCta)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // The Seen window fills with sky as the file goes up.
+            SeenSkyProgress(value: progress, height: 64),
+            const SizedBox(width: 14),
+            Expanded(child: Text(l10n.uploadUploading, style: t.label)),
+            Text('$percent%', style: t.label.copyWith(color: SeenBrand.violet)),
           ],
         ),
       ),

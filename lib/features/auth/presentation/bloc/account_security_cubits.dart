@@ -21,9 +21,12 @@ class ChangePasswordState extends Equatable {
 }
 
 class ChangePasswordCubit extends Cubit<ChangePasswordState> {
-  ChangePasswordCubit(this._repository) : super(const ChangePasswordState());
+  /// [onChanged] runs once the password was changed: the server then signs every
+  /// session out (this device included), so the app ends its own session too.
+  ChangePasswordCubit(this._repository, {this.onChanged}) : super(const ChangePasswordState());
 
   final AccountSecurityRepository _repository;
+  final void Function()? onChanged;
 
   /// A second tap while saving is ignored.
   Future<void> submit({required String current, required String next}) async {
@@ -37,7 +40,10 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     }
     result.fold(
       (f) => emit(ChangePasswordState(issue: AccountIssue.from(f))),
-      (_) => emit(const ChangePasswordState(done: true)),
+      (_) {
+        emit(const ChangePasswordState(done: true));
+        onChanged?.call();
+      },
     );
   }
 

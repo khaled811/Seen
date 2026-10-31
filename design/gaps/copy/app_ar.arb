@@ -1,0 +1,532 @@
+{
+  "@@locale": "ar",
+  "common_retry": "إعادة المحاولة",
+  "common_cancel": "إلغاء",
+  "common_next": "التالي",
+  "common_done": "تم",
+  "common_close": "إغلاق",
+  "common_back": "رجوع",
+  "common_errorTitle": "حدث خطأ",
+  "common_checkConnection": "تحقق من اتصالك ثم أعد المحاولة.",
+  "common_noPermissionTitle": "ليس لديك صلاحية",
+  "common_requestPermission": "اطلب الصلاحية",
+  "common_noPermissionChip": "بلا صلاحية",
+  "common_backHome": "العودة إلى الرئيسية",
+  "sec_settingsTitle": "الأمان وتسجيل الدخول",
+  "sec_sectionLogin": "تسجيل الدخول",
+  "sec_sectionExtra": "حماية إضافية",
+  "sec_changePassword": "تغيير كلمة المرور",
+  "sec_tfaTitle": "التحقق بخطوتين",
+  "sec_tfaSub": "رمز من تطبيق المصادقة عند كل دخول",
+  "sec_tfaOff": "غير مفعّل",
+  "sec_tfaOn": "مفعّل",
+  "sec_tfaPitch": "يحمي حسابك حتى لو عرف أحدٌ كلمة المرور.",
+  "sec_tfaEnable": "تفعيل التحقق بخطوتين",
+  "sec_recoveryCodes": "رموز الاسترداد",
+  "sec_recoveryCodesLeft": "{count, plural, =0{لا رموز استرداد متبقية} =1{رمز استرداد واحد متبقٍ} =2{رمزا استرداد متبقيان} few{{count} رموز استرداد متبقية} many{{count} رمز استرداد متبقيًا} other{{count} رمز استرداد متبقٍ}}",
+  "@sec_recoveryCodesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_regenerate": "إنشاء رموز جديدة",
+  "sec_regenerateSub": "تُلغى الرموز الحالية فور الإنشاء",
+  "sec_disable": "إيقاف التحقق بخطوتين",
+  "sec_loadError": "تعذّر تحميل حالة التحقق بخطوتين. تحقق من اتصالك.",
+  "sec_lastLogin": "آخر تسجيل دخول: {when} · {city}",
+  "@sec_lastLogin": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "sec_setupTitle": "تفعيل التحقق بخطوتين",
+  "sec_stepOf": "الخطوة {step} من {total}",
+  "@sec_stepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_scanTitle": "امسح الرمز بتطبيق المصادقة",
+  "sec_scanBody": "افتح Google Authenticator أو أي تطبيق مصادقة، ثم امسح الرمز.",
+  "sec_manualKey": "أو أدخل المفتاح السري يدويًا",
+  "sec_copyKey": "نسخ المفتاح",
+  "sec_keyCopied": "نُسخ المفتاح السري",
+  "sec_setupErrorTitle": "تعذّر إنشاء رمز الإعداد",
+  "sec_codeTitle": "أدخل رمز التحقق",
+  "sec_codeBody": "اكتب الرمز المكوّن من ٦ أرقام الظاهر في تطبيق المصادقة.",
+  "sec_codeRefreshHint": "يتجدّد الرمز في التطبيق كل ٣٠ ثانية",
+  "sec_verify": "تحقق",
+  "sec_verifying": "جارٍ التحقق…",
+  "sec_codeWrong": "{left, plural, =0{الرمز غير صحيح.} =1{الرمز غير صحيح. تبقّت محاولة واحدة.} =2{الرمز غير صحيح. تبقّت محاولتان.} few{الرمز غير صحيح. تبقّت {left} محاولات.} other{الرمز غير صحيح. تبقّت {left} محاولة.}}",
+  "@sec_codeWrong": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_codeExpiredTitle": "انتهت صلاحية الرمز",
+  "sec_codeExpiredBody": "أدخل الرمز الجديد الظاهر في التطبيق الآن.",
+  "sec_lockedTitle": "تجاوزت عدد المحاولات",
+  "sec_lockedBody": "أوقفنا الإدخال مؤقتًا لحماية حسابك. حاول مجددًا بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}}.",
+  "@sec_lockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_codesTitle": "احفظ رموز الاسترداد",
+  "sec_codesBody": "استخدم أي رمز منها للدخول إذا فقدت هاتفك. كل رمز يُستخدم مرة واحدة.",
+  "sec_codesOnce": "تظهر مرة واحدة — لن تتمكن من رؤيتها مجددًا بعد هذه الشاشة.",
+  "sec_copyAll": "نسخ الكل",
+  "sec_download": "تنزيل",
+  "sec_savedCheck": "حفظت الرموز في مكان آمن",
+  "sec_codesErrorTitle": "لم تُنشأ الرموز",
+  "sec_codesErrorBody": "تعذّر إنشاء رموز الاسترداد. التحقق بخطوتين مفعّل، ويمكنك إنشاء الرموز من الإعدادات لاحقًا.",
+  "sec_loginTitle": "تسجيل الدخول",
+  "sec_loginCodeTitle": "رمز التحقق",
+  "sec_loginCodeBody": "أدخل الرمز من تطبيق المصادقة لإكمال الدخول إلى {email}",
+  "@sec_loginCodeBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "sec_lostPhone": "فقدت هاتفك؟ استخدم رمز استرداد",
+  "sec_signIn": "تسجيل الدخول",
+  "sec_recoveryTitle": "رمز الاسترداد",
+  "sec_recoveryBody": "أدخل أحد رموز الاسترداد التي حفظتها عند تفعيل التحقق بخطوتين.",
+  "sec_recoveryField": "رمز الاسترداد",
+  "sec_recoveryHelper": "كل رمز يُستخدم مرة واحدة فقط",
+  "sec_recoveryWrong": "الرمز غير صحيح أو سبق استخدامه.",
+  "sec_useAuthApp": "استخدم تطبيق المصادقة بدلًا من ذلك",
+  "sec_loginLockedTitle": "أُقفل الدخول مؤقتًا",
+  "sec_loginLockedBody": "محاولات كثيرة غير صحيحة. حاول بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}} أو تواصل مع الدعم.",
+  "@sec_loginLockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_contactSupport": "تواصل مع الدعم",
+  "priv_travelerTitle": "بيانات المسافر",
+  "priv_sectionDoc": "بيانات الوثيقة",
+  "priv_sectionContact": "التواصل",
+  "priv_passportNo": "رقم الجواز",
+  "priv_nationalId": "رقم الهوية الوطنية",
+  "priv_birthDate": "تاريخ الميلاد",
+  "priv_nationality": "الجنسية",
+  "priv_email": "البريد الإلكتروني",
+  "priv_phone": "رقم الجوال",
+  "priv_reveal": "إظهار",
+  "priv_hide": "إخفاء",
+  "priv_maskedNote": "القيم الحساسة مخفية افتراضيًا، وكل إظهار يُسجَّل باسمك.",
+  "priv_countdown": "{seconds} ث",
+  "@priv_countdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "priv_countdownA11y": "يُخفى بعد {seconds, plural, =1{ثانية واحدة} =2{ثانيتين} few{{seconds} ثوانٍ} other{{seconds} ثانية}}",
+  "@priv_countdownA11y": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "priv_loadErrorTitle": "لم تُحمَّل البيانات",
+  "priv_loadErrorBody": "تعذّر تحميل بيانات المسافر. تحقق من اتصالك ثم أعد المحاولة.",
+  "priv_rateLimited": "وصلت إلى حد الإظهار (١٠ مرات في الساعة). يمكنك المحاولة بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}}.",
+  "@priv_rateLimited": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "priv_noPermissionTitle": "ليس لديك صلاحية لإظهار هذه القيم",
+  "priv_noPermissionBody": "صلاحية «إظهار البيانات الحساسة» يمنحها مدير الحساب.",
+  "priv_introTitle": "قبل إظهار القيمة",
+  "priv_introSub": "يظهر هذا التنبيه مرة واحدة",
+  "priv_introLoggedTitle": "الإظهار مسجّل ولا يُحفظ على جهازك",
+  "priv_introLoggedBody": "نسجّل من أظهر القيمة ومتى، ولا تُخزَّن في التطبيق.",
+  "priv_introTimerTitle": "تختفي تلقائيًا بعد ٣٠ ثانية",
+  "priv_introTimerBody": "ويمكنك إخفاؤها قبل ذلك بزر «إخفاء».",
+  "priv_introCopyTitle": "النسخ غير متاح",
+  "priv_introCopyBody": "لحماية بيانات المسافر لا تُنسخ القيم الحساسة.",
+  "acc_settingsTitle": "إعدادات الحساب",
+  "acc_changeEmail": "تغيير البريد الإلكتروني",
+  "acc_pendingSub": "بانتظار تأكيد {email}",
+  "@acc_pendingSub": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "acc_pendingChip": "بانتظار التأكيد",
+  "acc_pendingNote": "يبقى بريدك الحالي فعّالًا حتى تؤكد البريد الجديد.",
+  "acc_formIntro": "سنرسل رابط تأكيد إلى بريدك الجديد، ويبقى بريدك الحالي فعّالًا حتى تؤكد.",
+  "acc_currentEmail": "البريد الحالي",
+  "acc_newEmail": "البريد الجديد",
+  "acc_currentPassword": "كلمة المرور الحالية",
+  "acc_passwordHint": "أدخل كلمة المرور",
+  "acc_send": "إرسال رابط التأكيد",
+  "acc_sending": "جارٍ الإرسال…",
+  "acc_invalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا، مثل name@mail.com",
+  "acc_sameEmail": "هذا هو بريدك الحالي",
+  "acc_emailTaken": "هذا البريد مستخدم في حساب آخر",
+  "acc_wrongPassword": "{left, plural, =0{كلمة المرور غير صحيحة.} =1{كلمة المرور غير صحيحة. تبقّت محاولة واحدة.} =2{كلمة المرور غير صحيحة. تبقّت محاولتان.} few{كلمة المرور غير صحيحة. تبقّت {left} محاولات.} other{كلمة المرور غير صحيحة. تبقّت {left} محاولة.}}",
+  "@acc_wrongPassword": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "acc_tooManyTitle": "أوقفنا التغيير مؤقتًا",
+  "acc_tooManyBody": "محاولات كثيرة. حاول مجددًا بعد {minutes, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{minutes} دقائق} other{{minutes} دقيقة}}.",
+  "@acc_tooManyBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "acc_checkTitle": "تحقق من بريدك",
+  "acc_checkSentTo": "أرسلنا رابط التأكيد إلى",
+  "acc_checkNote": "افتح الرابط خلال ٢٤ ساعة لإكمال التغيير. يبقى بريدك الحالي فعّالًا حتى ذلك.",
+  "acc_editEmail": "تعديل البريد المُدخل",
+  "acc_openMail": "فتح البريد",
+  "acc_resend": "إعادة الإرسال",
+  "acc_resendIn": "إعادة الإرسال {time}",
+  "@acc_resendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "acc_resent": "أعدنا إرسال الرابط. تحقق أيضًا من مجلد الرسائل غير المرغوب فيها.",
+  "acc_sendFailed": "تعذّر إرسال الرابط. تحقق من اتصالك ثم أعد المحاولة.",
+  "acc_changed": "تم تغيير البريد الإلكتروني",
+  "rep_title": "التقارير",
+  "rep_intro": "اختر مصدر البيانات لإنشاء تقرير مخصص وتصديره.",
+  "rep_sourceBookings": "الحجوزات",
+  "rep_sourceBookingsSub": "الطلبات والمسافرون والحالات",
+  "rep_sourceWallet": "المحفظة",
+  "rep_sourceWalletSub": "العمليات والرسوم والتسويات",
+  "rep_sourceWalletLocked": "تحتاج صلاحية «المحفظة»",
+  "rep_quick": "تقارير سريعة",
+  "rep_quickThisMonth": "حجوزات هذا الشهر",
+  "rep_quickCompleted": "الطلبات المكتملة",
+  "rep_quickWallet": "عمليات المحفظة",
+  "rep_last30": "آخر ٣٠ يومًا",
+  "rep_recentFiles": "آخر الملفات المصدّرة",
+  "rep_rowsCount": "{count, plural, =1{صف واحد} =2{صفّان} few{{count} صفوف} many{{count} صفًا} other{{count} صف}}",
+  "@rep_rowsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rep_loadErrorTitle": "تعذّر تحميل التقارير",
+  "rep_bookingsReport": "تقرير الحجوزات",
+  "rep_walletReport": "تقرير المحفظة",
+  "rep_builderSub": "منشئ التقرير",
+  "rep_period": "الفترة",
+  "rep_period7": "٧ أيام",
+  "rep_period30": "٣٠ يومًا",
+  "rep_periodMonth": "هذا الشهر",
+  "rep_periodCustom": "مخصص",
+  "rep_from": "من",
+  "rep_to": "إلى",
+  "rep_rangeInvalid": "قبل تاريخ البداية",
+  "rep_rangeMax": "أقصى فترة ١٢ شهرًا",
+  "rep_columns": "الأعمدة",
+  "rep_columnsCount": "{selected} من {total}",
+  "@rep_columnsCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "rep_colOrder": "رقم الطلب",
+  "rep_colTraveler": "المسافر",
+  "rep_colService": "الخدمة",
+  "rep_colStatus": "الحالة",
+  "rep_colAmount": "المبلغ",
+  "rep_colAmountSar": "المبلغ (ر.س)",
+  "rep_colSubAgent": "الوكيل الفرعي",
+  "rep_filters": "التصفية",
+  "rep_addFilter": "إضافة تصفية",
+  "rep_show": "عرض التقرير",
+  "rep_reset": "إعادة ضبط",
+  "rep_edit": "تعديل",
+  "rep_kpiCount": "عدد الطلبات",
+  "rep_kpiTotal": "الإجمالي",
+  "rep_totalRow": "الإجمالي",
+  "rep_export": "تصدير",
+  "rep_emptyTitle": "لا توجد نتائج",
+  "rep_emptyBody": "لا حجوزات تطابق الفترة والتصفية المختارة. جرّب توسيع الفترة أو إزالة بعض عوامل التصفية.",
+  "rep_editFilters": "تعديل التصفية",
+  "rep_truncatedTitle": "النتيجة تتجاوز ٥٠٠٠ صف",
+  "rep_truncatedBody": "يعرض التطبيق أول ٥٠٠٠ صف فقط. ضيّق الفترة، أو صدّر الملف ليصلك كاملًا.",
+  "rep_exportAll": "تصدير الكل",
+  "rep_narrowPeriod": "تضييق الفترة",
+  "rep_generating": "جارٍ إنشاء التقرير…",
+  "rep_generatingHint": "قد يستغرق ذلك بضع ثوانٍ للفترات الطويلة.",
+  "rep_generateErrorTitle": "تعذّر إنشاء التقرير",
+  "rep_generateErrorBody": "حدث خطأ أثناء تجهيز البيانات. حاول مجددًا بعد قليل.",
+  "rep_exportTitle": "تصدير التقرير",
+  "rep_exportSub": "{rows, plural, =1{صف واحد} =2{صفّان} few{{rows} صفوف} many{{rows} صفًا} other{{rows} صف}} · {cols, plural, =1{عمود واحد} =2{عمودان} few{{cols} أعمدة} many{{cols} عمودًا} other{{cols} عمود}}",
+  "@rep_exportSub": {
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "rep_fmtPdfSub": "مناسب للطباعة والمشاركة",
+  "rep_fmtXlsxSub": "للتحليل والتعديل",
+  "rep_fmtCsvSub": "لاستيراده في أنظمة أخرى",
+  "rep_includeTotals": "تضمين صف الإجماليات",
+  "rep_exporting": "جارٍ التصدير…",
+  "rep_readyTitle": "الملف جاهز",
+  "rep_readySub": "يُحفظ في «آخر الملفات المصدّرة» لمدة ٧ أيام",
+  "rep_share": "مشاركة",
+  "rep_download": "تنزيل",
+  "rep_exportFailed": "تعذّر تجهيز الملف. تحقق من اتصالك ثم أعد المحاولة.",
+  "rep_noPermissionBody": "التقارير متاحة لمدير الحساب ولمن يملك صلاحية «التقارير». اطلبها من مدير حسابك.",
+  "pass_scanButton": "صوّر الجواز لقراءة البيانات",
+  "pass_manualHint": "أو أدخل البيانات يدويًا كما تظهر في الجواز",
+  "pass_applied": "عبّأنا {count, plural, =1{حقلًا واحدًا} =2{حقلين} few{{count} حقول} many{{count} حقلًا} other{{count} حقل}} من الجواز. أكمل {missing} وراجع البيانات قبل الحفظ.",
+  "@pass_applied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "pass_captureTitle": "تصوير الجواز",
+  "pass_guideTitle": "ضع صفحة البيانات داخل الإطار",
+  "pass_guideSub": "بحيث يظهر السطران السفليان كاملين",
+  "pass_tipLight": "إضاءة جيدة",
+  "pass_tipGlare": "دون انعكاس",
+  "pass_tipFull": "الصفحة كاملة",
+  "pass_capture": "التقاط",
+  "pass_fromPhotos": "من الصور",
+  "pass_lowLight": "الإضاءة ضعيفة. اقترب من مصدر ضوء وتجنّب الظل على الصفحة.",
+  "pass_cameraDeniedTitle": "لا يمكن الوصول إلى الكاميرا",
+  "pass_cameraDeniedBody": "اسمح لسين باستخدام الكاميرا من إعدادات الجهاز، أو اختر صورة الجواز من الصور.",
+  "pass_openSettings": "فتح الإعدادات",
+  "pass_reading": "جارٍ قراءة البيانات…",
+  "pass_readingHint": "يستغرق ذلك بضع ثوانٍ",
+  "pass_failedTitle": "تعذّرت قراءة الجواز",
+  "pass_failedBody": "تأكد من وضوح الصورة وظهور صفحة البيانات كاملة، ثم صوّرها مجددًا.",
+  "pass_retake": "إعادة التصوير",
+  "pass_manual": "إدخال يدوي",
+  "pass_unavailableTitle": "القراءة الآلية غير متاحة الآن",
+  "pass_unavailableBody": "يمكنك إكمال بيانات المسافر يدويًا، وستعود القراءة قريبًا.",
+  "pass_continueManual": "متابعة بالإدخال اليدوي",
+  "pass_notImage": "الملف المختار ليس صورة. اختر صورة بصيغة JPG أو PNG.",
+  "pass_reviewTitle": "مراجعة البيانات",
+  "pass_reviewSub": "من صورة الجواز",
+  "pass_readCount": "قرأنا {count, plural, =1{حقلًا واحدًا} =2{حقلين} few{{count} حقول} many{{count} حقلًا} other{{count} حقل}} من الجواز",
+  "@pass_readCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pass_reviewHint": "حدّد ما تريد تطبيقه على النموذج",
+  "pass_lowConfidence": "ثقة منخفضة",
+  "pass_appliedChip": "طُبّق",
+  "pass_lowNote": "الحقول منخفضة الثقة غير محددة افتراضيًا — راجعها قبل تطبيقها.",
+  "pass_apply": "تطبيق {count, plural, =1{حقل واحد} =2{حقلين} few{{count} حقول} many{{count} حقلًا} other{{count} حقل}}",
+  "@pass_apply": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pass_fieldFirstName": "الاسم الأول",
+  "pass_fieldLastName": "اسم العائلة",
+  "pass_fieldPassportNo": "رقم الجواز",
+  "pass_fieldBirthDate": "تاريخ الميلاد",
+  "pass_fieldNationality": "الجنسية",
+  "pass_fieldExpiry": "تاريخ انتهاء الجواز",
+  "prof_changePhoto": "تغيير الصورة",
+  "prof_sheetTitle": "الصورة الشخصية",
+  "prof_sheetSub": "JPG أو PNG بحجم أقصى ٥ م.ب",
+  "prof_takePhoto": "التقاط صورة",
+  "prof_choosePhoto": "اختيار من الصور",
+  "prof_deletePhoto": "حذف الصورة",
+  "prof_cropTitle": "معاينة الصورة",
+  "prof_cropHint": "حرّك الصورة وكبّرها لضبطها داخل الدائرة",
+  "prof_use": "استخدام",
+  "prof_redo": "إعادة",
+  "prof_uploadProgress": "{size} · {percent}٪",
+  "@prof_uploadProgress": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "prof_cancelUpload": "إلغاء الرفع",
+  "prof_notUploadedTitle": "لم تُرفع الصورة",
+  "prof_tooLarge": "حجم الصورة {size} والحد الأقصى ٥ م.ب. اختر صورة أصغر.",
+  "@prof_tooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "prof_wrongType": "الصيغة غير مدعومة. اختر صورة JPG أو PNG.",
+  "prof_uploadFailed": "تعذّر الرفع — تحقق من اتصالك",
+  "prof_updated": "تم تحديث الصورة",
+  "prof_deleted": "حُذفت الصورة الشخصية",
+  "sup_ticketClosedLine": "أُغلقت التذكرة · {when}",
+  "@sup_ticketClosedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sup_rateTitle": "كيف كانت تجربتك مع الدعم؟",
+  "sup_rateSub": "تقييمك يساعدنا على تحسين الخدمة",
+  "sup_rateA11y": "التقييم",
+  "sup_starA11y": "{value} من ٥",
+  "@sup_starA11y": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_star1": "سيئ",
+  "sup_star2": "مقبول",
+  "sup_star3": "جيد",
+  "sup_star4": "جيد جدًا",
+  "sup_star5": "ممتاز",
+  "sup_commentHint": "أضف تعليقًا (اختياري)",
+  "sup_sendRating": "إرسال التقييم",
+  "sup_sending": "جارٍ الإرسال…",
+  "sup_rateFailed": "تعذّر إرسال التقييم. حاول مجددًا.",
+  "sup_ratedTitle": "تقييمك للمحادثة",
+  "sup_thanks": "شكرًا لتقييمك",
+  "sup_ratedLocked": "لا يمكن تعديل التقييم بعد إرساله.",
+  "sup_closedBar": "هذه التذكرة مغلقة، ويمكنك فتح تذكرة جديدة في أي وقت.",
+  "sup_newTicket": "فتح تذكرة جديدة",
+  "sup_newTicketTitle": "تذكرة جديدة",
+  "sup_category": "التصنيف",
+  "sup_categoryHint": "اختر التصنيف",
+  "sup_categorySheetTitle": "تصنيف التذكرة",
+  "sup_categorySheetSub": "اختر الأقرب لمشكلتك",
+  "sup_categorySearch": "ابحث في التصنيفات",
+  "sup_categoryOther": "أخرى",
+  "sup_categoryOtherSub": "لم أجد التصنيف المناسب",
+  "sup_categoryNoResultsTitle": "لا توجد تصنيفات مطابقة",
+  "sup_categoryNoResultsBody": "اختر «أخرى» واكتب مشكلتك بالتفصيل.",
+  "sup_categoryLoadError": "تعذّر تحميل التصنيفات. أعد المحاولة أو اختر «أخرى».",
+  "sup_unreadA11y": "{count, plural, =1{رسالة واحدة غير مقروءة} =2{رسالتان غير مقروءتين} few{{count} رسائل غير مقروءة} other{{count} رسالة غير مقروءة}}",
+  "@sup_unreadA11y": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_unreadTickets": "{count, plural, =1{تذكرة واحدة بردود جديدة} =2{تذكرتان بردود جديدة} few{{count} تذاكر بردود جديدة} other{{count} تذكرة بردود جديدة}}",
+  "@sup_unreadTickets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_markAllRead": "تعليم الكل كمقروء",
+  "sup_noNewReplies": "لا توجد ردود جديدة",
+  "sup_newMessagesDivider": "رسائل جديدة ({count})",
+  "@sup_newMessagesDivider": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_supportTeam": "فريق الدعم",
+  "priv_revealing": "جارٍ الإظهار",
+  "rep_allStatuses": "كل الحالات",
+  "rep_filterChip": "{name}: {value}",
+  "@rep_filterChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rep_filterStatus": "الحالة",
+  "rep_filterService": "الخدمة",
+  "rep_filterBranch": "الفرع",
+  "rep_filterSubAgent": "الوكيل الفرعي",
+  "rep_statusCompleted": "مكتملة",
+  "common_currencySar": "ر.س",
+  "common_sizeKb": "{size} ك.ب",
+  "@common_sizeKb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "common_sizeMb": "{size} م.ب",
+  "@common_sizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "sup_badgeMax": "٩+"
+}

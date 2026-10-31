@@ -8,6 +8,7 @@ import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 
 enum SeenTravelerState { empty, done, error }
 
@@ -72,7 +73,7 @@ class _SeenTravelerChipsState extends State<SeenTravelerChips> {
         SeenTravelerState.empty => (c.surfaceSunken, c.inkSecondary),
       };
       final Widget number = switch (d.state) {
-        SeenTravelerState.done when !active => Icon(SeenIcons.check, size: 12, color: nFg),
+        SeenTravelerState.done when !active => SeenCheckGlyph(size: 12, color: nFg),
         SeenTravelerState.error when !active =>
           Text('!', style: text.labelSmall!.copyWith(color: nFg, fontWeight: FontWeight.w700)),
         _ => Text('${i + 1}', style: text.labelSmall!.copyWith(color: nFg, fontWeight: FontWeight.w600)),

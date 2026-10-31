@@ -17,6 +17,7 @@ import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/top_up_cancellation_repository.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/cancel_top_up_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_transactions_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
@@ -71,11 +72,16 @@ class _WalletRepo implements WalletRepository {
       const Right([]);
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError();
 }

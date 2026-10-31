@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
+
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/presentation/widgets/text_field.dart';
@@ -26,13 +28,14 @@ import '../bloc/agents_state.dart';
 /// ancestor, so a `BlocProvider.value` wrapped around just one of them
 /// wouldn't reach the other — the footer's submit button needs the same
 /// [AgentsBloc] the form body does.
-Future<void> showFundSubAgentSheet(
+/// Resolves the amount (cents) that was sent, or null when the sheet was closed without sending.
+Future<int?> showFundSubAgentSheet(
   BuildContext context, {
   required SubAgent subAgent,
   required int masterAvailableBalanceCents,
 }) {
   final bloc = context.read<AgentsBloc>();
-  return showModalBottomSheet<void>(
+  return showModalBottomSheet<int>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
@@ -65,6 +68,9 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
   final _amountController = TextEditingController();
   int? _validAmountCents;
 
+  /// What the last send carried: handed back when the sheet closes on success.
+  int? _sentCents;
+
   @override
   void initState() {
     super.initState();
@@ -91,11 +97,11 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    _sentCents = MoneyParser.centsFromDecimalString(_amountController.text.trim());
     context.read<AgentsBloc>().add(
           SubAgentWalletFundingSubmitted(
             subAgentId: widget.subAgent.id,
-            amountCents: MoneyParser.centsFromDecimalString(
-                _amountController.text.trim()),
+            amountCents: _sentCents!,
           ),
         );
   }
@@ -123,12 +129,12 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
                         SeenFormat.usd(updated.first.balanceCents / 100))),
               ));
             context.read<AgentsBloc>().add(const FundingStatusCleared());
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(_sentCents);
           case FundingStatus.failure:
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                  SnackBar(content: Text(loaded.fundingError ?? l10n.error)));
+                  SnackBar(content: Text(failureTextOr(l10n, loaded.fundingFailure, loaded.fundingError ?? l10n.error))));
             context.read<AgentsBloc>().add(const FundingStatusCleared());
           case FundingStatus.idle:
           case FundingStatus.submitting:
@@ -157,6 +163,7 @@ class _FundSubAgentSheetState extends State<FundSubAgentSheet> {
             return SeenButton(
               label: label,
               expand: true,
+              loading: isSubmitting,
               onPressed: isSubmitting ? null : _submit,
             );
           },

@@ -17,11 +17,11 @@ class UploadMissingDocumentUseCase {
   final MissingDocumentRepository _repository;
 
   Future<Either<Failure, void>> call({
-    required String requestId,
+    required UploadTarget target,
     required PickedDocument document,
     void Function(double fraction)? onProgress,
   }) =>
-      _repository.upload(requestId: requestId, document: document, onProgress: onProgress);
+      _repository.upload(target: target, document: document, onProgress: onProgress);
 }
 
 class PickDocumentUseCase {

@@ -19,7 +19,7 @@ class GetMarginsUseCase {
 
   final MarginsRepository _repository;
 
-  Future<Either<Failure, MarginsOverview>> call() => _repository.getMargins();
+  Future<Either<Failure, MarginsOverview>> call(String agentId) => _repository.getMargins(agentId);
 }
 
 class SaveMarginsUseCase {
@@ -27,7 +27,8 @@ class SaveMarginsUseCase {
 
   final MarginsRepository _repository;
 
-  Future<Either<Failure, MarginsOverview>> call(Map<String, int> changes) => _repository.saveMargins(changes);
+  Future<Either<Failure, MarginsOverview>> call(String agentId, Map<String, int> changes) =>
+      _repository.saveMargins(agentId, changes);
 }
 
 /// The team screen's operations, grouped (one repository, one owner screen).
@@ -42,10 +43,4 @@ class TeamUseCases {
 
   Future<Either<Failure, TeamMember>> changeRole(String id, TeamRole role) => _repository.changeRole(id, role);
 
-  Future<Either<Failure, TeamMember>> setActive(String id, {required bool active}) =>
-      _repository.setActive(id, active: active);
-
-  Future<Either<Failure, void>> resendInvite(String id) => _repository.resendInvite(id);
-
-  Future<Either<Failure, void>> cancelInvite(String id) => _repository.cancelInvite(id);
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
@@ -99,7 +100,10 @@ class _FormState extends State<_Form> {
             );
         final banner = switch (issue) {
           AccountIssueKind.passwordReused => SeenInlineBanner(tone: SeenBannerTone.error, message: s.passwordReusedBanner),
-          AccountIssueKind.weakPassword => SeenInlineBanner(tone: SeenBannerTone.error, message: s.passwordWeakBanner),
+          AccountIssueKind.weakPassword => SeenInlineBanner(
+            tone: SeenBannerTone.error,
+            message: state.issue?.passwordRule == null ? s.passwordWeakBanner : passwordRuleMessage(l10n, state.issue!.passwordRule),
+          ),
           AccountIssueKind.offline => SeenInlineBanner(tone: SeenBannerTone.offline, message: s.accountOffline),
           AccountIssueKind.wrongCurrentPassword || null => null,
           _ => SeenInlineBanner(tone: SeenBannerTone.error, message: s.accountGeneric),

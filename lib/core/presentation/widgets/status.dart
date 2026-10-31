@@ -9,6 +9,7 @@ import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
 import '../foundation/seen_status.dart';
 import '../foundation/seen_strings.dart';
+import 'svg_icon.dart';
 
 enum SeenStatusChipSize { small, medium }
 
@@ -72,7 +73,9 @@ class SeenStatusChip extends StatelessWidget {
                   decoration: BoxDecoration(color: colors.fg, shape: BoxShape.circle),
                   child: const SizedBox(width: 6, height: 6),
                 )
-              : Icon(status.icon, size: 16, color: colors.fg),
+              : (status == SeenRequestStatus.completed || status == SeenRequestStatus.confirmed
+                  ? SeenCheckGlyph(size: 16, color: colors.fg)
+                  : Icon(status.icon, size: 16, color: colors.fg)),
           const SizedBox(width: 6),
           Text(label, style: style, maxLines: 1),
         ],

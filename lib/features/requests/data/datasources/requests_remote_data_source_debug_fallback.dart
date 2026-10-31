@@ -1,10 +1,11 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/cancel_reason.dart';
 import '../models/request_detail_dto.dart';
 import '../models/request_summary_dto.dart';
+import '../models/requests_page_dto.dart';
 import '../models/request_timeline_entry_dto.dart';
 import '../models/request_traveler_status_dto.dart';
 import 'requests_remote_data_source.dart';
@@ -26,18 +27,57 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
   final Map<String, RequestDetailDto> _mockRequests = _seedRequests(DateTime.now());
 
   @override
-  Future<Either<Failure, List<RequestSummaryDto>>> getRequests() async {
-    final result = await _real.getRequests();
-    if (kDebugMode && result.isLeft()) {
-      return Right(_mockRequests.values.map(_toSummary).toList());
-    }
-    return result;
+  Future<Either<Failure, RequestsPageDto>> getRequests({
+    required String group,
+    String? search,
+    int offset = 0,
+    int limit = 30,
+  }) async {
+    final result = await _real.getRequests(group: group, search: search, offset: offset, limit: limit);
+    if (!(debugFallbacksEnabled && result.isLeft())) return result;
+
+    final all = _mockRequests.values.map(_toSummary).toList();
+    bool inGroup(RequestSummaryDto r, String g) => switch (g) {
+          'all' => r.status != 'draft',
+          'processing' => const {'submitted', 'pending_agent_approval', 'pending_management_approval', 'under_review', 'processing'}
+              .contains(r.status),
+          'action_needed' => r.status == 'info_required',
+          'completed' => r.status == 'completed',
+          'closed' => r.status == 'rejected' || r.status == 'cancelled',
+          'draft' => r.status == 'draft',
+          _ => false,
+        };
+    final query = search?.trim().toLowerCase() ?? '';
+    final matching = [
+      for (final r in all)
+        if (inGroup(r, group) &&
+            (query.isEmpty ||
+                r.referenceId.toLowerCase().contains(query) ||
+                r.serviceName.toLowerCase().contains(query) ||
+                r.travelerNames.any((n) => n.toLowerCase().contains(query))))
+          r,
+    ];
+    final page = matching.skip(offset).take(limit).toList();
+    final needAction = all.where((r) => r.status == 'info_required').toList();
+    return Right(
+      RequestsPageDto(
+        items: page,
+        total: matching.length,
+        hasMore: offset + page.length < matching.length,
+        counts: {
+          for (final g in const ['all', 'processing', 'action_needed', 'completed', 'closed'])
+            g: all.where((r) => inGroup(r, g)).length,
+        },
+        attentionCount: needAction.length,
+        hasAnyRequests: all.isNotEmpty,
+      ),
+    );
   }
 
   @override
   Future<Either<Failure, RequestDetailDto>> getRequestDetail(String requestId) async {
     final result = await _real.getRequestDetail(requestId);
-    if (kDebugMode && result.isLeft()) {
+    if (debugFallbacksEnabled && result.isLeft()) {
       final dto = _mockRequests[requestId];
       if (dto == null) {
         return const Left(ServerFailure('Request not found.'));
@@ -54,7 +94,7 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
   @override
   Future<Either<Failure, void>> remindApprover(String requestId) async {
     final result = await _real.remindApprover(requestId);
-    if (!(kDebugMode && result.isLeft())) return result;
+    if (!(debugFallbacksEnabled && result.isLeft())) return result;
     if (!_reminded.add(requestId)) {
       return const Left(ServerFailure('Too soon', code: 'RATE_LIMITED', details: {'retryAfterSeconds': 3600}));
     }
@@ -62,9 +102,9 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
   }
 
   @override
-  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId, {CancelReason? reason}) async {
+  Future<Either<Failure, void>> cancelRequest(String requestId, {CancelReason? reason}) async {
     final result = await _real.cancelRequest(requestId, reason: reason);
-    if (kDebugMode && result.isLeft()) {
+    if (debugFallbacksEnabled && result.isLeft()) {
       final dto = _mockRequests[requestId];
       if (dto == null) {
         return const Left(ServerFailure('Request not found.'));
@@ -91,7 +131,7 @@ class DebugFallbackRequestsRemoteDataSource implements RequestsRemoteDataSource 
         ],
       );
       _mockRequests[requestId] = cancelled;
-      return Right(cancelled);
+      return const Right(null);
     }
     return result;
   }

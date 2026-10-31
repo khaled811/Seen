@@ -14,6 +14,7 @@ import '../../../../core/presentation/widgets/sheets.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
 import '../../domain/entities/statement.dart';
 import '../bloc/statement_export_cubit.dart';
 
@@ -165,15 +166,8 @@ class _ExportBodyState extends State<_ExportBody> {
                       children: [
                         Text(l10n.walletExportGenerating(_rangeLabel(s, _range)), style: t.label.copyWith(color: c.ink)),
                         const SizedBox(height: 6),
-                        // The server reports no progress: an indeterminate bar, not a made-up percentage.
-                        const ClipRRect(
-                          borderRadius: BorderRadius.all(SeenRadius.full),
-                          child: LinearProgressIndicator(
-                            minHeight: 6,
-                            color: SeenBrand.violet,
-                            backgroundColor: SeenBrand.violet10,
-                          ),
-                        ),
+                        // The server reports no progress: the trace, not a made-up percentage.
+                        const Align(alignment: AlignmentDirectional.centerStart, child: SeenLoader(size: 24)),
                       ],
                     ),
                   ),

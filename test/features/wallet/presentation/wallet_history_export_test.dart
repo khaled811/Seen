@@ -12,7 +12,6 @@ import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
-import 'package:seen_booking/features/requests/domain/repositories/document_file_repository.dart';
 import 'package:seen_booking/features/requests/domain/services/document_exporter.dart';
 import 'package:seen_booking/features/requests/domain/usecases/request_document_usecases.dart';
 import 'package:seen_booking/features/wallet/domain/entities/statement.dart';
@@ -20,6 +19,7 @@ import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/statement_repository.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/export_statement_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_transactions_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
@@ -81,11 +81,16 @@ class _Repo implements WalletRepository {
   }
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       Right(_topUp('new', TransactionStatus.pending, amountCents, code: 'TU-9'));
 }
@@ -104,18 +109,8 @@ class _Statements implements StatementRepository {
   }) async {
     calls.add((from, to, format));
     if (fail) return const Left(ServerFailure('x'));
-    return Right(StatementFile(url: 'u', fileName: 'statement.${format.extension}'));
+    return Right(StatementFile(fileName: 'statement.${format.extension}', bytes: Uint8List.fromList([1, 2, 3])));
   }
-}
-
-class _Files implements DocumentFileRepository {
-  _Files({this.fail = false});
-
-  final bool fail;
-
-  @override
-  Future<Either<Failure, Uint8List>> fetch(String url) async =>
-      fail ? const Left(NetworkFailure('x')) : Right(Uint8List.fromList([1, 2, 3]));
 }
 
 class _Exporter implements DocumentExporter {
@@ -138,9 +133,8 @@ class _Exporter implements DocumentExporter {
   }
 }
 
-StatementExportCubit _exportCubit(_Statements statements, _Files files, _Exporter exporter) => StatementExportCubit(
+StatementExportCubit _exportCubit(_Statements statements, _Exporter exporter) => StatementExportCubit(
       exportStatement: ExportStatementUseCase(statements),
-      fetchDocument: FetchDocumentFileUseCase(files),
       saveDocument: SaveDocumentUseCase(exporter),
       shareDocument: ShareDocumentUseCase(exporter),
     );
@@ -345,19 +339,19 @@ void main() {
   });
 
   group('StatementExportCubit', () {
-    test('a download builds the file, fetches it and saves it', () async {
+    test('a download builds the file and saves it', () async {
       final statements = _Statements();
       final exporter = _Exporter();
-      final cubit = _exportCubit(statements, _Files(), exporter);
+      final cubit = _exportCubit(statements, exporter);
       final states = <StatementExportState>[];
       cubit.stream.listen(states.add);
       await cubit.export(
         range: StatementRange(DateTime(2026, 10), DateTime(2026, 10, 14)),
-        format: StatementFormat.excel,
+        format: StatementFormat.pdf,
         action: StatementAction.download,
       );
-      expect(statements.calls.single.$3, StatementFormat.excel);
-      expect(exporter.saved, ['statement.xlsx']);
+      expect(statements.calls.single.$3, StatementFormat.pdf);
+      expect(exporter.saved, ['statement.pdf']);
       expect(states.first.status, StatementStatus.generating);
       expect(cubit.state.outcome, StatementOutcome.saved);
       await cubit.close();
@@ -365,7 +359,7 @@ void main() {
 
     test('a cancelled save and a successful share show no message', () async {
       final exporter = _Exporter(saveResult: const Right(false));
-      final cubit = _exportCubit(_Statements(), _Files(), exporter);
+      final cubit = _exportCubit(_Statements(), exporter);
       final range = StatementRange(DateTime(2026, 10), DateTime(2026, 10, 14));
       await cubit.export(range: range, format: StatementFormat.pdf, action: StatementAction.download);
       expect(cubit.state.outcome, isNull);
@@ -376,19 +370,14 @@ void main() {
       await cubit.close();
     });
 
-    test('a server failure or a failed download is "failed"; a failed save is reported', () async {
+    test('a server failure is "failed"; a failed save is reported', () async {
       final range = StatementRange(DateTime(2026, 10), DateTime(2026, 10, 14));
-      var cubit = _exportCubit(_Statements(fail: true), _Files(), _Exporter());
+      var cubit = _exportCubit(_Statements(fail: true), _Exporter());
       await cubit.export(range: range, format: StatementFormat.pdf, action: StatementAction.download);
       expect(cubit.state.status, StatementStatus.failed);
       await cubit.close();
 
-      cubit = _exportCubit(_Statements(), _Files(fail: true), _Exporter());
-      await cubit.export(range: range, format: StatementFormat.pdf, action: StatementAction.share);
-      expect(cubit.state.status, StatementStatus.failed);
-      await cubit.close();
-
-      cubit = _exportCubit(_Statements(), _Files(), _Exporter(saveResult: const Left(ServerFailure('x'))));
+      cubit = _exportCubit(_Statements(), _Exporter(saveResult: const Left(ServerFailure('x'))));
       await cubit.export(range: range, format: StatementFormat.pdf, action: StatementAction.download);
       expect(cubit.state.outcome, StatementOutcome.saveFailed);
       await cubit.close();
@@ -419,7 +408,7 @@ void main() {
           body: TextButton(
             onPressed: () => showStatementExportSheet(
               context,
-              createCubit: () => _exportCubit(statements, _Files(), theExporter),
+              createCubit: () => _exportCubit(statements, theExporter),
               pickRange: pick,
               now: () => DateTime(2026, 10, 14, 12),
             ),
@@ -435,7 +424,7 @@ void main() {
     testWidgets('shows the periods, formats and both actions', (tester) async {
       await open(tester);
       expect(find.text('تصدير كشف الحساب'), findsOneWidget);
-      for (final label in const ['هذا الشهر', '٣ أشهر', 'مخصص', 'PDF', 'Excel', 'تنزيل', 'مشاركة']) {
+      for (final label in const ['هذا الشهر', '٣ أشهر', 'مخصص', 'PDF', 'تنزيل', 'مشاركة']) {
         expect(find.text(label), findsOneWidget);
       }
     });
@@ -444,15 +433,13 @@ void main() {
         (tester) async {
       final exporter = _Exporter();
       final statements = await open(tester, exporter: exporter);
-      await tester.tap(find.text('Excel'));
-      await tester.pump();
       await tester.tap(find.text('٣ أشهر'));
       await tester.pump();
       await tester.tap(find.text('تنزيل'));
       await tester.pumpAndSettle();
       final call = statements.calls.single;
-      expect((call.$1, call.$2, call.$3), (DateTime(2026, 7, 14), DateTime(2026, 10, 14), StatementFormat.excel));
-      expect(exporter.saved, ['statement.xlsx']);
+      expect((call.$1, call.$2, call.$3), (DateTime(2026, 7, 14), DateTime(2026, 10, 14), StatementFormat.pdf));
+      expect(exporter.saved, ['statement.pdf']);
       expect(find.text('تصدير كشف الحساب'), findsNothing);
       expect(find.text('تم حفظ الكشف.'), findsOneWidget);
     });

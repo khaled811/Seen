@@ -3,20 +3,15 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/constants/enums.dart';
 import 'ticket_message.dart';
 
-/// A ticket's lifecycle stage.
-///
-/// TODO(backend-contract): our confirmed Task 01 enum catalog's
-/// `TicketStatus` has only two values (`open`, `closed`), but this
-/// feature's business rules call for four (Open/In Progress/Resolved/
-/// Closed). Rather than force a lossy 4-into-2 mapping or silently pretend
-/// the extra states exist server-side, this is a separate, explicitly
-/// placeholder enum — confirm with the backend whether it truly tracks
-/// four stages before wiring this to a real API.
+/// A ticket's lifecycle stage (contract section 13: `open`, `in_progress`,
+/// `waiting`, `resolved`, `closed`, `cancelled`). An unknown value is [unknown].
 enum SupportTicketStatus {
   open('open'),
   inProgress('in_progress'),
+  waiting('waiting'),
   resolved('resolved'),
   closed('closed'),
+  cancelled('cancelled'),
   unknown('');
 
   const SupportTicketStatus(this.value);
@@ -47,6 +42,8 @@ class SupportTicket extends Equatable {
     required this.messages,
     this.requestId,
     this.hasUnreadReply = false,
+    this.unreadCount = 0,
+    this.messagesLoaded = true,
   });
 
   final String id;
@@ -65,6 +62,13 @@ class SupportTicket extends Equatable {
   /// Support replied and the agent has not opened the thread since (Figma SUP-01).
   final bool hasUnreadReply;
 
+  /// How many of the thread's newest messages the agent has not read yet (`Ticket.unreadCount`).
+  final int unreadCount;
+
+  /// False for a ticket read from the list (no messages came with it): the
+  /// thread loads when it is opened.
+  final bool messagesLoaded;
+
   /// When the thread last moved: the newest message, else the creation time.
   DateTime get lastActivityAt => messages.isEmpty ? createdAt : messages.last.sentAt;
 
@@ -73,13 +77,17 @@ class SupportTicket extends Equatable {
   bool get awaitingAgent =>
       isLive && messages.isNotEmpty && messages.last.isSupportReply;
 
-  /// Not resolved or closed.
-  bool get isLive => status != SupportTicketStatus.closed && status != SupportTicketStatus.resolved;
+  /// Not resolved, closed or cancelled.
+  bool get isLive =>
+      status != SupportTicketStatus.closed &&
+      status != SupportTicketStatus.resolved &&
+      status != SupportTicketStatus.cancelled;
 
-  /// A closed ticket is read-only until it is reopened (Figma SUP-03).
-  bool get isClosed => status == SupportTicketStatus.closed;
+  /// Closed and cancelled tickets are final: the thread is read-only. (A `resolved` or
+  /// `waiting` ticket is reopened by replying to it: the server does that itself.)
+  bool get isFinal => status == SupportTicketStatus.closed || status == SupportTicketStatus.cancelled;
 
-  SupportTicket copyWith({bool? hasUnreadReply, List<TicketMessage>? messages}) => SupportTicket(
+  SupportTicket copyWith({bool? hasUnreadReply, int? unreadCount, List<TicketMessage>? messages, bool? messagesLoaded}) => SupportTicket(
         id: id,
         referenceId: referenceId,
         category: category,
@@ -90,6 +98,8 @@ class SupportTicket extends Equatable {
         messages: messages ?? this.messages,
         requestId: requestId,
         hasUnreadReply: hasUnreadReply ?? this.hasUnreadReply,
+        unreadCount: unreadCount ?? this.unreadCount,
+        messagesLoaded: messagesLoaded ?? this.messagesLoaded,
       );
 
   bool get isRequestRelated => requestId != null;
@@ -106,5 +116,7 @@ class SupportTicket extends Equatable {
         createdAt,
         messages,
         hasUnreadReply,
+        unreadCount,
+        messagesLoaded,
       ];
 }

@@ -1,16 +1,14 @@
-import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, TargetPlatform;
 import 'package:fpdart/fpdart.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/network/graphql_service.dart';
+import '../../../../core/error/unsupported.dart';
 import '../models/app_status_dto.dart';
 
-/// Raw GraphQL access for app status and access requests.
-///
-/// TODO(backend-contract): placeholder schema (names and fields); see
-/// docs/BACKEND_MIGRATION_GAPS.md section 32.
+/// App status (maintenance, minimum version) and access requests have no
+/// operations in the API (contract section 14), so both are `unsupported_operation`:
+/// nothing is sent and nothing is faked (DECISIONS P-06). The app-status check
+/// fails open (the app is never blocked on an answer that cannot exist), and the
+/// "request access" button reports that it is not available.
 abstract interface class SystemStatusRemoteDataSource {
   Future<Either<Failure, AppStatusDto>> getAppStatus();
 
@@ -18,56 +16,11 @@ abstract interface class SystemStatusRemoteDataSource {
 }
 
 class SystemStatusRemoteDataSourceImpl implements SystemStatusRemoteDataSource {
-  SystemStatusRemoteDataSourceImpl({required GraphQLService graphQLService})
-      : _graphQL = graphQLService;
-
-  final GraphQLService _graphQL;
-
-  static final _statusDocument = gql(r'''
-    query AppStatus($platform: String!) {
-      appStatus(platform: $platform) {
-        maintenance { active etaAt }
-        minimumVersion
-        latestVersion
-        storeUrl
-        updateNote
-      }
-    }
-  ''');
-
-  static final _requestAccessDocument = gql(r'''
-    mutation RequestAccess($area: String!) {
-      requestAccess(area: $area) { success }
-    }
-  ''');
+  const SystemStatusRemoteDataSourceImpl();
 
   @override
-  Future<Either<Failure, AppStatusDto>> getAppStatus() {
-    final platform =
-        defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
-    return _graphQL.query<AppStatusDto>(
-      QueryOptions<AppStatusDto>(
-        document: _statusDocument,
-        variables: {'platform': platform},
-        // Never serve a cached "all clear" while the server is in maintenance.
-        fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (json) =>
-            AppStatusDto.fromJson(json['appStatus'] as Map<String, dynamic>),
-      ),
-    );
-  }
+  Future<Either<Failure, AppStatusDto>> getAppStatus() async => unsupportedOperation('App status');
 
   @override
-  Future<Either<Failure, bool>> requestAccess(String area) {
-    return _graphQL.mutate<bool>(
-      MutationOptions<bool>(
-        document: _requestAccessDocument,
-        variables: {'area': area},
-        parserFn: (json) =>
-            (json['requestAccess'] as Map<String, dynamic>?)?['success']
-                as bool? ??
-            true,
-      ),
-    );
-  }
+  Future<Either<Failure, bool>> requestAccess(String area) async => unsupportedOperation('Requesting access');
 }

@@ -4,7 +4,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/error/failure.dart';
 import '../../../../core/navigation/shell_tab_request.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
@@ -18,6 +20,8 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../../agents/presentation/screens/transfer_to_agent_screen.dart';
 import '../../../system_status/presentation/widgets/access_denied_view.dart';
 import '../../domain/entities/wallet_transaction.dart';
@@ -104,13 +108,16 @@ class WalletView extends StatelessWidget {
                       !(p is WalletLoaded && c is WalletLoading) &&
                       (p.runtimeType != c.runtimeType || c is WalletLoaded || c is WalletFailure),
                   builder: (context, state) => switch (state) {
-                    WalletInitial() || WalletLoading() => const WalletLoadingSkeleton(),
+                    WalletInitial() || WalletLoading() => SeenWaitPolicy.loading(
+                      loading: const WalletLoadingSkeleton(),
+                      onRetry: () => context.read<WalletBloc>().add(const WalletLoadRequested()),
+                    ),
                     WalletFailure(forbidden: true) => AccessDeniedView(
                         area: 'wallet',
                         message: SeenStrings.of(context).forbiddenWallet,
                         onBack: () => ShellTabRequest.show(0),
                       ),
-                    WalletFailure(:final message) => _ErrorView(message: message),
+                    WalletFailure(:final message, :final failure) => _ErrorView(message: message, failure: failure),
                     WalletLoaded() => _LoadedView(state: state, onStatement: () => _openStatement(context)),
                   },
                 ),
@@ -124,9 +131,10 @@ class WalletView extends StatelessWidget {
 }
 
 class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message});
+  const _ErrorView({required this.message, this.failure});
 
   final String message;
+  final Failure? failure;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +143,7 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(message, textAlign: TextAlign.center),
+          Text(failureTextOr(l10n, failure, message), textAlign: TextAlign.center),
           const SizedBox(height: SeenSpace.s3),
           SeenButton(label: l10n.retry, onPressed: () => context.read<WalletBloc>().add(const WalletLoadRequested())),
         ],
@@ -205,7 +213,7 @@ class _LoadedViewState extends State<_LoadedView> {
         }).toList();
     const gap = SizedBox(height: 18);
 
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: () async {
         final bloc = context.read<WalletBloc>()..add(const WalletLoadRequested());
         await bloc.stream.firstWhere((x) => x is! WalletLoading);

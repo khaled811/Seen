@@ -2,8 +2,8 @@ import 'package:equatable/equatable.dart';
 
 /// Domain-facing error returned on the `Left` side of `Either<Failure, T>`.
 ///
-/// Repositories map [AppException]s (see `exceptions.dart`) to these; the
-/// presentation layer only ever sees [Failure]s.
+/// Data sources return these directly (`Left`); the presentation layer only ever
+/// sees [Failure]s.
 sealed class Failure extends Equatable {
   const Failure(this.message);
 
@@ -41,14 +41,27 @@ final class NetworkFailure extends Failure {
   List<Object?> get props => [message, isTimeout];
 }
 
-/// 401 — session missing/expired. Should trigger re-authentication.
+/// The session is missing or over (`not_authenticated`, `session_expired`,
+/// `no_refresh_session`). Should trigger re-authentication.
 final class UnauthorizedFailure extends Failure {
-  const UnauthorizedFailure([super.message = 'Unauthorized']);
+  const UnauthorizedFailure([super.message = 'Unauthorized', this.code]);
+
+  /// The backend `extensions.code`, when there was one.
+  final String? code;
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
-/// 403 — authenticated but lacks the required permission.
+/// Authenticated but not allowed (`permission_denied`, `role_restricted`).
 final class ForbiddenFailure extends Failure {
-  const ForbiddenFailure([super.message = 'Forbidden']);
+  const ForbiddenFailure([super.message = 'Forbidden', this.code]);
+
+  /// The backend `extensions.code`, when there was one.
+  final String? code;
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
 /// Local persistence (secure storage / cache) read or write failed.
@@ -56,15 +69,38 @@ final class CacheFailure extends Failure {
   const CacheFailure(super.message);
 }
 
-/// Input rejected, client-side or by backend validation.
-final class ValidationFailure extends Failure {
-  const ValidationFailure(super.message, {this.fieldErrors = const {}});
+/// One backend validation problem (`validation_failed`, `params.details`).
+final class ValidationIssue extends Equatable {
+  const ValidationIssue({required this.code, this.travelerIndex, this.field, this.params = const {}});
 
-  /// Field name -> error messages, as returned by the backend.
-  final Map<String, List<String>> fieldErrors;
+  /// The rule that failed (a backend code, localized by the UI).
+  final String code;
+
+  /// Which traveler of the request, when the problem is per traveler.
+  final int? travelerIndex;
+
+  /// The `fieldKey` of the form field, when the problem is on one field.
+  final String? field;
+
+  /// Extra values for the message (limits, dates, ...).
+  final Map<String, Object?> params;
 
   @override
-  List<Object?> get props => [message, fieldErrors];
+  List<Object?> get props => [code, travelerIndex, field, params];
+}
+
+/// Input rejected, client-side or by backend validation.
+final class ValidationFailure extends Failure {
+  const ValidationFailure(super.message, {this.fieldErrors = const {}, this.issues = const []});
+
+  /// Field name -> error messages (or codes), as returned by the backend.
+  final Map<String, List<String>> fieldErrors;
+
+  /// The exact backend problems, in order, when the backend sent them.
+  final List<ValidationIssue> issues;
+
+  @override
+  List<Object?> get props => [message, fieldErrors, issues];
 }
 
 extension FailureReference on Failure {

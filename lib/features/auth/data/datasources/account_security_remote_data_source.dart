@@ -1,58 +1,42 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/error/unsupported.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../domain/entities/account_security.dart';
 import '../../domain/repositories/account_security_repository.dart';
 
-/// Raw GraphQL access for changing the password and the phone number.
+/// The signed-in user's own credentials against the contract.
 ///
-/// TODO(backend-contract): placeholder schema (`changePassword`, `me { maskedPhone }`,
-/// `requestPhoneChange`, `resendPhoneChange`, `confirmPhoneChange`); see
-/// docs/BACKEND_MIGRATION_GAPS.md section 39.
+/// - `changeMyPassword(currentPassword, newPassword)` is real; the server signs
+///   every session out afterwards (the cubit ends this one too).
+/// - The current number comes from `me { phone }` and is masked here.
+/// - A phone change with a code has no operation (`updateMyProfile` sets a number
+///   without any verification, which the flow's design cannot honour), so those
+///   three calls are `unsupported_operation` (DECISIONS P-03).
 class AccountSecurityRemoteDataSource implements AccountSecurityRepository {
   AccountSecurityRemoteDataSource({required GraphQLService graphQLService}) : _graphQL = graphQLService;
 
   final GraphQLService _graphQL;
 
-  static const _challengeFields = 'challengeToken resendCooldownSeconds';
-
   static final _changePasswordDoc = gql(r'''
-    mutation ChangePassword($current: String!, $next: String!) {
-      changePassword(currentPassword: $current, newPassword: $next) { success }
+    mutation ChangeMyPassword($current: String!, $next: String!) {
+      changeMyPassword(currentPassword: $current, newPassword: $next)
     }
   ''');
 
-  static final _maskedPhoneDoc = gql(r'''
-    query MyPhone { me { maskedPhone } }
+  static final _phoneDoc = gql(r'''
+    query MyPhone { me { phone } }
   ''');
 
-  static final _requestDoc = gql('''
-    mutation RequestPhoneChange(\$phone: String!) {
-      requestPhoneChange(newPhone: \$phone) { $_challengeFields }
-    }
-  ''');
-
-  static final _resendDoc = gql('''
-    mutation ResendPhoneChange(\$token: String!) {
-      resendPhoneChange(challengeToken: \$token) { $_challengeFields }
-    }
-  ''');
-
-  static final _confirmDoc = gql(r'''
-    mutation ConfirmPhoneChange($token: String!, $code: String!) {
-      confirmPhoneChange(challengeToken: $token, code: $code) { success }
-    }
-  ''');
-
-  static PhoneChangeChallenge _challenge(Object? json) {
-    final m = json as Map<String, dynamic>;
-    return PhoneChangeChallenge(
-      challengeToken: m['challengeToken'] as String,
-      resendCooldownSeconds: (m['resendCooldownSeconds'] as num?)?.toInt() ?? 0,
-    );
+  /// `+967 77 ••• 0700`-style: the number with its middle hidden.
+  static String maskPhone(String phone) {
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length <= 4) return phone.isEmpty ? '' : '•••';
+    final tail = digits.substring(digits.length - 4);
+    return '${phone.trim().startsWith('+') ? '+' : ''}••• $tail';
   }
 
   @override
@@ -60,41 +44,29 @@ class AccountSecurityRemoteDataSource implements AccountSecurityRepository {
       (await _graphQL.mutate<bool>(MutationOptions<bool>(
         document: _changePasswordDoc,
         variables: {'current': current, 'next': next},
-        parserFn: (j) => (j['changePassword'] as Map<String, dynamic>?)?['success'] as bool? ?? true,
+        fetchPolicy: FetchPolicy.noCache,
+        parserFn: (j) => j['changeMyPassword'] == true,
       )))
-          .map((_) {});
+          .flatMap((changed) => changed ? const Right(null) : const Left(ServerFailure('The password was not changed.')));
 
   @override
   Future<Either<Failure, String>> currentPhoneMasked() => _graphQL.query<String>(QueryOptions<String>(
-        document: _maskedPhoneDoc,
+        document: _phoneDoc,
         fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (j) => ((j['me'] as Map<String, dynamic>)['maskedPhone'] as String?) ?? '',
+        parserFn: (j) => maskPhone(((j['me'] as Map<String, dynamic>)['phone'] as String?) ?? ''),
       ));
 
   @override
-  Future<Either<Failure, PhoneChangeChallenge>> requestPhoneChange(String newPhone) =>
-      _graphQL.mutate<PhoneChangeChallenge>(MutationOptions<PhoneChangeChallenge>(
-        document: _requestDoc,
-        variables: {'phone': newPhone},
-        parserFn: (j) => _challenge(j['requestPhoneChange']),
-      ));
+  Future<Either<Failure, PhoneChangeChallenge>> requestPhoneChange(String newPhone) async =>
+      unsupportedOperation('Changing the phone number with a code');
 
   @override
-  Future<Either<Failure, PhoneChangeChallenge>> resendPhoneChange(String challengeToken) =>
-      _graphQL.mutate<PhoneChangeChallenge>(MutationOptions<PhoneChangeChallenge>(
-        document: _resendDoc,
-        variables: {'token': challengeToken},
-        parserFn: (j) => _challenge(j['resendPhoneChange']),
-      ));
+  Future<Either<Failure, PhoneChangeChallenge>> resendPhoneChange(String challengeToken) async =>
+      unsupportedOperation('Resending a phone-change code');
 
   @override
   Future<Either<Failure, void>> confirmPhoneChange({required String challengeToken, required String code}) async =>
-      (await _graphQL.mutate<bool>(MutationOptions<bool>(
-        document: _confirmDoc,
-        variables: {'token': challengeToken, 'code': code},
-        parserFn: (j) => (j['confirmPhoneChange'] as Map<String, dynamic>?)?['success'] as bool? ?? true,
-      )))
-          .map((_) {});
+      unsupportedOperation('Confirming a phone change');
 }
 
 /// DEBUG ONLY: when a real call fails in a debug build, answers with canned results so
@@ -112,7 +84,7 @@ class DebugFallbackAccountSecurityRepository implements AccountSecurityRepositor
   @override
   Future<Either<Failure, void>> changePassword({required String current, required String next}) async {
     final r = await _real.changePassword(current: current, next: next);
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       if (current == 'Old@12345') {
         return const Left(ServerFailure('wrong', code: AccountIssue.wrongCurrentPasswordCode));
       }
@@ -127,7 +99,7 @@ class DebugFallbackAccountSecurityRepository implements AccountSecurityRepositor
   @override
   Future<Either<Failure, String>> currentPhoneMasked() async {
     final r = await _real.currentPhoneMasked();
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       return const Right('+967 77 ••• 0700');
     }
     return r;
@@ -136,7 +108,7 @@ class DebugFallbackAccountSecurityRepository implements AccountSecurityRepositor
   @override
   Future<Either<Failure, PhoneChangeChallenge>> requestPhoneChange(String newPhone) async {
     final r = await _real.requestPhoneChange(newPhone);
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       if (newPhone.endsWith('0711')) {
         return const Left(ServerFailure('taken', code: AccountIssue.phoneTakenCode));
       }
@@ -149,7 +121,7 @@ class DebugFallbackAccountSecurityRepository implements AccountSecurityRepositor
   @override
   Future<Either<Failure, PhoneChangeChallenge>> resendPhoneChange(String challengeToken) async {
     final r = await _real.resendPhoneChange(challengeToken);
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       return const Right(PhoneChangeChallenge(challengeToken: 'debug-phone', resendCooldownSeconds: 45));
     }
     return r;
@@ -158,7 +130,7 @@ class DebugFallbackAccountSecurityRepository implements AccountSecurityRepositor
   @override
   Future<Either<Failure, void>> confirmPhoneChange({required String challengeToken, required String code}) async {
     final r = await _real.confirmPhoneChange(challengeToken: challengeToken, code: code);
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       if (code == '123456') {
         return const Right(null);
       }

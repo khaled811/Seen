@@ -15,6 +15,7 @@ final class AuthOtpChallenge extends AuthAttemptResult {
   const AuthOtpChallenge({
     required this.challengeToken,
     required this.resendCooldownSeconds,
+    this.canResend = true,
   });
 
   /// Opaque token identifying this OTP challenge; must be echoed back on
@@ -24,8 +25,12 @@ final class AuthOtpChallenge extends AuthAttemptResult {
   /// Seconds the UI must wait before the resend action becomes available.
   final int resendCooldownSeconds;
 
+  /// Whether the backend can send the code again. The real API verifies an
+  /// authenticator (TOTP) code or a recovery code, so there is nothing to resend.
+  final bool canResend;
+
   @override
-  List<Object?> get props => [challengeToken, resendCooldownSeconds];
+  List<Object?> get props => [challengeToken, resendCooldownSeconds, canResend];
 }
 
 /// Authentication completed: the backend issued a token and session.

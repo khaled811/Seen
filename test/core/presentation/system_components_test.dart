@@ -59,21 +59,21 @@ class _DeniedPicker implements DocumentPicker {
 
 void main() {
   group('skeletons (SYS-06)', () {
-    testWidgets('boxes pulse under a group, and one group runs one ticker', (tester) async {
+    testWidgets('boxes share one sweep under a group, and it stops when the group goes', (tester) async {
       await tester.pumpWidget(_app(const SeenSkeletonGroup(
         child: Column(children: [SeenSkeletonBox(height: 10), SeenSkeletonBox(height: 10), SeenSkeletonBox(height: 10)]),
       )));
-      expect(find.byType(FadeTransition).evaluate().where((e) => e.widget is FadeTransition && (e.widget as FadeTransition).opacity.value <= 1).length, greaterThanOrEqualTo(3));
+      expect(find.byType(SeenSkeletonBox), findsNWidgets(3));
+      // The sweep is a paint-time gradient on the boxes, not a fade per box.
+      expect(find.descendant(of: find.byType(SeenSkeletonBox).first, matching: find.byType(FadeTransition)), findsNothing);
       await tester.pump(const Duration(milliseconds: 800));
-      final fade = tester.widget<FadeTransition>(find.descendant(of: find.byType(SeenSkeletonBox).first, matching: find.byType(FadeTransition)));
-      expect(fade.opacity.value, inInclusiveRange(0.55, 1.0));
       // Remove it: the controller must be disposed (no ticker left running).
       await tester.pumpWidget(_app(const SizedBox()));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('with "reduce motion" they are drawn still', (tester) async {
       await tester.pumpWidget(_app(const SeenSkeletonGroup(child: SeenSkeletonBox(height: 10)), reduceMotion: true));
-      expect(find.descendant(of: find.byType(SeenSkeletonBox), matching: find.byType(FadeTransition)), findsNothing);
       // Nothing is animating, so the tree settles.
       await tester.pumpAndSettle();
     });

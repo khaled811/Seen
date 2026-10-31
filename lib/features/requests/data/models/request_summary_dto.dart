@@ -4,9 +4,7 @@ import '../../domain/entities/request_summary.dart';
 
 /// Wire shape of one Requests Dashboard row.
 ///
-/// TODO(backend-contract): field names are placeholders pending the real
-/// Seen Booking GraphQL schema — update here and in
-/// `requests_remote_data_source.dart` once confirmed.
+/// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
 class RequestSummaryDto {
   const RequestSummaryDto({
     required this.id,
@@ -50,7 +48,7 @@ class RequestSummaryDto {
   final DateTime? slaDeadline;
   final String? rejectionNote;
 
-  /// TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 22).
+  /// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
   final List<String> travelerNames;
 
   RequestSummary toEntity() => RequestSummary(

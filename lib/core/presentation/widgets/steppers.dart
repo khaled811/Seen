@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
-import '../foundation/seen_icons.dart';
+import 'svg_icon.dart';
 
 class SeenStep {
   const SeenStep({required this.title, this.meta});
@@ -98,7 +98,7 @@ class SeenStatusStepper extends StatelessWidget {
         width: _dot,
         height: _dot,
         decoration: const BoxDecoration(color: SeenBrand.violet, shape: BoxShape.circle),
-        child: Icon(SeenIcons.check, size: 14, color: c.onPrimary),
+        child: SeenCheckGlyph(size: 14, color: c.onPrimary),
       );
     }
     if (i == current) {

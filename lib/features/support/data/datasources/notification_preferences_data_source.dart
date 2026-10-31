@@ -1,90 +1,23 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/network/graphql_service.dart';
+import '../../../../core/error/unsupported.dart';
 import '../../domain/entities/notification_preferences.dart';
 import '../../domain/repositories/notification_preferences_repository.dart';
 
-const _wire = {
-  NotificationCategory.statusUpdates: 'status_updates',
-  NotificationCategory.documents: 'documents',
-  NotificationCategory.wallet: 'wallet',
-  NotificationCategory.subAgents: 'sub_agents',
-  NotificationCategory.support: 'support',
-  NotificationCategory.promotions: 'promotions',
-};
-
-NotificationPreferences _parse(Object? json) {
-  final m = json as Map<String, dynamic>;
-  final cats = <NotificationCategory, bool>{...NotificationPreferences.defaults.categories};
-  for (final c in (m['categories'] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>()) {
-    final key = _wire.entries.where((e) => e.value == c['key']).map((e) => e.key).firstOrNull;
-    if (key != null) {
-      cats[key] = c['enabled'] == true;
-    }
-  }
-  final q = m['quietHours'] as Map<String, dynamic>?;
-  final d = NotificationPreferences.defaults.quietHours;
-  return NotificationPreferences(
-    categories: cats,
-    quietHours: q == null
-        ? d
-        : QuietHours(
-            enabled: q['enabled'] == true,
-            startMinutes: (q['startMinutes'] as num?)?.toInt() ?? d.startMinutes,
-            endMinutes: (q['endMinutes'] as num?)?.toInt() ?? d.endMinutes,
-          ),
-  );
-}
-
-/// Raw GraphQL access to the notification preferences.
-///
-/// TODO(backend-contract): placeholder schema (`notificationPreferences`,
-/// `saveNotificationPreferences`); see docs/BACKEND_MIGRATION_GAPS.md section 40.
+/// Notification preferences have no operations in the API (there is no push yet,
+/// contract section 14), so reading and saving them are `unsupported_operation`:
+/// nothing is sent and nothing is faked (DECISIONS P-06).
 class NotificationPreferencesRemoteDataSource implements NotificationPreferencesRepository {
-  NotificationPreferencesRemoteDataSource({required GraphQLService graphQLService}) : _graphQL = graphQLService;
-
-  final GraphQLService _graphQL;
-
-  static const _fields = 'categories { key enabled } quietHours { enabled startMinutes endMinutes }';
-
-  static final _getDoc = gql('query NotificationPreferences { notificationPreferences { $_fields } }');
-
-  static final _saveDoc = gql('''
-    mutation SaveNotificationPreferences(\$categories: [NotificationCategoryInput!]!, \$quiet: QuietHoursInput!) {
-      saveNotificationPreferences(categories: \$categories, quietHours: \$quiet) { $_fields }
-    }
-  ''');
+  const NotificationPreferencesRemoteDataSource();
 
   @override
-  Future<Either<Failure, NotificationPreferences>> get() => _graphQL.query<NotificationPreferences>(
-        QueryOptions<NotificationPreferences>(
-          document: _getDoc,
-          fetchPolicy: FetchPolicy.networkOnly,
-          parserFn: (j) => _parse(j['notificationPreferences']),
-        ),
-      );
+  Future<Either<Failure, NotificationPreferences>> get() async => unsupportedOperation('Notification preferences');
 
   @override
-  Future<Either<Failure, NotificationPreferences>> save(NotificationPreferences p) =>
-      _graphQL.mutate<NotificationPreferences>(
-        MutationOptions<NotificationPreferences>(
-          document: _saveDoc,
-          variables: {
-            'categories': [
-              for (final e in _wire.entries) {'key': e.value, 'enabled': p.isOn(e.key)},
-            ],
-            'quiet': {
-              'enabled': p.quietHours.enabled,
-              'startMinutes': p.quietHours.startMinutes,
-              'endMinutes': p.quietHours.endMinutes,
-            },
-          },
-          parserFn: (j) => _parse(j['saveNotificationPreferences']),
-        ),
-      );
+  Future<Either<Failure, NotificationPreferences>> save(NotificationPreferences p) async =>
+      unsupportedOperation('Saving notification preferences');
 }
 
 /// DEBUG ONLY: when a real call fails in a debug build, keeps the preferences in memory
@@ -99,7 +32,7 @@ class DebugFallbackNotificationPreferencesRepository implements NotificationPref
   @override
   Future<Either<Failure, NotificationPreferences>> get() async {
     final r = await _real.get();
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       return Right(_memory);
     }
     return r;
@@ -108,7 +41,7 @@ class DebugFallbackNotificationPreferencesRepository implements NotificationPref
   @override
   Future<Either<Failure, NotificationPreferences>> save(NotificationPreferences p) async {
     final r = await _real.save(p);
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       _memory = p;
       return Right(p);
     }

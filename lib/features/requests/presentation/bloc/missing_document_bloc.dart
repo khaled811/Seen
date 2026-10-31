@@ -35,6 +35,16 @@ final class MissingDocumentSourceChosen extends MissingDocumentEvent {
   List<Object?> get props => [source];
 }
 
+/// The person chose another traveler / document type to attach the file to.
+final class MissingDocumentTargetChosen extends MissingDocumentEvent {
+  const MissingDocumentTargetChosen(this.index);
+
+  final int index;
+
+  @override
+  List<Object?> get props => [index];
+}
+
 final class MissingDocumentRemoved extends MissingDocumentEvent {
   const MissingDocumentRemoved();
 }
@@ -67,6 +77,7 @@ class MissingDocumentState extends Equatable {
     this.progress = 0,
     this.issue,
     this.submitted = false,
+    this.targetIndex = 0,
   });
 
   final MissingDocumentStatus status;
@@ -78,6 +89,14 @@ class MissingDocumentState extends Equatable {
   final double progress;
   final DocumentIssue? issue;
   final bool submitted;
+
+  /// Which of [MissingDocumentRequest.targets] the file goes to.
+  final int targetIndex;
+
+  UploadTarget? get target {
+    final targets = request?.targets;
+    return targets == null || targetIndex < 0 || targetIndex >= targets.length ? null : targets[targetIndex];
+  }
 
   bool get deadlinePassed => issue?.kind == DocumentIssueKind.deadlinePassed;
 
@@ -91,6 +110,7 @@ class MissingDocumentState extends Equatable {
     DocumentIssue? issue,
     bool clearIssue = false,
     bool? submitted,
+    int? targetIndex,
   }) =>
       MissingDocumentState(
         status: status ?? this.status,
@@ -100,10 +120,11 @@ class MissingDocumentState extends Equatable {
         progress: progress ?? this.progress,
         issue: clearIssue ? null : (issue ?? this.issue),
         submitted: submitted ?? this.submitted,
+        targetIndex: targetIndex ?? this.targetIndex,
       );
 
   @override
-  List<Object?> get props => [status, request, picked, uploading, progress, issue, submitted];
+  List<Object?> get props => [status, request, picked, uploading, progress, issue, submitted, targetIndex];
 }
 
 class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentState> {
@@ -121,6 +142,11 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
         super(const MissingDocumentState()) {
     on<MissingDocumentStarted>(_onStarted, transformer: restartable());
     on<MissingDocumentSourceChosen>(_onSource, transformer: droppable());
+    on<MissingDocumentTargetChosen>((event, emit) {
+      final targets = state.request?.targets;
+      if (targets == null || state.uploading || event.index < 0 || event.index >= targets.length) return;
+      emit(state.copyWith(targetIndex: event.index, clearIssue: true));
+    });
     on<MissingDocumentRemoved>(
       (event, emit) => emit(state.copyWith(clearPicked: true, clearIssue: true, progress: 0)),
     );
@@ -135,6 +161,12 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
   final DateTime Function() _clock;
   final PendingUploads? _pending;
 
+  /// A request with no deadline never runs out.
+  bool _isPast(MissingDocumentRequest request) {
+    final deadline = request.deadline;
+    return deadline != null && !deadline.isAfter(_clock());
+  }
+
   Future<void> _onStarted(MissingDocumentStarted event, Emitter<MissingDocumentState> emit) async {
     emit(const MissingDocumentState());
     final result = await _get(event.requestId);
@@ -146,7 +178,7 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
       (request) => emit(MissingDocumentState(
         status: MissingDocumentStatus.ready,
         request: request,
-        issue: request.deadline.isAfter(_clock()) ? null : const DocumentIssue(DocumentIssueKind.deadlinePassed),
+        issue: _isPast(request) ? const DocumentIssue(DocumentIssueKind.deadlinePassed) : null,
       )),
     );
   }
@@ -179,8 +211,9 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
   Future<void> _onSubmitted(MissingDocumentSubmitted event, Emitter<MissingDocumentState> emit) async {
     final request = state.request;
     final doc = state.picked;
-    if (request == null || doc == null || state.deadlinePassed) return;
-    if (!request.deadline.isAfter(_clock())) {
+    final target = state.target;
+    if (request == null || doc == null || target == null || state.deadlinePassed) return;
+    if (_isPast(request)) {
       emit(state.copyWith(issue: const DocumentIssue(DocumentIssueKind.deadlinePassed)));
       return;
     }
@@ -190,7 +223,7 @@ class MissingDocumentBloc extends Bloc<MissingDocumentEvent, MissingDocumentStat
     final Either<Failure, void> result;
     try {
       result = await _upload(
-        requestId: request.requestId,
+        target: target,
         document: doc,
         onProgress: (f) {
           if (!isClosed) add(_ProgressChanged(f));

@@ -3,30 +3,30 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/statement.dart';
+import '../models/portal_wallet_mapping.dart';
 import '../models/statement_file_dto.dart';
+import '../models/top_up_options_dto.dart';
 import '../models/wallet_balance_dto.dart';
 import '../models/wallet_transaction_dto.dart';
 
-/// Raw GraphQL access for the wallet feature. Returns DTOs, never entities.
+/// Raw GraphQL access for the wallet feature (`docs/api/mobile-api-reference.md`,
+/// "Wallet and top-ups"). Returns DTOs, never entities.
 ///
-/// TODO(backend-contract): documents below encode a placeholder schema
-/// (query/mutation names, argument names, response fields). Update once the
-/// real Seen Booking GraphQL schema is confirmed — see the matching TODOs
-/// in `wallet_balance_dto.dart` / `wallet_transaction_dto.dart`. Receipt
-/// upload is deliberately not wired here yet — mocked/decoupled until the
-/// backend's Supabase mutations are active (per Task 06).
+/// Money is sent and received as `Decimal` strings and only ever turned into
+/// integer cents by the DTO mappers.
 abstract interface class WalletRemoteDataSource {
-  /// Builds an account statement and returns where to download it.
+  /// The statement as a PDF (`accountStatementPdf`, needs `data.export`).
   Future<Either<Failure, StatementFileDto>> exportStatement({
     required DateTime from,
     required DateTime to,
     required StatementFormat format,
   });
 
-  /// Withdraws a top-up request that finance has not decided yet.
+  /// The API has no operation to withdraw a top-up request: always a failure.
   Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId);
 
   Future<Either<Failure, WalletBalanceDto>> getBalance();
@@ -39,142 +39,158 @@ abstract interface class WalletRemoteDataSource {
     int pageSize = 20,
   });
 
+  /// `submitTopUp`: the request is pending until Seen approves it; no money
+  /// moves now. [idempotencyKey] makes a retry of the same action safe.
   Future<Either<Failure, WalletTransactionDto>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   });
+
+  Future<Either<Failure, TopUpOptionsDto>> getTopUpOptions();
 }
 
 class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
-  WalletRemoteDataSourceImpl({required GraphQLService graphQLService})
-      : _graphQLService = graphQLService;
+  WalletRemoteDataSourceImpl({required GraphQLService graphQLService, required AppLanguage language})
+      : _graphQLService = graphQLService,
+        _language = language;
 
   final GraphQLService _graphQLService;
+  final AppLanguage _language;
 
-  // TODO(backend-contract): `balanceAfter`, `request` and `topUp` are placeholders
-  // (docs/BACKEND_MIGRATION_GAPS.md, section 23).
-  static const _transactionFields = r'''
+  /// Code of the failure returned for operations the API does not offer.
+  static const String unsupportedCode = 'unsupported_operation';
+
+  static final _summaryDocument = gql(r'''
+    query WalletSummary {
+      portalWallet(limit: 1) {
+        summary {
+          currency
+          balance
+          held
+          total
+          creditLimit
+          spendable
+          creditUsed
+        }
+      }
+    }
+  ''');
+
+  static final _statementDocument = gql(r'''
+    query WalletStatement($type: String, $dateFrom: Date, $dateTo: Date, $limit: Int!, $offset: Int!) {
+      portalWallet(filter: "all", type: $type, dateFrom: $dateFrom, dateTo: $dateTo, limit: $limit, offset: $offset) {
+        pendingTopUps {
+          id
+          number
+          amount
+          currency
+          method
+          referenceNumber
+          paymentAccountTitle
+          createdAt
+        }
+        statement {
+          id
+          type
+          direction
+          amount
+          currency
+          balanceAfter
+          createdAt
+          requestId
+          referenceCode
+          serviceNameAr
+          serviceNameEn
+          method
+        }
+        hasMore
+      }
+    }
+  ''');
+
+  static final _submitTopUpDocument = gql(r'''
+    mutation SubmitTopUp(
+      $amount: Decimal!
+      $method: String!
+      $referenceNumber: String!
+      $paymentAccountId: ID
+      $receiptFileId: ID
+      $idempotencyKey: String
+    ) {
+      submitTopUp(
+        amount: $amount
+        method: $method
+        referenceNumber: $referenceNumber
+        paymentAccountId: $paymentAccountId
+        receiptFileId: $receiptFileId
+        idempotencyKey: $idempotencyKey
+      ) {
         id
-        type
-        side
+        number
         status
         amount
         currency
-        referenceId
-        notes
+        method
+        referenceNumber
+        paymentAccount {
+          id
+          title
+        }
         createdAt
-        balanceAfter
-        request { id referenceId serviceName }
-        topUp { method code bankName transferReference receiptName receiptUrl rejectionReason }
-  ''';
-
-  // TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 24).
-  static final _exportStatementDocument = gql('''
-    mutation ExportWalletStatement(\$from: String!, \$to: String!, \$format: String!) {
-      exportWalletStatement(from: \$from, to: \$to, format: \$format) {
-        url
-        fileName
       }
     }
   ''');
 
-  static final _cancelTopUpDocument = gql('''
-    mutation CancelTopUp(\$transactionId: ID!) {
-      cancelTopUp(transactionId: \$transactionId) {
-        $_transactionFields
-      }
-    }
-  ''');
-
-  static final _balanceDocument = gql(r'''
-    query WalletBalance {
-      walletBalance {
-        availableAmount
-        holdAmount
-        creditLimitAmount
-        creditUsedAmount
+  static final _topUpOptionsDocument = gql(r'''
+    query TopUpOptions {
+      portalTopUpOptions {
         currency
+        minimumAmount
+        methods {
+          method
+          accountKinds
+        }
+        accounts {
+          id
+          kind
+          title
+          holder
+          bankName
+          accountNumber
+          currency
+          instructions
+          isActive
+        }
+        canRequest
+        pendingCount
       }
     }
   ''');
 
-  static final _transactionsDocument = gql('''
-    query WalletTransactions(
-      \$type: String
-      \$fromDate: String
-      \$toDate: String
-      \$page: Int!
-      \$pageSize: Int!
-    ) {
-      walletTransactions(
-        type: \$type
-        fromDate: \$fromDate
-        toDate: \$toDate
-        page: \$page
-        pageSize: \$pageSize
-      ) {
-        $_transactionFields
+  static final _statementPdfDocument = gql(r'''
+    query AccountStatementPdf($dateFrom: Date!, $dateTo: Date!, $language: String!) {
+      accountStatementPdf(dateFrom: $dateFrom, dateTo: $dateTo, language: $language) {
+        filename
+        contentBase64
       }
     }
   ''');
 
-  static final _requestTopUpDocument = gql('''
-    mutation RequestTopUp(
-      \$amount: String!
-      \$method: String!
-      \$referenceNumber: String!
-      \$notes: String
-    ) {
-      requestTopUp(
-        amount: \$amount
-        method: \$method
-        referenceNumber: \$referenceNumber
-        notes: \$notes
-      ) {
-        $_transactionFields
-      }
-    }
-  ''');
-
-  @override
-  Future<Either<Failure, StatementFileDto>> exportStatement({
-    required DateTime from,
-    required DateTime to,
-    required StatementFormat format,
-  }) {
-    String day(DateTime d) =>
-        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-    return _graphQLService.mutate<StatementFileDto>(
-      MutationOptions<StatementFileDto>(
-        document: _exportStatementDocument,
-        variables: {'from': day(from), 'to': day(to), 'format': format.wire},
-        parserFn: (json) =>
-            StatementFileDto.fromJson(json['exportWalletStatement'] as Map<String, dynamic>),
-      ),
-    );
-  }
-
-  @override
-  Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) {
-    return _graphQLService.mutate<WalletTransactionDto>(
-      MutationOptions<WalletTransactionDto>(
-        document: _cancelTopUpDocument,
-        variables: {'transactionId': transactionId},
-        parserFn: (json) =>
-            WalletTransactionDto.fromJson(json['cancelTopUp'] as Map<String, dynamic>),
-      ),
-    );
-  }
+  static String _day(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   @override
   Future<Either<Failure, WalletBalanceDto>> getBalance() {
     return _graphQLService.query<WalletBalanceDto>(
       QueryOptions<WalletBalanceDto>(
-        document: _balanceDocument,
-        parserFn: (json) =>
-            WalletBalanceDto.fromJson(json['walletBalance'] as Map<String, dynamic>),
+        document: _summaryDocument,
+        parserFn: (json) => PortalWalletMapping.balance(
+          (json['portalWallet'] as Map<String, dynamic>)['summary'] as Map<String, dynamic>,
+        ),
       ),
     );
   }
@@ -189,17 +205,27 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
   }) {
     return _graphQLService.query<List<WalletTransactionDto>>(
       QueryOptions<List<WalletTransactionDto>>(
-        document: _transactionsDocument,
+        document: _statementDocument,
         variables: {
           'type': type?.value,
-          'fromDate': from?.toIso8601String(),
-          'toDate': to?.toIso8601String(),
-          'page': page,
-          'pageSize': pageSize,
+          'dateFrom': from == null ? null : _day(from),
+          'dateTo': to == null ? null : _day(to),
+          'limit': pageSize,
+          'offset': (page - 1) * pageSize,
         },
-        parserFn: (json) => (json['walletTransactions'] as List<dynamic>)
-            .map((e) => WalletTransactionDto.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        parserFn: (json) {
+          final wallet = json['portalWallet'] as Map<String, dynamic>;
+          // Top-ups still waiting for Seen are not in the posted statement; they
+          // lead the first page of an unfiltered or top-up view.
+          final showPending = page == 1 && (type == null || type == TransactionType.topup);
+          return [
+            if (showPending)
+              for (final p in wallet['pendingTopUps'] as List<dynamic>? ?? const [])
+                PortalWalletMapping.pendingTopUp(p as Map<String, dynamic>),
+            for (final row in wallet['statement'] as List<dynamic>? ?? const [])
+              PortalWalletMapping.statementRow(row as Map<String, dynamic>, _language),
+          ];
+        },
       ),
     );
   }
@@ -209,20 +235,52 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) {
     return _graphQLService.mutate<WalletTransactionDto>(
       MutationOptions<WalletTransactionDto>(
-        document: _requestTopUpDocument,
+        document: _submitTopUpDocument,
         variables: {
           'amount': MoneyParser.decimalStringFromCents(amountCents),
           'method': method.value,
           'referenceNumber': referenceNumber,
-          'notes': notes,
+          'paymentAccountId': paymentAccountId,
+          'receiptFileId': receiptFileId,
+          'idempotencyKey': idempotencyKey,
         },
-        parserFn: (json) =>
-            WalletTransactionDto.fromJson(json['requestTopUp'] as Map<String, dynamic>),
+        parserFn: (json) => PortalWalletMapping.submittedTopUp(json['submitTopUp'] as Map<String, dynamic>),
       ),
     );
   }
+
+  @override
+  Future<Either<Failure, TopUpOptionsDto>> getTopUpOptions() {
+    return _graphQLService.query<TopUpOptionsDto>(
+      QueryOptions<TopUpOptionsDto>(
+        document: _topUpOptionsDocument,
+        parserFn: (json) => TopUpOptionsDto.fromJson(json['portalTopUpOptions'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, StatementFileDto>> exportStatement({
+    required DateTime from,
+    required DateTime to,
+    required StatementFormat format,
+  }) {
+    return _graphQLService.query<StatementFileDto>(
+      QueryOptions<StatementFileDto>(
+        document: _statementPdfDocument,
+        variables: {'dateFrom': _day(from), 'dateTo': _day(to), 'language': _language.code},
+        parserFn: (json) => StatementFileDto.fromJson(json['accountStatementPdf'] as Map<String, dynamic>),
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) async =>
+      const Left(ServerFailure('A top-up request cannot be withdrawn.', code: unsupportedCode));
 }

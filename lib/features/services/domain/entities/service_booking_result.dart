@@ -2,20 +2,26 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/constants/enums.dart';
 
-/// The backend's acknowledgement of a submitted booking.
+/// The server's answer to `submitRequest`.
 class ServiceBookingResult extends Equatable {
   const ServiceBookingResult({
     required this.requestId,
     required this.status,
-    required this.totalPriceCents,
-    required this.createdAt,
+    this.referenceCode,
   });
 
   final String requestId;
   final RequestStatus status;
-  final int totalPriceCents;
-  final DateTime createdAt;
+
+  /// The confirmation shown to the person (like `SB-20481`). It can lag the
+  /// submit by a moment: null/empty until a re-read has it.
+  final String? referenceCode;
+
+  bool get hasReference => referenceCode != null && referenceCode!.isNotEmpty;
+
+  ServiceBookingResult withReference(String reference) =>
+      ServiceBookingResult(requestId: requestId, status: status, referenceCode: reference);
 
   @override
-  List<Object?> get props => [requestId, status, totalPriceCents, createdAt];
+  List<Object?> get props => [requestId, status, referenceCode];
 }

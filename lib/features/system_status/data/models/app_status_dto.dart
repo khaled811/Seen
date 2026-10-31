@@ -1,7 +1,6 @@
 import '../../domain/entities/app_status.dart';
 
-/// TODO(backend-contract): placeholder shape, see docs/BACKEND_MIGRATION_GAPS.md
-/// section 32.
+/// NOTE: the contract has no app-status operation (DECISIONS P-06); this shape is only used by the unavailable state.
 class AppStatusDto {
   const AppStatusDto({
     required this.maintenance,

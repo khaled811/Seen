@@ -2,20 +2,34 @@ import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/network/graphql_service.dart';
+import '../../domain/entities/agency_profile.dart';
+import '../../domain/entities/service_margin.dart';
 import '../../domain/entities/team_member.dart';
+import '../../../../core/utils/money.dart';
 import '../models/profile_dtos.dart';
 
-/// Raw GraphQL access for agency details, margins and the team.
+/// Raw GraphQL access for agency details, margins and the team
+/// (`docs/api/mobile-api-reference.md`: `portalAccount`, `agentStaff`,
+/// `createStaffUser`, `updateUserRole`).
 ///
-/// TODO(backend-contract): placeholder schema; see docs/BACKEND_MIGRATION_GAPS.md
-/// section 33.
+/// What the contract does not offer is answered with `unsupported_operation`
+/// and never sent: disabling a user, resending or cancelling an invitation (there
+/// are no invitations: the owner creates the user with a password).
+///
+/// Margins are per sub-agency and service (`setAgentServiceEnablement`): a fixed
+/// price or a percentage, never both. The app shows a fixed one as the amount added
+/// to the agency's own price (`ServiceType.myPrice`).
 abstract interface class ProfileRemoteDataSource {
-  Future<Either<Failure, AgencyProfileDto>> getAgencyProfile();
+  Future<Either<Failure, AgencyProfile>> getAgencyProfile();
 
-  Future<Either<Failure, MarginsOverviewDto>> getMargins();
+  Future<Either<Failure, MarginsOverview>> getMargins(String agentId);
 
-  Future<Either<Failure, MarginsOverviewDto>> saveMargins(Map<String, int> changes);
+  /// One `setAgentServiceEnablement` per changed service, in order, stopping at the
+  /// first refusal (a request may carry at most 3 mutations). Returns the margins as
+  /// the server has them afterwards.
+  Future<Either<Failure, MarginsOverview>> saveMargins(String agentId, Map<String, int> changes);
 
   Future<Either<Failure, List<TeamMember>>> getTeam();
 
@@ -23,108 +37,106 @@ abstract interface class ProfileRemoteDataSource {
 
   Future<Either<Failure, TeamMember>> changeMemberRole(String id, TeamRole role);
 
-  Future<Either<Failure, TeamMember>> setMemberActive(String id, {required bool active});
-
-  Future<Either<Failure, bool>> resendInvite(String id);
-
-  Future<Either<Failure, bool>> cancelInvite(String id);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
-  ProfileRemoteDataSourceImpl({required GraphQLService graphQLService}) : _g = graphQLService;
+  ProfileRemoteDataSourceImpl({required GraphQLService graphQLService, required AppLanguage language})
+      : _g = graphQLService,
+        _language = language;
 
   final GraphQLService _g;
-
-  static const _marginsFields = r'''
-    margins { serviceId serviceName kind value editable iconKey }
-    history { serviceName kind from to at by }
-  ''';
-  static const _memberFields = 'id name role status branchName';
+  final AppLanguage _language;
 
   static final _profileDoc = gql(r'''
     query AgencyProfile {
-      agencyProfile {
-        name licenseNumber city managerName verification verifiedAt
-        documents { id kind expiresAt viewUrl }
+      portalAccount {
+        agency { name status isVerified city licenseNumber }
+        user { fullName position }
       }
     }
   ''');
 
-  static final _marginsDoc = gql('''
-    query ServiceMargins {
-      serviceMargins { $_marginsFields }
+  static final _marginsDoc = gql(r'''
+    query AgentMargins($agentId: ID!) {
+      availableServices { id nameAr nameEn code myPrice priceForAgent(agentId: $agentId) }
+      agentTree(rootAgentId: $agentId) { id serviceEnablements { enabled overridePrice markupPercent serviceType { id } } }
     }
   ''');
 
-  static final _saveMarginsDoc = gql('''
-    mutation SaveServiceMargins(\$changes: [MarginChangeInput!]!) {
-      saveServiceMargins(changes: \$changes) { $_marginsFields }
+  static final _setMarginDoc = gql(r'''
+    mutation SetAgentMargin($agentId: ID!, $serviceTypeId: ID!, $enabled: Boolean!, $overridePrice: Decimal, $markupPercent: Decimal) {
+      setAgentServiceEnablement(agentId: $agentId, serviceTypeId: $serviceTypeId, enabled: $enabled, overridePrice: $overridePrice, markupPercent: $markupPercent)
     }
   ''');
 
-  static final _teamDoc = gql('''
+  static final _teamDoc = gql(r'''
     query TeamMembers {
-      teamMembers { $_memberFields }
+      agentStaff { id fullName agentPosition isActive }
     }
   ''');
 
-  static final _inviteDoc = gql('''
-    mutation InviteMember(\$name: String!, \$phone: String!, \$role: String!, \$branchName: String!, \$branchId: ID) {
-      inviteMember(name: \$name, phone: \$phone, role: \$role, branchName: \$branchName, branchId: \$branchId) { $_memberFields }
+  static final _createStaffDoc = gql(r'''
+    mutation CreateStaffUser($input: StaffUserInput!) {
+      createStaffUser(input: $input) { id fullName agentPosition isActive }
     }
   ''');
 
-  static final _roleDoc = gql('''
-    mutation ChangeMemberRole(\$id: ID!, \$role: String!) {
-      changeMemberRole(id: \$id, role: \$role) { $_memberFields }
+  static final _roleDoc = gql(r'''
+    mutation UpdateUserRole($userId: ID!, $position: String!) {
+      updateUserRole(userId: $userId, position: $position) { id fullName agentPosition isActive }
     }
-  ''');
-
-  static final _activeDoc = gql('''
-    mutation SetMemberActive(\$id: ID!, \$active: Boolean!) {
-      setMemberActive(id: \$id, active: \$active) { $_memberFields }
-    }
-  ''');
-
-  static final _resendDoc = gql(r'''
-    mutation ResendInvite($id: ID!) { resendInvite(id: $id) { success } }
-  ''');
-
-  static final _cancelDoc = gql(r'''
-    mutation CancelInvite($id: ID!) { cancelInvite(id: $id) { success } }
   ''');
 
   @override
-  Future<Either<Failure, AgencyProfileDto>> getAgencyProfile() => _g.query<AgencyProfileDto>(
-        QueryOptions<AgencyProfileDto>(
+  Future<Either<Failure, AgencyProfile>> getAgencyProfile() => _g.query<AgencyProfile>(
+        QueryOptions<AgencyProfile>(
           document: _profileDoc,
           fetchPolicy: FetchPolicy.networkOnly,
-          parserFn: (j) => AgencyProfileDto.fromJson(j['agencyProfile'] as Map<String, dynamic>),
+          parserFn: (j) => agencyProfileFromPortal(j['portalAccount'] as Map<String, dynamic>),
         ),
       );
 
   @override
-  Future<Either<Failure, MarginsOverviewDto>> getMargins() => _g.query<MarginsOverviewDto>(
-        QueryOptions<MarginsOverviewDto>(
+  Future<Either<Failure, MarginsOverview>> getMargins(String agentId) => _g.query<MarginsOverview>(
+        QueryOptions<MarginsOverview>(
           document: _marginsDoc,
+          variables: {'agentId': agentId},
           fetchPolicy: FetchPolicy.networkOnly,
-          parserFn: (j) => MarginsOverviewDto.fromJson(j['serviceMargins'] as Map<String, dynamic>),
+          parserFn: (j) => marginsFromJson(j, agentId, _language),
         ),
       );
 
   @override
-  Future<Either<Failure, MarginsOverviewDto>> saveMargins(Map<String, int> changes) =>
-      _g.mutate<MarginsOverviewDto>(
-        MutationOptions<MarginsOverviewDto>(
-          document: _saveMarginsDoc,
+  Future<Either<Failure, MarginsOverview>> saveMargins(String agentId, Map<String, int> changes) async {
+    final current = await getMargins(agentId);
+    if (current case Left(:final value)) return Left(value);
+    final byId = {for (final m in (current as Right<Failure, MarginsOverview>).value.margins) m.serviceId: m};
+    for (final change in changes.entries) {
+      final margin = byId[change.key];
+      // Only a service already enabled for that agency is changed here: a margin edit never switches one on.
+      if (margin == null || !margin.editable) return const Left(ServerFailure('Service not enabled.', code: 'margin_invalid'));
+      final percent = margin.kind == MarginKind.percent;
+      final base = margin.basePriceCents;
+      if (!percent && base == null) return const Left(ServerFailure('No base price.', code: 'margin_invalid'));
+      final done = await _g.mutate<bool>(
+        MutationOptions<bool>(
+          document: _setMarginDoc,
           variables: {
-            'changes': [
-              for (final e in changes.entries) {'serviceId': e.key, 'value': e.value},
-            ],
+            'agentId': agentId,
+            'serviceTypeId': change.key,
+            'enabled': true,
+            'overridePrice': percent ? null : MoneyParser.decimalStringFromCents(base! + change.value),
+            'markupPercent': percent ? MoneyParser.decimalStringFromCents(change.value) : null,
           },
-          parserFn: (j) => MarginsOverviewDto.fromJson(j['saveServiceMargins'] as Map<String, dynamic>),
+          fetchPolicy: FetchPolicy.noCache,
+          parserFn: (j) => j['setAgentServiceEnablement'] == true,
         ),
       );
+      if (done case Left(:final value)) return Left(value);
+      if (done case Right(value: false)) return const Left(ServerFailure('Margin not saved.', code: 'margin_invalid'));
+    }
+    return getMargins(agentId);
+  }
 
   @override
   Future<Either<Failure, List<TeamMember>>> getTeam() => _g.query<List<TeamMember>>(
@@ -132,7 +144,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           document: _teamDoc,
           fetchPolicy: FetchPolicy.networkOnly,
           parserFn: (j) => [
-            for (final m in (j['teamMembers'] as List<dynamic>).cast<Map<String, dynamic>>()) teamMemberFromJson(m),
+            for (final m in (j['agentStaff'] as List<dynamic>).cast<Map<String, dynamic>>()) teamMemberFromUser(m),
           ],
         ),
       );
@@ -140,9 +152,17 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<Either<Failure, TeamMember>> inviteMember(InviteDraft d) => _g.mutate<TeamMember>(
         MutationOptions<TeamMember>(
-          document: _inviteDoc,
-          variables: {'name': d.name, 'phone': d.phone, 'role': roleWire(d.role), 'branchName': d.branchName, 'branchId': d.branchId},
-          parserFn: (j) => teamMemberFromJson(j['inviteMember'] as Map<String, dynamic>),
+          document: _createStaffDoc,
+          variables: {
+            'input': {
+              'email': d.email,
+              'fullName': d.name,
+              'password': d.password,
+              'position': positionOf(d.role),
+              if (d.branchId != null) 'branchId': d.branchId,
+            },
+          },
+          parserFn: (j) => teamMemberFromUser(j['createStaffUser'] as Map<String, dynamic>, branchName: d.branchName),
         ),
       );
 
@@ -150,36 +170,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<Either<Failure, TeamMember>> changeMemberRole(String id, TeamRole role) => _g.mutate<TeamMember>(
         MutationOptions<TeamMember>(
           document: _roleDoc,
-          variables: {'id': id, 'role': roleWire(role)},
-          parserFn: (j) => teamMemberFromJson(j['changeMemberRole'] as Map<String, dynamic>),
+          variables: {'userId': id, 'position': positionOf(role)},
+          parserFn: (j) => teamMemberFromUser(j['updateUserRole'] as Map<String, dynamic>),
         ),
       );
 
-  @override
-  Future<Either<Failure, TeamMember>> setMemberActive(String id, {required bool active}) =>
-      _g.mutate<TeamMember>(
-        MutationOptions<TeamMember>(
-          document: _activeDoc,
-          variables: {'id': id, 'active': active},
-          parserFn: (j) => teamMemberFromJson(j['setMemberActive'] as Map<String, dynamic>),
-        ),
-      );
-
-  @override
-  Future<Either<Failure, bool>> resendInvite(String id) => _g.mutate<bool>(
-        MutationOptions<bool>(
-          document: _resendDoc,
-          variables: {'id': id},
-          parserFn: (j) => (j['resendInvite'] as Map<String, dynamic>?)?['success'] as bool? ?? true,
-        ),
-      );
-
-  @override
-  Future<Either<Failure, bool>> cancelInvite(String id) => _g.mutate<bool>(
-        MutationOptions<bool>(
-          document: _cancelDoc,
-          variables: {'id': id},
-          parserFn: (j) => (j['cancelInvite'] as Map<String, dynamic>?)?['success'] as bool? ?? true,
-        ),
-      );
 }

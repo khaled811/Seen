@@ -72,7 +72,8 @@ class SeenSubAgentCard extends StatelessWidget {
   final String caption;
 
   /// Major units.
-  final num balance;
+  /// Null shows a dash (the server gave no balance).
+  final num? balance;
   final bool suspended;
   final String statusLabel;
   final VoidCallback? onTap;
@@ -85,7 +86,7 @@ class SeenSubAgentCard extends StatelessWidget {
     final initial = name.trim().isEmpty
         ? ''
         : String.fromCharCodes(name.trim().runes.take(1));
-    final balanceText = SeenFormat.usd(balance);
+    final balanceText = balance == null ? '—' : SeenFormat.usd(balance!);
     return Semantics(
       button: onTap != null,
       container: true,

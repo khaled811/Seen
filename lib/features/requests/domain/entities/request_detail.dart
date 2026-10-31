@@ -16,6 +16,56 @@ const _cancellableStatuses = {
   RequestStatus.processing,
 };
 
+/// What the person may do with a request right now, as the server says
+/// (`PortalRequestActions`). The UI shows controls from these flags; the server
+/// checks every action again.
+class RequestActions extends Equatable {
+  const RequestActions({
+    this.canCancel = false,
+    this.cancelReleasesFunds = false,
+    this.canAddDocuments = false,
+    this.canViewDocuments = false,
+    this.canDownloadResult = false,
+    this.canDecideApproval = false,
+    this.canContactSupport = false,
+  });
+
+  final bool canCancel;
+
+  /// Cancelling returns the money held for the request.
+  final bool cancelReleasesFunds;
+  final bool canAddDocuments;
+  final bool canViewDocuments;
+  final bool canDownloadResult;
+  final bool canDecideApproval;
+  final bool canContactSupport;
+
+  @override
+  List<Object?> get props => [
+        canCancel,
+        cancelReleasesFunds,
+        canAddDocuments,
+        canViewDocuments,
+        canDownloadResult,
+        canDecideApproval,
+        canContactSupport,
+      ];
+}
+
+/// A delivered file (the visa, the approval). It is downloaded through a signed
+/// link that lives about 90 seconds and is never stored.
+class RequestOutput extends Equatable {
+  const RequestOutput({required this.fileId, required this.fileName, this.contentType = '', this.sizeBytes = 0});
+
+  final String fileId;
+  final String fileName;
+  final String contentType;
+  final int sizeBytes;
+
+  @override
+  List<Object?> get props => [fileId, fileName, contentType, sizeBytes];
+}
+
 /// Who has to approve a request that is waiting on an approval step
 /// (Figma REQ-06 / 07).
 enum ApproverKind { masterAgent, management }
@@ -68,6 +118,9 @@ class RequestDetail extends Equatable {
     this.rejectionReason,
     this.cancellation,
     this.refundedCents,
+    this.actions,
+    this.outputs = const [],
+    this.infoRequestMessage,
   });
 
   final String id;
@@ -99,7 +152,39 @@ class RequestDetail extends Equatable {
   /// The held amount returned to the wallet (rejected / cancelled requests).
   final int? refundedCents;
 
-  bool get isCancellable => _cancellableStatuses.contains(status);
+  /// What the server allows now. Null only for hand-built details (tests,
+  /// debug data); the real API always sends it.
+  final RequestActions? actions;
+
+  /// The delivered files (see [RequestOutput]).
+  final List<RequestOutput> outputs;
+
+  /// What Seen asks for while the request is waiting for information.
+  final String? infoRequestMessage;
+
+  /// The server's `canCancel`; the status table is only the fallback for a
+  /// detail that carries no actions.
+  bool get isCancellable => actions?.canCancel ?? _cancellableStatuses.contains(status);
+
+  RequestDetail copyWith({RequestStatus? status, RequestActions? actions}) => RequestDetail(
+        id: id,
+        referenceId: referenceId,
+        serviceName: serviceName,
+        status: status ?? this.status,
+        totalPriceCents: totalPriceCents,
+        submittedAt: submittedAt,
+        travelers: travelers,
+        timeline: timeline,
+        slaDeadline: slaDeadline,
+        outputDocumentUrl: outputDocumentUrl,
+        approval: approval,
+        rejectionReason: rejectionReason,
+        cancellation: cancellation,
+        refundedCents: refundedCents,
+        actions: actions ?? this.actions,
+        outputs: outputs,
+        infoRequestMessage: infoRequestMessage,
+      );
 
   bool get hasOutput => status == RequestStatus.completed;
 
@@ -122,5 +207,8 @@ class RequestDetail extends Equatable {
         rejectionReason,
         cancellation,
         refundedCents,
+        actions,
+        outputs,
+        infoRequestMessage,
       ];
 }

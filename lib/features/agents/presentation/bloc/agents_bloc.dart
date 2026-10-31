@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/utils/idempotency_key.dart';
 import '../../../wallet/domain/usecases/get_wallet_balance_usecase.dart';
 import '../../domain/entities/sub_agent.dart';
 import '../../domain/entities/sub_agent_request_summary.dart';
@@ -23,7 +24,9 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
     required RejectSubAgentRequestUseCase rejectSubAgentRequestUseCase,
     required FundSubAgentWalletUseCase fundSubAgentWalletUseCase,
     required GetWalletBalanceUseCase getWalletBalanceUseCase,
-  })  : _getSubAgentsUseCase = getSubAgentsUseCase,
+    IdempotencyKeyRegistry? idempotencyKeys,
+  })  : _idempotencyKeys = idempotencyKeys ?? IdempotencyKeyRegistry(),
+        _getSubAgentsUseCase = getSubAgentsUseCase,
         _getPendingApprovalRequestsUseCase = getPendingApprovalRequestsUseCase,
         _approveSubAgentRequestUseCase = approveSubAgentRequestUseCase,
         _rejectSubAgentRequestUseCase = rejectSubAgentRequestUseCase,
@@ -48,6 +51,10 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
   final FundSubAgentWalletUseCase _fundSubAgentWalletUseCase;
   final GetWalletBalanceUseCase _getWalletBalanceUseCase;
 
+  /// One key per funding action: the same one while that action is retried, a new
+  /// one for any other amount, agency or note.
+  final IdempotencyKeyRegistry _idempotencyKeys;
+
   Future<void> _onLoadRequested(
     AgentsLoadRequested event,
     Emitter<AgentsState> emit,
@@ -56,12 +63,12 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
 
     final subAgentsResult = await _getSubAgentsUseCase();
     if (subAgentsResult case Left(:final value)) {
-      emit(AgentsFailure(value.message));
+      emit(AgentsFailure(value.message, failure: value));
       return;
     }
     final pendingResult = await _getPendingApprovalRequestsUseCase();
     if (pendingResult case Left(:final value)) {
-      emit(AgentsFailure(value.message));
+      emit(AgentsFailure(value.message, failure: value));
       return;
     }
 
@@ -115,6 +122,7 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
         (failure) => latest.copyWith(
           approvalActionStatus: ApprovalActionStatus.failure,
           approvalActionError: failure.message,
+          approvalActionFailure: failure,
         ),
         (_) => latest.copyWith(
           pendingRequests: latest.pendingRequests
@@ -153,6 +161,7 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
         (failure) => latest.copyWith(
           approvalActionStatus: ApprovalActionStatus.failure,
           approvalActionError: failure.message,
+          approvalActionFailure: failure,
         ),
         (_) => latest.copyWith(
           pendingRequests: latest.pendingRequests
@@ -194,41 +203,41 @@ class AgentsBloc extends Bloc<AgentsEvent, AgentsState> {
       ),
     );
 
+    final key = _idempotencyKeys.keyFor('${event.subAgentId}|${event.amountCents}|${event.note ?? ''}');
     final result = await _fundSubAgentWalletUseCase(
       subAgentId: event.subAgentId,
       amountCents: event.amountCents,
+      idempotencyKey: key,
       note: event.note,
     );
     final latest = state;
     if (latest is! AgentsLoaded) return;
 
     if (result case Left(:final value)) {
+      // After a dropped connection the money may or may not have moved: the next
+      // try keeps the key so the server answers instead of moving it twice.
+      if (value is! NetworkFailure) _idempotencyKeys.settled();
       emit(
         latest.copyWith(
           fundingStatus: FundingStatus.failure,
           fundingError: value.message,
+          fundingFailure: value,
           fundingReference: value.reference,
         ),
       );
       return;
     }
-    final updatedSubAgent = (result as Right<Failure, SubAgent>).value;
+    _idempotencyKeys.settled();
 
-    // Success: the master agent's wallet balance decreased server-side —
-    // refetch it rather than fabricate the new figure client-side (same
-    // rule as Wallet's top-up flow).
+    // Success: both balances changed server-side. Read them again rather than
+    // fabricate the new figures client-side (same rule as Wallet's top-up flow).
     final balanceResult = await _getWalletBalanceUseCase();
+    final agentsResult = await _getSubAgentsUseCase();
     final afterFund = state;
     if (afterFund is! AgentsLoaded) return;
     emit(
       afterFund.copyWith(
-        subAgents: [
-          for (final subAgent in afterFund.subAgents)
-            if (subAgent.id == updatedSubAgent.id)
-              updatedSubAgent
-            else
-              subAgent,
-        ],
+        subAgents: agentsResult.getOrElse((_) => afterFund.subAgents),
         masterWalletBalance: balanceResult.match(
           (_) => afterFund.masterWalletBalance,
           (balance) => balance,

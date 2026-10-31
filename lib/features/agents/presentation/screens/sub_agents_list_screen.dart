@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
+
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
 import '../../../../core/presentation/widgets/extended_fab.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/search_field.dart';
 import '../../../../core/presentation/widgets/segmented_control.dart';
@@ -18,6 +18,9 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../domain/entities/sub_agent.dart';
 import '../bloc/agents_bloc.dart';
 import '../bloc/agents_event.dart';
@@ -139,9 +142,12 @@ class _SubAgentsViewState extends State<SubAgentsView> {
                   builder: (context, state) => switch (state) {
                     AgentsInitial() ||
                     AgentsLoading() =>
-                      const Center(child: SeenLoader()),
-                    AgentsFailure(:final message) =>
-                      _ErrorView(message: message),
+                      SeenWaitPolicy.loading(
+                        loading: SeenCardsSkeleton(count: 3, label: SeenStrings.of(context).loadingLabel),
+                        onRetry: () => context.read<AgentsBloc>().add(const AgentsLoadRequested()),
+                      ),
+                    AgentsFailure(:final message, :final failure) =>
+                      _ErrorView(message: failureTextOr(AppLocalizations.of(context)!, failure, message)),
                     AgentsLoaded() => _LoadedView(state: state, query: _query),
                   },
                 ),
@@ -250,7 +256,7 @@ class _LoadedViewState extends State<_LoadedView> {
       );
     }
 
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: () async {
         final bloc = context.read<AgentsBloc>()
           ..add(const AgentsLoadRequested());
@@ -307,7 +313,7 @@ class _LoadedViewState extends State<_LoadedView> {
                 child: SeenSubAgentCard(
                   name: agent.name,
                   caption: agent.code,
-                  balance: agent.balanceCents / 100,
+                  balance: agent.balanceKnown ? agent.balanceCents / 100 : null,
                   suspended: !agent.isActive,
                   statusLabel: agent.invitePending
                       ? l10n.agentAddPending
@@ -365,7 +371,7 @@ class _ApprovalsButton extends StatelessWidget {
                     height: 44,
                     child: Center(
                         child:
-                            Icon(SeenIcons.check, size: 22, color: c.primary)),
+                            SeenCheckGlyph(size: 22, color: c.primary)),
                   ),
                 ),
               ),

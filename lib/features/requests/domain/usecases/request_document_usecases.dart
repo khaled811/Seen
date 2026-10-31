@@ -13,6 +13,14 @@ class FetchDocumentFileUseCase {
   Future<Either<Failure, Uint8List>> call(String url) => _repository.fetch(url);
 }
 
+class FetchRequestFileUseCase {
+  const FetchRequestFileUseCase(this._repository);
+  final DocumentFileRepository _repository;
+
+  /// The bytes of a stored file (a request's output), by its file id.
+  Future<Either<Failure, Uint8List>> call(String fileId) => _repository.fetchFile(fileId);
+}
+
 class SaveDocumentUseCase {
   const SaveDocumentUseCase(this._exporter);
   final DocumentExporter _exporter;

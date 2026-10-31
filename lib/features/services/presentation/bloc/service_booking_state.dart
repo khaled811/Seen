@@ -1,18 +1,46 @@
-import '../../domain/entities/hospital.dart';
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
-import '../../../wallet/domain/entities/wallet_balance.dart';
+import '../../domain/entities/draft_review.dart';
+import '../../domain/entities/hospital.dart';
 import '../../domain/entities/service_booking_result.dart';
 import '../../domain/entities/service_definition.dart';
 import '../../domain/entities/traveler_info.dart';
-import '../../domain/pricing.dart';
 
 enum BookingSubmissionStatus { idle, submitting, success, failure }
 
-/// The most travelers one request takes; more go through the group manifest
-/// (Figma BOOK-02).
-const maxTravelersPerRequest = 9;
+/// Where the traveler data goes on Continue: the server holds it as a draft.
+enum BookingSyncStatus { idle, saving, failure }
+
+/// The most travelers one request takes (the server's `too_many_travelers` limit is 50:
+/// requests/limits.py). The server stays the authority; the form only avoids a call it
+/// knows will be refused.
+const maxTravelersPerRequest = 50;
+
+/// A field error that came from the server rather than from the app's own
+/// validator: `server:<code>`. The form shows it in the user's language.
+const bookingServerIssuePrefix = 'server:';
+
+/// A field error from the server, as the form keeps it: `server:<code>` and, when the server
+/// gave values for the text (a limit, a number of months), `|` and their JSON.
+String encodeServerIssue(String code, Map<String, Object?> params) =>
+    params.isEmpty ? '$bookingServerIssuePrefix$code' : '$bookingServerIssuePrefix$code|${jsonEncode(params)}';
+
+/// The code and values inside [encodeServerIssue]'s text.
+({String code, Map<String, Object?> params}) decodeServerIssue(String message) {
+  final body = message.substring(bookingServerIssuePrefix.length);
+  final bar = body.indexOf('|');
+  if (bar < 0) return (code: body, params: const {});
+  try {
+    final decoded = jsonDecode(body.substring(bar + 1));
+    return (code: body.substring(0, bar), params: decoded is Map<String, dynamic> ? decoded : const {});
+  } catch (_) {
+    return (code: body.substring(0, bar), params: const {});
+  }
+}
 
 sealed class ServiceBookingState extends Equatable {
   const ServiceBookingState();
@@ -30,12 +58,13 @@ final class ServiceCatalogLoading extends ServiceBookingState {
 }
 
 final class ServiceCatalogFailure extends ServiceBookingState {
-  const ServiceCatalogFailure(this.message);
+  const ServiceCatalogFailure(this.message, {this.failure});
 
   final String message;
+  final Failure? failure;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, failure];
 }
 
 final class ServiceCatalogLoaded extends ServiceBookingState {
@@ -47,116 +76,130 @@ final class ServiceCatalogLoaded extends ServiceBookingState {
   List<Object?> get props => [services];
 }
 
-/// The state of an in-progress booking session: from picking travelers,
-/// through review, to submission. One cohesive flow, not a grab-bag — kept
-/// as a single state (rather than one class per screen) because every
-/// field describes the same ongoing session.
+/// The state of an in-progress booking session: from entering travelers,
+/// through review, to submission. One cohesive flow, kept as a single state
+/// (rather than one class per screen) because every field describes the same
+/// ongoing session.
+///
+/// Traveler values live here in memory only; the server holds them once
+/// Continue filed the draft. Nothing is written to the device.
 final class ServiceBookingInProgress extends ServiceBookingState {
   const ServiceBookingInProgress({
     required this.service,
-    required this.travelerFields,
     required this.travelers,
     required this.activeTravelerIndex,
     this.travelerErrors = const {},
     this.reviewReady = false,
-    this.walletBalance,
-    this.walletBalanceLoading = false,
+    this.draftSaved = false,
+    this.syncStatus = BookingSyncStatus.idle,
+    this.syncFailure,
+    this.review,
+    this.reviewLoading = false,
+    this.reviewFailure,
     this.submissionStatus = BookingSubmissionStatus.idle,
-    this.submissionError,
+    this.submissionFailure,
     this.submissionResult,
-    this.draftId,
     this.hospital,
+    this.resumed = false,
   });
 
   final ServiceDefinition service;
 
   /// The hospital chosen for a medical service; null for the others.
   final HospitalChoice? hospital;
-  final List<DynamicFormField> travelerFields;
   final List<TravelerInfo> travelers;
   final int activeTravelerIndex;
 
   /// Traveler id -> field key -> error message. Populated only after a
-  /// validation pass (Continue/Submit), not on every keystroke.
+  /// validation pass (Continue), not on every keystroke. A message that starts
+  /// with [bookingServerIssuePrefix] came from the server.
   final Map<String, Map<String, String>> travelerErrors;
 
-  /// One-shot: true for exactly the emission after a clean validation pass;
-  /// the UI navigates then dispatches `ReviewReadyAcknowledged` to clear it.
+  /// One-shot: true for exactly the emission after the server accepted the
+  /// travelers and quoted them; the UI navigates, then acknowledges.
   final bool reviewReady;
 
-  final WalletBalance? walletBalance;
-  final bool walletBalanceLoading;
+  /// One-shot: the draft was filed on the server without going to the review.
+  final bool draftSaved;
+
+  final BookingSyncStatus syncStatus;
+  final Failure? syncFailure;
+
+  /// The server's quote of the draft (`portalDraftReview`); null until Continue
+  /// succeeded.
+  final DraftReview? review;
+  final bool reviewLoading;
+  final Failure? reviewFailure;
+
   final BookingSubmissionStatus submissionStatus;
-  final String? submissionError;
+  final Failure? submissionFailure;
   final ServiceBookingResult? submissionResult;
 
-  /// The saved draft this booking was resumed from (or last saved as), so a
-  /// later save overwrites it and a successful submit removes it.
-  final String? draftId;
+  /// Opened from the drafts list: the travelers are the server's (masked) and
+  /// cannot be edited here.
+  final bool resumed;
 
-  int get totalPriceCents => ServicePricing.totalPriceCents(
-        perPersonPriceCents: service.perPersonPriceCents,
-        travelerCount: travelers.length,
-      );
-
-  /// How much is missing to pay for the booking: the total minus the available
-  /// balance minus the credit still free (only counted when the server says how
-  /// much is in use). 0 while the balance is unknown. A UX aid only, never a
-  /// substitute for the backend's own enforcement (Figma BOOK-08).
-  int get shortfallCents {
-    final balance = walletBalance;
-    if (balance == null) return 0;
-    final missing = totalPriceCents - balance.availableCents - (balance.creditRemainingCents ?? 0);
-    return missing > 0 ? missing : 0;
-  }
-
-  /// `true` when the balance hasn't loaded yet or covers the booking.
-  bool get hasSufficientBalance => shortfallCents == 0;
+  /// The server-defined traveler form of the service.
+  List<DynamicFormField> get travelerFields => service.fields;
 
   TravelerInfo get activeTraveler => travelers[activeTravelerIndex];
+
+  bool get isSaving => syncStatus == BookingSyncStatus.saving;
 
   ServiceBookingInProgress copyWith({
     List<TravelerInfo>? travelers,
     int? activeTravelerIndex,
     Map<String, Map<String, String>>? travelerErrors,
     bool? reviewReady,
-    WalletBalance? walletBalance,
-    bool? walletBalanceLoading,
+    bool? draftSaved,
+    BookingSyncStatus? syncStatus,
+    Failure? syncFailure,
+    bool clearSyncFailure = false,
+    DraftReview? review,
+    bool? reviewLoading,
+    Failure? reviewFailure,
+    bool clearReviewFailure = false,
     BookingSubmissionStatus? submissionStatus,
-    String? submissionError,
-    bool clearSubmissionError = false,
+    Failure? submissionFailure,
+    bool clearSubmissionFailure = false,
     ServiceBookingResult? submissionResult,
-    String? draftId,
   }) =>
       ServiceBookingInProgress(
         service: service,
-        travelerFields: travelerFields,
         travelers: travelers ?? this.travelers,
         activeTravelerIndex: activeTravelerIndex ?? this.activeTravelerIndex,
         travelerErrors: travelerErrors ?? this.travelerErrors,
         reviewReady: reviewReady ?? this.reviewReady,
-        walletBalance: walletBalance ?? this.walletBalance,
-        walletBalanceLoading: walletBalanceLoading ?? this.walletBalanceLoading,
+        draftSaved: draftSaved ?? this.draftSaved,
+        syncStatus: syncStatus ?? this.syncStatus,
+        syncFailure: clearSyncFailure ? null : (syncFailure ?? this.syncFailure),
+        review: review ?? this.review,
+        reviewLoading: reviewLoading ?? this.reviewLoading,
+        reviewFailure: clearReviewFailure ? null : (reviewFailure ?? this.reviewFailure),
         submissionStatus: submissionStatus ?? this.submissionStatus,
-        submissionError: clearSubmissionError ? null : (submissionError ?? this.submissionError),
+        submissionFailure: clearSubmissionFailure ? null : (submissionFailure ?? this.submissionFailure),
         submissionResult: submissionResult ?? this.submissionResult,
-        draftId: draftId ?? this.draftId,
         hospital: hospital,
+        resumed: resumed,
       );
 
   @override
   List<Object?> get props => [
         service,
-        travelerFields,
         travelers,
         activeTravelerIndex,
         travelerErrors,
         reviewReady,
-        walletBalance,
-        walletBalanceLoading,
+        draftSaved,
+        syncStatus,
+        syncFailure,
+        review,
+        reviewLoading,
+        reviewFailure,
         submissionStatus,
-        submissionError,
+        submissionFailure,
         submissionResult,
-        draftId,
+        hospital,
+        resumed,
       ];
 }

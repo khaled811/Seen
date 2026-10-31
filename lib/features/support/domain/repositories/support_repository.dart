@@ -4,9 +4,14 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
 import '../entities/in_app_notification.dart';
 import '../entities/support_ticket.dart';
+import '../entities/ticket_message.dart';
 
 abstract interface class SupportRepository {
+  /// The agency's tickets (without their messages: see [getTicket]).
   Future<Either<Failure, List<SupportTicket>>> getTickets();
+
+  /// One ticket with its thread.
+  Future<Either<Failure, SupportTicket>> getTicket(String ticketId);
 
   Future<Either<Failure, SupportTicket>> createTicket({
     required TicketCategory category,
@@ -14,21 +19,26 @@ abstract interface class SupportRepository {
     required String message,
     String? requestId,
     TicketPriority priority = TicketPriority.normal,
+    String? attachmentFileId,
+    String? categoryCode,
   });
 
-  /// Appends [message] to [ticketId]'s thread. Not named in Task 10's own
-  /// use-case list, but required for the detail screen's "chat-style
-  /// messages/replies" to actually be usable — a read-only chat isn't one.
-  Future<Either<Failure, SupportTicket>> replyToTicket({
+  /// Appends [message] to [ticketId]'s thread and returns the message the server
+  /// stored. Not idempotent: the caller never resends it on its own.
+  Future<Either<Failure, TicketMessage>> replyToTicket({
     required String ticketId,
     required String message,
+    String? attachmentFileId,
   });
 
-  Future<Either<Failure, List<InAppNotification>>> getNotifications();
+  Future<Either<Failure, NotificationsPage>> getNotifications({bool unreadOnly = false, int limit = 20, int offset = 0});
 
-  Future<Either<Failure, void>> markNotificationRead(String notificationId);
+  /// The unread total of the whole inbox.
+  Future<Either<Failure, int>> getUnreadNotificationCount();
 
-  /// Not named in Task 10's own use-case list, but required to fulfil its
-  /// business rule #2 ("Mark all as read").
-  Future<Either<Failure, void>> markAllNotificationsRead();
+  /// False when the server did not mark it (not found / not the caller's).
+  Future<Either<Failure, bool>> markNotificationRead(String notificationId);
+
+  /// How many were marked.
+  Future<Either<Failure, int>> markAllNotificationsRead();
 }

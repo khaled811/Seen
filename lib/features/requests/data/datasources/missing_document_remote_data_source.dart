@@ -1,69 +1,81 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:http/http.dart' show MultipartFile;
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/localization/app_language.dart';
+import '../../../../core/network/file_upload_client.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../domain/entities/missing_document.dart';
 import '../models/missing_document_dto.dart';
 
-/// Raw GraphQL access for "upload the missing document".
-///
-/// TODO(backend-contract): `missingDocumentRequest` and `uploadMissingDocument`
-/// (multipart GraphQL upload) are placeholders until the real schema exists
-/// (docs/BACKEND_MIGRATION_GAPS.md, section 10). A multipart GraphQL call cannot
-/// report byte progress; a pre-signed URL upload can.
+/// Reads what an "info required" request asks for and sends the document
+/// (`POST /files/upload/`, `kind=document`, contract 8.1).
 abstract interface class MissingDocumentRemoteDataSource {
-  Future<Either<Failure, MissingDocumentDto>> getMissingDocument(String requestId);
+  Future<Either<Failure, MissingDocumentRequest>> getMissingDocument(String requestId);
 
   Future<Either<Failure, void>> upload({
-    required String requestId,
+    required UploadTarget target,
     required PickedDocument document,
     void Function(double fraction)? onProgress,
   });
 }
 
 class MissingDocumentRemoteDataSourceImpl implements MissingDocumentRemoteDataSource {
-  MissingDocumentRemoteDataSourceImpl({required GraphQLService graphQLService}) : _graphQLService = graphQLService;
+  MissingDocumentRemoteDataSourceImpl({
+    required GraphQLService graphQLService,
+    required FileUploadClient uploads,
+    required AppLanguage language,
+  })  : _graphQLService = graphQLService,
+        _uploads = uploads,
+        _language = language;
 
   final GraphQLService _graphQLService;
+  final FileUploadClient _uploads;
+  final AppLanguage _language;
 
   static final _queryDocument = gql(r'''
     query MissingDocumentRequest($requestId: ID!) {
-      missingDocumentRequest(requestId: $requestId) {
-        requestId referenceId documentTitle travelerName reason deadline maxBytes allowedExtensions
+      portalRequestTracking(id: $requestId) {
+        request { id referenceCode }
+        infoRequest { message deadlineAt remainingSeconds }
+        travelers { id index name nameMasked }
+      }
+      request(id: $requestId) {
+        serviceType { documents { id labelAr labelEn required } }
+        travelers { id documents { documentRequirement { id } } }
       }
     }
   ''');
 
-  static final _uploadDocument = gql(r'''
-    mutation UploadMissingDocument($requestId: ID!, $file: Upload!) {
-      uploadMissingDocument(requestId: $requestId, file: $file) { success }
-    }
-  ''');
-
   @override
-  Future<Either<Failure, MissingDocumentDto>> getMissingDocument(String requestId) =>
-      _graphQLService.query<MissingDocumentDto>(QueryOptions<MissingDocumentDto>(
-        document: _queryDocument,
-        variables: {'requestId': requestId},
-        fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (json) => MissingDocumentDto.fromJson(json['missingDocumentRequest'] as Map<String, dynamic>),
-      ));
+  Future<Either<Failure, MissingDocumentRequest>> getMissingDocument(String requestId) async {
+    final result = await _graphQLService.query<MissingDocumentRequest?>(QueryOptions<MissingDocumentRequest?>(
+      document: _queryDocument,
+      variables: {'requestId': requestId},
+      fetchPolicy: FetchPolicy.networkOnly,
+      parserFn: (json) => MissingDocumentDto.parse(json, _language),
+    ));
+    return result.flatMap(
+      (request) => request == null
+          // Not asking for anything (no info request, not found, or no document to attach).
+          ? const Left(ServerFailure('No information is requested for this request.', code: 'not_info_required'))
+          : Right(request),
+    );
+  }
 
   @override
   Future<Either<Failure, void>> upload({
-    required String requestId,
+    required UploadTarget target,
     required PickedDocument document,
     void Function(double fraction)? onProgress,
   }) async {
-    final file = await MultipartFile.fromPath('file', document.path, filename: document.fileName);
-    final result = await _graphQLService.mutate<bool>(MutationOptions<bool>(
-      document: _uploadDocument,
-      variables: {'requestId': requestId, 'file': file},
-      parserFn: (json) => (json['uploadMissingDocument'] as Map<String, dynamic>)['success'] as bool? ?? false,
-    ));
-    onProgress?.call(1);
-    return result.flatMap((ok) => ok ? const Right(null) : const Left(ServerFailure('Document was not accepted.')));
+    final result = await _uploads.upload(
+      kind: 'document',
+      path: document.path,
+      fileName: document.fileName,
+      fields: {'travelerId': target.travelerId, 'documentRequirementId': target.requirementId},
+      onProgress: onProgress,
+    );
+    return result.map((_) {});
   }
 }

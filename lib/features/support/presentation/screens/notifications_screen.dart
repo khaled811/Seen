@@ -15,7 +15,6 @@ import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
-import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/navigation/shell_tab_request.dart';
 import '../../../requests/presentation/bloc/requests_event.dart';
@@ -25,8 +24,12 @@ import '../bloc/notifications_bloc.dart';
 import '../bloc/notifications_event.dart';
 import '../bloc/notifications_state.dart';
 import '../widgets/notification_kind_mapping.dart';
+import '../widgets/notification_text.dart';
+import '../../../../core/presentation/failure_message.dart';
+import '../../../../core/presentation/widgets/loading/seen_windows.dart';
 import 'support_tickets_screen.dart';
 import 'ticket_detail_screen.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// Notifications center (Figma 17): chronological groups (today / yesterday /
 /// earlier), unread markers, mark-all-read and deep links into a request.
@@ -77,10 +80,12 @@ class NotificationsView extends StatelessWidget {
                 child: BlocBuilder<NotificationsBloc, NotificationsState>(
                   builder: (context, state) => switch (state) {
                     NotificationsInitial() || NotificationsLoading() => SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel),
-                    NotificationsFailure(:final message) => _ErrorView(message: message),
+                    NotificationsFailure(:final message, :final failure) =>
+                      _ErrorView(message: failureTextOr(AppLocalizations.of(context)!, failure, message)),
                     NotificationsLoaded() => Column(
                         children: [
                           _FilterChips(unreadOnly: state.unreadOnly),
+                          if (state.filterLoading) const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Center(child: SeenWindows(size: 6))),
                           Expanded(child: _LoadedView(state: state)),
                         ],
                       ),
@@ -173,9 +178,9 @@ class _LoadedView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    final now = DateTime.now();
+    final now = AppClock.now();
     final notifications = state.visible;
-    if (notifications.isEmpty && state.unreadOnly && state.notifications.isNotEmpty) {
+    if (notifications.isEmpty && state.unreadOnly) {
       // Everything is read: say so (Figma NOTIF-01) instead of an empty feed.
       return const _AllReadState();
     }
@@ -186,35 +191,87 @@ class _LoadedView extends StatelessWidget {
         message: l10n.notificationsEmptyMessage,
       );
     }
-    final groups = {for (final g in NotificationGroup.values) g: <InAppNotification>[]};
-    for (final n in notifications) {
-      groups[notificationGroupOf(n.createdAt, now)]!.add(n);
-    }
     String groupTitle(NotificationGroup g) => switch (g) {
           NotificationGroup.today => l10n.notificationsGroupToday,
           NotificationGroup.yesterday => l10n.notificationsGroupYesterday,
           NotificationGroup.earlier => l10n.notificationsGroupEarlier,
         };
 
-    // Figma 17: group labels and cards share one column with 10 px between them.
-    return ListView(
+    // Group headers and cards in one flat, lazily built column (Figma 17: 10 px
+    // between them). A trailing row asks for the next page, or offers a retry.
+    final rows = <Object>[];
+    NotificationGroup? lastGroup;
+    for (final n in notifications) {
+      final group = notificationGroupOf(n.createdAt, now);
+      if (group != lastGroup) {
+        rows.add(group);
+        lastGroup = group;
+      }
+      rows.add(n);
+    }
+    if (state.hasMore) rows.add(state.loadMoreFailed ? _RetryRow.instance : _LoadMoreRow.instance);
+
+    return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-      children: [
-        for (final g in NotificationGroup.values)
-          if (groups[g]!.isNotEmpty) ...[
-            Padding(
-              padding: EdgeInsets.only(top: g == NotificationGroup.today ? 0 : 10, bottom: 10),
-              child: Text(groupTitle(g), style: t.label.copyWith(color: c.inkMuted)),
+      itemCount: rows.length,
+      itemBuilder: (context, index) {
+        final row = rows[index];
+        if (row is NotificationGroup) {
+          return Padding(
+            padding: EdgeInsets.only(top: index == 0 ? 0 : 10, bottom: 10),
+            child: Text(groupTitle(row), style: t.label.copyWith(color: c.inkMuted)),
+          );
+        }
+        if (row is InAppNotification) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _NotificationCard(notification: row, now: now, onTap: () => _openNotification(context, row)),
+          );
+        }
+        if (row is _RetryRow) {
+          return Center(
+            child: SeenTextLink(
+              label: l10n.retry,
+              onTap: () => context.read<NotificationsBloc>().add(const NotificationsLoadMoreRequested()),
             ),
-            for (final n in groups[g]!)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _NotificationCard(notification: n, now: now, onTap: () => _openNotification(context, n)),
-              ),
-          ],
-      ],
+          );
+        }
+        return const _LoadMoreTrigger();
+      },
     );
   }
+}
+
+class _RetryRow {
+  const _RetryRow._();
+  static const instance = _RetryRow._();
+}
+
+class _LoadMoreRow {
+  const _LoadMoreRow._();
+  static const instance = _LoadMoreRow._();
+}
+
+/// Asks for the next page once it is built (the end of the lazy list).
+class _LoadMoreTrigger extends StatefulWidget {
+  const _LoadMoreTrigger();
+
+  @override
+  State<_LoadMoreTrigger> createState() => _LoadMoreTriggerState();
+}
+
+class _LoadMoreTriggerState extends State<_LoadMoreTrigger> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<NotificationsBloc>().add(const NotificationsLoadMoreRequested());
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: SeenWindows(size: 8)));
 }
 
 /// Figma "Notification": an 18 px card with a 40 px tinted icon tile, the title,
@@ -236,16 +293,17 @@ class _NotificationCard extends StatelessWidget {
     final visual = notification.type.visual;
     final target = notificationTarget(notification);
     final hint = notification.type.hint(s);
+    final title = NotificationText.title(s, notification);
+    final detail = NotificationText.detail(notification);
     final meta = [
-      if (notification.relatedRequestId != null) SeenFormat.isolate(notification.relatedRequestId!),
-      if (notification.body.isNotEmpty) notification.body,
+      if (detail.isNotEmpty) detail,
       s.timeAgo(notification.createdAt, now: now),
     ].join(' · ') + (target != null && hint.isNotEmpty ? ' → $hint' : '');
     const radius = BorderRadius.all(SeenRadius.r18);
     return Semantics(
       button: true,
       container: true,
-      label: '${unread ? '${s.unread}, ' : ''}${notification.title}. $meta',
+      label: '${unread ? '${s.unread}, ' : ''}$title. $meta',
       excludeSemantics: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -278,7 +336,7 @@ class _NotificationCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          notification.title,
+                          title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: unread ? t.bodyStrong.copyWith(color: c.ink) : t.body.copyWith(color: c.ink),

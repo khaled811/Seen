@@ -8,7 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/presentation/foundation/seen_icons.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
@@ -120,7 +120,7 @@ class WalletTransactionDetailScreen extends StatelessWidget {
           final message = switch (state.status) {
             TopUpCancelStatus.success => l10n.walletTopUpCancelled,
             TopUpCancelStatus.notCancellable => l10n.walletTopUpNotCancellable,
-            TopUpCancelStatus.failure => state.message ?? l10n.error,
+            TopUpCancelStatus.failure => failureTextOr(l10n, state.failure, state.message ?? l10n.error),
             _ => null,
           };
           if (message == null) return;
@@ -668,7 +668,7 @@ class _Marker extends StatelessWidget {
     return switch (state) {
       _StepState.done => DecoratedBox(
           decoration: const BoxDecoration(color: SeenBrand.violet, shape: BoxShape.circle),
-          child: SizedBox(width: 20, height: 20, child: Icon(SeenIcons.check, size: 12, color: c.card)),
+          child: SizedBox(width: 20, height: 20, child: SeenCheckGlyph(size: 12, color: c.card)),
         ),
       _StepState.current => const DecoratedBox(
           decoration: BoxDecoration(

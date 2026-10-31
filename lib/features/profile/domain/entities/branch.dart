@@ -8,15 +8,16 @@ class Branch extends Equatable {
   const Branch({
     required this.id,
     required this.name,
-    required this.staffCount,
-    required this.requestCount,
+    this.staffCount,
+    this.requestCount,
     this.parentId,
   });
 
   final String id;
   final String name;
-  final int staffCount;
-  final int requestCount;
+  /// The API does not count a branch's people or requests; null = not known.
+  final int? staffCount;
+  final int? requestCount;
   final String? parentId;
 
   bool get isMain => parentId == null;

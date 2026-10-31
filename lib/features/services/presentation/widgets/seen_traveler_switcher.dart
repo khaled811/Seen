@@ -9,6 +9,7 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
 import 'seen_traveler_chips.dart' show SeenTravelerState;
+import '../../../../core/presentation/widgets/svg_icon.dart';
 
 class SeenTravelerSwitcher extends StatefulWidget {
   const SeenTravelerSwitcher({
@@ -69,7 +70,7 @@ class _SeenTravelerSwitcherState extends State<SeenTravelerSwitcher> {
       final borderColor = error ? c.dangerFg : (active ? c.primary : c.border);
       final fg = active ? c.primary : c.inkSecondary;
       final icon = switch (state) {
-        SeenTravelerState.done => Icon(SeenIcons.check, size: 16, color: SeenRequestStatus.completed.colors.fg),
+        SeenTravelerState.done => SeenCheckGlyph(size: 16, color: SeenRequestStatus.completed.colors.fg),
         SeenTravelerState.error => Icon(SeenIcons.alert, size: 16, color: c.dangerFg),
         SeenTravelerState.empty => Icon(SeenIcons.user, size: 16, color: active ? c.primary : c.inkMuted),
       };

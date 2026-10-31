@@ -1,6 +1,6 @@
 // PromoBanner — Figma "Promo banner": soft violet gradient with the brand grid
 // pattern bleeding off the corner, a badge + title + subtitle and an XS CTA.
-// Content is supplied by the caller (static placeholder until a banner API).
+// Content is supplied by the caller (the home screen gets it from `activeAds`).
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -15,7 +15,7 @@ class SeenPromoBanner extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
-    required this.actionLabel,
+    this.actionLabel,
     this.badge,
     this.onAction,
   });
@@ -23,7 +23,8 @@ class SeenPromoBanner extends StatelessWidget {
   final String? badge;
   final String title;
   final String subtitle;
-  final String actionLabel;
+  /// Null hides the button (a banner with nothing to open).
+  final String? actionLabel;
   final VoidCallback? onAction;
 
   @override
@@ -64,12 +65,14 @@ class SeenPromoBanner extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: SeenSpace.s3),
-                  SeenButton(
-                    label: actionLabel,
-                    size: SeenButtonSize.extraSmall,
-                    onPressed: onAction,
-                  ),
+                  if (actionLabel != null) ...[
+                    const SizedBox(width: SeenSpace.s3),
+                    SeenButton(
+                      label: actionLabel!,
+                      size: SeenButtonSize.extraSmall,
+                      onPressed: onAction,
+                    ),
+                  ],
                 ],
               ),
             ),

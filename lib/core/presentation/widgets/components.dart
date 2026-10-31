@@ -6,6 +6,7 @@ import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
+import 'svg_icon.dart';
 
 // ───────────────────────── Toast ─────────────────────────
 
@@ -67,7 +68,7 @@ class SeenToast extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Icon(SeenIcons.check, size: 18, color: SeenRequestStatus.completed.colors.fg),
+              SeenCheckGlyph(size: 18, color: SeenRequestStatus.completed.colors.fg),
               const SizedBox(width: 8),
               Expanded(child: Text(message, style: t.label.copyWith(color: c.ink))),
               if (actionLabel != null) ...[
@@ -193,7 +194,7 @@ class SeenCheckbox extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(7)),
                 border: value ? null : Border.all(color: c.borderStrong, width: 1.5),
               ),
-              child: value ? Icon(SeenIcons.check, size: 14, color: c.onPrimary) : null,
+              child: value ? SeenCheckGlyph(size: 14, color: c.onPrimary) : null,
             ),
           ),
         ),

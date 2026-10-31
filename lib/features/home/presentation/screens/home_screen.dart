@@ -1,4 +1,5 @@
-import '../../../services/presentation/widgets/coming_soon_sheet.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -6,13 +7,13 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/config/feature_flags.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/balance_card.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/presentation/widgets/promo_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -22,6 +23,18 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
+import '../../../ads/domain/entities/ad_banner.dart';
+import '../../../ads/presentation/bloc/home_banner_cubit.dart';
+import '../../../agents/presentation/screens/sub_agents_list_screen.dart';
+import '../../../profile/presentation/screens/team_screen.dart';
+import '../../../wallet/presentation/screens/wallet_screen.dart';
+import '../../../services/domain/entities/service_definition.dart'
+    show ServiceCategory;
+import '../../../services/presentation/widgets/service_card_copy.dart';
+import '../bloc/home_services_cubit.dart';
+import '../../../manifest/data/services/external_url_opener.dart';
 import '../../../auth/domain/entities/user_session.dart';
 import '../../../requests/domain/entities/request_summary.dart';
 import '../../../requests/presentation/bloc/requests_bloc.dart';
@@ -44,6 +57,9 @@ import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../profile/presentation/widgets/session_role.dart';
 import 'account_screen.dart';
 import 'role_home_screen.dart';
+import '../../../profile/presentation/widgets/profile_photo.dart';
+import '../../../support/presentation/widgets/support_unread_badge.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// Home dashboard (Figma 05): header, greeting, balance card, primary actions,
 /// promo banner, services grid and the latest requests. Owns fresh
@@ -80,6 +96,12 @@ class HomeScreen extends StatelessWidget {
           create: (_) => InjectionContainer.instance.createRequestsBloc()
             ..add(const RequestsLoadRequested()),
         ),
+        BlocProvider(
+            create: (_) =>
+                InjectionContainer.instance.createHomeBannerCubit()..load()),
+        BlocProvider(
+            create: (_) =>
+                InjectionContainer.instance.createHomeServicesCubit()..load()),
       ],
       child: _HomeView(session: session),
     );
@@ -97,6 +119,32 @@ Future<void> _openServices(BuildContext context) async {
   if (!context.mounted) return;
   context.read<RequestsBloc>().add(const RequestsLoadRequested());
   context.read<WalletBloc>().add(const WalletLoadRequested());
+}
+
+/// Follows an ad's button: an `https` link outside the app, or one of the app's own screens.
+void _openAd(BuildContext context, AdBanner ad) {
+  final destination = ad.internalDestination;
+  if (destination == null) {
+    unawaited(launchExternalUrl(ad.openableLink.toString()));
+    return;
+  }
+  switch (destination) {
+    case AdDestination.services:
+      unawaited(_openServices(context));
+    case AdDestination.requests:
+      unawaited(_openRequests(context));
+    case AdDestination.wallet:
+      Navigator.of(context)
+          .push(MaterialPageRoute<void>(builder: (_) => const WalletScreen()));
+    case AdDestination.tickets:
+      Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) => const SupportTicketsScreen()));
+    case AdDestination.subAgents:
+      Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const SubAgentsListScreen()));
+    case AdDestination.team:
+      Navigator.of(context).push(TeamScreen.route());
+  }
 }
 
 Future<void> _openRequests(BuildContext context) async {
@@ -120,13 +168,15 @@ class _HomeView extends StatelessWidget {
       body: SeenScreenBackground(
         child: SafeArea(
           bottom: false,
-          child: RefreshIndicator(
+          child: SeenRefresh(
             onRefresh: () async {
               context.read<WalletBloc>().add(const WalletLoadRequested());
               context
                   .read<NotificationsBloc>()
                   .add(const NotificationsLoadRequested());
               context.read<RequestsBloc>().add(const RequestsLoadRequested());
+              unawaited(context.read<HomeBannerCubit>().load());
+              unawaited(context.read<HomeServicesCubit>().load());
             },
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
@@ -157,16 +207,28 @@ class _HomeView extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (kShowHomePromoBanner) ...[
-                  const SizedBox(height: 22),
-                  SeenPromoBanner(
-                    badge: l10n.promoBadge,
-                    title: l10n.promoTitle,
-                    subtitle: l10n.promoSubtitle,
-                    actionLabel: l10n.promoAction,
-                    onAction: () => _openServices(context),
+                if (kShowHomePromoBanner)
+                  BlocBuilder<HomeBannerCubit, HomeBannerState>(
+                    buildWhen: (p, c) => p.ad != c.ad,
+                    builder: (context, state) {
+                      final ad = state.ad;
+                      if (ad == null) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 22),
+                        child: SeenPromoBanner(
+                          title: ad.title,
+                          subtitle: ad.body,
+                          actionLabel: ad.hasAction ? ad.ctaLabel : null,
+                          onAction: ad.hasAction
+                              ? () {
+                                  context.read<HomeBannerCubit>().clicked();
+                                  _openAd(context, ad);
+                                }
+                              : null,
+                        ),
+                      );
+                    },
                   ),
-                ],
                 SeenSectionHeader(
                   title: l10n.homeServicesTitle,
                   actionLabel: l10n.homeSeeAllAction,
@@ -211,7 +273,12 @@ class _HomeHeader extends StatelessWidget {
               child: SizedBox(
                   width: 44,
                   height: 44,
-                  child: Icon(SeenIcons.user, size: 22, color: c.primary)),
+                  // The person's photo when there is one; the glyph otherwise.
+                  child: ProfilePhoto(
+                      size: 44,
+                      fallback: Center(
+                          child: Icon(SeenIcons.user,
+                              size: 22, color: c.primary)))),
             ),
           ),
         ),
@@ -221,7 +288,9 @@ class _HomeHeader extends StatelessWidget {
                 hint: l10n.homeSearchHint,
                 onTap: () => _openRequests(context))),
         const SizedBox(width: SeenSpace.s2),
-        Semantics(
+        // The unread-support count sits on the button's corner (hidden at zero).
+        SupportUnreadBadge(
+            child: Semantics(
           button: true,
           label: l10n.homeQuickActionSupport,
           excludeSemantics: true,
@@ -232,8 +301,10 @@ class _HomeHeader extends StatelessWidget {
               color: c.card,
               shape: CircleBorder(side: BorderSide(color: c.border)),
               child: InkWell(
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => const SupportTicketsScreen())),
+                onTap: () => Navigator.of(context)
+                    .push(MaterialPageRoute(
+                        builder: (_) => const SupportTicketsScreen()))
+                    .then((_) => SupportUnreadBadge.refresh()),
                 customBorder: const CircleBorder(),
                 child: const SizedBox(
                   width: 44,
@@ -244,7 +315,7 @@ class _HomeHeader extends StatelessWidget {
               ),
             ),
           ),
-        ),
+        )),
       ],
     );
   }
@@ -310,7 +381,7 @@ class _Greeting extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
-    final hour = DateTime.now().hour;
+    final hour = AppClock.now().hour;
     final greeting = hour < 12
         ? l10n.homeGreetingMorning
         : hour < 17
@@ -324,9 +395,11 @@ class _Greeting extends StatelessWidget {
           buildWhen: (previous, current) => current is RequestsLoaded,
           builder: (context, state) {
             if (state is! RequestsLoaded) return const SizedBox.shrink();
-            final needAttention = state.requests
-                .where((r) => r.status == RequestStatus.infoRequired)
-                .length;
+            // The server's own count (the whole account), not the loaded page's.
+            final needAttention = state.attentionCount ??
+                state.requests
+                    .where((r) => r.status == RequestStatus.infoRequired)
+                    .length;
             return Text(
               SeenStrings.of(context).attentionSummary(needAttention),
               style: type.body.copyWith(color: c.inkSecondary),
@@ -346,18 +419,18 @@ class _BalanceSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<WalletBloc, WalletState>(
       builder: (context, state) => switch (state) {
-        WalletInitial() ||
-        WalletLoading() =>
-          Semantics(
+        WalletInitial() || WalletLoading() => Semantics(
             label: l10n.loading,
-            child: const ExcludeSemantics(child: SeenSkeletonGroup(child: SeenBalanceSkeleton())),
+            child: const ExcludeSemantics(
+                child: SeenSkeletonGroup(child: SeenBalanceSkeleton())),
           ),
-        WalletFailure(:final message) => _InlineError(
-            message: message,
+        WalletFailure(:final message, :final failure) => _InlineError(
+            message: failureTextOr(l10n, failure, message),
             onRetry: () =>
                 context.read<WalletBloc>().add(const WalletLoadRequested()),
           ),
-        WalletLoaded(:final balance) when balance.isOverLimit => SeenOverLimitCard(balance: balance),
+        WalletLoaded(:final balance) when balance.isOverLimit =>
+          SeenOverLimitCard(balance: balance),
         WalletLoaded(:final balance) => SeenBalanceCard(
             initiallyHidden: hideBalanceByDefault(context),
             hint: balance.isZero ? l10n.walletBalanceZeroHint : null,
@@ -379,62 +452,47 @@ class _BalanceSection extends StatelessWidget {
   }
 }
 
-/// Six service shortcuts (Figma). Static placeholders: every tile opens the
-/// full service catalog; "hotels" is shown as coming soon.
+/// Service shortcuts (Figma): the services the server puts first (`portalHome.services`),
+/// up to six in two rows of three. Every tile opens the full service catalog. Nothing is
+/// drawn while they load or when the server offers none: the "see all" link stays.
 class _ServicesGrid extends StatelessWidget {
   const _ServicesGrid();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final tiles = <({String label, String icon, bool soon})>[
-      (label: l10n.serviceFlights, icon: SeenVectors.iconFlight, soon: false),
-      (
-        label: l10n.serviceEgyptEntry,
-        icon: SeenVectors.iconEgyptEntry,
-        soon: false
-      ),
-      (
-        label: l10n.serviceSaudiVisa,
-        icon: SeenVectors.iconSaudiVisa,
-        soon: false
-      ),
-      (
-        label: l10n.serviceIndiaVisa,
-        icon: SeenVectors.iconIndiaVisa,
-        soon: false
-      ),
-      (
-        label: l10n.serviceSecurityApproval,
-        icon: SeenVectors.iconJordanSecurity,
-        soon: false
-      ),
-      (label: l10n.serviceHotels, icon: SeenVectors.iconHotel, soon: true),
-    ];
-    Widget row(int from) => Row(
-          children: [
-            for (var i = from; i < from + 3; i++) ...[
-              if (i > from) const SizedBox(width: 10),
-              Expanded(
-                child: SeenServiceTile(
-                  label: tiles[i].label,
-                  iconAsset: tiles[i].icon,
-                  soon: tiles[i].soon,
-                  soonLabel: tiles[i].soon ? l10n.serviceSoonTag : null,
-                  onTap: tiles[i].soon
-                      ? () => showServiceComingSoonSheet(
-                            context,
-                            serviceKey: 'hotels',
-                            name: SeenStrings.of(context).hotelBookingName,
-                            icon: SeenIcons.bed,
+    return BlocBuilder<HomeServicesCubit, HomeServicesState>(
+      buildWhen: (a, b) => a.services != b.services,
+      builder: (context, state) {
+        final tiles = state.services.take(6).toList();
+        if (tiles.isEmpty) return const SizedBox.shrink();
+        Widget row(int from) => Row(
+              children: [
+                for (var i = from; i < from + 3; i++) ...[
+                  if (i > from) const SizedBox(width: 10),
+                  Expanded(
+                    child: i < tiles.length
+                        ? SeenServiceTile(
+                            label: tiles[i].name,
+                            iconAsset: ServiceCardCopy.forCategory(
+                                    ServiceCategory.fromValue(
+                                        tiles[i].category),
+                                    l10n)
+                                .iconAsset,
+                            labelLines: 2,
+                            onTap: () => _openServices(context),
                           )
-                      : () => _openServices(context),
-                ),
-              ),
-            ],
-          ],
-        );
-    return Column(children: [row(0), const SizedBox(height: 10), row(3)]);
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ],
+            );
+        return Column(children: [
+          row(0),
+          if (tiles.length > 3) ...[const SizedBox(height: 10), row(3)]
+        ]);
+      },
+    );
   }
 }
 
@@ -445,14 +503,26 @@ class _RecentRequests extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<RequestsBloc, RequestsState>(
       builder: (context, state) => switch (state) {
-        RequestsInitial() || RequestsLoading() => const Padding(
-            padding: EdgeInsets.symmetric(vertical: SeenSpace.s6),
-            child: Center(child: SeenLoader()),
+        RequestsInitial() || RequestsLoading() => Padding(
+            padding: const EdgeInsets.symmetric(vertical: SeenSpace.s6),
+            child: SeenWaitPolicy.loading(
+              loading: const SeenSkeletonGroup(
+                child: Column(children: [
+                  SeenCardSkeleton(),
+                  SizedBox(height: 14),
+                  SeenCardSkeleton()
+                ]),
+              ),
+              onRetry: () => context
+                  .read<RequestsBloc>()
+                  .add(const RequestsLoadRequested()),
+            ),
           ),
-        RequestsFailure(:final message) => Padding(
+        RequestsFailure(:final message, :final failure) => Padding(
             padding: const EdgeInsets.symmetric(vertical: SeenSpace.s6),
             child: _InlineError(
-              message: message,
+              message: failureTextOr(
+                  AppLocalizations.of(context)!, failure, message),
               onRetry: () => context
                   .read<RequestsBloc>()
                   .add(const RequestsLoadRequested()),

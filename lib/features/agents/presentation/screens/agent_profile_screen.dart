@@ -7,7 +7,6 @@ import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/error_patterns.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/status.dart';
@@ -17,14 +16,20 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
+import '../../../../core/presentation/widgets/loading/seen_thin_progress.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../requests/presentation/widgets/request_status_seen_mapping.dart';
+import '../../../wallet/presentation/widgets/wallet_labels.dart';
 import '../../domain/entities/sub_agent.dart';
 import '../../domain/entities/sub_agent_profile.dart';
 import '../bloc/agent_profile_bloc.dart';
 import '../bloc/agents_bloc.dart';
 import '../bloc/agents_state.dart';
-import '../widgets/edit_credit_limit_sheet.dart';
 import '../widgets/fund_sub_agent_sheet.dart';
+import '../widgets/edit_sub_agent_sheet.dart';
+import '../widgets/reclaim_sub_agent_sheet.dart';
 
 /// Agent profile (Figma AGT-04): the agent card, balance / limit / monthly
 /// requests, Fund · Edit limit · Suspend, the balance history and the agent's
@@ -65,22 +70,29 @@ class _View extends StatelessWidget {
 
   Future<void> _fund(BuildContext context, SubAgent agent) async {
     final bloc = context.read<AgentProfileBloc>();
-    await showFundSubAgentSheet(
+    final sent = await showFundSubAgentSheet(
       context,
       subAgent: agent,
       masterAvailableBalanceCents: _masterAvailable(context) ?? 0,
     );
+    // The new line shows at once; the read below swaps it for the server's own.
+    if (sent != null) bloc.add(AgentLedgerMoved(amountCents: sent, isCredit: true));
     bloc.add(AgentProfileLoadRequested(agent.id));
   }
 
-  Future<void> _editLimit(BuildContext context, SubAgent agent) async {
+  Future<void> _edit(BuildContext context, SubAgent agent) async {
     final bloc = context.read<AgentProfileBloc>();
-    final saved = await showEditCreditLimitSheet(
-      context,
-      subAgent: agent,
-      masterAvailableCents: _masterAvailable(context),
-    );
+    final saved = await showEditSubAgentSheet(context, subAgent: agent);
     if (saved == true) bloc.add(AgentProfileLoadRequested(agent.id));
+  }
+
+  Future<void> _reclaim(BuildContext context, SubAgent agent) async {
+    final bloc = context.read<AgentProfileBloc>();
+    final taken = await showReclaimSubAgentSheet(context, subAgent: agent);
+    if (taken != null) {
+      bloc.add(AgentLedgerMoved(amountCents: taken, isCredit: false));
+      bloc.add(AgentProfileLoadRequested(agent.id));
+    }
   }
 
   Future<void> _toggleActive(
@@ -122,10 +134,17 @@ class _View extends StatelessWidget {
               child: Column(
                 children: [
                   SeenScreenHeader(title: l10n.agentProfileTitle),
+                  // Something is being done or re-read: say so, the screen stays as it is.
+                  if (state.busy || state.refreshing)
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: SeenThinProgress()),
                   Expanded(
                     child: switch (state.status) {
-                      AgentProfileStatus.loading =>
-                        const Center(child: SeenLoader()),
+                      AgentProfileStatus.loading => SeenWaitPolicy.loading(
+                          loading: SeenCardsSkeleton(count: 2, label: SeenStrings.of(context).loadingLabel),
+                          onRetry: () => context
+                              .read<AgentProfileBloc>()
+                              .add(AgentProfileLoadRequested(initial.id)),
+                        ),
                       AgentProfileStatus.failed => Padding(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                           child: Align(
@@ -143,8 +162,9 @@ class _View extends StatelessWidget {
                           profile: profile!,
                           busy: state.busy,
                           onFund: () => _fund(context, profile.agent),
-                          onEditLimit: () => _editLimit(context, profile.agent),
                           onToggleActive: () => _toggleActive(context, profile),
+                          onReclaim: () => _reclaim(context, profile.agent),
+                          onEdit: () => _edit(context, profile.agent),
                         ),
                     },
                   ),
@@ -163,15 +183,17 @@ class _Body extends StatelessWidget {
     required this.profile,
     required this.busy,
     required this.onFund,
-    required this.onEditLimit,
     required this.onToggleActive,
+    required this.onReclaim,
+    required this.onEdit,
   });
 
   final SubAgentProfile profile;
   final bool busy;
   final VoidCallback onFund;
-  final VoidCallback onEditLimit;
   final VoidCallback onToggleActive;
+  final VoidCallback onReclaim;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +241,7 @@ class _Body extends StatelessWidget {
         );
 
     Widget action(String label, VoidCallback? onTap,
-            {SeenStatusColors? tone}) =>
+            {SeenStatusColors? tone, bool loading = false}) =>
         Expanded(
           child: Semantics(
             button: true,
@@ -235,9 +257,22 @@ class _Body extends StatelessWidget {
                 child: SizedBox(
                   height: 40,
                   child: Center(
-                      child: Text(label,
-                          style: t.label
-                              .copyWith(color: tone?.fg ?? SeenBrand.violet))),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (loading) ...[
+                            SeenLoader(size: 16, color: tone?.fg ?? SeenBrand.violet),
+                            const SizedBox(width: 6),
+                          ],
+                          Flexible(
+                            child: Text(label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: t.label
+                                    .copyWith(color: tone?.fg ?? SeenBrand.violet)),
+                          ),
+                        ],
+                      )),
                 ),
               ),
             ),
@@ -307,11 +342,20 @@ class _Body extends StatelessWidget {
             ),
           ),
         ),
+        // Editing the agency uses the same permission as suspending it (`agent.create_sub_agent`).
+        if (agent.canSuspend || agent.canActivate)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SeenTextLink(label: s.editAgentLink, onTap: busy ? null : onEdit),
+            ),
+          ),
         const SizedBox(height: 14),
         Row(
           children: [
             stat(l10n.agentProfileBalance,
-                SeenFormat.usd(agent.balanceCents / 100)),
+                agent.balanceKnown ? SeenFormat.usd(agent.balanceCents / 100) : '—'),
             const SizedBox(width: 8),
             stat(
                 l10n.agentAddCreditLimit,
@@ -330,16 +374,23 @@ class _Body extends StatelessWidget {
         const SizedBox(height: 14),
         Row(
           children: [
-            action(
-                agent.isActive
-                    ? l10n.agentProfileSuspend
-                    : l10n.agentProfileReactivate,
-                busy ? null : onToggleActive,
-                tone: suspendTone),
-            const SizedBox(width: 8),
-            action(l10n.agentProfileEditLimit, busy ? null : onEditLimit),
-            const SizedBox(width: 8),
-            action(l10n.agentProfileFund, busy ? null : onFund),
+            // The server says what this person may do with this agency; the
+            // controls follow it.
+            if (agent.isActive ? agent.canSuspend : agent.canActivate) ...[
+              action(
+                  agent.isActive
+                      ? l10n.agentProfileSuspend
+                      : l10n.agentProfileReactivate,
+                  busy ? null : onToggleActive,
+                  tone: suspendTone,
+                  loading: busy),
+              const SizedBox(width: 8),
+            ],
+            if (agent.canFund) action(l10n.agentProfileFund, busy ? null : onFund),
+            if (agent.canFund && agent.balanceKnown && agent.balanceCents > 0) ...[
+              const SizedBox(width: 8),
+              action(SeenStrings.of(context).reclaimAction, busy ? null : onReclaim),
+            ],
           ],
         ),
         const SizedBox(height: 14),
@@ -368,7 +419,14 @@ class _Body extends StatelessWidget {
                         horizontal: 14, vertical: 12),
                     child: Row(
                       children: [
-                        Expanded(child: Text(e.title, style: t.body)),
+                        Expanded(
+                            child: Text(
+                              e.referenceCode == null || e.referenceCode!.isEmpty
+                                  ? WalletLabels.transactionType(l10n, e.type)
+                                  : '${WalletLabels.transactionType(l10n, e.type)} · ${e.referenceCode}',
+                              style: t.body,
+                            ),
+                          ),
                         const SizedBox(width: 8),
                         Text(
                           SeenFormat.signed(e.amountCents / 100,

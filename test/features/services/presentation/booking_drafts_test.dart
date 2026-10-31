@@ -1,6 +1,6 @@
-// Booking drafts (Figma REQ-01 … 04): storage rules, serialization, the missing-
-// data summary, the drafts bloc and screen, resuming into the booking bloc and
-// the leave-form prompt. Arabic / RTL.
+// Booking drafts (Figma REQ-01 … 04): the server's drafts list, deleting a draft
+// (the server cancels it), and the leave-form prompt that files the draft on the
+// server. Nothing is stored on the device. Arabic / RTL.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,121 +12,44 @@ import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
+import 'package:seen_booking/core/presentation/widgets/actions.dart';
 import 'package:seen_booking/core/presentation/foundation/seen_strings.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
-import 'package:seen_booking/features/services/data/datasources/booking_draft_local_data_source.dart';
-import 'package:seen_booking/features/services/data/repositories/booking_draft_repository_impl.dart';
-import 'package:seen_booking/features/services/domain/entities/booking_draft.dart';
-import 'package:seen_booking/features/services/domain/entities/service_booking_request.dart';
-import 'package:seen_booking/features/services/domain/entities/service_booking_result.dart';
+import 'package:seen_booking/features/requests/domain/entities/request_summary.dart';
+import 'package:seen_booking/features/requests/domain/entities/requests_page.dart';
+import 'package:seen_booking/features/requests/domain/usecases/get_request_detail_usecase.dart';
+import 'package:seen_booking/features/requests/domain/usecases/get_requests_usecase.dart';
 import 'package:seen_booking/features/services/domain/entities/service_definition.dart';
-import 'package:seen_booking/features/services/domain/entities/traveler_info.dart';
 import 'package:seen_booking/features/services/domain/repositories/services_repository.dart';
-import 'package:seen_booking/features/services/domain/usecases/booking_draft_usecases.dart';
+import 'package:seen_booking/features/services/domain/usecases/booking_flow_usecases.dart';
 import 'package:seen_booking/features/services/domain/usecases/get_available_services_usecase.dart';
-import 'package:seen_booking/features/services/domain/usecases/submit_booking_usecase.dart';
 import 'package:seen_booking/features/services/presentation/bloc/drafts_bloc.dart';
 import 'package:seen_booking/features/services/presentation/bloc/service_booking_bloc.dart';
 import 'package:seen_booking/features/services/presentation/bloc/service_booking_event.dart';
-import 'package:seen_booking/features/services/presentation/bloc/service_booking_state.dart';
 import 'package:seen_booking/features/services/presentation/screens/drafts_screen.dart';
 import 'package:seen_booking/features/services/presentation/screens/service_selection_screen.dart';
 import 'package:seen_booking/features/services/presentation/screens/traveler_entry_screen.dart';
 import 'package:seen_booking/features/services/presentation/utils/draft_summary.dart';
-import 'package:seen_booking/features/services/presentation/widgets/service_traveler_fields.dart';
-import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
-import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
-import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
+import 'package:seen_booking/features/services/domain/entities/traveler_info.dart';
+
+import '../../../support/booking_fakes.dart';
 
 final _now = DateTime(2026, 10, 17, 12);
 final _l10n = lookupAppLocalizations(const Locale('ar'));
 
-const _service = ServiceDefinition(
-  id: 's1',
-  category: ServiceCategory.egyptNationalSecurity,
-  name: 'موافقة الأمن الوطني',
-  description: 'موافقة دخول مصر',
-  perPersonPriceCents: 8500,
-  availability: ServiceAvailability.available,
-);
-
-final _fields = ServiceTravelerFields.forCategory(
-    ServiceCategory.egyptNationalSecurity, _l10n);
-
-Map<String, Object?> _complete() => {
-      'fullName': 'AHMED SALEH',
-      'passportNumber': 'A1234567',
-      'nationality': 'يمني',
-      'birthDate': DateTime(1990, 5, 1),
-      'passportIssueDate': DateTime(2020, 5, 1),
-      'passportExpiryDate': DateTime(2035, 5, 1),
-    };
-
-BookingDraft _draft(
-  String id, {
-  DateTime? updatedAt,
-  List<TravelerInfo>? travelers,
-}) =>
-    BookingDraft(
+RequestSummary _draft(String id, {int travelers = 1, Duration age = const Duration(hours: 2)}) => RequestSummary(
       id: id,
-      serviceId: 's1',
+      referenceId: '',
       serviceName: 'موافقة الأمن الوطني',
-      category: ServiceCategory.egyptNationalSecurity,
-      travelers: travelers ?? [TravelerInfo(id: 't', fieldValues: _complete())],
-      updatedAt: updatedAt ?? _now.subtract(const Duration(hours: 2)),
+      travelerCount: travelers,
+      totalPriceCents: 8500,
+      status: RequestStatus.draft,
+      submittedAt: _now.subtract(age),
     );
 
-class _MemoryLocal implements BookingDraftLocalDataSource {
-  List<BookingDraft> items = [];
-
-  @override
-  Future<List<BookingDraft>> read() async => List.of(items);
-
-  @override
-  Future<void> write(List<BookingDraft> drafts) async =>
-      items = List.of(drafts);
-}
-
 class _Services implements ServicesRepository {
-  final submitted = <ServiceBookingRequest>[];
-
   @override
-  Future<Either<Failure, List<ServiceDefinition>>>
-      getAvailableServices() async => const Right([_service]);
-
-  @override
-  Future<Either<Failure, ServiceBookingResult>> submitBooking(
-      ServiceBookingRequest request) async {
-    submitted.add(request);
-    return Right(ServiceBookingResult(
-      requestId: 'SB-1',
-      status: RequestStatus.submitted,
-      totalPriceCents: 8500,
-      createdAt: _now,
-    ));
-  }
-}
-
-class _Wallet implements WalletRepository {
-  @override
-  Future<Either<Failure, WalletBalance>> getBalance() async => const Right(
-        WalletBalance(
-            availableCents: 100000,
-            holdCents: 0,
-            creditLimitCents: 0,
-            currency: WalletCurrency.usd),
-      );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-({BookingDraftRepositoryImpl repo, _MemoryLocal local}) _repo() {
-  final local = _MemoryLocal();
-  return (
-    repo: BookingDraftRepositoryImpl(local: local, clock: () => _now),
-    local: local
-  );
+  Future<Either<Failure, List<ServiceDefinition>>> getAvailableServices() async => const Right([bookingTestService]);
 }
 
 Widget _app(Widget home) => MaterialApp(
@@ -143,123 +66,29 @@ Widget _app(Widget home) => MaterialApp(
     );
 
 Future<void> settle(WidgetTester tester) async {
-  await tester
-      .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
+  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 400));
 }
 
+DraftsBloc _draftsBloc(FakeBookingRequestsRepository repo, {int pageSize = 30}) => DraftsBloc(
+      getRequests: GetRequestsUseCase(repo),
+      pageSize: pageSize,
+    );
+
 void main() {
-  group('BookingDraft', () {
-    test('expires 30 days after the last edit and counts the days left', () {
-      final d = _draft('a', updatedAt: _now.subtract(const Duration(days: 28)));
-      expect(d.isExpired(_now), false);
-      expect(d.daysLeft(_now), 2);
-      expect(
-          _draft('b', updatedAt: _now.subtract(const Duration(days: 31)))
-              .isExpired(_now),
-          true);
-    });
-  });
-
-  group('BookingDraftJson', () {
-    test('keeps strings and dates through a round trip', () {
-      final d = _draft('a');
-      final back = BookingDraftJson.fromJson(BookingDraftJson.toJson(d));
-      expect(
-          back.travelers.single.fieldValues['birthDate'], DateTime(1990, 5, 1));
-      expect(back.travelers.single.fieldValues['fullName'], 'AHMED SALEH');
-      expect(back.category, ServiceCategory.egyptNationalSecurity);
-      expect(back.updatedAt, d.updatedAt);
-    });
-  });
-
-  group('BookingDraftRepositoryImpl', () {
-    test('lists newest edit first and removes expired drafts for good',
-        () async {
-      final r = _repo();
-      r.local.items = [
-        _draft('old', updatedAt: _now.subtract(const Duration(days: 40))),
-        _draft('a', updatedAt: _now.subtract(const Duration(days: 3))),
-        _draft('b', updatedAt: _now.subtract(const Duration(hours: 1))),
-      ];
-      final list = (await r.repo.getDrafts()).getOrElse((_) => []);
-      expect(list.map((d) => d.id), ['b', 'a']);
-      expect(r.local.items.map((d) => d.id), ['a', 'b']);
-    });
-
-    test('refuses an 11th new draft but still overwrites an existing one',
-        () async {
-      final r = _repo();
-      r.local.items = [
-        for (var i = 0; i < BookingDraft.maxCount; i++) _draft('d$i')
-      ];
-      expect(await r.repo.saveDraft(_draft('new')),
-          const Right<Failure, SaveDraftResult>(SaveDraftResult.limitReached));
-      expect(r.local.items.length, BookingDraft.maxCount);
-      expect(await r.repo.saveDraft(_draft('d3')),
-          const Right<Failure, SaveDraftResult>(SaveDraftResult.saved));
-      expect(r.local.items.length, BookingDraft.maxCount);
-    });
-
-    test('delete removes only that draft', () async {
-      final r = _repo();
-      r.local.items = [_draft('a'), _draft('b')];
-      await r.repo.deleteDraft('a');
-      expect(r.local.items.map((d) => d.id), ['b']);
-    });
-  });
-
   group('draft summary', () {
-    final s = SeenStrings.forLocale(const Locale('ar'));
-
-    test('a complete draft has no missing line', () {
-      expect(draftMissingLine(_draft('a'), _l10n, s), isNull);
-    });
-
-    test('one traveler missing one field names the field', () {
-      final values = _complete()..remove('passportExpiryDate');
-      final line = draftMissingLine(
-          _draft('a', travelers: [TravelerInfo(id: 't', fieldValues: values)]),
-          _l10n,
-          s);
-      final label =
-          _fields.firstWhere((f) => f.key == 'passportExpiryDate').label;
-      expect(line, 'ينقص: $label');
-    });
-
-    test(
-        'several incomplete travelers are counted; one with many gaps is named by traveler',
-        () {
-      final many = BookingDraft(
-        id: 'a',
-        serviceId: 's1',
-        serviceName: 'x',
-        category: ServiceCategory.egyptNationalSecurity,
-        updatedAt: _now,
-        travelers: [
-          const TravelerInfo(id: '1', fieldValues: {}),
-          TravelerInfo(id: '2', fieldValues: _complete()),
-          const TravelerInfo(id: '3', fieldValues: {}),
-        ],
-      );
-      expect(draftMissingLine(many, _l10n, s), 'ينقص: بيانات ٢ مسافرين');
-      final one = many
-          .copyWith(travelers: [const TravelerInfo(id: '1', fieldValues: {})]);
-      expect(draftMissingLine(one, _l10n, s), 'ينقص: بيانات المسافر ١');
-    });
-
     test('dirty means at least one non-blank value', () {
-      expect(
-          hasAnyTravelerData([
-            const TravelerInfo(id: '1', fieldValues: {'fullName': '  '})
-          ]),
-          false);
-      expect(
-          hasAnyTravelerData([
-            const TravelerInfo(id: '1', fieldValues: {'fullName': 'A'})
-          ]),
-          true);
+      expect(hasAnyTravelerData([const TravelerInfo(id: '1', fieldValues: {'fullName': '  '})]), false);
+      expect(hasAnyTravelerData([const TravelerInfo(id: '1', fieldValues: {'fullName': 'A'})]), true);
+    });
+
+    test('a field shown by a condition counts as missing only while it shows', () {
+      const traveler = TravelerInfo(id: '1', fieldValues: {'fullName': 'A', 'birthDate': null, 'status': 'single'});
+      final single = travelerCompleteness([traveler], bookingTestService.fields).single;
+      expect(single.missingLabels, ['Birth date']);
+      const married = TravelerInfo(id: '1', fieldValues: {'fullName': 'A', 'birthDate': null, 'status': 'married'});
+      expect(travelerCompleteness([married], bookingTestService.fields).single.missingLabels, ['Birth date', 'Spouse']);
     });
   });
 
@@ -270,208 +99,150 @@ void main() {
       expect(s.draftCount(1), 'مسودة واحدة');
       expect(s.draftCount(2), 'مسودتان');
       expect(s.draftCount(3), '٣ مسودات');
-      expect(s.draftAge(_now.subtract(const Duration(days: 3)), now: _now),
-          'قبل ٣ أيام');
-      expect(
-          s.draftAge(_now.subtract(const Duration(days: 1)), now: _now), 'أمس');
-      expect(s.draftDeletesIn(2), 'تُحذف خلال يومين');
-      expect(s.draftDeletesIn(1), 'تُحذف غدًا');
+      expect(s.draftAge(_now.subtract(const Duration(days: 3)), now: _now), 'قبل ٣ أيام');
+      expect(s.draftAge(_now.subtract(const Duration(days: 1)), now: _now), 'أمس');
     });
   });
 
   group('DraftsBloc', () {
-    DraftsBloc make(_MemoryLocal local) {
-      final repo = BookingDraftRepositoryImpl(local: local, clock: () => _now);
-      return DraftsBloc(
-        getDrafts: GetBookingDraftsUseCase(repo),
-        deleteDraft: DeleteBookingDraftUseCase(repo),
-        saveDraft: SaveBookingDraftUseCase(repo),
-      );
-    }
+    late FakeBookingRequestsRepository repo;
 
-    test('delete then undo restores the same draft', () async {
-      final local = _MemoryLocal()
-        ..items = [
-          _draft('a'),
-          _draft('b', updatedAt: _now.subtract(const Duration(days: 1)))
-        ];
-      final bloc = make(local);
-      addTearDown(bloc.close);
-      bloc.add(const DraftsLoadRequested());
-      await bloc.stream.firstWhere((s) => s.status == DraftsStatus.ready);
+    setUp(() => repo = FakeBookingRequestsRepository());
 
-      bloc.add(DraftDeleteRequested(bloc.state.drafts.first));
-      var s = await bloc.stream.firstWhere((s) => s.lastDeleted != null);
-      expect(s.drafts.map((d) => d.id), ['b']);
-      expect(local.items.map((d) => d.id), ['b']);
+    test('loads the server drafts (group draft), nothing from the device', () async {
+      repo.page = RequestsPage(items: [_draft('a'), _draft('b')], total: 2, hasMore: false);
+      final bloc = _draftsBloc(repo)..add(const DraftsLoadRequested());
+      await pumpEventQueue();
+      expect(bloc.state.status, DraftsStatus.ready);
+      expect(bloc.state.drafts.map((d) => d.id), ['a', 'b']);
+      expect(repo.pages.single.group, 'draft');
+      await bloc.close();
+    });
 
-      bloc.add(const DraftDeleteUndone());
-      s = await bloc.stream.firstWhere((s) => s.lastDeleted == null);
-      expect(s.drafts.map((d) => d.id), ['a', 'b']);
+    test('a load that fails is a failed state with the failure', () async {
+      repo.pageResult = const Left(NetworkFailure('off'));
+      final bloc = _draftsBloc(repo)..add(const DraftsLoadRequested());
+      await pumpEventQueue();
+      expect(bloc.state.status, DraftsStatus.failed);
+      expect(bloc.state.failure, isA<NetworkFailure>());
+      await bloc.close();
+    });
+
+    test('pages: the next page is appended once, with no duplicates, then stops', () async {
+      final all = [for (var i = 0; i < 5; i++) _draft('d$i')];
+      // A repo that really pages.
+      final paging = _PagingRepo(all);
+      final bloc = DraftsBloc(
+        getRequests: GetRequestsUseCase(paging),
+        pageSize: 2,
+      )..add(const DraftsLoadRequested());
+      await pumpEventQueue();
+      expect(bloc.state.drafts, hasLength(2));
+      expect(bloc.state.hasMore, isTrue);
+      bloc.add(const DraftsLoadMoreRequested());
+      await pumpEventQueue();
+      expect(bloc.state.drafts.map((d) => d.id), ['d0', 'd1', 'd2', 'd3']);
+      expect(paging.calls, [0, 2]);
+      bloc.add(const DraftsLoadMoreRequested());
+      await pumpEventQueue();
+      expect(bloc.state.drafts, hasLength(5));
+      expect(bloc.state.hasMore, isFalse);
+      bloc.add(const DraftsLoadMoreRequested());
+      await pumpEventQueue();
+      expect(paging.calls, hasLength(3));
+      await bloc.close();
     });
   });
 
   group('DraftsScreen', () {
-    late _MemoryLocal local;
+    late FakeBookingRequestsRepository repo;
 
     Future<void> open(WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      final repo = BookingDraftRepositoryImpl(local: local, clock: () => _now);
-      await tester.pumpWidget(_app(DraftsScreen(
-        clock: () => _now,
-        createBloc: () => DraftsBloc(
-          getDrafts: GetBookingDraftsUseCase(repo),
-          deleteDraft: DeleteBookingDraftUseCase(repo),
-          saveDraft: SaveBookingDraftUseCase(repo),
-        ),
-      )));
+      await tester.pumpWidget(_app(DraftsScreen(clock: () => _now, createBloc: () => _draftsBloc(repo))));
       await settle(tester);
     }
 
-    setUp(() => local = _MemoryLocal());
+    setUp(() => repo = FakeBookingRequestsRepository());
 
     testWidgets('empty: the empty state', (tester) async {
       await open(tester);
       expect(find.text('لا توجد مسودات'), findsOneWidget);
     });
 
-    testWidgets(
-        'cards show the chip, travelers, what is missing, age and the near-deletion warning',
-        (tester) async {
-      local.items = [
-        _draft('a'),
-        _draft('b',
-            updatedAt: _now.subtract(const Duration(days: 28)),
-            travelers: [
-              const TravelerInfo(id: '1', fieldValues: {}),
-              TravelerInfo(id: '2', fieldValues: _complete())
-            ]),
-      ];
+    testWidgets('a failed load shows the retry, which loads again', (tester) async {
+      repo.pageResult = const Left(NetworkFailure('off'));
       await open(tester);
-      expect(find.text('٢ مسودات'), findsNothing);
-      expect(find.text('مسودتان'), findsOneWidget);
-      expect(find.text('مسودة'), findsNWidgets(2));
-      expect(find.text('قبل ساعتين'), findsOneWidget);
-      expect(find.text('ينقص: بيانات المسافر ١'), findsOneWidget);
-      expect(find.text('تُحذف خلال يومين'), findsOneWidget);
-      expect(find.textContaining('٣٠ يومًا'), findsOneWidget);
-    });
-
-    testWidgets('delete asks first, mentions the last draft, then offers undo',
-        (tester) async {
-      local.items = [_draft('a')];
-      await open(tester);
-      await tester.tap(find.text('حذف'));
-      await tester.pumpAndSettle();
-      expect(find.text('حذف المسودة؟'), findsOneWidget);
-      expect(find.textContaining('هذه آخر مسودة لديك'), findsOneWidget);
-
-      await tester.tap(
-          find.descendant(of: find.byType(Dialog), matching: find.text('حذف')));
+      expect(find.text(_l10n.errorSectionLoad), findsOneWidget);
+      repo.pageResult = null;
+      repo.page = RequestsPage(items: [_draft('a')], total: 1, hasMore: false);
+      await tester.tap(find.text(_l10n.retry));
       await settle(tester);
-      expect(local.items, isEmpty);
-      expect(find.text('حُذفت المسودة'), findsOneWidget);
-      expect(find.text('لا توجد مسودات'), findsOneWidget);
-
-      await tester.tap(find.text('تراجع'));
-      await settle(tester);
-      expect(local.items.map((d) => d.id), ['a']);
       expect(find.text('موافقة الأمن الوطني'), findsOneWidget);
     });
 
-    testWidgets('cancel keeps the draft', (tester) async {
-      local.items = [_draft('a'), _draft('b')];
+    testWidgets('cards show the chip, traveler count and age; no invented expiry or missing line', (tester) async {
+      repo.page = RequestsPage(items: [_draft('a'), _draft('b', travelers: 3, age: const Duration(days: 28))], total: 2, hasMore: false);
       await open(tester);
-      await tester.tap(find.text('حذف').first);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('هذه آخر مسودة'), findsNothing);
-      await tester.tap(find.text('إلغاء'));
-      await tester.pumpAndSettle();
-      expect(local.items.length, 2);
-    });
-  });
-
-  group('resuming and sending', () {
-    ({ServiceBookingBloc bloc, _MemoryLocal local}) make() {
-      final local = _MemoryLocal();
-      final repo = BookingDraftRepositoryImpl(local: local, clock: () => _now);
-      final services = _Services();
-      final bloc = ServiceBookingBloc(
-        getAvailableServicesUseCase: GetAvailableServicesUseCase(services),
-        submitBookingUseCase: SubmitBookingUseCase(services),
-        getWalletBalanceUseCase: GetWalletBalanceUseCase(_Wallet()),
-        validator: ServiceSelectionScreen.buildValidator(_l10n),
-        deleteDraftUseCase: DeleteBookingDraftUseCase(repo),
-      );
-      return (bloc: bloc, local: local);
-    }
-
-    test('a resumed draft opens with its travelers and remembers its id',
-        () async {
-      final m = make();
-      addTearDown(m.bloc.close);
-      m.bloc.add(BookingDraftResumed(
-          service: _service, travelerFields: _fields, draft: _draft('a')));
-      final s =
-          await m.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress)
-              as ServiceBookingInProgress;
-      expect(s.draftId, 'a');
-      expect(s.travelers.single.fieldValues['fullName'], 'AHMED SALEH');
+      expect(find.text('مسودتان'), findsOneWidget);
+      expect(find.text('مسودة'), findsNWidgets(2));
+      expect(find.text('قبل ساعتين'), findsOneWidget);
+      expect(find.textContaining('تُحذف'), findsNothing);
+      expect(find.textContaining('ينقص'), findsNothing);
+      expect(find.textContaining('٣٠ يومًا'), findsNothing);
     });
 
-    test('sending a resumed booking deletes its draft', () async {
-      final m = make();
-      addTearDown(m.bloc.close);
-      m.local.items = [_draft('a'), _draft('keep')];
-      m.bloc.add(BookingDraftResumed(
-          service: _service, travelerFields: _fields, draft: _draft('a')));
-      await m.bloc.stream.firstWhere(
-          (s) => s is ServiceBookingInProgress && !s.walletBalanceLoading);
-      m.bloc.add(const BookingSubmitted());
-      await m.bloc.stream.firstWhere(
-        (s) =>
-            s is ServiceBookingInProgress &&
-            s.submissionStatus == BookingSubmissionStatus.success,
-      );
-      expect(m.local.items.map((d) => d.id), ['keep']);
+    testWidgets('a draft can be continued but not deleted: the API cannot cancel a draft', (tester) async {
+      repo.page = RequestsPage(items: [_draft('a')], total: 1, hasMore: false);
+      await open(tester);
+      expect(find.text('متابعة'), findsOneWidget);
+      expect(find.text('حذف'), findsNothing);
+      expect(repo.cancelled, isEmpty);
     });
   });
 
   group('leave-form prompt (REQ-04)', () {
+    late FakeBookingFlowRepository flow;
+    late FakeBookingRequestsRepository requests;
+
     setUp(() {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
         const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
         (call) async => null,
       );
       InjectionContainer.instance.init();
+      flow = FakeBookingFlowRepository();
+      requests = FakeBookingRequestsRepository();
     });
 
-    Future<ServiceBookingBloc> open(WidgetTester tester,
-        {required bool withData}) async {
+    Future<ServiceBookingBloc> open(WidgetTester tester, {bool name = false, bool complete = false}) async {
       await tester.binding.setSurfaceSize(const Size(390, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      final services = _Services();
       final bloc = ServiceBookingBloc(
-        getAvailableServicesUseCase: GetAvailableServicesUseCase(services),
-        submitBookingUseCase: SubmitBookingUseCase(services),
-        getWalletBalanceUseCase: GetWalletBalanceUseCase(_Wallet()),
+        getAvailableServicesUseCase: GetAvailableServicesUseCase(_Services()),
+        createDraftUseCase: CreateDraftRequestUseCase(flow),
+        addTravelersUseCase: AddTravelersUseCase(flow),
+        uploadDocumentUseCase: UploadBookingDocumentUseCase(flow),
+        reviewDraftUseCase: ReviewDraftUseCase(flow),
+        submitDraftUseCase: SubmitDraftRequestUseCase(flow),
+        getRequestDetailUseCase: GetRequestDetailUseCase(requests),
         validator: ServiceSelectionScreen.buildValidator(_l10n),
       );
       addTearDown(() => bloc.close().ignore());
-      bloc.add(ServiceSelected(service: _service, travelerFields: _fields));
+      bloc.add(const ServiceSelected(service: bookingTestService));
       await settle(tester);
-      if (withData) {
-        bloc.add(const TravelerFieldChanged(
-            travelerIndex: 0, fieldKey: 'fullName', value: 'AHMED SALEH'));
+      if (name || complete) {
+        bloc.add(const TravelerFieldChanged(travelerIndex: 0, fieldKey: 'fullName', value: 'AHMED SALEH'));
+      }
+      if (complete) {
+        bloc.add(TravelerFieldChanged(travelerIndex: 0, fieldKey: 'birthDate', value: DateTime(1990, 5, 1)));
       }
       await tester.pumpWidget(_app(Builder(
         builder: (context) => Scaffold(
           body: TextButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
-              builder: (_) => BlocProvider.value(
-                  value: bloc, child: const TravelerEntryScreen()),
+              builder: (_) => BlocProvider.value(value: bloc, child: const TravelerEntryScreen()),
             )),
             child: const Text('open'),
           ),
@@ -482,45 +253,84 @@ void main() {
       return bloc;
     }
 
-    testWidgets('with nothing entered, back leaves without asking',
-        (tester) async {
-      await open(tester, withData: false);
+    testWidgets('with nothing entered, back leaves without asking', (tester) async {
+      await open(tester);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('open'), findsOneWidget);
       expect(find.text('حفظ الطلب كمسودة؟'), findsNothing);
     });
 
-    testWidgets(
-        'with data, back asks; dismiss stays; discard leaves; save stores and leaves',
-        (tester) async {
-      await open(tester, withData: true);
+    testWidgets('with incomplete data the sheet cannot save: it says why and only discard is possible', (tester) async {
+      await open(tester, name: true);
       await tester.binding.handlePopRoute();
       await settle(tester);
       expect(find.text('حفظ الطلب كمسودة؟'), findsOneWidget);
-      expect(find.text('بيانات المسافر ١ · ناقصة'), findsOneWidget);
+      expect(find.text(_l10n.draftSaveRowMissing('١')), findsOneWidget);
+      expect(find.text(_l10n.draftSaveNeedsComplete), findsOneWidget);
+      final save = tester.widget<SeenButton>(find.widgetWithText(SeenButton, 'حفظ كمسودة'));
+      expect(save.onPressed, isNull);
+      expect(flow.created, isEmpty);
 
       // Dismiss (tap the scrim): stay on the form.
       await tester.tapAt(const Offset(195, 40));
       await tester.pumpAndSettle();
       expect(find.text('open'), findsNothing);
+    });
 
+    testWidgets('with complete data, save files the draft on the server and leaves', (tester) async {
+      await open(tester, complete: true);
       await tester.binding.handlePopRoute();
       await settle(tester);
+      expect(find.text(_l10n.draftSaveNeedsComplete), findsNothing);
       await tester.tap(find.text('حفظ كمسودة'));
       await settle(tester);
+      expect(flow.created, ['svc-1']);
+      expect(flow.added, hasLength(1));
+      expect(flow.reviewed, isEmpty);
       expect(find.text('open'), findsOneWidget);
       expect(find.text('حُفظت المسودة.'), findsOneWidget);
     });
 
+    testWidgets('a save the server cannot take keeps the form and says why', (tester) async {
+      flow.createResult = const Left(NetworkFailure('off'));
+      await open(tester, complete: true);
+      await tester.binding.handlePopRoute();
+      await settle(tester);
+      await tester.tap(find.text('حفظ كمسودة'));
+      await settle(tester);
+      expect(find.text('open'), findsNothing);
+      expect(find.text(_l10n.errorNetwork), findsOneWidget);
+    });
+
     testWidgets('discard and leave goes back without saving', (tester) async {
-      await open(tester, withData: true);
+      await open(tester, name: true);
       await tester.binding.handlePopRoute();
       await settle(tester);
       await tester.tap(find.text('تجاهل والخروج'));
       await tester.pumpAndSettle();
       expect(find.text('open'), findsOneWidget);
-      expect(find.text('حُفظت المسودة.'), findsNothing);
+      expect(flow.created, isEmpty);
     });
   });
+}
+
+/// A requests repository that really pages a fixed list.
+class _PagingRepo extends FakeBookingRequestsRepository {
+  _PagingRepo(this.all);
+
+  final List<RequestSummary> all;
+  final calls = <int>[];
+
+  @override
+  Future<Either<Failure, RequestsPage>> getRequests({
+    String group = 'all',
+    String? search,
+    int offset = 0,
+    int limit = 30,
+  }) async {
+    calls.add(offset);
+    final items = all.skip(offset).take(limit).toList();
+    return Right(RequestsPage(items: items, total: all.length, hasMore: offset + items.length < all.length));
+  }
 }

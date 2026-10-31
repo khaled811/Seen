@@ -1,8 +1,9 @@
-/// The file format of an exported statement (Figma WAL-06). The wire value is a
-/// placeholder contract (docs/BACKEND_MIGRATION_GAPS.md, section 24).
+import 'dart:typed_data';
+
+/// The formats an account statement can be exported in. The API offers a PDF
+/// (`accountStatementPdf`); there is no spreadsheet export of the statement.
 enum StatementFormat {
-  pdf('PDF', 'pdf'),
-  excel('XLSX', 'xlsx');
+  pdf('PDF', 'pdf');
 
   const StatementFormat(this.wire, this.extension);
 
@@ -10,10 +11,11 @@ enum StatementFormat {
   final String extension;
 }
 
-/// A generated statement the app downloads from [url].
+/// A generated statement, ready to save or share. The server returns the file
+/// itself (base64), so nothing is downloaded from a link and nothing is cached.
 class StatementFile {
-  const StatementFile({required this.url, required this.fileName});
+  const StatementFile({required this.fileName, required this.bytes});
 
-  final String url;
   final String fileName;
+  final Uint8List bytes;
 }

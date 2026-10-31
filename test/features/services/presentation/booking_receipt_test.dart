@@ -9,7 +9,13 @@ import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/services/presentation/screens/booking_success_screen.dart';
 
 void main() {
-  Future<void> open(WidgetTester tester, {int? balanceAfterCents = 138200}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    int? balanceAfterCents = 138200,
+    String? referenceCode = 'SB-20489',
+    int? heldCents = 15000,
+    bool holdDeferred = false,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(390, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     ShellTabRequest.notifier.value = null;
@@ -28,11 +34,13 @@ void main() {
           body: TextButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
               builder: (_) => BookingSuccessScreen(
-                requestId: 'SB-20489',
+                requestId: 'req-internal-id',
+                referenceCode: referenceCode,
                 serviceName: 'تأشيرة السعودية',
                 travelerCount: 3,
-                heldCents: 15000,
+                heldCents: heldCents,
                 balanceAfterCents: balanceAfterCents,
+                holdDeferred: holdDeferred,
               ),
             )),
             child: const Text('open'),
@@ -66,6 +74,28 @@ void main() {
     await open(tester, balanceAfterCents: null);
     expect(find.text('الرصيد المتاح بعد الحجز'), findsNothing);
     expect(find.text('المبلغ المحجوز'), findsOneWidget);
+  });
+
+  testWidgets('the confirmation is the reference code, never the internal request id', (tester) async {
+    await open(tester);
+    expect(find.text('SB-20489'), findsOneWidget);
+    expect(find.text('req-internal-id'), findsNothing);
+  });
+
+  testWidgets('a reference that has not appeared yet says so (no id in its place, nothing to copy)', (tester) async {
+    await open(tester, referenceCode: null);
+    final l10n = lookupAppLocalizations(const Locale('ar'));
+    expect(find.text(l10n.bookingReferencePending), findsOneWidget);
+    expect(find.text('req-internal-id'), findsNothing);
+    expect(find.text(l10n.bookingReceiptCopy), findsNothing);
+  });
+
+  testWidgets('a service that waits for approval holds nothing: no held rows, the deferred note instead', (tester) async {
+    await open(tester, heldCents: null, balanceAfterCents: null, holdDeferred: true);
+    final l10n = lookupAppLocalizations(const Locale('ar'));
+    expect(find.text('المبلغ المحجوز'), findsNothing);
+    expect(find.text(l10n.reviewHoldDeferredNote), findsOneWidget);
+    expect(find.textContaining('المبلغ محجوز وليس مخصومًا'), findsNothing);
   });
 
   testWidgets('"Follow request" leaves the receipt and asks the shell for the Requests tab', (tester) async {

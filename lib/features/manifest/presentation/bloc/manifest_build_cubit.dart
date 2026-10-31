@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/error/unsupported.dart';
 import '../../domain/entities/manifest.dart';
 import '../../domain/repositories/manifest_repository.dart';
 
@@ -30,9 +31,13 @@ class ManifestBuildState extends Equatable {
     this.notice,
     this.noticeSeq = 0,
     this.submittedId,
+    this.unsupported = false,
   });
 
   final ManifestLoad load;
+
+  /// The load failed because the API has no group manifest: nothing to retry.
+  final bool unsupported;
   final ManifestDraft? draft;
   final bool showAll;
   final bool busy;
@@ -66,11 +71,12 @@ class ManifestBuildState extends Equatable {
         notice: notice ?? this.notice,
         noticeSeq: notice == null ? noticeSeq : noticeSeq + 1,
         submittedId: submittedId ?? this.submittedId,
+        unsupported: unsupported,
       );
 
   @override
   List<Object?> get props =>
-      [load, draft, showAll, busy, notice, noticeSeq, submittedId];
+      [load, draft, showAll, busy, notice, noticeSeq, submittedId, unsupported];
 }
 
 class ManifestBuildCubit extends Cubit<ManifestBuildState> {
@@ -89,7 +95,7 @@ class ManifestBuildCubit extends Cubit<ManifestBuildState> {
         serviceId: serviceId, serviceLabel: serviceLabel);
     if (isClosed) return;
     r.fold(
-      (_) => emit(const ManifestBuildState(load: ManifestLoad.failure)),
+      (f) => emit(ManifestBuildState(load: ManifestLoad.failure, unsupported: isUnsupportedFailure(f))),
       (d) => emit(ManifestBuildState(load: ManifestLoad.loaded, draft: d)),
     );
   }

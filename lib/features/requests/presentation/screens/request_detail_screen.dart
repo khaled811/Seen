@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_motion_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
@@ -21,11 +22,14 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
+import '../../../services/presentation/widgets/seen_options_sheet.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../domain/entities/cancel_reason.dart';
 import '../../domain/entities/request_detail.dart';
 import '../../domain/entities/request_traveler_status.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../../services/presentation/screens/service_selection_screen.dart';
 import '../bloc/approver_reminder_cubit.dart';
 import '../bloc/requests_bloc.dart';
@@ -33,6 +37,7 @@ import '../bloc/requests_event.dart';
 import '../bloc/requests_state.dart';
 import '../widgets/request_status_labels.dart';
 import '../widgets/request_status_seen_mapping.dart';
+import '../widgets/sensitive_values.dart';
 import '../widgets/request_status_sections.dart';
 import '../widgets/seen_deadline_card.dart';
 import 'request_document_viewer_screen.dart';
@@ -68,7 +73,8 @@ class RequestDetailScreen extends StatelessWidget {
           showNotCancellableDialog(context);
           return;
         }
-        final message = loaded.cancelError ?? l10n.error;
+        final message = failureTextOr(
+            l10n, loaded.cancelFailure, loaded.cancelError ?? l10n.error);
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(message)));
@@ -88,9 +94,20 @@ class RequestDetailScreen extends StatelessWidget {
                         if (state is RequestsLoaded &&
                             state.detailStatus == RequestDetailStatus.failure) {
                           return _DetailErrorView(
-                              message: state.detailError ?? l10n.error);
+                              message: failureTextOr(l10n, state.detailFailure,
+                                  state.detailError ?? l10n.error));
                         }
-                        return const _DetailSkeleton();
+                        return SeenWaitPolicy.loading(
+                          loading: const _DetailSkeleton(),
+                          onRetry: () {
+                            if (state is RequestsLoaded &&
+                                state.requests.isNotEmpty) {
+                              context.read<RequestsBloc>().add(
+                                  RequestDetailRequested(
+                                      state.requests.first.id));
+                            }
+                          },
+                        );
                       }
                       return _DetailBody(state: state, detail: state.detail!);
                     },
@@ -133,6 +150,7 @@ class _Header extends StatelessWidget {
         children: [
           SeenRoundIconButton(
             icon: SeenIcons.back(context),
+            glyph: const SeenBackGlyph(),
             semanticLabel: SeenStrings.of(context).back,
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -199,11 +217,7 @@ class _ActionsBar extends StatelessWidget {
                   expand: true,
                   onPressed: () => detail.hasTravelerDocuments
                       ? showTravelerDocumentsSheet(context, detail)
-                      : Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  RequestDocumentViewerScreen(detail: detail)),
-                        ),
+                      : _openOutput(context, detail),
                 ),
               ),
               const SizedBox(width: SeenSpace.s3),
@@ -220,6 +234,31 @@ class _ActionsBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Opens the delivered file; with several delivered files the person picks one.
+Future<void> _openOutput(BuildContext context, RequestDetail detail) async {
+  var output = detail.outputs.isEmpty ? null : detail.outputs.first;
+  if (detail.hasOutput && detail.outputs.length > 1) {
+    final picked = await showSeenOptionsSheet(
+      context: context,
+      title: AppLocalizations.of(context)!.requestDocumentsTitle,
+      recentsKey: 'request_outputs',
+      options: [
+        for (final (i, o) in detail.outputs.indexed)
+          FieldOption(value: '$i', label: o.fileName),
+      ],
+    );
+    final index = picked == null ? null : int.tryParse(picked);
+    if (index == null) return;
+    output = detail.outputs[index];
+  }
+  if (!context.mounted) return;
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+        builder: (_) =>
+            RequestDocumentViewerScreen(detail: detail, output: output)),
+  );
 }
 
 /// Cancel request (Figma REQ-10): the agent picks a reason, sees what comes
@@ -306,7 +345,8 @@ class _CancelReasonBodyState extends State<_CancelReasonBody> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                SeenSvgIcon(SeenVectors.notifReview, size: 20, color: review.fg),
+                SeenSvgIcon(SeenVectors.notifReview,
+                    size: 20, color: review.fg),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -378,9 +418,13 @@ class _NotCancellableDialog extends StatelessWidget {
             borderRadius: const BorderRadius.all(SeenRadius.r28),
             boxShadow: const [
               BoxShadow(
-                  color: Color(0x142C186A), blurRadius: 16, offset: Offset(0, 8)),
+                  color: Color(0x142C186A),
+                  blurRadius: 16,
+                  offset: Offset(0, 8)),
               BoxShadow(
-                  color: Color(0x385B36DA), blurRadius: 48, offset: Offset(0, 24)),
+                  color: Color(0x385B36DA),
+                  blurRadius: 48,
+                  offset: Offset(0, 24)),
             ],
           ),
           child: Padding(
@@ -391,7 +435,8 @@ class _NotCancellableDialog extends StatelessWidget {
                 DecoratedBox(
                   decoration: BoxDecoration(
                       color: action.bg,
-                      borderRadius: const BorderRadius.all(Radius.circular(17))),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(17))),
                   child: SizedBox(
                     width: 56,
                     height: 56,
@@ -594,7 +639,7 @@ class _DetailBody extends StatelessWidget {
               title: l10n.requestDetailTravelersSection,
               padding: const EdgeInsets.symmetric(vertical: 18),
             ),
-            _TravelersCard(travelers: detail.travelers),
+            _TravelersCard(requestId: detail.id, travelers: detail.travelers),
           ],
         ],
       );
@@ -642,7 +687,7 @@ class _DetailBody extends StatelessWidget {
             title: l10n.requestDetailTravelersSection,
             padding: const EdgeInsets.symmetric(vertical: 18),
           ),
-          _TravelersCard(travelers: detail.travelers),
+          _TravelersCard(requestId: detail.id, travelers: detail.travelers),
         ],
         if (detail.isCancellable) ...[
           const SizedBox(height: SeenSpace.s6),
@@ -737,8 +782,9 @@ class _StagesCard extends StatelessWidget {
 }
 
 class _TravelersCard extends StatelessWidget {
-  const _TravelersCard({required this.travelers});
+  const _TravelersCard({required this.requestId, required this.travelers});
 
+  final String requestId;
   final List<RequestTravelerStatus> travelers;
 
   @override
@@ -746,13 +792,18 @@ class _TravelersCard extends StatelessWidget {
     final c = SeenColors.of(context);
     return _card(
       c,
-      Column(
-        children: [
-          for (var i = 0; i < travelers.length; i++) ...[
-            if (i > 0) Divider(height: 1, thickness: 1, color: c.border),
-            _TravelerRow(traveler: travelers[i], number: i + 1),
+      // Sensitive values (passport number ...) load on their own and show hidden, with a
+      // reveal control; until then the rows look as they always did.
+      SensitiveValuesScope(
+        requestId: requestId,
+        child: Column(
+          children: [
+            for (var i = 0; i < travelers.length; i++) ...[
+              if (i > 0) Divider(height: 1, thickness: 1, color: c.border),
+              _TravelerRow(traveler: travelers[i], number: i + 1),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -776,52 +827,59 @@ class _TravelerRow extends StatelessWidget {
     return Padding(
       padding:
           const EdgeInsets.symmetric(horizontal: SeenSpace.s4, vertical: 14),
-      child: Row(children: [
-        DecoratedBox(
-          decoration:
-              BoxDecoration(color: c.primarySoft, shape: BoxShape.circle),
-          child: SizedBox(
-            width: 32,
-            height: 32,
-            child: Center(
-              child: Text(SeenStrings.of(context).numeral(number),
-                  style: type.label.copyWith(color: c.primary)),
+      child: Column(children: [
+        Row(children: [
+          DecoratedBox(
+            decoration:
+                BoxDecoration(color: c.primarySoft, shape: BoxShape.circle),
+            child: SizedBox(
+              width: 32,
+              height: 32,
+              child: Center(
+                child: Text(SeenStrings.of(context).numeral(number),
+                    style: type.label.copyWith(color: c.primary)),
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: SeenSpace.s3),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(traveler.name, style: type.bodyStrong),
-              if (traveler.passportNumber != null)
-                Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: Text(
-                    traveler.passportNumber!,
-                    style: type.caption.copyWith(
-                        color: c.inkMuted, fontFeatures: SeenFonts.tabular),
+          const SizedBox(width: SeenSpace.s3),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(traveler.name, style: type.bodyStrong),
+                if (traveler.passportNumber != null)
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      traveler.passportNumber!,
+                      style: type.caption.copyWith(
+                          color: c.inkMuted, fontFeatures: SeenFonts.tabular),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
+          const SizedBox(width: SeenSpace.s2),
+          SeenStatusBadge(status: traveler.status.toSeenStatus, dense: true),
+          // Per-traveler download — still mocked (no real document storage
+          // yet), so tapping only plays the acknowledgment animation.
+          if (approved) ...[
+            const SizedBox(width: SeenSpace.s1),
+            SeenMotionIcon(
+              asset: SeenMotionIcons.download,
+              fallbackIcon: SeenIcons.download,
+              size: 20,
+              color: c.inkMuted,
+              semanticLabel: l10n.requestDetailDownloadAction,
+              onTap: () {},
+            ),
+          ],
+        ]),
+        // Under the name, aligned with it (past the number circle and its gap).
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 32 + SeenSpace.s3),
+          child: TravelerSensitiveBlock(index: number - 1),
         ),
-        const SizedBox(width: SeenSpace.s2),
-        SeenStatusBadge(status: traveler.status.toSeenStatus, dense: true),
-        // Per-traveler download — still mocked (no real document storage
-        // yet), so tapping only plays the acknowledgment animation.
-        if (approved) ...[
-          const SizedBox(width: SeenSpace.s1),
-          SeenMotionIcon(
-            asset: SeenMotionIcons.download,
-            fallbackIcon: SeenIcons.download,
-            size: 20,
-            color: c.inkMuted,
-            semanticLabel: l10n.requestDetailDownloadAction,
-            onTap: () {},
-          ),
-        ],
       ]),
     );
   }

@@ -8,6 +8,5 @@ class MarkNotificationReadUseCase {
 
   final SupportRepository _repository;
 
-  Future<Either<Failure, void>> call(String notificationId) =>
-      _repository.markNotificationRead(notificationId);
+  Future<Either<Failure, bool>> call(String notificationId) => _repository.markNotificationRead(notificationId);
 }

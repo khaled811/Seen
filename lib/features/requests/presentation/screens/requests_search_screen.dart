@@ -11,12 +11,14 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
+import '../../../../core/presentation/widgets/error_patterns.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/status.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
 import '../../domain/entities/request_summary.dart';
 import '../bloc/recent_searches_cubit.dart';
 import '../bloc/requests_bloc.dart';
@@ -131,6 +133,9 @@ class _SearchViewState extends State<_SearchView> {
                       current is RequestsLoaded &&
                       (previous is! RequestsLoaded ||
                           previous.searchQuery != current.searchQuery ||
+                          previous.searchResults != current.searchResults ||
+                          previous.searching != current.searching ||
+                          previous.searchFailure != current.searchFailure ||
                           previous.requests != current.requests),
                   builder: (context, state) {
                     final loaded = state is RequestsLoaded ? state : null;
@@ -161,7 +166,16 @@ class _SearchViewState extends State<_SearchView> {
     final results = state.searchResults;
     return [
       const SizedBox(height: 12),
-      if (results.isNotEmpty) ...[
+      // The server is searching: a spinner, not a flash of "no results".
+      if (state.searching && results.isEmpty)
+        const Center(child: Padding(padding: EdgeInsets.all(24), child: SeenLoader()))
+      else if (state.searchFailure != null && results.isEmpty)
+        SeenInlineError(
+          title: l10n.errorSectionLoad,
+          retryLabel: l10n.retry,
+          onRetry: () => context.read<RequestsBloc>().add(RequestsSearchChanged(state.searchQuery)),
+        )
+      else if (results.isNotEmpty) ...[
         Semantics(liveRegion: true, child: Text(s.searchResults(results.length, query), style: t.label)),
         for (final request in results) ...[
           const SizedBox(height: 12),

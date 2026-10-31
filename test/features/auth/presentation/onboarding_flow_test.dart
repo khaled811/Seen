@@ -68,7 +68,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('أنشئ كلمة مرور لحسابك'), findsOneWidget);
-      expect(find.text('الخطوة ٢ من ٤'), findsOneWidget);
+      expect(find.text('الخطوة ٢ من ٣'), findsOneWidget);
 
       // The system back gesture returns to the form with its data kept.
       await tester.binding.handlePopRoute();

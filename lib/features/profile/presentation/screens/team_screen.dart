@@ -2,9 +2,11 @@
 // the roles explained, and invite / change role / disable. Owner only.
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/navigation/shell_tab_request.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
@@ -19,7 +21,9 @@ import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
-import '../../../../core/utils/latin_digits.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../system_status/presentation/widgets/access_denied_view.dart';
 import '../../domain/entities/branch.dart';
@@ -106,7 +110,11 @@ class _Allowed extends StatelessWidget {
       listenWhen: (p, c) => p.noticeSeq != c.noticeSeq && c.notice != null,
       listener: (context, state) => ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(s.teamNotice(state.notice!)))),
+        ..showSnackBar(SnackBar(
+          content: Text(state.notice == TeamNotice.failed && state.failure != null
+              ? failureTextOr(AppLocalizations.of(context)!, state.failure, s.teamNotice(state.notice!))
+              : s.teamNotice(state.notice!)),
+        )),
       builder: (context, state) {
         return Column(
           children: [
@@ -155,9 +163,12 @@ class _Body extends StatelessWidget {
           ),
         );
       }
-      return SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel);
+      return SeenWaitPolicy.loading(
+        loading: SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel),
+        onRetry: cubit.load,
+      );
     }
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: cubit.load,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(14, 4, 14, SeenSpace.s6),
@@ -277,7 +288,7 @@ class _MemberRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 if (busy)
-                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  const SeenLoader(size: 20)
                 else
                   SeenStatusChip(status: _chip(member.status), label: s.memberStatus(member.status)),
               ],
@@ -289,22 +300,15 @@ class _MemberRow extends StatelessWidget {
   }
 }
 
-enum _Action { changeRole, disable, enable, resend, cancelInvite }
+enum _Action { changeRole }
 
 Future<void> _showActions(BuildContext context, TeamMember m) async {
   final cubit = context.read<TeamCubit>();
   final s = SeenStrings.of(context);
-  final actions = switch (m.status) {
-    TeamMemberStatus.active => [_Action.changeRole, _Action.disable],
-    TeamMemberStatus.disabled => [_Action.changeRole, _Action.enable],
-    TeamMemberStatus.invited => [_Action.resend, _Action.cancelInvite],
-  };
+  // The API can change a user's role only: it has no disabling, enabling or invitations.
+  const actions = [_Action.changeRole];
   String label(_Action a) => switch (a) {
         _Action.changeRole => s.changeRoleAction,
-        _Action.disable => s.disableUserAction,
-        _Action.enable => s.enableUserAction,
-        _Action.resend => s.resendInviteAction,
-        _Action.cancelInvite => s.cancelInviteAction,
       };
   final picked = await showSeenSheet<_Action>(
     context: context,
@@ -335,27 +339,7 @@ Future<void> _showActions(BuildContext context, TeamMember m) async {
       if (role != null && role != m.role) {
         await cubit.changeRole(m.id, role);
       }
-    case _Action.disable:
-      final ok = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(s.disableTitle(m.name)),
-          content: Text(s.disableBody),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(s.keepEditing)),
-            TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(s.disableUserAction)),
-          ],
-        ),
-      );
-      if (ok == true) {
-        await cubit.setActive(m.id, active: false);
-      }
-    case _Action.enable:
-      await cubit.setActive(m.id, active: true);
-    case _Action.resend:
-      await cubit.resendInvite(m.id);
-    case _Action.cancelInvite:
-      await cubit.cancelInvite(m.id);
+
   }
 }
 
@@ -415,18 +399,20 @@ class _InviteForm extends StatefulWidget {
 
 class _InviteFormState extends State<_InviteForm> {
   final _name = TextEditingController();
-  final _phone = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   final _branch = TextEditingController();
   TeamRole _role = TeamRole.staff;
   Branch? _picked;
   String? _nameError;
-  String? _phoneError;
-  String? _branchError;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
     _name.dispose();
-    _phone.dispose();
+    _email.dispose();
+    _password.dispose();
     _branch.dispose();
     super.dispose();
   }
@@ -453,7 +439,6 @@ class _InviteFormState extends State<_InviteForm> {
       setState(() {
         _picked = picked;
         _branch.text = picked.name;
-        _branchError = null;
       });
     }
   }
@@ -461,18 +446,24 @@ class _InviteFormState extends State<_InviteForm> {
   void _submit() {
     final s = SeenStrings.of(context);
     final name = _name.text.trim();
-    final phone = _phone.text.trim();
-    final branch = _picked?.name ?? _branch.text.trim();
-    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final email = _email.text.trim();
+    final password = _password.text;
     setState(() {
       _nameError = name.isEmpty ? s.fieldRequired : null;
-      _phoneError = phone.isEmpty ? s.fieldRequired : (digits.length < 7 ? s.phoneInvalid : null);
-      _branchError = branch.isEmpty ? s.fieldRequired : null;
+      _emailError = email.isEmpty ? s.fieldRequired : (email.contains('@') && email.contains('.') ? null : s.emailInvalid);
+      _passwordError = password.length >= 12 ? null : s.passwordTooShort;
     });
-    if (_nameError != null || _phoneError != null || _branchError != null) {
+    if (_nameError != null || _emailError != null || _passwordError != null) {
       return;
     }
-    Navigator.of(context).pop(InviteDraft(name: name, phone: phone, role: _role, branchName: branch, branchId: _picked?.id));
+    Navigator.of(context).pop(InviteDraft(
+      name: name,
+      email: email,
+      password: password,
+      role: _role,
+      branchName: _picked?.name ?? '',
+      branchId: _picked?.id,
+    ));
   }
 
   @override
@@ -486,13 +477,22 @@ class _InviteFormState extends State<_InviteForm> {
         SeenTextField(label: s.inviteName, controller: _name, errorText: _nameError, textInputAction: TextInputAction.next),
         const SizedBox(height: 12),
         SeenTextField(
-          label: s.invitePhone,
-          controller: _phone,
+          label: s.inviteEmail,
+          controller: _email,
           ltr: true,
-          errorText: _phoneError,
-          keyboardType: TextInputType.phone,
-          inputFormatters: const [LatinDigitsFormatter()],
+          errorText: _emailError,
+          keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
+        ),
+        const SizedBox(height: 12),
+        SeenTextField(
+          label: s.invitePassword,
+          controller: _password,
+          ltr: true,
+          obscureText: true,
+          helper: s.invitePasswordHint,
+          errorText: _passwordError,
+          textInputAction: TextInputAction.done,
         ),
         const SizedBox(height: 12),
         Text(s.inviteRole, style: t.label),
@@ -511,15 +511,13 @@ class _InviteFormState extends State<_InviteForm> {
             ),
           ),
         const SizedBox(height: 4),
-        if (widget.branches.isEmpty)
-          SeenTextField(label: s.inviteBranch, controller: _branch, errorText: _branchError, onSubmitted: (_) => _submit())
-        else
+        // The branch is optional, and only a real one (picked from the list) can be sent.
+        if (widget.branches.isNotEmpty)
           SeenTextField(
             label: s.inviteBranch,
             controller: _branch,
             readOnly: true,
             picker: true,
-            errorText: _branchError,
             onTap: _pickBranch,
             suffix: Icon(SeenIcons.forward(context), size: 16),
           ),

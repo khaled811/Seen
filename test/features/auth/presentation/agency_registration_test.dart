@@ -1,5 +1,6 @@
-// Agency registration after the form (Figma AUTH-05 … AUTH-07): bloc rules over
-// a fake repository, and the three screens end to end. Arabic / RTL.
+// Agency registration after the form (Figma AUTH-05 / AUTH-07): bloc rules over a
+// fake repository, the two screens end to end, and the data source against the
+// contract (`registerMainAgent`). Arabic / RTL.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -7,12 +8,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/error/failure.dart';
+import 'package:seen_booking/core/localization/app_language.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
+import 'package:seen_booking/features/auth/data/datasources/agency_registration_remote_data_source.dart';
 import 'package:seen_booking/features/auth/domain/entities/agency_registration.dart';
 import 'package:seen_booking/features/auth/domain/repositories/agency_registration_repository.dart';
 import 'package:seen_booking/features/auth/domain/usecases/agency_registration_usecases.dart';
 import 'package:seen_booking/features/auth/presentation/bloc/agency_registration_bloc.dart';
 import 'package:seen_booking/features/auth/presentation/screens/agency_registration_flow.dart';
+
+import '../../../support/scripted_graphql_service.dart';
 
 const _draft = AgencyRegistrationDraft(
   agencyName: 'وكالة النور',
@@ -23,60 +28,28 @@ const _draft = AgencyRegistrationDraft(
   licenseNumber: 'CR-1',
 );
 
-const _challenge = RegistrationChallenge(
-  challengeToken: 'c1',
-  maskedPhone: '+967 77 ••• 0700',
-  resendCooldownSeconds: 45,
-);
+const _consent = RegistrationConsent(acceptedTerms: true, acceptedPrivacy: true);
 
 class _FakeRepo implements AgencyRegistrationRepository {
-  Either<Failure, RegistrationChallenge> startResult = const Right(_challenge);
-  Either<Failure, String> verifyResult = const Right('v1');
-  Either<Failure, void> completeResult = const Right(null);
-  int starts = 0;
-  int resends = 0;
-  int completes = 0;
+  Either<Failure, void> result = const Right(null);
+  int registers = 0;
   String? lastPassword;
   RegistrationConsent? lastConsent;
 
   @override
-  Future<Either<Failure, RegistrationChallenge>> start({
+  Future<Either<Failure, void>> register({
     required AgencyRegistrationDraft draft,
     required String password,
-  }) async {
-    starts++;
-    lastPassword = password;
-    return startResult;
-  }
-
-  @override
-  Future<Either<Failure, RegistrationChallenge>> resendCode({required String challengeToken}) async {
-    resends++;
-    return const Right(_challenge);
-  }
-
-  @override
-  Future<Either<Failure, String>> verifyPhone({required String challengeToken, required String code}) async =>
-      verifyResult;
-
-  @override
-  Future<Either<Failure, void>> complete({
-    required String verificationToken,
     required RegistrationConsent consent,
   }) async {
-    completes++;
+    registers++;
+    lastPassword = password;
     lastConsent = consent;
-    return completeResult;
+    return result;
   }
 }
 
-AgencyRegistrationBloc _bloc(_FakeRepo r) => AgencyRegistrationBloc(
-      draft: _draft,
-      start: StartAgencyRegistrationUseCase(r),
-      resendCode: ResendRegistrationCodeUseCase(r),
-      verifyPhone: VerifyRegistrationPhoneUseCase(r),
-      complete: CompleteAgencyRegistrationUseCase(r),
-    );
+AgencyRegistrationBloc _bloc(_FakeRepo r) => AgencyRegistrationBloc(draft: _draft, register: RegisterAgencyUseCase(r));
 
 Future<void> _settle(WidgetTester tester) async {
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
@@ -87,103 +60,169 @@ Future<void> _settle(WidgetTester tester) async {
 
 void main() {
   group('RegistrationIssue.from', () {
-    test('maps backend codes and their details', () {
+    test('maps the contract codes', () {
       expect(RegistrationIssue.from(const NetworkFailure('x')).kind, RegistrationIssueKind.offline);
-      expect(
-        RegistrationIssue.from(const ServerFailure('x', code: RegistrationIssue.phoneTakenCode)).kind,
-        RegistrationIssueKind.phoneTaken,
-      );
-      final wrong = RegistrationIssue.from(
-        const ServerFailure('x', code: RegistrationIssue.wrongCodeCode, details: {'attemptsLeft': 2}),
-      );
-      expect((wrong.kind, wrong.attemptsLeft), (RegistrationIssueKind.wrongCode, 2));
+      final email = RegistrationIssue.from(const ServerFailure('x', code: 'owner_email_taken'));
+      expect((email.kind, email.isFormFieldConflict), (RegistrationIssueKind.emailTaken, true));
+      expect(RegistrationIssue.from(const ServerFailure('x', code: 'password_weak')).kind, RegistrationIssueKind.weakPassword);
+      final limited = RegistrationIssue.from(const ServerFailure('x', code: 'too_many_attempts', details: {'minutes': 30}));
+      expect((limited.kind, limited.minutes), (RegistrationIssueKind.rateLimited, 30));
       expect(RegistrationIssue.from(const ServerFailure('boom')).kind, RegistrationIssueKind.generic);
+      expect(RegistrationIssue.from(const ServerFailure('x', code: 'license_number_invalid')).isFormFieldConflict, isFalse);
     });
   });
 
   group('AgencyRegistrationBloc', () {
-    test('password → otp → terms → done', () async {
+    test('password → terms → done; the password is sent once, with the consent', () async {
       final repo = _FakeRepo();
       final bloc = _bloc(repo);
       addTearDown(bloc.close);
-
-      bloc.add(const RegistrationPasswordSubmitted('Abcdef12'));
-      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.otp);
-      expect(repo.lastPassword, 'Abcdef12');
-      expect(bloc.state.codesSent, 1);
-
-      bloc.add(const RegistrationCodeSubmitted('123456'));
+      bloc.add(const RegistrationPasswordSubmitted('Seen@2026-long'));
       await bloc.stream.firstWhere((s) => s.step == RegistrationStep.terms);
-      expect(bloc.state.verificationToken, 'v1');
+      expect(repo.registers, 0); // nothing is sent before the terms are accepted
 
-      bloc.add(const RegistrationConsentSubmitted(RegistrationConsent(acceptedTerms: true, acceptedPrivacy: true)));
+      bloc.add(const RegistrationConsentSubmitted(_consent));
       await bloc.stream.firstWhere((s) => s.step == RegistrationStep.done);
+      expect(repo.registers, 1);
+      expect(repo.lastPassword, 'Seen@2026-long');
       expect(repo.lastConsent?.marketing, false);
     });
 
-    test('consent without terms or privacy is ignored', () async {
+    test('consent without the terms or the privacy policy is ignored', () async {
       final repo = _FakeRepo();
       final bloc = _bloc(repo);
       addTearDown(bloc.close);
-      bloc.add(const RegistrationPasswordSubmitted('Abcdef12'));
-      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.otp);
-      bloc.add(const RegistrationCodeSubmitted('123456'));
+      bloc.add(const RegistrationPasswordSubmitted('Seen@2026-long'));
       await bloc.stream.firstWhere((s) => s.step == RegistrationStep.terms);
-
       bloc.add(const RegistrationConsentSubmitted(RegistrationConsent(acceptedTerms: true, acceptedPrivacy: false)));
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(repo.completes, 0);
+      await pumpEventQueue();
+      expect(repo.registers, 0);
       expect(bloc.state.step, RegistrationStep.terms);
     });
 
-    test('a wrong code keeps the otp step with the attempts left; resend bumps codesSent', () async {
-      final repo = _FakeRepo()
-        ..verifyResult = const Left(
-          ServerFailure('x', code: RegistrationIssue.wrongCodeCode, details: {'attemptsLeft': 2}),
-        );
-      final bloc = _bloc(repo);
-      addTearDown(bloc.close);
-      bloc.add(const RegistrationPasswordSubmitted('Abcdef12'));
-      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.otp);
-
-      bloc.add(const RegistrationCodeSubmitted('111111'));
-      final wrong = await bloc.stream.firstWhere((s) => s.issue != null);
-      expect(wrong.step, RegistrationStep.otp);
-      expect(wrong.issue!.attemptsLeft, 2);
-
-      bloc.add(const RegistrationResendRequested());
-      final resent = await bloc.stream.firstWhere((s) => s.codesSent == 2);
-      expect(resent.issue, isNull);
-      expect(repo.resends, 1);
+    test('consent before any password sends nothing', () async {
+      final repo = _FakeRepo();
+      final bloc = _bloc(repo)..add(const RegistrationConsentSubmitted(_consent));
+      await pumpEventQueue();
+      expect(repo.registers, 0);
+      await bloc.close();
     });
 
-    test('back from otp and from terms returns to the password step', () async {
+    test('a refusal stays on the terms with its issue; trying again works', () async {
+      final repo = _FakeRepo()..result = const Left(ServerFailure('x', code: 'password_weak'));
+      final bloc = _bloc(repo);
+      addTearDown(bloc.close);
+      bloc.add(const RegistrationPasswordSubmitted('Seen@2026-long'));
+      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.terms);
+      bloc.add(const RegistrationConsentSubmitted(_consent));
+      final failed = await bloc.stream.firstWhere((s) => s.issue != null);
+      expect(failed.step, RegistrationStep.terms);
+      expect(failed.issue!.kind, RegistrationIssueKind.weakPassword);
+
+      repo.result = const Right(null);
+      bloc.add(const RegistrationConsentSubmitted(_consent));
+      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.done);
+      expect(repo.registers, 2);
+    });
+
+    test('a lost connection is offline, and the password is still held for the retry', () async {
+      final repo = _FakeRepo()..result = const Left(NetworkFailure('off'));
+      final bloc = _bloc(repo);
+      addTearDown(bloc.close);
+      bloc.add(const RegistrationPasswordSubmitted('Seen@2026-long'));
+      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.terms);
+      bloc.add(const RegistrationConsentSubmitted(_consent));
+      expect((await bloc.stream.firstWhere((s) => s.issue != null)).issue!.kind, RegistrationIssueKind.offline);
+      repo.result = const Right(null);
+      bloc.add(const RegistrationConsentSubmitted(_consent));
+      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.done);
+      expect(repo.lastPassword, 'Seen@2026-long');
+    });
+
+    test('back from the terms returns to the password and forgets it', () async {
       final repo = _FakeRepo();
       final bloc = _bloc(repo);
       addTearDown(bloc.close);
-      bloc.add(const RegistrationPasswordSubmitted('Abcdef12'));
-      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.otp);
-      bloc.add(const RegistrationBackPressed());
-      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.password);
-
-      bloc.add(const RegistrationPasswordSubmitted('Abcdef12'));
-      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.otp);
-      bloc.add(const RegistrationCodeSubmitted('123456'));
+      bloc.add(const RegistrationPasswordSubmitted('Seen@2026-long'));
       await bloc.stream.firstWhere((s) => s.step == RegistrationStep.terms);
       bloc.add(const RegistrationBackPressed());
       await bloc.stream.firstWhere((s) => s.step == RegistrationStep.password);
+      bloc.add(const RegistrationConsentSubmitted(_consent));
+      await pumpEventQueue();
+      expect(repo.registers, 0); // the forgotten password is not sent
+    });
+
+    test('a second tap while registering is dropped', () async {
+      final repo = _FakeRepo();
+      final bloc = _bloc(repo);
+      addTearDown(bloc.close);
+      bloc.add(const RegistrationPasswordSubmitted('Seen@2026-long'));
+      await bloc.stream.firstWhere((s) => s.step == RegistrationStep.terms);
+      bloc
+        ..add(const RegistrationConsentSubmitted(_consent))
+        ..add(const RegistrationConsentSubmitted(_consent));
+      await pumpEventQueue();
+      expect(repo.registers, lessThanOrEqualTo(2));
+      expect(bloc.state.step, RegistrationStep.done);
+    });
+  });
+
+  group('the data source (registerMainAgent against the contract)', () {
+    test('sends the agency, owner, phone, city, licence, locale and the accepted terms', () async {
+      final graphql = ScriptedGraphQLService({
+        'RegisterMainAgent': {
+          'registerMainAgent': {'id': 'a1', 'status': 'pending'},
+        },
+      });
+      final source = AgencyRegistrationRemoteDataSourceImpl(graphQLService: graphql, language: AppLanguage('en'));
+      final result = await source.register(draft: _draft, password: 'Seen@2026-long', consent: _consent);
+      expect(result.isRight(), isTrue);
+      expect(graphql.where('RegisterMainAgent').single.variables, {
+        'input': {
+          'name': 'وكالة النور',
+          'ownerFullName': 'أحمد محمد',
+          'ownerEmail': 'agency@example.com',
+          'ownerPassword': 'Seen@2026-long',
+          'ownerPhone': '+967771234567',
+          'city': 'صنعاء',
+          'licenseNumber': 'CR-1',
+          'locale': 'en',
+          'acceptedTerms': true,
+        },
+      });
+    });
+
+    test('the terms are accepted only when both texts were', () async {
+      final graphql = ScriptedGraphQLService({
+        'RegisterMainAgent': {
+          'registerMainAgent': {'id': 'a1', 'status': 'pending'},
+        },
+      });
+      final source = AgencyRegistrationRemoteDataSourceImpl(graphQLService: graphql, language: AppLanguage());
+      await source.register(
+        draft: _draft,
+        password: 'x',
+        consent: const RegistrationConsent(acceptedTerms: true, acceptedPrivacy: false),
+      );
+      final input = graphql.where('RegisterMainAgent').single.variables['input'] as Map;
+      expect(input['acceptedTerms'], isFalse);
+      expect(input['locale'], 'ar');
+    });
+
+    test('a refusal is a Failure with the server code', () async {
+      final source = AgencyRegistrationRemoteDataSourceImpl(
+        graphQLService: ScriptedGraphQLService({'RegisterMainAgent': const ServerFailure('x', code: 'owner_email_taken')}),
+        language: AppLanguage(),
+      );
+      final failure = ((await source.register(draft: _draft, password: 'x', consent: _consent)) as Left).value as ServerFailure;
+      expect(failure.code, 'owner_email_taken');
     });
   });
 
   group('AgencyRegistrationFlow', () {
     late _FakeRepo repo;
 
-    Future<void> open(
-      WidgetTester tester, {
-      VoidCallback? onExit,
-      VoidCallback? onCompleted,
-      VoidCallback? onSignIn,
-    }) async {
+    Future<void> open(WidgetTester tester, {VoidCallback? onExit, VoidCallback? onCompleted}) async {
       repo = _FakeRepo();
       await tester.binding.setSurfaceSize(const Size(390, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -201,62 +240,57 @@ void main() {
           draft: _draft,
           onExit: onExit ?? () {},
           onCompleted: onCompleted ?? () {},
-          onSignIn: onSignIn,
           createBloc: () => _bloc(repo),
         ),
       ));
       await tester.pump();
     }
 
-    Future<void> toOtp(WidgetTester tester) async {
+    Future<void> toTerms(WidgetTester tester) async {
       final fields = find.byType(TextFormField);
-      await tester.enterText(fields.at(0), 'Seen@2026');
+      await tester.enterText(fields.at(0), 'Seen@2026-long');
       await tester.pump();
-      await tester.enterText(fields.at(1), 'Seen@2026');
+      await tester.enterText(fields.at(1), 'Seen@2026-long');
       await tester.pump();
       await tester.tap(find.text('متابعة'));
       await _settle(tester);
     }
 
-    testWidgets('continue stays disabled until the rules pass and the passwords match', (tester) async {
+    testWidgets('continue stays disabled until the rules pass (12 characters) and the passwords match', (tester) async {
       await open(tester);
-      expect(find.text('الخطوة ٢ من ٤'), findsOneWidget);
+      expect(find.text('الخطوة ٢ من ٣'), findsOneWidget);
 
       final fields = find.byType(TextFormField);
-      await tester.enterText(fields.at(0), 'abc');
+      // 11 characters: one short of the contract's minimum.
+      await tester.enterText(fields.at(0), 'Seen@202611');
       await tester.pump();
-      await tester.enterText(fields.at(1), 'abc');
+      await tester.enterText(fields.at(1), 'Seen@202611');
       await tester.pump();
       await tester.tap(find.text('متابعة'));
       await _settle(tester);
-      expect(repo.starts, 0);
+      expect(find.text('قبل إنشاء الحساب'), findsNothing);
 
-      await tester.enterText(fields.at(0), 'Seen@2026');
+      await tester.enterText(fields.at(0), 'Seen@2026-long');
       await tester.pump();
-      await tester.enterText(fields.at(1), 'Seen@2027');
+      await tester.enterText(fields.at(1), 'Seen@2027-long');
       await tester.pump();
       expect(find.text('كلمتا المرور غير متطابقتين'), findsOneWidget);
-      expect(find.text('قوية جدًا'), findsOneWidget);
     });
 
-    testWidgets('the whole happy path ends on the completed callback', (tester) async {
+    testWidgets('password → terms (no phone code) → registered', (tester) async {
       var completed = 0;
       await open(tester, onCompleted: () => completed++);
 
-      await toOtp(tester);
-      expect(repo.lastPassword, 'Seen@2026');
-      expect(find.text('تحقق من رقم جوالك'), findsOneWidget);
-      expect(find.text('الخطوة ٣ من ٤'), findsOneWidget);
-
-      await tester.enterText(find.byType(TextField), '123456');
-      await _settle(tester);
+      await toTerms(tester);
+      expect(find.text('تحقق من رقم جوالك'), findsNothing);
       expect(find.text('قبل إنشاء الحساب'), findsOneWidget);
-      expect(find.text('الخطوة ٤ من ٤'), findsOneWidget);
+      expect(find.text('الخطوة ٣ من ٣'), findsOneWidget);
+      expect(repo.registers, 0);
 
       // Without both mandatory consents nothing is sent.
       await tester.tap(find.text('إنشاء الحساب'));
       await _settle(tester);
-      expect(repo.completes, 0);
+      expect(repo.registers, 0);
 
       await tester.tap(find.text('أوافق على الشروط والأحكام'));
       await tester.pump();
@@ -264,30 +298,16 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('إنشاء الحساب'));
       await _settle(tester);
-      expect(repo.completes, 1);
-      expect(repo.lastConsent?.marketing, false);
+      expect(repo.registers, 1);
+      expect(repo.lastPassword, 'Seen@2026-long');
       expect(completed, 1);
-    });
-
-    testWidgets('a phone linked to another account shows the red banner with a sign-in action', (tester) async {
-      var signIns = 0;
-      await open(tester, onSignIn: () => signIns++);
-      repo.verifyResult = const Left(ServerFailure('x', code: RegistrationIssue.phoneTakenCode));
-
-      await toOtp(tester);
-      await tester.enterText(find.byType(TextField), '123456');
-      await _settle(tester);
-      expect(find.text('هذا الرقم مرتبط بحساب آخر. سجّل الدخول أو استعد كلمة المرور.'), findsOneWidget);
-
-      await tester.tap(find.text('دخول'));
-      expect(signIns, 1);
     });
 
     testWidgets('system back steps back inside the flow and leaves it from the first step', (tester) async {
       var exited = 0;
       await open(tester, onExit: () => exited++);
-      await toOtp(tester);
-      expect(find.text('تحقق من رقم جوالك'), findsOneWidget);
+      await toTerms(tester);
+      expect(find.text('قبل إنشاء الحساب'), findsOneWidget);
 
       await tester.binding.handlePopRoute();
       await _settle(tester);
@@ -297,6 +317,19 @@ void main() {
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(exited, 1);
+    });
+
+    testWidgets('a weak password refused by the server shows the weak-password banner on the terms', (tester) async {
+      await open(tester);
+      await toTerms(tester);
+      repo.result = const Left(ServerFailure('x', code: 'password_weak'));
+      await tester.tap(find.text('أوافق على الشروط والأحكام'));
+      await tester.pump();
+      await tester.tap(find.text('أوافق على سياسة الخصوصية'));
+      await tester.pump();
+      await tester.tap(find.text('إنشاء الحساب'));
+      await _settle(tester);
+      expect(find.text(lookupAppLocalizations(const Locale('ar')).recoveryPasswordWeak), findsOneWidget);
     });
   });
 }

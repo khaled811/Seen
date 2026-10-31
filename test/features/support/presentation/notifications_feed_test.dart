@@ -6,13 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
-import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/navigation/shell_tab_request.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/support/domain/entities/in_app_notification.dart';
-import 'package:seen_booking/features/support/domain/repositories/support_repository.dart';
+import '../../../support/support_fakes.dart';
 import 'package:seen_booking/features/support/domain/usecases/get_notifications_usecase.dart';
 import 'package:seen_booking/features/support/domain/usecases/mark_all_notifications_read_usecase.dart';
 import 'package:seen_booking/features/support/domain/usecases/mark_notification_read_usecase.dart';
@@ -25,34 +23,13 @@ import 'package:seen_booking/features/system_status/domain/services/push_permiss
 import 'package:seen_booking/features/system_status/presentation/bloc/push_permission_cubit.dart';
 import 'package:seen_booking/features/system_status/presentation/screens/push_permission_screen.dart';
 
+/// The ticket subject is what titles a row here, so each row is told apart by it.
 InAppNotification _n(String id, NotificationEventType type,
         {bool read = false, String? request, String? entity, String title = 'عنوان'}) =>
-    InAppNotification(
-      id: id,
-      type: type,
-      title: '$title $id',
-      body: 'تفصيل',
-      createdAt: DateTime.now(),
-      isRead: read,
-      relatedRequestId: request,
-      relatedEntityId: entity,
-    );
+    fakeNotification(id, type: type, read: read, request: request, ticket: entity, subject: '$title $id');
 
-class _Repo implements SupportRepository {
-  _Repo(this.items);
-  List<InAppNotification> items;
-
-  @override
-  Future<Either<Failure, List<InAppNotification>>> getNotifications() async => Right(items);
-
-  @override
-  Future<Either<Failure, void>> markNotificationRead(String notificationId) async => const Right(null);
-
-  @override
-  Future<Either<Failure, void>> markAllNotificationsRead() async => const Right(null);
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError('${invocation.memberName}');
+class _Repo extends FakeNotificationsRepository {
+  _Repo(super.items);
 }
 
 NotificationsBloc _bloc(_Repo repo) => NotificationsBloc(
@@ -135,15 +112,16 @@ void main() {
     test('the bloc keeps the chip across a reload and after reading', () async {
       final repo = _Repo([_n('1', NotificationEventType.topUp), _n('2', NotificationEventType.topUp, read: true)]);
       final bloc = _bloc(repo)..add(const NotificationsLoadRequested());
-      await bloc.stream.firstWhere((s) => s is NotificationsLoaded);
+      await pumpEventQueue();
       bloc.add(const NotificationsFilterChanged(unreadOnly: true));
-      await bloc.stream.firstWhere((s) => s is NotificationsLoaded && s.unreadOnly);
+      await pumpEventQueue();
       expect((bloc.state as NotificationsLoaded).visible.map((n) => n.id), ['1']);
       bloc.add(const NotificationsLoadRequested());
-      await bloc.stream.firstWhere((s) => s is NotificationsLoaded);
+      await pumpEventQueue();
       expect((bloc.state as NotificationsLoaded).unreadOnly, isTrue);
       bloc.add(const NotificationMarkReadRequested('1'));
-      await bloc.stream.firstWhere((s) => s is NotificationsLoaded && s.unreadCount == 0);
+      await pumpEventQueue();
+      expect((bloc.state as NotificationsLoaded).unreadCount, 0);
       expect((bloc.state as NotificationsLoaded).visible, isEmpty);
       await bloc.close();
     });

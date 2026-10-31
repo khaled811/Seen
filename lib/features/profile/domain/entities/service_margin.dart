@@ -18,6 +18,7 @@ class ServiceMargin extends Equatable {
     required this.value,
     required this.editable,
     this.iconKey,
+    this.basePriceCents,
   });
 
   final String serviceId;
@@ -33,6 +34,11 @@ class ServiceMargin extends Equatable {
   /// Lets the screen pick an icon (`visa`, `entry`, `flight`...); null = generic.
   final String? iconKey;
 
+  /// The agency's own price of the service (what a fixed margin is added to). The API
+  /// stores a sub-agency's fixed price, so a margin of [value] is a price of
+  /// `basePriceCents + value`.
+  final int? basePriceCents;
+
   ServiceMargin withValue(int v) => ServiceMargin(
         serviceId: serviceId,
         serviceName: serviceName,
@@ -40,10 +46,11 @@ class ServiceMargin extends Equatable {
         value: v,
         editable: editable,
         iconKey: iconKey,
+        basePriceCents: basePriceCents,
       );
 
   @override
-  List<Object?> get props => [serviceId, serviceName, kind, value, editable, iconKey];
+  List<Object?> get props => [serviceId, serviceName, kind, value, editable, iconKey, basePriceCents];
 }
 
 /// One past change ("Saudi visa: 8 -> 10 USD, 1 Oct, Majd").

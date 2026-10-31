@@ -18,6 +18,7 @@ import 'package:seen_booking/features/agents/presentation/bloc/agents_state.dart
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 
 const _subAgent1 = SubAgent(
@@ -59,16 +60,11 @@ class _FakeAgentsRepository implements AgentsRepository {
       Right([_pendingRequest('req-1'), _pendingRequest('req-2')]);
   Either<Failure, void> approveResult = const Right(null);
   Either<Failure, void> rejectResult = const Right(null);
-  Either<Failure, SubAgent> fundResult = const Right(
-    SubAgent(
-      id: 'sub-1',
-      name: 'Cairo Branch',
-      code: 'CAI-01',
-      balanceCents: 150000,
-      isActive: true,
-      marginPercent: 3.0,
-    ),
-  );
+  Either<Failure, void> fundResult = const Right(null);
+
+  /// What the list answers once a funding went through (the server's new balance).
+  Either<Failure, List<SubAgent>>? subAgentsAfterFund;
+  final List<({String subAgentId, int amountCents, String idempotencyKey})> fundCalls = [];
 
   String? lastRejectReason;
 
@@ -89,32 +85,31 @@ class _FakeAgentsRepository implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+  Future<Either<Failure, void>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
-  }) async =>
-      fundResult;
+  }) async {
+    fundCalls.add((subAgentId: subAgentId, amountCents: amountCents, idempotencyKey: idempotencyKey));
+    if (fundResult.isRight() && subAgentsAfterFund != null) subAgentsResult = subAgentsAfterFund!;
+    return fundResult;
+  }
 
   @override
   Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent) async =>
       const Right(SubAgent(id: 'new', name: 'x', code: 'x', balanceCents: 0, isActive: true));
 
   @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit({required String subAgentId, required int limitCents}) async =>
-      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
-
-  @override
   Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(String subAgentId) async =>
       const Right(SubAgentProfile(agent: SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true)));
 
   @override
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
   }) async =>
-      const Right(SubAgent(id: 'x', name: 'x', code: 'x', balanceCents: 0, isActive: true));
+      const Right(null);
 }
 
 class _FakeWalletRepository implements WalletRepository {
@@ -138,11 +133,16 @@ class _FakeWalletRepository implements WalletRepository {
       throw UnimplementedError('Not used by AgentsBloc');
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError('Not used by AgentsBloc');
 }
@@ -249,6 +249,10 @@ void main() {
   group('wallet transfer (funding)', () {
     test('updates the sub-agent balance and refreshes the master balance on success', () async {
       await load();
+      agentsRepository.subAgentsAfterFund = const Right([
+        SubAgent(id: 'sub-1', name: 'Cairo Branch', code: 'CAI-01', balanceCents: 150000, isActive: true),
+        _subAgent2,
+      ]);
       bloc.add(
         const SubAgentWalletFundingSubmitted(subAgentId: 'sub-1', amountCents: 50000),
       );
@@ -265,6 +269,32 @@ void main() {
       expect(walletRepository.getBalanceCalls, 2); // initial load + post-fund refresh
     });
 
+    test('a retry after a dropped connection reuses the key; a new action or a rejection does not', () async {
+      await load();
+      Future<void> fund(int cents) async {
+        bloc.add(SubAgentWalletFundingSubmitted(subAgentId: 'sub-1', amountCents: cents));
+        await bloc.stream.firstWhere(
+          (s) => s is AgentsLoaded && s.fundingStatus != FundingStatus.submitting && s.fundingStatus != FundingStatus.idle,
+        );
+        bloc.add(const FundingStatusCleared());
+        await bloc.stream.firstWhere((s) => s is AgentsLoaded && s.fundingStatus == FundingStatus.idle);
+      }
+
+      agentsRepository.fundResult = const Left(NetworkFailure('offline', isTimeout: true));
+      await fund(5000);
+      await fund(5000); // the same action tried again
+      expect(agentsRepository.fundCalls[1].idempotencyKey, agentsRepository.fundCalls[0].idempotencyKey);
+
+      agentsRepository.fundResult = const Left(ServerFailure('no', code: 'funds_exceed_balance'));
+      await fund(5000); // answered: rejected, so the key is spent
+      agentsRepository.fundResult = const Right(null);
+      await fund(5000);
+      expect(agentsRepository.fundCalls[3].idempotencyKey, isNot(agentsRepository.fundCalls[2].idempotencyKey));
+
+      await fund(7000); // another amount is another action
+      expect(agentsRepository.fundCalls[4].idempotencyKey, isNot(agentsRepository.fundCalls[3].idempotencyKey));
+    });
+
     test('surfaces a repository failure (e.g. exceeds available balance)', () async {
       await load();
       agentsRepository.fundResult = const Left(
@@ -279,6 +309,7 @@ void main() {
       ) as AgentsLoaded;
 
       expect(failed.fundingError, 'Amount exceeds available balance.');
+      expect(failed.fundingFailure, isA<ValidationFailure>()); // the screen words it in the app's own language
       // The sub-agent list is untouched — no client-side balance fabrication.
       expect(failed.subAgents.firstWhere((a) => a.id == 'sub-1').balanceCents, 100000);
     });

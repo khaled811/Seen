@@ -24,6 +24,13 @@ abstract final class SeenVectors {
   /// Icon/chat (36px glyph on the OTP header tile).
   static const iconChat = 'assets/icons/icon_chat.svg';
 
+  /// Figma Icon/back: a violet rounded square with a chevron pointing right (the back
+  /// direction in RTL; mirror it in LTR). Keeps its own colour.
+  static const iconBack = 'assets/icons/icon_back.svg';
+
+  /// The tick of Figma Icon/check (single colour, tinted): every small "done" mark.
+  static const iconCheck = 'assets/icons/icon_check.svg';
+
   // Bottom-navigation icons (single-color glyphs, tinted per state).
   static const iconHome = 'assets/icons/icon_home.svg';
   static const iconRequests = 'assets/icons/icon_requests.svg';

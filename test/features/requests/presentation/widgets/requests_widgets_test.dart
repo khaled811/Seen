@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:seen_booking/core/presentation/widgets/svg_icon.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/presentation/foundation/seen_vectors.dart';
 import 'package:seen_booking/core/presentation/widgets/empty_state.dart';
@@ -100,12 +101,12 @@ void main() {
       SeenStep(title: 'د'),
     ];
     await _pump(tester, const Scaffold(body: SeenStatusStepper(steps: steps, current: 2)));
-    expect(find.byType(Icon), findsNWidgets(2)); // checks on steps 1 and 2
+    expect(find.byType(SeenCheckGlyph), findsNWidgets(2)); // checks on steps 1 and 2
     expect(find.text('m1'), findsOneWidget);
 
     // current == steps.length marks every step done.
     await _pump(tester, const Scaffold(body: SeenStatusStepper(steps: steps, current: 4)));
-    expect(find.byType(Icon), findsNWidgets(4));
+    expect(find.byType(SeenCheckGlyph), findsNWidgets(4));
   });
 
   testWidgets('SeenEmptyState shows its copy and fires the primary action', (tester) async {

@@ -8,6 +8,7 @@ import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
 import '../foundation/seen_strings.dart';
+import 'svg_icon.dart';
 
 /// Six-cell one-time-code entry. One hidden TextField (SMS autofill via
 /// AutofillHints.oneTimeCode) drives the painted cells. Cells are always LTR.
@@ -226,7 +227,9 @@ class SeenNotificationTile extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(color: t.bg, shape: BoxShape.circle, border: Border.all(color: t.line)),
-                  child: Icon(kind.icon, size: 18, color: ink),
+                  child: kind == SeenNotificationKind.approved
+                      ? SeenCheckGlyph(size: 18, color: ink)
+                      : Icon(kind.icon, size: 18, color: ink),
                 ),
                 const SizedBox(width: SeenSpace.s3),
                 Expanded(

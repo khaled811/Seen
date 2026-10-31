@@ -18,12 +18,10 @@ class SeenDraftCard extends StatelessWidget {
     required this.chipLabel,
     required this.iconAsset,
     required this.continueLabel,
-    required this.deleteLabel,
     required this.ageLabel,
     this.missingLine,
     this.expiryLabel,
     this.onContinue,
-    this.onDelete,
   });
 
   final String title;
@@ -31,7 +29,6 @@ class SeenDraftCard extends StatelessWidget {
   final String chipLabel;
   final String iconAsset;
   final String continueLabel;
-  final String deleteLabel;
 
   /// "Edited 2 hours ago".
   final String ageLabel;
@@ -42,7 +39,6 @@ class SeenDraftCard extends StatelessWidget {
   /// Red "Deleted in 2 days" in place of the age, when the end is near.
   final String? expiryLabel;
   final VoidCallback? onContinue;
-  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -100,8 +96,6 @@ class SeenDraftCard extends StatelessWidget {
                 Row(
                   children: [
                     _TonalButton(label: continueLabel, onTap: onContinue),
-                    const SizedBox(width: 6),
-                    _TextButton(label: deleteLabel, onTap: onDelete),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -148,35 +142,6 @@ class _TonalButton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(child: Text(label, style: t.label.copyWith(color: SeenBrand.violet))),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TextButton extends StatelessWidget {
-  const _TextButton({required this.label, this.onTap});
-
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SeenColors.of(context);
-    final t = SeenType.of(context);
-    return Semantics(
-      button: true,
-      label: label,
-      excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: const BorderRadius.all(SeenRadius.r14),
-        child: SizedBox(
-          height: 40,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Center(child: Text(label, style: t.label.copyWith(color: c.primaryInk))),
           ),
         ),
       ),

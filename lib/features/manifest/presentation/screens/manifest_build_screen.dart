@@ -136,7 +136,7 @@ class _View extends StatelessWidget {
                     Expanded(
                       child: switch (state.load) {
                         ManifestLoad.loading => const _Loading(),
-                        ManifestLoad.failure => _Failure(onRetry: cubit.load),
+                        ManifestLoad.failure => _Failure(onRetry: cubit.load, unsupported: state.unsupported),
                         ManifestLoad.loaded =>
                           _List(state: state, onAdd: () => _add(context)),
                       },
@@ -191,13 +191,19 @@ class _Loading extends StatelessWidget {
 }
 
 class _Failure extends StatelessWidget {
-  const _Failure({required this.onRetry});
+  const _Failure({required this.onRetry, this.unsupported = false});
 
   final VoidCallback onRetry;
+
+  /// The API has no group manifest: say so and offer no retry.
+  final bool unsupported;
 
   @override
   Widget build(BuildContext context) {
     final s = SeenStrings.of(context);
+    if (unsupported) {
+      return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(s.featureUnavailable, textAlign: TextAlign.center)));
+    }
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,

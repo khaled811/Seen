@@ -12,10 +12,20 @@ class SubAgent extends Equatable {
     this.creditLimitCents,
     this.creditUsedCents,
     this.invitePending = false,
+    this.ownerName,
+    this.requestCount,
+    this.monthRequestCount,
+    this.canFund = true,
+    this.canSuspend = true,
+    this.canActivate = true,
+    this.balanceKnown = true,
   });
 
   final String id;
   final String name;
+
+  /// What the list shows under the name. The API has no agency code (DECISIONS
+  /// Q13), so this carries the city.
   final String code;
   final int balanceCents;
   final bool isActive;
@@ -32,8 +42,42 @@ class SubAgent extends Equatable {
   final int? creditLimitCents;
   final int? creditUsedCents;
 
-  /// Invited but has not accepted yet ("activating").
+  /// Pending (`status` = `pending`): created but not active yet.
   final bool invitePending;
+
+  /// The agency owner's name, when the server says it.
+  final String? ownerName;
+  final int? requestCount;
+  final int? monthRequestCount;
+
+  /// What the server lets this person do with this agency (`canFund`,
+  /// `canSuspend`, `canActivate`): the controls follow these, not the app's own idea.
+  final bool canFund;
+  final bool canSuspend;
+  final bool canActivate;
+
+  /// False when the server shows no balance (the agency has no wallet in the default
+  /// currency): the screens show a dash, never 0.
+  final bool balanceKnown;
+
+  SubAgent copyWith({int? balanceCents, bool? isActive, bool? invitePending}) => SubAgent(
+        id: id,
+        name: name,
+        code: code,
+        balanceCents: balanceCents ?? this.balanceCents,
+        isActive: isActive ?? this.isActive,
+        marginPercent: marginPercent,
+        creditLimitCents: creditLimitCents,
+        creditUsedCents: creditUsedCents,
+        invitePending: invitePending ?? this.invitePending,
+        ownerName: ownerName,
+        requestCount: requestCount,
+        monthRequestCount: monthRequestCount,
+        canFund: canFund,
+        canSuspend: canSuspend,
+        canActivate: canActivate,
+        balanceKnown: balanceKnown,
+      );
 
   @override
   List<Object?> get props => [
@@ -45,6 +89,13 @@ class SubAgent extends Equatable {
         marginPercent,
         creditLimitCents,
         creditUsedCents,
-        invitePending
+        invitePending,
+        ownerName,
+        requestCount,
+        monthRequestCount,
+        canFund,
+        canSuspend,
+        canActivate,
+        balanceKnown,
       ];
 }

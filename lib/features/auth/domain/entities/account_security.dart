@@ -1,3 +1,4 @@
+import '../../../../core/error/password_rule.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
@@ -30,23 +31,27 @@ enum AccountIssueKind {
 }
 
 class AccountIssue extends Equatable {
-  const AccountIssue(this.kind, {this.attemptsLeft, this.seconds, this.minutes});
+  const AccountIssue(this.kind, {this.attemptsLeft, this.seconds, this.minutes, this.passwordRule});
 
   final AccountIssueKind kind;
   final int? attemptsLeft;
   final int? seconds;
   final int? minutes;
 
-  /// Backend error codes (GraphQL `extensions.code`) this mapping expects.
-  /// TODO(backend-contract): confirm the names; see docs/BACKEND_MIGRATION_GAPS.md section 39.
-  static const wrongCurrentPasswordCode = 'WRONG_CURRENT_PASSWORD';
-  static const passwordReusedCode = 'PASSWORD_REUSED';
-  static const weakPasswordCode = 'PASSWORD_WEAK';
+  /// The password rule the server named (`weakPassword` only).
+  final String? passwordRule;
+
+  /// Error codes of the contract (reference, "Error codes"). The phone-change
+  /// ones are not in the contract (the flow is unsupported); they stay for the
+  /// debug fallback's demo only.
+  static const wrongCurrentPasswordCode = 'current_password_invalid';
+  static const passwordReusedCode = 'password_unchanged';
+  static const weakPasswordCode = 'password_weak';
   static const phoneTakenCode = 'PHONE_ALREADY_REGISTERED';
   static const wrongCodeCode = 'OTP_INVALID';
   static const expiredCodeCode = 'OTP_EXPIRED';
   static const exhaustedCode = 'OTP_ATTEMPTS_EXHAUSTED';
-  static const rateLimitedCode = 'RATE_LIMITED';
+  static const rateLimitedCode = 'too_many_attempts';
 
   factory AccountIssue.from(Failure failure) {
     if (failure is NetworkFailure) {
@@ -61,12 +66,12 @@ class AccountIssue extends Equatable {
       return switch (failure.code) {
         wrongCurrentPasswordCode => const AccountIssue(AccountIssueKind.wrongCurrentPassword),
         passwordReusedCode => const AccountIssue(AccountIssueKind.passwordReused),
-        weakPasswordCode => const AccountIssue(AccountIssueKind.weakPassword),
+        weakPasswordCode => AccountIssue(AccountIssueKind.weakPassword, passwordRule: passwordRuleOf(failure)),
         phoneTakenCode => const AccountIssue(AccountIssueKind.phoneTaken),
         wrongCodeCode => AccountIssue(AccountIssueKind.wrongCode, attemptsLeft: number('attemptsLeft')),
         expiredCodeCode => const AccountIssue(AccountIssueKind.expiredCode),
         exhaustedCode => AccountIssue(AccountIssueKind.attemptsExhausted, minutes: number('lockoutMinutes')),
-        rateLimitedCode => AccountIssue(AccountIssueKind.rateLimited, seconds: number('retryAfterSeconds')),
+        rateLimitedCode => AccountIssue(AccountIssueKind.rateLimited, seconds: number('retryAfterSeconds'), minutes: number('minutes')),
         _ => const AccountIssue(AccountIssueKind.generic),
       };
     }

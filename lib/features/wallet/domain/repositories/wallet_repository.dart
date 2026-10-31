@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
+import '../entities/top_up_options.dart';
 import '../entities/wallet_balance.dart';
 import '../entities/wallet_transaction.dart';
 
@@ -25,10 +26,17 @@ abstract interface class WalletRepository {
   /// Receipt upload is intentionally not a parameter here yet — per Task 06,
   /// that step is mocked/decoupled until the backend's Supabase mutations
   /// are active.
+  /// Files a top-up request (pending until Seen approves it). [idempotencyKey]
+  /// is one UUID per user action, reused when that same action is retried.
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   });
+
+  /// The methods, the accounts to pay into and the minimum amount.
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions();
 }

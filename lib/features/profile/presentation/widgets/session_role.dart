@@ -18,9 +18,18 @@ AgentPosition? currentAgentPosition(BuildContext context) {
   }
 }
 
-/// What the signed-in role may do (everything when there is no session in scope).
+/// What the signed-in role may do: nothing for an unknown role, everything only when
+/// there is no session in scope.
 /// The server stays the authority and still answers 403 for anyone who may not.
-RolePermissions permissionsOf(BuildContext context) => RolePermissions(currentAgentPosition(context));
+RolePermissions permissionsOf(BuildContext context) {
+  try {
+    final state = context.read<AuthBloc>().state;
+    if (state is AuthAuthenticated) return RolePermissions.fromSession(state.session);
+  } on ProviderNotFoundException {
+    // No session in scope: see below.
+  }
+  return RolePermissions.all;
+}
 
 /// The "hide the balance by default" setting; off when the app-wide cubit is not in scope.
 bool hideBalanceByDefault(BuildContext context) {

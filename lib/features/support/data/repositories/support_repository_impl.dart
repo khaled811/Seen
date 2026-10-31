@@ -4,10 +4,9 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/in_app_notification.dart';
 import '../../domain/entities/support_ticket.dart';
+import '../../domain/entities/ticket_message.dart';
 import '../../domain/repositories/support_repository.dart';
 import '../datasources/support_remote_data_source.dart';
-import '../models/in_app_notification_dto.dart';
-import '../models/support_ticket_dto.dart';
 
 class SupportRepositoryImpl implements SupportRepository {
   SupportRepositoryImpl({required SupportRemoteDataSource remote}) : _remote = remote;
@@ -15,12 +14,10 @@ class SupportRepositoryImpl implements SupportRepository {
   final SupportRemoteDataSource _remote;
 
   @override
-  Future<Either<Failure, List<SupportTicket>>> getTickets() async {
-    final result = await _remote.getTickets();
-    if (result case Left(:final value)) return Left(value);
-    final dtos = (result as Right<Failure, List<SupportTicketDto>>).value;
-    return Right(dtos.map((dto) => dto.toEntity()).toList());
-  }
+  Future<Either<Failure, List<SupportTicket>>> getTickets() => _remote.getTickets();
+
+  @override
+  Future<Either<Failure, SupportTicket>> getTicket(String ticketId) => _remote.getTicket(ticketId);
 
   @override
   Future<Either<Failure, SupportTicket>> createTicket({
@@ -29,49 +26,33 @@ class SupportRepositoryImpl implements SupportRepository {
     required String message,
     String? requestId,
     TicketPriority priority = TicketPriority.normal,
-  }) async {
-    final result = await _remote.createTicket(
-      category: category,
-      subject: subject,
-      message: message,
-      requestId: requestId,
-      priority: priority,
-    );
-    if (result case Left(:final value)) return Left(value);
-    final dto = (result as Right<Failure, SupportTicketDto>).value;
-    return Right(dto.toEntity());
-  }
+    String? attachmentFileId,
+    String? categoryCode,
+  }) =>
+      _remote.createTicket(
+        category: category,
+        subject: subject,
+        message: message,
+        requestId: requestId,
+        priority: priority,
+        attachmentFileId: attachmentFileId,
+        categoryCode: categoryCode,
+      );
 
   @override
-  Future<Either<Failure, SupportTicket>> replyToTicket({
-    required String ticketId,
-    required String message,
-  }) async {
-    final result = await _remote.replyToTicket(ticketId: ticketId, message: message);
-    if (result case Left(:final value)) return Left(value);
-    final dto = (result as Right<Failure, SupportTicketDto>).value;
-    return Right(dto.toEntity());
-  }
+  Future<Either<Failure, TicketMessage>> replyToTicket({required String ticketId, required String message, String? attachmentFileId}) =>
+      _remote.replyToTicket(ticketId: ticketId, message: message, attachmentFileId: attachmentFileId);
 
   @override
-  Future<Either<Failure, List<InAppNotification>>> getNotifications() async {
-    final result = await _remote.getNotifications();
-    if (result case Left(:final value)) return Left(value);
-    final dtos = (result as Right<Failure, List<InAppNotificationDto>>).value;
-    return Right(dtos.map((dto) => dto.toEntity()).toList());
-  }
+  Future<Either<Failure, NotificationsPage>> getNotifications({bool unreadOnly = false, int limit = 20, int offset = 0}) =>
+      _remote.getNotifications(unreadOnly: unreadOnly, limit: limit, offset: offset);
 
   @override
-  Future<Either<Failure, void>> markNotificationRead(String notificationId) async {
-    final result = await _remote.markNotificationRead(notificationId);
-    if (result case Left(:final value)) return Left(value);
-    return const Right(null);
-  }
+  Future<Either<Failure, int>> getUnreadNotificationCount() => _remote.getUnreadNotificationCount();
 
   @override
-  Future<Either<Failure, void>> markAllNotificationsRead() async {
-    final result = await _remote.markAllNotificationsRead();
-    if (result case Left(:final value)) return Left(value);
-    return const Right(null);
-  }
+  Future<Either<Failure, bool>> markNotificationRead(String notificationId) => _remote.markNotificationRead(notificationId);
+
+  @override
+  Future<Either<Failure, int>> markAllNotificationsRead() => _remote.markAllNotificationsRead();
 }

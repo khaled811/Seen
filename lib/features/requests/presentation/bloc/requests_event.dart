@@ -10,11 +10,12 @@ sealed class RequestsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Dispatched on the dashboard's entry, and on pull-to-refresh.
+/// Loads (or reloads) the first page of the selected group.
 final class RequestsLoadRequested extends RequestsEvent {
   const RequestsLoadRequested();
 }
 
+/// Shows another group: the server filters, so this loads that group's first page.
 final class RequestsFilterChanged extends RequestsEvent {
   const RequestsFilterChanged(this.filter);
 
@@ -24,9 +25,12 @@ final class RequestsFilterChanged extends RequestsEvent {
   List<Object?> get props => [filter];
 }
 
-/// Client-side substring search over the already-loaded requests (matches
-/// `referenceId` or `serviceName`) — not a server round trip, same as the
-/// dashboard filter.
+/// The end of the list came into view: load the next page.
+final class RequestsLoadMoreRequested extends RequestsEvent {
+  const RequestsLoadMoreRequested();
+}
+
+/// The search text changed; the server searches (debounced).
 final class RequestsSearchChanged extends RequestsEvent {
   const RequestsSearchChanged(this.query);
 
@@ -36,7 +40,6 @@ final class RequestsSearchChanged extends RequestsEvent {
   List<Object?> get props => [query];
 }
 
-/// Fetches [requestId]'s detail; the UI navigates once it's loaded.
 final class RequestDetailRequested extends RequestsEvent {
   const RequestDetailRequested(this.requestId);
 
@@ -46,9 +49,6 @@ final class RequestDetailRequested extends RequestsEvent {
   List<Object?> get props => [requestId];
 }
 
-/// Dispatched by the UI once it has acted on a freshly-loaded detail (i.e.
-/// navigated to the detail screen), so returning to the dashboard doesn't
-/// re-trigger navigation.
 final class RequestDetailAcknowledged extends RequestsEvent {
   const RequestDetailAcknowledged();
 }

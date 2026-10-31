@@ -275,6 +275,29 @@ abstract final class SeenBrand {
   static const progressWaiting = Color(0xFFE8B54A);
   static const progressDone = violet;
 
+  // Loading system (design/loading/SPEC.md section 2): only the colours the app had no token for.
+  /// Sky gradient of the determinate progress mark.
+  static const skyTop = Color(0xFFA68BFF);
+  static const skyBottom = Color(0xFF5A36D2);
+
+  /// Skeleton base and sweep highlight; on gradient surfaces use the on-dark pair.
+  static const skeletonBase = Color(0xFFECE7FA);
+  static const skeletonHighlight = Color(0xBFFFFFFF); // white @ 75%
+  static const skeletonOnDarkBase = Color(0x29FFFFFF); // white @ 16%
+  static const skeletonOnDarkHighlight = Color(0x47FFFFFF); // white @ 28%
+
+  /// Loader track on gradient or dark surfaces (white @ 22%).
+  static const loaderTrackOnDark = Color(0x38FFFFFF);
+
+  /// Label of the refresher while armed («أفلت للتحديث»).
+  static const refreshArmedLabel = Color(0xFF2C186A);
+
+  /// The check of a finished refresh.
+  static const loaderDone = Color(0xFF2E9E6B);
+
+  /// Scrim of a blocking wait (money or irreversible action): ink @ 60%.
+  static const blockingScrim = Color(0x991B1530);
+
   // Gradients. Figma exports the horizontal ones as "to left" in an RTL
   // layout, i.e. start (right) -> end (left). Directional alignment keeps that
   // look in RTL and mirrors it for LTR.

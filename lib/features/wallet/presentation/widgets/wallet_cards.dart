@@ -216,10 +216,12 @@ class TopUpBankDetails {
 /// WAL-11): who receives it, the agent's own code to quote, and the branch for
 /// cash. Display-only data from the caller; the app never invents it.
 class TopUpAlternativeDetails {
-  const TopUpAlternativeDetails({required this.recipientName, required this.agentCode, this.branchAddress});
+  const TopUpAlternativeDetails({required this.recipientName, this.agentCode, this.branchAddress});
 
   final String recipientName;
-  final String agentCode;
+  /// The agent's own code to quote, when the server provides one (the contract
+  /// does not today, so it is normally null and its line is left out).
+  final String? agentCode;
   final String? branchAddress;
 }
 

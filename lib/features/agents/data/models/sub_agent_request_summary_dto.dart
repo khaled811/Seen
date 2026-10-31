@@ -1,10 +1,9 @@
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/sub_agent_request_summary.dart';
 
-/// Wire shape of one pending-agent-approval request row.
-///
-/// TODO(backend-contract): field names are placeholders pending the real
-/// Seen Booking GraphQL schema.
+/// Wire shape of one request waiting for the main agent's approval: a `Request`
+/// read with `requests(status: "pending_agent_approval")`.
 class SubAgentRequestSummaryDto {
   const SubAgentRequestSummaryDto({
     required this.id,
@@ -16,16 +15,25 @@ class SubAgentRequestSummaryDto {
     required this.submittedAt,
   });
 
-  factory SubAgentRequestSummaryDto.fromJson(Map<String, dynamic> json) =>
-      SubAgentRequestSummaryDto(
-        id: json['id'] as String,
-        referenceId: json['referenceId'] as String,
-        subAgentName: json['subAgentName'] as String,
-        serviceName: json['serviceName'] as String,
-        travelerCount: json['travelerCount'] as int,
-        totalPriceAmount: json['totalPriceAmount'] as String,
-        submittedAt: DateTime.parse(json['submittedAt'] as String),
-      );
+  static const requestFields = '''
+    id referenceCode createdAt sellingPrice
+    serviceType { nameAr nameEn }
+    agent { name }
+    travelers { id }
+  ''';
+
+  factory SubAgentRequestSummaryDto.fromJson(Map<String, dynamic> json, AppLanguage language) {
+    final service = json['serviceType'] as Map<String, dynamic>?;
+    return SubAgentRequestSummaryDto(
+      id: json['id'] as String,
+      referenceId: json['referenceCode'] as String? ?? '',
+      subAgentName: (json['agent'] as Map<String, dynamic>?)?['name'] as String? ?? '',
+      serviceName: language.pick(ar: service?['nameAr'] as String?, en: service?['nameEn'] as String?),
+      travelerCount: (json['travelers'] as List<dynamic>? ?? const []).length,
+      totalPriceAmount: json['sellingPrice'] as String?,
+      submittedAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 
   final String id;
   final String referenceId;
@@ -33,8 +41,9 @@ class SubAgentRequestSummaryDto {
   final String serviceName;
   final int travelerCount;
 
-  /// Decimal string (e.g. `"450.00"`) — never parsed as `double`.
-  final String totalPriceAmount;
+  /// Decimal string (e.g. `"450.00"`), never parsed as `double`; null when the
+  /// server does not show a price.
+  final String? totalPriceAmount;
   final DateTime submittedAt;
 
   SubAgentRequestSummary toEntity() => SubAgentRequestSummary(
@@ -43,7 +52,7 @@ class SubAgentRequestSummaryDto {
         subAgentName: subAgentName,
         serviceName: serviceName,
         travelerCount: travelerCount,
-        totalPriceCents: MoneyParser.centsFromDecimalString(totalPriceAmount),
+        totalPriceCents: totalPriceAmount == null ? 0 : MoneyParser.centsFromDecimalString(totalPriceAmount!),
         submittedAt: submittedAt,
       );
 }

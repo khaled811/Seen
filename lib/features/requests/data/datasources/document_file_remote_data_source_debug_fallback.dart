@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
@@ -17,8 +17,11 @@ class DebugFallbackDocumentFileRemoteDataSource implements DocumentFileRemoteDat
   final DocumentFileRemoteDataSource _real;
 
   @override
+  Future<Either<Failure, String>> signedUrl(String fileId) => _real.signedUrl(fileId);
+
+  @override
   Future<Either<Failure, Uint8List>> fetch(String url) async {
-    if (kDebugMode && url.startsWith('mock://')) {
+    if (debugFallbacksEnabled && url.startsWith('mock://')) {
       await Future<void>.delayed(const Duration(milliseconds: 400));
       if (url.contains('broken')) return const Left(NetworkFailure('No connection.'));
       return Right(_demoPdf());

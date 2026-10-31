@@ -43,6 +43,14 @@ abstract final class SeenIcons {
   static IconData get eye => PhosphorIcons.eye();
   static IconData get eyeSlash => PhosphorIcons.eyeSlash();
   static IconData get refresh => PhosphorIcons.arrowsClockwise();
+
+  // Added for the GAPS features (design/gaps): the Phosphor shapes closest to the design's icons.
+  static IconData get mail => PhosphorIcons.envelopeSimple();
+  static IconData get key => PhosphorIcons.key();
+  static IconData get scan => PhosphorIcons.scan();
+  static IconData get table => PhosphorIcons.table();
+  static IconData get timer => PhosphorIcons.timer();
+  static IconData get tag => PhosphorIcons.tag();
   static IconData get camera => PhosphorIcons.camera();
   static IconData get image => PhosphorIcons.image();
   static IconData get trash => PhosphorIcons.trash();

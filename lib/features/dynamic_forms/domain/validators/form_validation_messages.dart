@@ -18,6 +18,9 @@ class FormValidationMessages {
     required this.numberTooLarge,
     required this.expiryTooSoon,
     required this.dateInFuture,
+    this.dateInPast,
+    this.ageTooYoung,
+    this.ageTooOld,
   });
 
   final String required;
@@ -32,4 +35,9 @@ class FormValidationMessages {
   final String Function(num max) numberTooLarge;
   final String Function(int months) expiryTooSoon;
   final String Function(String fieldLabel) dateInFuture;
+
+  /// Optional: without them the generic [invalidDate] is shown.
+  final String Function(String fieldLabel)? dateInPast;
+  final String Function(int years)? ageTooYoung;
+  final String Function(int years)? ageTooOld;
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
 import '../../domain/entities/request_document.dart';
 import '../../domain/services/pdf_page_renderer.dart';
 
@@ -136,7 +137,7 @@ class _DocumentPagesViewState extends State<DocumentPagesView> {
       future: _render(index, thumb: false),
       builder: (context, snapshot) {
         final data = snapshot.data;
-        if (data == null) return const Center(child: CircularProgressIndicator());
+        if (data == null) return const Center(child: SeenLoader());
         return Image.memory(data, fit: BoxFit.contain);
       },
     );

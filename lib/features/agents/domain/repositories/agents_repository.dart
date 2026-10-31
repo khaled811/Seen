@@ -21,34 +21,33 @@ abstract interface class AgentsRepository {
       {required String reason});
 
   /// Transfers [amountCents] from the master agent's wallet into
-  /// [subAgentId]'s internal balance. Returns the sub-agent's updated
-  /// record. Callers must validate `amountCents` against the master
+  /// [subAgentId]'s internal balance. The caller reads the list again for the new
+  /// balances (the answer is not the agency's record). Callers must validate `amountCents` against the master
   /// agent's available balance before calling this (see
   /// `FormValidators.maxAmount`) — the backend re-validates regardless.
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+  ///
+  /// [idempotencyKey] is generated once per user action and reused when that same
+  /// action is retried: the server never moves the money twice for one key.
+  Future<Either<Failure, void>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   });
 
   /// Adds a sub-agent under the logged-in master agent (Figma AGT-01). The new
-  /// record comes back with `invitePending` when an invitation was sent.
+  /// record comes back with `invitePending` while the agency is not active yet.
   Future<Either<Failure, SubAgent>> createSubAgent(NewSubAgent newSubAgent);
-
-  /// Sets the credit the master agent grants [subAgentId] (Figma AGT-02).
-  Future<Either<Failure, SubAgent>> updateCreditLimit(
-      {required String subAgentId, required int limitCents});
 
   /// The profile of one sub-agent (Figma AGT-04): record, balance history and
   /// the agent's requests.
   Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(
       String subAgentId);
 
-  /// Suspends ([active] false, with a [reason]) or reactivates a sub-agent
-  /// (Figma AGT-03). Returns the updated record.
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  /// Suspends ([active] false) or reactivates a sub-agent (Figma AGT-03). The
+  /// server takes no reason, so none is sent.
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
   });
 }

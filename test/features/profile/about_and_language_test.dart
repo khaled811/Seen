@@ -185,6 +185,9 @@ void main() {
     ));
     await tester.pump();
     await tester.pump();
+    // The screen grew with the security rows: scroll to the row first.
+    await tester.ensureVisible(find.text('حول التطبيق'));
+    await tester.pump();
     await tester.tap(find.text('حول التطبيق'));
     await tester.pumpAndSettle();
     expect(find.byType(AboutScreen), findsOneWidget);

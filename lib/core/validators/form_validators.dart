@@ -24,10 +24,15 @@ abstract final class FormValidators {
   /// Run this before converting the value to cents — by the time business
   /// logic sees the amount, it's already known to be well-formed.
   static String? positiveAmount(String? value, {required String message}) {
-    final parsed = num.tryParse(value?.trim() ?? '');
-    if (parsed == null || parsed <= 0) return message;
+    final text = value?.trim() ?? '';
+    // Plain decimal digits with at most two decimals, as the API requires (and as
+    // `MoneyParser` can read): no exponent ("1e3"), no sign, no third decimal
+    // that would be silently cut off.
+    if (!_amountPattern.hasMatch(text) || num.parse(text) <= 0) return message;
     return null;
   }
+
+  static final _amountPattern = RegExp(r'^\d{1,12}(\.\d{1,2})?$');
 
   /// Validates a raw decimal-amount string does not exceed [maxCents] (e.g.
   /// a transfer that must not exceed the sender's available balance).

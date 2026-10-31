@@ -1,195 +1,53 @@
-import 'dart:convert';
 import 'dart:io' show File;
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/network/graphql_service.dart';
+import '../../../../core/error/unsupported.dart';
 import '../../domain/entities/manifest.dart';
 import '../../domain/repositories/manifest_repository.dart';
 
-ManifestDraft _draft(Map<String, dynamic> j) => ManifestDraft(
-      id: j['id'] as String,
-      serviceLabel: j['serviceLabel'] as String? ?? '',
-      travelers: [
-        for (final t in (j['travelers'] as List<dynamic>? ?? const [])
-            .cast<Map<String, dynamic>>())
-          ManifestTraveler(
-            id: t['id'] as String,
-            name: t['name'] as String? ?? '',
-            passportNumber: t['passportNumber'] as String?,
-            problem: switch (t['problem'] as String?) {
-              'MISSING_PASSPORT' => ManifestProblem.missingPassport,
-              'PASSPORT_EXPIRING' => ManifestProblem.passportExpiring,
-              _ => ManifestProblem.none,
-            },
-            monthsLeft: (t['monthsLeft'] as num?)?.toInt(),
-          ),
-      ],
-    );
-
-ManifestSummary _summary(Map<String, dynamic> j) => ManifestSummary(
-      id: j['id'] as String,
-      reference: j['reference'] as String? ?? '',
-      title: j['title'] as String? ?? '',
-      travelers: [
-        for (final t in (j['travelers'] as List<dynamic>? ?? const [])
-            .cast<Map<String, dynamic>>())
-          ManifestTravelerStatus(
-            id: t['id'] as String,
-            name: t['name'] as String? ?? '',
-            outcome: switch (t['outcome'] as String?) {
-              'ISSUED' => ManifestOutcome.issued,
-              'REJECTED' => ManifestOutcome.rejected,
-              _ => ManifestOutcome.atAuthority,
-            },
-            doneSteps: ((t['doneSteps'] as num?)?.toInt() ?? 0)
-                .clamp(0, ManifestTravelerStatus.totalSteps),
-            rejectionReason: t['rejectionReason'] as String?,
-          ),
-      ],
-    );
-
-/// GraphQL access to group manifests.
-///
-/// TODO(backend-contract): placeholder schema (`openManifest`, `addManifestTraveler`,
-/// `importManifestList`, `saveManifestDraft`, `submitManifest`, `manifestSummary`,
-/// `resubmitManifestTraveler`, `manifestIssuedVisasUrl`); see docs/BACKEND_MIGRATION_GAPS.md
-/// section 45.
+/// Group manifests have no operations in the API (contract section 14): nothing
+/// opens a manifest, adds or imports travelers into one, submits it or reads its
+/// summary, so every call is `unsupported_operation`. Nothing is sent and nothing
+/// is faked (DECISIONS P-06). More than nine travelers cannot be filed from the app.
 class ManifestRemoteDataSource implements ManifestRepository {
-  ManifestRemoteDataSource({required GraphQLService graphQLService})
-      : _graphQL = graphQLService;
-
-  final GraphQLService _graphQL;
-
-  static const _draftFields =
-      'id serviceLabel travelers { id name passportNumber problem monthsLeft }';
-  static const _summaryFields =
-      'id reference title travelers { id name outcome doneSteps rejectionReason }';
-
-  static final _openDoc = gql('''
-    mutation OpenManifest(\$serviceId: ID!) { openManifest(serviceId: \$serviceId) { $_draftFields } }
-  ''');
-  static final _addDoc = gql('''
-    mutation AddManifestTraveler(\$draftId: ID!, \$name: String!, \$passportNumber: String) {
-      addManifestTraveler(draftId: \$draftId, name: \$name, passportNumber: \$passportNumber) { $_draftFields }
-    }
-  ''');
-  static final _importDoc = gql('''
-    mutation ImportManifestList(\$draftId: ID!, \$fileName: String!, \$contentBase64: String!) {
-      importManifestList(draftId: \$draftId, fileName: \$fileName, contentBase64: \$contentBase64) { $_draftFields }
-    }
-  ''');
-  static final _saveDoc = gql(r'''
-    mutation SaveManifestDraft($draftId: ID!) { saveManifestDraft(draftId: $draftId) { success } }
-  ''');
-  static final _submitDoc = gql(r'''
-    mutation SubmitManifest($draftId: ID!) { submitManifest(draftId: $draftId) { id } }
-  ''');
-  static final _summaryDoc = gql('''
-    query ManifestSummary(\$id: ID!) { manifestSummary(id: \$id) { $_summaryFields } }
-  ''');
-  static final _resubmitDoc = gql('''
-    mutation ResubmitManifestTraveler(\$manifestId: ID!, \$travelerId: ID!) {
-      resubmitManifestTraveler(manifestId: \$manifestId, travelerId: \$travelerId) { $_summaryFields }
-    }
-  ''');
-  static final _urlDoc = gql(r'''
-    query ManifestIssuedVisasUrl($id: ID!) { manifestIssuedVisasUrl(id: $id) { url } }
-  ''');
+  const ManifestRemoteDataSource();
 
   @override
-  Future<Either<Failure, ManifestDraft>> openDraft(
-          {required String serviceId, required String serviceLabel}) =>
-      _graphQL.mutate<ManifestDraft>(MutationOptions<ManifestDraft>(
-        document: _openDoc,
-        variables: {'serviceId': serviceId},
-        parserFn: (j) => _draft(j['openManifest'] as Map<String, dynamic>),
-      ));
+  Future<Either<Failure, ManifestDraft>> openDraft({required String serviceId, required String serviceLabel}) async =>
+      unsupportedOperation('Opening a group manifest');
 
   @override
   Future<Either<Failure, ManifestDraft>> addTraveler({
     required String draftId,
     required String name,
     String? passportNumber,
-  }) =>
-      _graphQL.mutate<ManifestDraft>(MutationOptions<ManifestDraft>(
-        document: _addDoc,
-        variables: {
-          'draftId': draftId,
-          'name': name,
-          'passportNumber': passportNumber
-        },
-        parserFn: (j) =>
-            _draft(j['addManifestTraveler'] as Map<String, dynamic>),
-      ));
+  }) async =>
+      unsupportedOperation('Adding a manifest traveler');
 
   @override
-  Future<Either<Failure, ManifestDraft>> importList(
-          {required String draftId, required ManifestImportFile file}) =>
-      _graphQL.mutate<ManifestDraft>(MutationOptions<ManifestDraft>(
-        document: _importDoc,
-        variables: {
-          'draftId': draftId,
-          'fileName': file.name,
-          'contentBase64': base64Encode(file.bytes)
-        },
-        parserFn: (j) =>
-            _draft(j['importManifestList'] as Map<String, dynamic>),
-      ));
+  Future<Either<Failure, ManifestDraft>> importList({required String draftId, required ManifestImportFile file}) async =>
+      unsupportedOperation('Importing a traveler list');
 
   @override
-  Future<Either<Failure, void>> saveDraft(String draftId) async =>
-      (await _graphQL.mutate<bool>(MutationOptions<bool>(
-        document: _saveDoc,
-        variables: {'draftId': draftId},
-        parserFn: (j) =>
-            (j['saveManifestDraft'] as Map<String, dynamic>?)?['success']
-                as bool? ??
-            true,
-      )))
-          .map((_) {});
+  Future<Either<Failure, void>> saveDraft(String draftId) async => unsupportedOperation('Saving a manifest draft');
 
   @override
-  Future<Either<Failure, String>> submit(String draftId) =>
-      _graphQL.mutate<String>(MutationOptions<String>(
-        document: _submitDoc,
-        variables: {'draftId': draftId},
-        parserFn: (j) =>
-            (j['submitManifest'] as Map<String, dynamic>)['id'] as String,
-      ));
+  Future<Either<Failure, String>> submit(String draftId) async => unsupportedOperation('Submitting a manifest');
 
   @override
-  Future<Either<Failure, ManifestSummary>> summary(String manifestId) =>
-      _graphQL.query<ManifestSummary>(QueryOptions<ManifestSummary>(
-        document: _summaryDoc,
-        variables: {'id': manifestId},
-        fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (j) => _summary(j['manifestSummary'] as Map<String, dynamic>),
-      ));
+  Future<Either<Failure, ManifestSummary>> summary(String manifestId) async => unsupportedOperation('A manifest summary');
 
   @override
-  Future<Either<Failure, ManifestSummary>> resubmit(
-          {required String manifestId, required String travelerId}) =>
-      _graphQL.mutate<ManifestSummary>(MutationOptions<ManifestSummary>(
-        document: _resubmitDoc,
-        variables: {'manifestId': manifestId, 'travelerId': travelerId},
-        parserFn: (j) =>
-            _summary(j['resubmitManifestTraveler'] as Map<String, dynamic>),
-      ));
+  Future<Either<Failure, ManifestSummary>> resubmit({required String manifestId, required String travelerId}) async =>
+      unsupportedOperation('Resubmitting a manifest traveler');
 
   @override
-  Future<Either<Failure, String>> issuedVisasUrl(String manifestId) =>
-      _graphQL.query<String>(QueryOptions<String>(
-        document: _urlDoc,
-        variables: {'id': manifestId},
-        fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (j) => (j['manifestIssuedVisasUrl']
-            as Map<String, dynamic>)['url'] as String,
-      ));
+  Future<Either<Failure, String>> issuedVisasUrl(String manifestId) async =>
+      unsupportedOperation('Downloading a manifest\'s issued visas');
 }
 
 /// Picks a CSV / Excel file with the system picker and reads it. A file over
@@ -270,7 +128,7 @@ class DebugFallbackManifestRepository implements ManifestRepository {
       ),
   ];
 
-  bool get _debug => kDebugMode;
+  bool get _debug => debugFallbacksEnabled;
 
   ManifestDraft get _draft0 => ManifestDraft(
       id: 'debug-manifest',

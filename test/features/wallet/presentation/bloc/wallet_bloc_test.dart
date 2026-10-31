@@ -5,6 +5,8 @@ import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
+import 'package:seen_booking/features/wallet/domain/usecases/get_top_up_options_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_transactions_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/request_top_up_usecase.dart';
@@ -36,6 +38,8 @@ class _FakeWalletRepository implements WalletRepository {
   Either<Failure, WalletBalance> balanceResult = const Right(_balance);
   Either<Failure, List<WalletTransaction>> transactionsResult = Right([_transaction]);
   Either<Failure, WalletTransaction> topUpResult = Right(_transaction);
+  Either<Failure, TopUpOptions> optionsResult = const Left(ServerFailure('x'));
+  final keys = <String>[];
 
   int getBalanceCalls = 0;
   int getTransactionsCalls = 0;
@@ -60,13 +64,19 @@ class _FakeWalletRepository implements WalletRepository {
   }
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => optionsResult;
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async {
     requestTopUpCalls++;
+    keys.add(idempotencyKey);
     return topUpResult;
   }
 }
@@ -81,6 +91,7 @@ void main() {
       getWalletBalanceUseCase: GetWalletBalanceUseCase(repository),
       getTransactionsUseCase: GetTransactionsUseCase(repository),
       requestTopUpUseCase: RequestTopUpUseCase(repository),
+      getTopUpOptionsUseCase: GetTopUpOptionsUseCase(repository),
     );
   });
 
@@ -118,7 +129,7 @@ void main() {
       await bloc.stream.firstWhere((s) => s is WalletFailure);
       await subscription.cancel();
 
-      expect(states, [const WalletLoading(), const WalletFailure('boom')]);
+      expect(states, [const WalletLoading(), const WalletFailure('boom', failure: ServerFailure('boom'))]);
     });
   });
 
@@ -180,7 +191,112 @@ void main() {
       ) as WalletLoaded;
 
       expect(failed.topUpError, 'rejected');
+      expect(failed.topUpFailure, const ServerFailure('rejected'));
       expect(failed.balance, _balance); // untouched — no refetch on failure
+    });
+
+    Future<void> submit(int cents, {String ref = 'REF'}) async {
+      bloc.add(WalletTopUpSubmitted(amountCents: cents, method: TopUpMethod.bankTransfer, referenceNumber: ref));
+      await bloc.stream.firstWhere(
+        (s) => s is WalletLoaded && (s.topUpStatus == TopUpSubmissionStatus.success || s.topUpStatus == TopUpSubmissionStatus.failure),
+      );
+      bloc.add(const WalletTopUpStatusCleared());
+      await bloc.stream.firstWhere((s) => s is WalletLoaded && s.topUpStatus == TopUpSubmissionStatus.idle);
+    }
+
+    test('retrying the same top-up after a failure reuses the same idempotency key', () async {
+      bloc.add(const WalletLoadRequested());
+      await bloc.stream.firstWhere((s) => s is WalletLoaded);
+
+      repository.topUpResult = const Left(NetworkFailure('timeout', isTimeout: true));
+      await submit(5000);
+      await submit(5000);
+
+      expect(repository.keys, hasLength(2));
+      expect(repository.keys[0], repository.keys[1], reason: 'the same action, retried: same key');
+      expect(repository.keys[0], matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')));
+    });
+
+    test('changed details get a new key (the server refuses a key used with different details)', () async {
+      bloc.add(const WalletLoadRequested());
+      await bloc.stream.firstWhere((s) => s is WalletLoaded);
+
+      repository.topUpResult = const Left(NetworkFailure('timeout', isTimeout: true));
+      await submit(5000);
+      await submit(7000);
+
+      expect(repository.keys[0], isNot(repository.keys[1]));
+    });
+
+    test('after a success the next top-up is a new action with a new key', () async {
+      bloc.add(const WalletLoadRequested());
+      await bloc.stream.firstWhere((s) => s is WalletLoaded);
+
+      await submit(5000);
+      await submit(5000);
+
+      expect(repository.keys[0], isNot(repository.keys[1]));
+    });
+
+    test('a refresh that fails after a successful top-up still reports the success', () async {
+      bloc.add(const WalletLoadRequested());
+      await bloc.stream.firstWhere((s) => s is WalletLoaded);
+
+      repository.balanceResult = const Left(NetworkFailure('offline'));
+      bloc.add(const WalletTopUpSubmitted(amountCents: 5000, method: TopUpMethod.bankTransfer, referenceNumber: 'R'));
+      final done = await bloc.stream.firstWhere(
+        (s) => s is WalletLoaded && s.topUpStatus == TopUpSubmissionStatus.success,
+      ) as WalletLoaded;
+
+      expect(done.submittedTopUp, _transaction);
+      expect(done.refreshFailure, isA<NetworkFailure>());
+      expect(done.balance, _balance, reason: 'the last known numbers stay on screen');
+    });
+  });
+
+  group('top-up options', () {
+    const options = TopUpOptions(
+      currency: 'USD',
+      methods: [TopUpMethodOption(method: TopUpMethod.bankTransfer, accountKinds: [PaymentAccountKind.bank])],
+      accounts: [
+        PaymentAccount(
+          id: 'a1',
+          kind: PaymentAccountKind.bank,
+          title: 'Bank',
+          holder: 'Seen',
+          bankName: 'Bank',
+          accountNumber: 'IBAN1',
+          currency: 'USD',
+          instructions: '',
+        ),
+      ],
+      canRequest: true,
+      minimumAmountCents: 1000,
+    );
+
+    test('are loaded with the wallet and kept when a later load cannot fetch them', () async {
+      repository.optionsResult = const Right(options);
+      bloc.add(const WalletLoadRequested());
+      final first = await bloc.stream.firstWhere((s) => s is WalletLoaded) as WalletLoaded;
+      expect(first.topUpOptions, options);
+
+      repository.optionsResult = const Left(ServerFailure('x'));
+      bloc.add(const WalletLoadRequested());
+      final second = await bloc.stream.firstWhere((s) => s is WalletLoaded) as WalletLoaded;
+      expect(second.topUpOptions, options);
+    });
+
+    test('a failure to load them does not fail the wallet', () async {
+      bloc.add(const WalletLoadRequested());
+      final loaded = await bloc.stream.firstWhere((s) => s is WalletLoaded || s is WalletFailure);
+
+      expect(loaded, isA<WalletLoaded>());
+      expect((loaded as WalletLoaded).topUpOptions, isNull);
+    });
+
+    test('accountsFor maps a method to the accounts of its kinds', () {
+      expect(options.accountsFor(TopUpMethod.bankTransfer).single.id, 'a1');
+      expect(options.accountsFor(TopUpMethod.cash), isEmpty);
     });
   });
 }

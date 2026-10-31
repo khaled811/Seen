@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
+import 'loading/seen_loader.dart';
 import 'motion_icon.dart';
 
 /// Figma variants: primary (CTA gradient), secondary (#F3F0FD), outline,
@@ -219,11 +220,8 @@ class _SeenButtonState extends State<SeenButton> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (w.loading) ...[
-          SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: p.fg),
-          ),
+          // The Seen mark tracing its window, in the label colour of this button variant.
+          SeenLoader(size: 18, color: p.fg),
           const SizedBox(width: SeenSpace.s2),
         ] else if (w.icon != null) ...[
           Icon(w.icon, size: iconSize, color: p.fg),
@@ -279,9 +277,13 @@ class SeenIconButton extends StatefulWidget {
     this.color,
     this.motionAsset,
     this.motionValue,
+    this.glyph,
   });
 
   final IconData icon;
+
+  /// Replaces [icon] with a custom glyph (e.g. the Figma back icon).
+  final Widget? glyph;
 
   /// Accessible name — required.
   final String semanticLabel;
@@ -326,7 +328,7 @@ class _SeenIconButtonState extends State<SeenIconButton> {
             color: ink,
             value: widget.motionValue,
           )
-        : Icon(icon, size: 22, color: ink);
+        : (widget.glyph ?? Icon(icon, size: 22, color: ink));
     if (badge > 0) {
       glyph = Badge(
         label: Text(badge > 99 ? '99+' : '$badge'),
@@ -382,9 +384,13 @@ class SeenRoundIconButton extends StatelessWidget {
     this.tonal = false,
     this.size = 44,
     this.iconSize = 22,
+    this.glyph,
   });
 
   final IconData icon;
+
+  /// Replaces [icon] with a custom glyph (e.g. a Figma SVG that carries its own colour).
+  final Widget? glyph;
 
   /// Accessible name — required.
   final String semanticLabel;
@@ -416,7 +422,7 @@ class SeenRoundIconButton extends StatelessWidget {
             child: SizedBox(
               width: size,
               height: size,
-              child: Center(child: Icon(icon, size: iconSize, color: c.primary)),
+              child: Center(child: glyph ?? Icon(icon, size: iconSize, color: c.primary)),
             ),
           ),
         ),

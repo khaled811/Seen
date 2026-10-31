@@ -51,6 +51,10 @@ class SeenStrings {
     return isArabic ? toArabicIndicDigits(latin) : latin;
   }
 
+  /// A sentence that already holds counts (minutes, seconds, steps) with its digits in the app's
+  /// convention: Arabic-Indic in Arabic, Latin in English. Never pass text that holds an identifier.
+  String digits(String text) => isArabic ? toArabicIndicDigits(text) : text;
+
   /// "١٢ نوفمبر" / "12 Nov": day and month name; digits follow [numeral].
   String dayMonth(DateTime d) {
     const ar = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -91,11 +95,6 @@ class SeenStrings {
   }
 
   /// "تُحذف اليوم" / "تُحذف غدًا" / "تُحذف خلال يومين": when a draft expires.
-  String draftDeletesIn(int days) => switch (days) {
-        <= 0 => _t('تُحذف اليوم', 'Deleted today'),
-        1 => _t('تُحذف غدًا', 'Deleted tomorrow'),
-        _ => _t('تُحذف خلال ${_arUnit(days, 'يوم', 'يومين', 'أيام')}', 'Deleted in $days days'),
-      };
 
   /// "٣ نتائج لـ «الحميري»" / "3 results for “q”" (request search, Figma REQ-13).
   String searchResults(int n, String query) {
@@ -270,6 +269,31 @@ class SeenStrings {
   String get attachCamera => _t('الكاميرا', 'Camera');
   String get attachGallery => _t('معرض الصور', 'Photo gallery');
   String get attachFile => _t('ملف', 'File');
+  String topUpRequestsTitle(String n) => _t('طلبات شحن الرصيد ($n)', 'Funding requests ($n)');
+  String get topUpApproved => _t('تمت الموافقة وحُوّل المبلغ.', 'Approved. The amount was transferred.');
+  String get topUpRejected => _t('تم رفض الطلب.', 'The request was rejected.');
+  String topUpApproveTitle(String name) => _t('الموافقة على شحن رصيد $name؟', 'Approve funding $name?');
+  String topUpApproveBody(String amount) => _t('سيُخصم $amount من رصيدك ويُضاف إلى رصيد الوكيل.', '$amount will leave your balance and go to the sub-agency.');
+  String get topUpApproveConfirm => _t('موافقة وتحويل', 'Approve and transfer');
+  String get editAgentTitle => _t('تعديل بيانات الوكالة', 'Edit the agency details');
+  String get editAgentSave => _t('حفظ', 'Save');
+  String get editAgentDone => _t('تم حفظ البيانات.', 'The details were saved.');
+  String get editAgentEmailHint => _t('اتركه فارغًا إن لم تغيّر البريد. بريد الدخول للمالك.', 'Leave it empty to keep the e-mail. This is the sign-in e-mail of the owner.');
+  String get editAgentLink => _t('تعديل بيانات الوكالة', 'Edit agency details');
+  String get reclaimTitle => _t('استرداد رصيد من الوكيل', 'Take money back from the sub-agency');
+  String reclaimAvailable(String name, String amount) => _t('رصيد $name: $amount', '$name balance: $amount');
+  String get reclaimAction => _t('استرداد', 'Take back');
+  String get reclaimDone => _t('تم استرداد المبلغ إلى رصيدك.', 'The amount was returned to your balance.');
+  String get prefillLink => _t('نسخ البيانات من طلب سابق', 'Copy the details of an earlier request');
+  String get prefillSheetTitle => _t('اختر طلبًا سابقًا', 'Choose an earlier request');
+  String prefillTravelers(int n) => _t('${numeral(n)} مسافر', n == 1 ? '1 traveler' : '$n travelers');
+  String get prefillReading => _t('جارٍ قراءة بيانات الطلب…', 'Reading the request details…');
+  String get prefillApplied => _t('عبّأنا الحقول من الطلب السابق. راجعها قبل المتابعة.', 'The fields were filled from the earlier request. Check them before you continue.');
+  String get prefillNothing => _t('لا توجد بيانات للنسخ في هذا الطلب.', 'That request has nothing to copy.');
+  String get featureUnavailable => _t('هذه الميزة غير متاحة بعد.', 'This is not available yet.');
+  String get comingSoonUnavailable => _t('التنبيه عند الإطلاق غير متاح بعد.', 'Launch alerts are not available yet.');
+  String get attachmentAttached => _t('تم إرفاق الملف.', 'File attached.');
+  String get attachmentUploading => _t('جارٍ رفع الملف…', 'Uploading the file…');
   String get attachReplace => _t('استبدال', 'Replace');
   String get attachRemove => _t('حذف المرفق', 'Remove attachment');
   String get attachTypes => _t('الأنواع المقبولة: JPG وPNG وPDF', 'Accepted: JPG, PNG, PDF');
@@ -289,7 +313,6 @@ class SeenStrings {
   String get removeTravelerButton => _t('إزالة المسافر', 'Remove traveler');
 
   // Service coming soon (Figma BOOK-09).
-  String get hotelBookingName => _t('حجز الفنادق', 'Hotel booking');
   String comingSoonTitle(String name) => _t('$name قريبًا', '$name is coming soon');
   String comingSoonBody(String name) =>
       _t('نعمل على إضافة $name لعملائك. فعّل التنبيه لنبلغك عند الإطلاق.', 'We are adding $name for your customers. Turn on the alert and we will tell you at launch.');
@@ -337,6 +360,12 @@ class SeenStrings {
   String get chooseFileInstead => _t('اختيار ملف بدلًا من ذلك', 'Choose a file instead');
 
   // Notifications (Figma NOTIF-01 / 03).
+  // In-app notifications: the server sends no text, only what it is about.
+  String notificationOnRequest(String reference) => _t('طلب $reference', 'Request $reference');
+  String get notificationWalletMovement => _t('حركة في المحفظة', 'Wallet activity');
+  String get notificationSupport => _t('الدعم الفني', 'Support');
+  String get notificationGeneric => _t('إشعار', 'Notification');
+
   String get unreadFilter => _t('غير المقروءة', 'Unread');
   String get allFilter => _t('الكل', 'All');
   String get noUnreadTitle => _t('لا إشعارات غير مقروءة', 'No unread notifications');
@@ -403,7 +432,7 @@ class SeenStrings {
 
   String get attachUnavailable => _t('تعذّر فتح المصدر. تحقق من أذونات التطبيق.', 'Could not open the source. Check the app permissions.');
   String get attachBadType => _t('نوع الملف غير مقبول. استخدم JPG أو PNG أو PDF.', 'File type not accepted. Use JPG, PNG or PDF.');
-  String get attachNotSent => _t('المرفق محفوظ على جهازك فقط ولم يُرسل بعد.', 'The attachment is kept on this device and has not been sent yet.');
+  String get attachNotSent => _t('المرفق لم يُرسل بعد، ويُرسل عند المتابعة.', 'Not sent yet. It is sent when you continue.');
   String get notifications => _t('الإشعارات', 'Notifications');
   String get languageSwitch => _t('EN', 'ع');
   String get languageLabel => _t('English', 'العربية');
@@ -412,14 +441,11 @@ class SeenStrings {
       : const ['Home', 'Requests', 'Wallet', 'Agents', 'Account'];
 
   // Wallet
-  String get availableBalance => _t('الرصيد المتاح', 'Available balance');
   String get topUp => _t('شحن الرصيد', 'Top up');
-  String get onHold => _t('محجوز', 'On hold');
   String get total => _t('الإجمالي', 'Total');
   String get creditLimit => _t('حد الائتمان', 'Credit limit');
 
   // Booking
-  String get pricePerTraveler => _t('السعر لكل مسافر', 'Price per traveler');
   String get processing => _t('مدة المعالجة', 'Processing');
   String get documents => _t('المستندات', 'Documents');
   String traveler(int n) => _t('المسافر $n', 'Traveler $n');
@@ -433,11 +459,7 @@ class SeenStrings {
   String validityMid(int m) =>
       _t('الصلاحية $m أشهر — مقبول، يُنصح بالتجديد قريبًا', 'Valid $m months — accepted, renewal advised');
   String validityOk(int m) => _t('الصلاحية $m شهرًا — مستوفٍ لشرط 6 أشهر', 'Valid $m months — meets the 6-month rule');
-  String get totalToHold => _t('الإجمالي المطلوب حجزه', 'Total to hold');
-  String get balanceEnough => _t('الرصيد كافٍ لإتمام الحجز', 'Balance covers this booking');
   String get balanceNotEnough => _t('الرصيد غير كافٍ', 'Insufficient balance');
-  String get availableShort => _t('المتاح', 'Available');
-  String get afterBooking => _t('بعد الحجز', 'After booking');
 
   // Sub-agents
   String get service => _t('الخدمة', 'Service');

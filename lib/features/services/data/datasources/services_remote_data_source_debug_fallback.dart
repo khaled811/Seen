@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../domain/entities/service_booking_request.dart';
-import '../models/service_booking_result_dto.dart';
 import '../models/service_definition_dto.dart';
 import 'services_remote_data_source.dart';
 
@@ -21,25 +19,7 @@ class DebugFallbackServicesRemoteDataSource implements ServicesRemoteDataSource 
   @override
   Future<Either<Failure, List<ServiceDefinitionDto>>> getAvailableServices() async {
     final result = await _real.getAvailableServices();
-    if (kDebugMode && result.isLeft()) return const Right(_mockCatalog);
-    return result;
-  }
-
-  @override
-  Future<Either<Failure, ServiceBookingResultDto>> submitBooking(
-    ServiceBookingRequest request,
-  ) async {
-    final result = await _real.submitBooking(request);
-    if (kDebugMode && result.isLeft()) {
-      return Right(
-        ServiceBookingResultDto(
-          requestId: 'debug-req-${DateTime.now().microsecondsSinceEpoch}',
-          status: 'submitted',
-          totalPriceAmount: '0.00', // recomputed from entities upstream anyway
-          createdAt: DateTime.now(),
-        ),
-      );
-    }
+    if (debugFallbacksEnabled && result.isLeft()) return const Right(_mockCatalog);
     return result;
   }
 }

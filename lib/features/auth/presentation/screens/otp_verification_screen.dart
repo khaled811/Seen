@@ -5,12 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/feedback.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/status.dart';
+import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
@@ -18,8 +20,13 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../utils/phone_identifier.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 
 const int _otpLength = 6;
+
+/// A recovery code looks like `xxxx-xxxx-xxxx`; the server is the judge, this
+/// only avoids sending an empty or obviously short value.
+const int _recoveryMinLength = 12;
 
 /// Screen 04 · OTP verification (Figma 4:295).
 ///
@@ -28,10 +35,19 @@ const int _otpLength = 6;
 /// the phone/email the code went to (shown masked); once known it is kept
 /// across rebuilds that do not carry it (e.g. after a failed attempt).
 class OtpVerificationScreen extends StatefulWidget {
-  const OtpVerificationScreen({super.key, required this.resendCooldownSeconds, this.identifier});
+  const OtpVerificationScreen({
+    super.key,
+    required this.resendCooldownSeconds,
+    this.identifier,
+    this.canResend = true,
+  });
 
   final int resendCooldownSeconds;
   final String? identifier;
+
+  /// False when the code comes from the person's authenticator app: there is
+  /// nothing to resend, so the resend row gives way to "use a recovery code".
+  final bool canResend;
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -39,6 +55,9 @@ class OtpVerificationScreen extends StatefulWidget {
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _codeController = TextEditingController();
+  // Owned here, disposed in dispose(): the single-use recovery code (xxxx-xxxx-xxxx).
+  final _recoveryController = TextEditingController();
+  bool _recoveryMode = false;
   bool _hasError = false;
 
   // Owned here: started in initState/didUpdateWidget, cancelled in dispose.
@@ -53,6 +72,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _secondsRemaining = widget.resendCooldownSeconds;
     _startCountdown();
     _codeController.addListener(_clearError);
+    _recoveryController.addListener(_clearError);
   }
 
   @override
@@ -85,19 +105,38 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _countdownTimer?.cancel();
     _codeController.removeListener(_clearError);
     _codeController.dispose();
+    _recoveryController.removeListener(_clearError);
+    _recoveryController.dispose();
     super.dispose();
   }
 
   void _submit([String? code]) {
+    if (_recoveryMode) {
+      final recovery = _recoveryController.text.trim();
+      if (recovery.length < _recoveryMinLength) return;
+      context.read<AuthBloc>().add(AuthOtpSubmitted(code: recovery));
+      return;
+    }
     final value = code ?? _codeController.text.trim();
     if (value.length != _otpLength) return;
     context.read<AuthBloc>().add(AuthOtpSubmitted(code: value));
   }
 
+  void _toggleRecovery() => setState(() {
+        _recoveryMode = !_recoveryMode;
+        _hasError = false;
+      });
+
   void _back() => context.read<AuthBloc>().add(const AuthOtpCancelled());
 
   void _resend() {
     context.read<AuthBloc>().add(const AuthOtpResendRequested());
+  }
+
+  /// Localized text for a failed verification (never the server's message).
+  String _failureText(AppLocalizations l10n, AuthFailure failure) {
+    final cause = failure.cause;
+    return cause == null ? l10n.error : localizedFailureMessage(l10n, cause);
   }
 
   @override
@@ -119,7 +158,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             setState(() => _hasError = true);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text((state as AuthFailure).message)));
+              ..showSnackBar(SnackBar(content: Text(_failureText(l10n, state as AuthFailure))));
           },
           child: SeenScreenBackground(
             child: SafeArea(
@@ -139,6 +178,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             alignment: AlignmentDirectional.centerStart,
                             child: SeenRoundIconButton(
                               icon: SeenIcons.back(context),
+                              glyph: const SeenBackGlyph(),
                               semanticLabel: MaterialLocalizations.of(context).backButtonTooltip,
                               tonal: true,
                               onPressed: _back,
@@ -165,20 +205,41 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           Text(l10n.otpTitle, style: type.h1),
                           const SizedBox(height: SeenSpace.s1),
                           Text(
-                            identifier == null
-                                ? l10n.otpInstructions
-                                : l10n.otpSentTo(PhoneIdentifier.mask(identifier)),
+                            !widget.canResend
+                                ? l10n.otpAuthenticatorInstructions
+                                : identifier == null
+                                    ? l10n.otpInstructions
+                                    : l10n.otpSentTo(PhoneIdentifier.mask(identifier)),
                             style: type.body.copyWith(color: c.inkMuted),
                           ),
                           const SizedBox(height: 22),
-                          SeenOtpInput(
-                            length: _otpLength,
-                            controller: _codeController,
-                            error: _hasError,
-                            onCompleted: _submit,
-                          ),
+                          if (_recoveryMode)
+                            SeenTextField(
+                              label: l10n.otpRecoveryCodeLabel,
+                              controller: _recoveryController,
+                              ltr: true,
+                              showError: _hasError,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _submit(),
+                            )
+                          else
+                            SeenOtpInput(
+                              length: _otpLength,
+                              controller: _codeController,
+                              error: _hasError,
+                              onCompleted: _submit,
+                            ),
                           const SizedBox(height: 22),
-                          _ResendRow(secondsRemaining: _secondsRemaining, onResend: _resend),
+                          if (widget.canResend)
+                            _ResendRow(secondsRemaining: _secondsRemaining, onResend: _resend)
+                          else
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: SeenTextLink(
+                                label: _recoveryMode ? l10n.otpUseAuthenticatorCode : l10n.otpUseRecoveryCode,
+                                onTap: _toggleRecovery,
+                              ),
+                            ),
                           // Figma: a 160 px spacer between two 22 px gaps.
                           const SizedBox(height: 204),
                           BlocBuilder<AuthBloc, AuthState>(

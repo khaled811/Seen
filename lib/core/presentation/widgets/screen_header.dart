@@ -9,6 +9,7 @@ import '../../theme/seen_typography.dart';
 import '../foundation/seen_icons.dart';
 import '../foundation/seen_strings.dart';
 import 'actions.dart';
+import 'svg_icon.dart';
 
 class SeenScreenHeader extends StatelessWidget {
   const SeenScreenHeader({
@@ -43,6 +44,7 @@ class SeenScreenHeader extends StatelessWidget {
           if (showBack)
             SeenRoundIconButton(
               icon: SeenIcons.back(context),
+              glyph: const SeenBackGlyph(),
               semanticLabel: SeenStrings.of(context).back,
               onPressed: onBack ?? () => Navigator.of(context).maybePop(),
             )

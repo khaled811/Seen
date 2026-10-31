@@ -50,19 +50,20 @@ class AgentsRepositoryImpl implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+  Future<Either<Failure, void>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   }) async {
     final result = await _remote.fundSubAgentWallet(
       subAgentId: subAgentId,
       amountCents: amountCents,
+      idempotencyKey: idempotencyKey,
       note: note,
     );
     if (result case Left(:final value)) return Left(value);
-    final dto = (result as Right<Failure, SubAgentDto>).value;
-    return Right(dto.toEntity());
+    return const Right(null);
   }
 
   @override
@@ -71,25 +72,18 @@ class AgentsRepositoryImpl implements AgentsRepository {
       (await _remote.createSubAgent(newSubAgent)).map((dto) => dto.toEntity());
 
   @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit(
-          {required String subAgentId, required int limitCents}) async =>
-      (await _remote.updateCreditLimit(
-              subAgentId: subAgentId, limitCents: limitCents))
-          .map((dto) => dto.toEntity());
-
-  @override
   Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(
           String subAgentId) async =>
       (await _remote.getSubAgentProfile(subAgentId))
           .map((dto) => dto.toEntity());
 
   @override
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
-  }) async =>
-      (await _remote.setSubAgentActive(
-              subAgentId: subAgentId, active: active, reason: reason))
-          .map((dto) => dto.toEntity());
+  }) async {
+    final result = await _remote.setSubAgentActive(subAgentId: subAgentId, active: active);
+    if (result case Left(:final value)) return Left(value);
+    return const Right(null);
+  }
 }

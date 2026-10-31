@@ -7,15 +7,18 @@ import '../../domain/usecases/cancel_top_up_usecase.dart';
 enum TopUpCancelStatus { idle, submitting, success, notCancellable, failure }
 
 class TopUpCancelState extends Equatable {
-  const TopUpCancelState({this.status = TopUpCancelStatus.idle, this.message});
+  const TopUpCancelState({this.status = TopUpCancelStatus.idle, this.message, this.failure});
 
   final TopUpCancelStatus status;
 
   /// The server's message for [TopUpCancelStatus.failure].
   final String? message;
 
+  /// The failure behind [message] (shown localized).
+  final Failure? failure;
+
   @override
-  List<Object?> get props => [status, message];
+  List<Object?> get props => [status, message, failure];
 }
 
 /// "Cancel top-up request" (Figma WAL-02). One request at a time: a second tap
@@ -34,9 +37,11 @@ class TopUpCancelCubit extends Cubit<TopUpCancelState> {
     if (isClosed) return;
     result.match(
       (failure) => emit(
-        failure is ServerFailure && failure.code == 'NOT_CANCELLABLE'
+        // The API has no operation to withdraw a top-up request, so it can never
+        // be cancelled from the app: the same message as "already decided".
+        failure is ServerFailure && (failure.code == 'NOT_CANCELLABLE' || failure.code == 'unsupported_operation')
             ? const TopUpCancelState(status: TopUpCancelStatus.notCancellable)
-            : TopUpCancelState(status: TopUpCancelStatus.failure, message: failure.message),
+            : TopUpCancelState(status: TopUpCancelStatus.failure, message: failure.message, failure: failure),
       ),
       (_) => emit(const TopUpCancelState(status: TopUpCancelStatus.success)),
     );

@@ -1,7 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
-import '../entities/sub_agent.dart';
 import '../repositories/agents_repository.dart';
 
 /// Trusts [amountCents]; the caller (the transfer sheet) is expected to
@@ -14,11 +13,12 @@ class FundSubAgentWalletUseCase {
 
   final AgentsRepository _repository;
 
-  Future<Either<Failure, SubAgent>> call({
+  Future<Either<Failure, void>> call({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   }) =>
       _repository.fundSubAgentWallet(
-          subAgentId: subAgentId, amountCents: amountCents, note: note);
+          subAgentId: subAgentId, amountCents: amountCents, idempotencyKey: idempotencyKey, note: note);
 }

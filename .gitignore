@@ -41,3 +41,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Golden test failure artifacts (*_masterImage/_testImage/_isolatedDiff/_maskedDiff).
+# Baselines live in goldens/ and stay tracked. Files already committed under
+# failures/ remain tracked until removed with `git rm --cached`.
+test/**/failures/

@@ -57,18 +57,17 @@ extension NotificationEventTypeVisual on NotificationEventType {
 /// Where tapping a notification leads.
 enum NotificationTarget { request, ticket, support, wallet, agents }
 
-/// The destination of [n], or null when it has nothing to open (a request event
-/// without a request id, an unknown type).
-NotificationTarget? notificationTarget(InAppNotification n) => switch (n.type) {
-      NotificationEventType.newRequest ||
-      NotificationEventType.statusUpdate ||
-      NotificationEventType.infoRequired ||
-      NotificationEventType.rejected =>
-        n.relatedRequestId == null ? null : NotificationTarget.request,
-      NotificationEventType.slaBreach => NotificationTarget.support,
-      NotificationEventType.topUp => NotificationTarget.wallet,
-      NotificationEventType.newAgentSignup => NotificationTarget.agents,
-      NotificationEventType.ticketUpdate =>
-        n.relatedEntityId == null ? NotificationTarget.support : NotificationTarget.ticket,
-      NotificationEventType.unknown => n.relatedRequestId == null ? null : NotificationTarget.request,
-    };
+/// The destination of [n], or null when it has nothing to open. What the
+/// notification points at (a request, a ticket) decides first, because the
+/// event vocabulary of the server is not published; the type only decides for
+/// the ones that point at nothing in particular.
+NotificationTarget? notificationTarget(InAppNotification n) {
+  if (n.relatedRequestId != null) return NotificationTarget.request;
+  if (n.relatedEntityId != null) return NotificationTarget.ticket;
+  return switch (n.type) {
+    NotificationEventType.topUp => NotificationTarget.wallet,
+    NotificationEventType.newAgentSignup => NotificationTarget.agents,
+    NotificationEventType.slaBreach || NotificationEventType.ticketUpdate => NotificationTarget.support,
+    _ => n.amountCents != null ? NotificationTarget.wallet : null,
+  };
+}

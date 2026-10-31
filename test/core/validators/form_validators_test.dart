@@ -14,6 +14,13 @@ void main() {
 
     test('accepts a positive amount', () {
       expect(FormValidators.positiveAmount('10.50', message: 'bad'), isNull);
+      expect(FormValidators.positiveAmount('100', message: 'bad'), isNull);
+    });
+
+    test('rejects what the API or the cents parser cannot take', () {
+      for (final bad in ['1e3', '1.234', '1.', '.5', '+5', '1,000', 'NaN', 'Infinity', '٥٠', '']) {
+        expect(FormValidators.positiveAmount(bad, message: 'bad'), 'bad', reason: bad);
+      }
     });
   });
 

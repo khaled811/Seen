@@ -20,6 +20,7 @@ import 'package:seen_booking/features/wallet/data/models/wallet_balance_dto.dart
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_transactions_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/request_top_up_usecase.dart';
@@ -91,11 +92,16 @@ class _Repo implements WalletRepository {
       Right(transactions);
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError();
 }
@@ -265,6 +271,8 @@ void main() {
       await tester.pumpWidget(BlocProvider<WalletBloc>.value(value: bloc, child: _app(const WalletView())));
       bloc.add(const WalletLoadRequested());
       await tester.pump();
+      // Loading policy: a fast answer never flashes a skeleton; it shows after 300 ms.
+      await tester.pump(const Duration(milliseconds: 350));
       expect(find.byType(WalletLoadingSkeleton), findsOneWidget);
       repo.gate!.complete();
       await tester.runAsync(() => bloc.stream.firstWhere((s) => s is WalletLoaded));

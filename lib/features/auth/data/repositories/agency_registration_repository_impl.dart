@@ -11,24 +11,10 @@ class AgencyRegistrationRepositoryImpl implements AgencyRegistrationRepository {
   final AgencyRegistrationRemoteDataSource _remote;
 
   @override
-  Future<Either<Failure, RegistrationChallenge>> start({
+  Future<Either<Failure, void>> register({
     required AgencyRegistrationDraft draft,
     required String password,
-  }) async =>
-      (await _remote.start(draft: draft, password: password)).map((dto) => dto.toEntity());
-
-  @override
-  Future<Either<Failure, RegistrationChallenge>> resendCode({required String challengeToken}) async =>
-      (await _remote.resendCode(challengeToken: challengeToken)).map((dto) => dto.toEntity());
-
-  @override
-  Future<Either<Failure, String>> verifyPhone({required String challengeToken, required String code}) =>
-      _remote.verifyPhone(challengeToken: challengeToken, code: code);
-
-  @override
-  Future<Either<Failure, void>> complete({
-    required String verificationToken,
     required RegistrationConsent consent,
   }) =>
-      _remote.complete(verificationToken: verificationToken, consent: consent);
+      _remote.register(draft: draft, password: password, consent: consent);
 }

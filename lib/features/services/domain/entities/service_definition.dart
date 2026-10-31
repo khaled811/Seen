@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
+
 /// Which government/carrier approval a service maps to.
 ///
-/// TODO(backend-contract): not part of the confirmed Task 01 enum catalog —
-/// these values are placeholders pending the real Seen Booking service
-/// taxonomy. `unknown` covers any category not yet mapped.
+/// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
 enum ServiceCategory {
   egyptNationalSecurity('egypt_national_security'),
   egyptMilitaryIntelligence('egypt_military_intelligence'),
@@ -33,6 +33,24 @@ enum ServiceCategory {
 
 enum ServiceAvailability { available, comingSoon }
 
+/// A document a service asks for per traveler (`ServiceDocumentRequirement`).
+class ServiceDocumentRequirement extends Equatable {
+  const ServiceDocumentRequirement({
+    required this.id,
+    required this.key,
+    required this.label,
+    required this.required,
+  });
+
+  final String id;
+  final String key;
+  final String label;
+  final bool required;
+
+  @override
+  List<Object?> get props => [id, key, label, required];
+}
+
 /// A bookable (or not-yet-bookable) service offering.
 ///
 /// [name]/[description] are backend-provided content, not UI chrome — like
@@ -49,6 +67,11 @@ class ServiceDefinition extends Equatable {
     required this.description,
     required this.perPersonPriceCents,
     required this.availability,
+    this.code,
+    this.slaHours,
+    this.requiresApproval = false,
+    this.fields = const [],
+    this.documents = const [],
   });
 
   final String id;
@@ -58,9 +81,19 @@ class ServiceDefinition extends Equatable {
   final int perPersonPriceCents;
   final ServiceAvailability availability;
 
+  /// The server's service code (`ServiceType.code`).
+  final String? code;
+  final int? slaHours;
+  final bool requiresApproval;
+
+  /// What to ask per traveler (server-driven, ordered by step then display
+  /// order) and which documents to collect. Empty for a service that has none.
+  final List<DynamicFormField> fields;
+  final List<ServiceDocumentRequirement> documents;
+
   bool get isBookable => availability == ServiceAvailability.available;
 
   @override
   List<Object?> get props =>
-      [id, category, name, description, perPersonPriceCents, availability];
+      [id, category, name, description, perPersonPriceCents, availability, code, slaHours, requiresApproval, fields, documents];
 }

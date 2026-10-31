@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
@@ -40,7 +41,7 @@ class DebugFallbackSystemStatusRemoteDataSource
       });
     }
     final result = await _real.getAppStatus();
-    if (kDebugMode && result.isLeft()) {
+    if (debugFallbacksEnabled && result.isLeft()) {
       return const Right(AppStatusDto(maintenance: false));
     }
     return result;
@@ -49,7 +50,7 @@ class DebugFallbackSystemStatusRemoteDataSource
   @override
   Future<Either<Failure, bool>> requestAccess(String area) async {
     final result = await _real.requestAccess(area);
-    if (kDebugMode && result.isLeft()) return const Right(true);
+    if (debugFallbacksEnabled && result.isLeft()) return const Right(true);
     return result;
   }
 }

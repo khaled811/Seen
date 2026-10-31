@@ -9,6 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:seen_booking/core/presentation/widgets/svg_icon.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/network/auth_session_controller.dart';
 import 'package:seen_booking/core/presentation/foundation/seen_icons.dart';
@@ -104,14 +105,14 @@ void main() {
         return await bloc.stream.firstWhere((s) => s is AuthFailure) as AuthFailure;
       }
 
-      var f = await fail(_code('INVALID_CREDENTIALS', {'attemptsLeft': 3}));
+      var f = await fail(_code('invalid_credentials', {'attemptsLeft': 3}));
       expect((f.reason, f.attemptsLeft), (LoginFailureReason.invalidCredentials, 3));
-      f = await fail(_code('ACCOUNT_PENDING_APPROVAL'));
+      f = await fail(_code('agency_pending'));
       expect(f.reason, LoginFailureReason.pendingApproval);
-      f = await fail(_code('ACCOUNT_SUSPENDED'));
+      f = await fail(_code('agency_suspended'));
       expect(f.reason, LoginFailureReason.suspended);
-      f = await fail(_code('ACCOUNT_LOCKED', {'retryAfterSeconds': 892}));
-      expect((f.reason, f.retryAfterSeconds), (LoginFailureReason.locked, 892));
+      f = await fail(_code('too_many_attempts', {'minutes': 15}));
+      expect((f.reason, f.retryAfterSeconds), (LoginFailureReason.locked, 900));
       f = await fail(const ServerFailure('boom'));
       expect(f.reason, LoginFailureReason.generic);
       f = await fail(const NetworkFailure('offline'));
@@ -132,7 +133,7 @@ void main() {
     }
 
     Future<void> submit(WidgetTester tester) async {
-      await tester.enterText(find.byType(TextFormField).at(0), '771234567');
+      await tester.enterText(find.byType(TextFormField).at(0), 'owner@agency.test');
       await tester.enterText(find.byType(TextFormField).at(1), 'wrong-password');
       await tester.tap(find.text('دخول'));
       await _settle(tester);
@@ -146,9 +147,9 @@ void main() {
 
     testWidgets('wrong credentials: both fields marked, attempts left, cleared on typing', (tester) async {
       final repo = await open(tester);
-      repo.loginResult = Left(_code('INVALID_CREDENTIALS', {'attemptsLeft': 3}));
+      repo.loginResult = Left(_code('invalid_credentials', {'attemptsLeft': 3}));
       await submit(tester);
-      expect(find.text('رقم الجوال أو كلمة المرور غير صحيحة. تبقّت ٣ محاولات.'), findsOneWidget);
+      expect(find.text('البريد الإلكتروني أو كلمة المرور غير صحيحة. تبقّت ٣ محاولات.'), findsOneWidget);
       expect(find.byIcon(SeenIcons.alert), findsNWidgets(2));
       await tester.enterText(find.byType(TextFormField).at(1), 'another');
       await tester.pump();
@@ -159,20 +160,20 @@ void main() {
 
     testWidgets('without attempts left the message stands alone', (tester) async {
       final repo = await open(tester);
-      repo.loginResult = Left(_code('INVALID_CREDENTIALS'));
+      repo.loginResult = Left(_code('invalid_credentials'));
       await submit(tester);
-      expect(find.text('رقم الجوال أو كلمة المرور غير صحيحة.'), findsOneWidget);
+      expect(find.text('البريد الإلكتروني أو كلمة المرور غير صحيحة.'), findsOneWidget);
       await close(tester);
     });
 
     testWidgets('pending approval and suspended show their banners with a support action', (tester) async {
       final repo = await open(tester);
-      repo.loginResult = Left(_code('ACCOUNT_PENDING_APPROVAL'));
+      repo.loginResult = Left(_code('agency_pending'));
       await submit(tester);
       expect(find.text('الحساب قيد المراجعة. سنبلغك عند التفعيل خلال يوم عمل.'), findsOneWidget);
       expect(find.text('الدعم'), findsOneWidget);
 
-      repo.loginResult = Left(_code('ACCOUNT_SUSPENDED'));
+      repo.loginResult = Left(_code('agency_suspended'));
       await tester.tap(find.text('دخول'));
       await _settle(tester);
       expect(find.text('الحساب موقوف. تواصل مع جُباري لمعرفة السبب.'), findsOneWidget);
@@ -182,7 +183,7 @@ void main() {
 
     testWidgets('locked: a live countdown, sign-in disabled until it ends', (tester) async {
       final repo = await open(tester);
-      repo.loginResult = Left(_code('ACCOUNT_LOCKED', {'retryAfterSeconds': 3}));
+      repo.loginResult = Left(_code('too_many_attempts', {'retryAfterSeconds': 3}));
       await submit(tester);
       expect(find.textContaining('حاول بعد 0:03'), findsOneWidget);
       await tester.pump(const Duration(seconds: 1));
@@ -192,24 +193,39 @@ void main() {
       await close(tester);
     });
 
-    testWidgets('an unknown failure is just a message', (tester) async {
+    testWidgets('the contract-only outcomes each have their own message', (tester) async {
       final repo = await open(tester);
-      repo.loginResult = const Left(ServerFailure('تعذّر الاتصال بالخادم'));
+
+      repo.loginResult = const Left(ValidationFailure('x', fieldErrors: {
+        'email': ['email_required'],
+      }));
       await submit(tester);
-      expect(find.text('تعذّر الاتصال بالخادم'), findsOneWidget);
+      expect(find.text('سجّل الدخول بالبريد الإلكتروني الخاص بحسابك.'), findsOneWidget);
+
+      repo.loginResult = Left(_code('enrollment_link_required'));
+      await tester.tap(find.text('دخول'));
+      await _settle(tester);
+      expect(find.textContaining('فعّل التحقق بخطوتين'), findsOneWidget);
+      expect(find.text('سجّل الدخول بالبريد الإلكتروني الخاص بحسابك.'), findsNothing);
+      await close(tester);
+    });
+
+    testWidgets('an unknown failure shows our own generic message, never the server text', (tester) async {
+      final repo = await open(tester);
+      repo.loginResult = const Left(ServerFailure('internal details the user must not see'));
+      await submit(tester);
+      expect(find.textContaining('internal details'), findsNothing);
+      expect(find.text('حدث خطأ ما'), findsOneWidget);
       expect(find.byIcon(SeenIcons.alert), findsNothing);
       await close(tester);
     });
   });
 
   group('registration field errors (AUTH-08)', () {
-    test('licence and e-mail conflicts are form-field issues, the phone one is not', () {
-      final license = RegistrationIssue.from(const ServerFailure('x', code: RegistrationIssue.licenseTakenCode));
+    test('an e-mail conflict is a form-field issue; nothing else is (the contract has no licence or phone conflict)', () {
       final email = RegistrationIssue.from(const ServerFailure('x', code: RegistrationIssue.emailTakenCode));
-      final phone = RegistrationIssue.from(const ServerFailure('x', code: RegistrationIssue.phoneTakenCode));
-      expect((license.kind, license.isFormFieldConflict), (RegistrationIssueKind.licenseTaken, true));
       expect((email.kind, email.isFormFieldConflict), (RegistrationIssueKind.emailTaken, true));
-      expect(phone.isFormFieldConflict, false);
+      expect(RegistrationIssue.from(const ServerFailure('x', code: 'license_number_invalid')).isFormFieldConflict, false);
     });
 
     Future<void> openForm(WidgetTester tester, {RegistrationIssueKind? conflict}) async {
@@ -231,14 +247,6 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('a taken licence number is marked until it is edited', (tester) async {
-      await openForm(tester, conflict: RegistrationIssueKind.licenseTaken);
-      expect(find.text('رقم الترخيص مسجّل لوكالة أخرى. تواصل مع الدعم إن كان هذا خطأ.'), findsOneWidget);
-      await tester.enterText(find.byType(TextFormField).at(5), 'TL-2000');
-      await tester.pump();
-      expect(find.textContaining('مسجّل لوكالة أخرى'), findsNothing);
-    });
-
     testWidgets('a taken e-mail is marked until it is edited', (tester) async {
       await openForm(tester, conflict: RegistrationIssueKind.emailTaken);
       expect(find.text('البريد مستخدم في حساب آخر.'), findsOneWidget);
@@ -257,17 +265,17 @@ void main() {
 
     testWidgets('a field the agent filled in correctly gets the accepted mark', (tester) async {
       await openForm(tester);
-      final before = find.byIcon(SeenIcons.check).evaluate().length;
+      final before = find.byType(SeenCheckGlyph).evaluate().length;
       await tester.enterText(find.byType(TextFormField).at(0), 'وكالة النور');
       await tester.pump();
-      expect(find.byIcon(SeenIcons.check), findsNWidgets(before + 1));
+      expect(find.byType(SeenCheckGlyph), findsNWidgets(before + 1));
       await tester.enterText(find.byType(TextFormField).at(0), '');
       await tester.pump();
-      expect(find.byIcon(SeenIcons.check), findsNWidgets(before));
+      expect(find.byType(SeenCheckGlyph), findsNWidgets(before));
     });
 
-    testWidgets('the flow sends a licence conflict back to the form', (tester) async {
-      final repo = _RegRepo()..startResult = Left(_code(RegistrationIssue.licenseTakenCode));
+    testWidgets('the flow sends an e-mail conflict back to the form', (tester) async {
+      final repo = _RegRepo()..result = Left(_code(RegistrationIssue.emailTakenCode));
       final bloc = AgencyRegistrationBloc(
         draft: const AgencyRegistrationDraft(
           agencyName: 'a',
@@ -277,10 +285,7 @@ void main() {
           city: 'c',
           licenseNumber: 'd',
         ),
-        start: StartAgencyRegistrationUseCase(repo),
-        resendCode: ResendRegistrationCodeUseCase(repo),
-        verifyPhone: VerifyRegistrationPhoneUseCase(repo),
-        complete: CompleteAgencyRegistrationUseCase(repo),
+        register: RegisterAgencyUseCase(repo),
       );
       RegistrationIssueKind? sent;
       await tester.pumpWidget(_app(AgencyRegistrationFlow(
@@ -290,9 +295,11 @@ void main() {
         onFieldConflict: (kind) => sent = kind,
         createBloc: () => bloc,
       )));
-      bloc.add(const RegistrationPasswordSubmitted('Abcdef12'));
+      bloc
+        ..add(const RegistrationPasswordSubmitted('Abcdef12-long-pw'))
+        ..add(const RegistrationConsentSubmitted(RegistrationConsent(acceptedTerms: true, acceptedPrivacy: true)));
       await _settle(tester);
-      expect(sent, RegistrationIssueKind.licenseTaken);
+      expect(sent, RegistrationIssueKind.emailTaken);
     });
   });
 
@@ -395,29 +402,15 @@ void main() {
 }
 
 class _RegRepo implements AgencyRegistrationRepository {
-  Either<Failure, RegistrationChallenge> startResult = const Left(ServerFailure('x'));
+  Either<Failure, void> result = const Left(ServerFailure('x'));
 
   @override
-  Future<Either<Failure, RegistrationChallenge>> start({
+  Future<Either<Failure, void>> register({
     required AgencyRegistrationDraft draft,
     required String password,
-  }) async =>
-      startResult;
-
-  @override
-  Future<Either<Failure, RegistrationChallenge>> resendCode({required String challengeToken}) async =>
-      const Left(ServerFailure('x'));
-
-  @override
-  Future<Either<Failure, String>> verifyPhone({required String challengeToken, required String code}) async =>
-      const Left(ServerFailure('x'));
-
-  @override
-  Future<Either<Failure, void>> complete({
-    required String verificationToken,
     required RegistrationConsent consent,
   }) async =>
-      const Left(ServerFailure('x'));
+      result;
 }
 
 class _UploadRepo implements MissingDocumentRepository {
@@ -429,15 +422,15 @@ class _UploadRepo implements MissingDocumentRepository {
         MissingDocumentRequest(
           requestId: 'r1',
           referenceId: 'SB-20476',
-          documentTitle: 'جواز',
           reason: 'غير واضح',
+          targets: const [UploadTarget(travelerId: 't1', requirementId: 'd1', requirementLabel: 'جواز')],
           deadline: DateTime(2026, 10, 17),
         ),
       );
 
   @override
   Future<Either<Failure, void>> upload({
-    required String requestId,
+    required UploadTarget target,
     required PickedDocument document,
     void Function(double fraction)? onProgress,
   }) {

@@ -72,11 +72,18 @@ void main() {
   setUp(_store.clear);
 
   group('RolePermissions', () {
-    test('owner and unnamed roles can do everything; the server still decides', () {
-      for (final p in [AgentPosition.owner, AgentPosition.unknown, null]) {
+    test('an owner (or no session in scope) can do everything; the server still decides', () {
+      for (final p in [AgentPosition.owner, null]) {
         final perms = RolePermissions(p);
         expect(Capability.values.every(perms.can), isTrue);
         expect(perms.isRestricted, isFalse);
+      }
+    });
+
+    test('an unknown role can do nothing (fail closed)', () {
+      for (final perms in [const RolePermissions(AgentPosition.unknown), RolePermissions.none]) {
+        expect(Capability.values.any(perms.can), isFalse);
+        expect(perms.isRestricted, isTrue);
       }
     });
 

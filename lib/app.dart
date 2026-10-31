@@ -46,7 +46,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => LocaleCubit()),
+        BlocProvider(create: (_) => LocaleCubit(language: InjectionContainer.instance.appLanguage)),
         BlocProvider(create: (_) => ThemeModeCubit()),
         BlocProvider(create: (_) => BalancePrivacyCubit()),
         BlocProvider(create: (_) => InjectionContainer.instance.createConnectivityCubit()),
@@ -176,13 +176,14 @@ class _AuthGateState extends State<_AuthGate> {
         builder: (context, state) {
           return switch (state) {
             AuthInitial() || AuthLoading() => const SplashScreen(),
-            AuthOtpRequired(:final resendCooldownSeconds, :final identifier) =>
+            AuthOtpRequired(:final resendCooldownSeconds, :final identifier, :final canResend) =>
               OtpVerificationScreen(
                   resendCooldownSeconds: resendCooldownSeconds,
-                  identifier: identifier),
-            AuthFailure(stage: AuthFailureStage.otp, :final challengeToken)
+                  identifier: identifier,
+                  canResend: canResend),
+            AuthFailure(stage: AuthFailureStage.otp, :final challengeToken, :final canResend)
                 when challengeToken != null =>
-              const OtpVerificationScreen(resendCooldownSeconds: 0),
+              OtpVerificationScreen(resendCooldownSeconds: 0, canResend: canResend),
             // Expired keeps the same shell under the dialog (AUTH-13).
             AuthAuthenticated(:final session) ||
             AuthSessionExpired(:final session) when !kEnableSpiritualHub =>

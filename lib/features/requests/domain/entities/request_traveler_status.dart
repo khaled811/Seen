@@ -2,8 +2,7 @@ import 'package:equatable/equatable.dart';
 
 /// Per-traveler outcome within a request.
 ///
-/// TODO(backend-contract): not part of the confirmed Task 01 enum catalog —
-/// a placeholder pending the real Seen Booking schema.
+/// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
 enum TravelerApprovalStatus {
   pending('pending'),
   approved('approved'),
@@ -23,7 +22,7 @@ enum TravelerApprovalStatus {
 
 /// Where a traveler's document stands (Figma REQ-12).
 ///
-/// TODO(backend-contract): placeholder wire values (docs/BACKEND_MIGRATION_GAPS.md, section 22).
+/// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
 enum TravelerDocumentStatus {
   issued('ISSUED'),
   approved('APPROVED'),

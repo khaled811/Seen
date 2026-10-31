@@ -28,6 +28,7 @@ abstract final class WalletLabels {
         TopUpMethod.bankTransfer => l10n.topUpMethodBankTransfer,
         TopUpMethod.cash => l10n.topUpMethodCash,
         TopUpMethod.exchangeHouse => l10n.topUpMethodExchangeHouse,
+        TopUpMethod.eWallet => l10n.topUpMethodEWallet,
         TopUpMethod.unknown => l10n.error,
       };
 }

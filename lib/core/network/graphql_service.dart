@@ -51,8 +51,10 @@ class GraphQLService {
     } catch (e, st) {
       // Anything not already surfaced as an OperationException (e.g. a bug
       // in a caller-supplied parserFn) must still never crash the app.
-      _logger.e('Unhandled GraphQL error', error: e, stackTrace: st);
-      return Left(ServerFailure(e.toString()));
+      // Log only the type: the text of a parser or response error can carry
+      // response data (names, passport numbers), which must never reach logs.
+      _logger.e('Unhandled GraphQL error: ${e.runtimeType}', stackTrace: st);
+      return const Left(ServerFailure('Unexpected response from the server.'));
     }
   }
 }

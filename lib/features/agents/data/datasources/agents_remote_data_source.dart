@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/network/graphql_service.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/new_sub_agent.dart';
@@ -9,107 +10,107 @@ import '../models/sub_agent_dto.dart';
 import '../models/sub_agent_profile_dto.dart';
 import '../models/sub_agent_request_summary_dto.dart';
 
-/// Raw GraphQL access for the agents feature. Returns DTOs, never entities.
-///
-/// TODO(backend-contract): documents below encode a placeholder schema
-/// (query/mutation names, argument names, response fields). Update once the
-/// real Seen Booking GraphQL schema is confirmed — see the matching TODOs
-/// in the DTO files.
+/// Raw GraphQL access for the agents feature (`docs/api/mobile-api-reference.md`,
+/// "Agency team and sub-agents"). Returns DTOs, never entities.
 abstract interface class AgentsRemoteDataSource {
   Future<Either<Failure, List<SubAgentDto>>> getSubAgents();
 
-  Future<Either<Failure, List<SubAgentRequestSummaryDto>>>
-      getPendingApprovalRequests();
+  Future<Either<Failure, List<SubAgentRequestSummaryDto>>> getPendingApprovalRequests();
 
-  /// Returns `true` on success. Not `void` — `GraphQLService` treats a
-  /// `null` parsed result as an empty-response failure, so the parser must
-  /// produce a real, non-null value even for a mutation with no
-  /// interesting payload.
+  /// Returns `true` on success. Not `void`: `GraphQLService` treats a `null`
+  /// parsed result as an empty-response failure.
   Future<Either<Failure, bool>> approveRequest(String requestId);
 
-  Future<Either<Failure, bool>> rejectRequest(String requestId,
-      {required String reason});
+  Future<Either<Failure, bool>> rejectRequest(String requestId, {required String reason});
 
-  Future<Either<Failure, SubAgentDto>> fundSubAgentWallet({
+  /// `topUpSubAgent`: the amount moves from the caller's own wallet. [idempotencyKey]
+  /// makes a retry of the same action safe.
+  Future<Either<Failure, bool>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   });
 
   Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent);
 
-  Future<Either<Failure, SubAgentDto>> updateCreditLimit(
-      {required String subAgentId, required int limitCents});
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId);
 
-  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(
-      String subAgentId);
-
-  Future<Either<Failure, SubAgentDto>> setSubAgentActive({
-    required String subAgentId,
-    required bool active,
-    String? reason,
-  });
+  /// `setAgentStatus`: `active` or `suspended` (a pending agency becomes active).
+  Future<Either<Failure, bool>> setSubAgentActive({required String subAgentId, required bool active});
 }
 
 class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
-  AgentsRemoteDataSourceImpl({required GraphQLService graphQLService})
-      : _graphQLService = graphQLService;
+  AgentsRemoteDataSourceImpl({required GraphQLService graphQLService, required AppLanguage language})
+      : _graphQLService = graphQLService,
+        _language = language;
 
   final GraphQLService _graphQLService;
+  final AppLanguage _language;
 
-  static final _subAgentsDocument = gql(r'''
-    query SubAgents {
-      subAgents {
-        id
-        name
-        code
-        balanceAmount
-        isActive
-        marginPercent
+  /// How many sub-agencies one read asks for (the contract's `limit` default is 50).
+  static const int pageSize = 200;
+
+  /// How many statement rows / requests the profile shows.
+  static const int profileRows = 20;
+
+  static final _subAgentsDocument = gql('''
+    query SubAgents(\$limit: Int!) {
+      portalAgents(status: "all", limit: \$limit) {
+        items { ${SubAgentDto.portalFields} }
       }
     }
   ''');
 
-  static final _pendingApprovalRequestsDocument = gql(r'''
+  static final _pendingApprovalRequestsDocument = gql('''
     query PendingAgentApprovalRequests {
-      pendingAgentApprovalRequests {
-        id
-        referenceId
-        subAgentName
-        serviceName
-        travelerCount
-        totalPriceAmount
-        submittedAt
+      requests(status: "pending_agent_approval", limit: 100) { ${SubAgentRequestSummaryDto.requestFields} }
+    }
+  ''');
+
+  static final _decideDocument = gql(r'''
+    mutation DecideMainAgentApproval($requestId: ID!, $approve: Boolean!, $note: String!) {
+      decideMainAgentApproval(requestId: $requestId, approve: $approve, note: $note) { id }
+    }
+  ''');
+
+  static final _topUpDocument = gql(r'''
+    mutation TopUpSubAgent($subAgentId: ID!, $amount: Decimal!, $note: String!, $idempotencyKey: String) {
+      topUpSubAgent(subAgentId: $subAgentId, amount: $amount, note: $note, idempotencyKey: $idempotencyKey) { id }
+    }
+  ''');
+
+  static final _createDocument = gql(r'''
+    mutation CreateSubAgent($input: SubAgentInput!) {
+      createSubAgent(input: $input) { id name status }
+    }
+  ''');
+
+  static final _setStatusDocument = gql(r'''
+    mutation SetAgentStatus($agentId: ID!, $status: String!) {
+      setAgentStatus(agentId: $agentId, status: $status) { id status }
+    }
+  ''');
+
+  static final _profileDocument = gql('''
+    query SubAgentProfile(\$limit: Int!) {
+      portalAgents(status: "all", limit: \$limit) {
+        items { ${SubAgentDto.portalFields} }
       }
     }
   ''');
 
-  static final _approveRequestDocument = gql(r'''
-    mutation ApproveSubAgentRequest($requestId: ID!) {
-      approveSubAgentRequest(requestId: $requestId) {
-        success
+  static final _statementDocument = gql('''
+    query SubAgentStatement(\$agentId: ID!, \$limit: Int!) {
+      portalWallet(agentId: \$agentId, filter: "all", limit: \$limit) {
+        statement { ${LedgerEntryDto.statementFields} }
       }
     }
   ''');
 
-  static final _rejectRequestDocument = gql(r'''
-    mutation RejectSubAgentRequest($requestId: ID!, $reason: String!) {
-      rejectSubAgentRequest(requestId: $requestId, reason: $reason) {
-        success
-      }
-    }
-  ''');
-
-  static final _fundSubAgentWalletDocument = gql(r'''
-    mutation FundSubAgentWallet($subAgentId: ID!, $amount: String!, $note: String) {
-      fundSubAgentWallet(subAgentId: $subAgentId, amount: $amount, note: $note) {
-        id
-        name
-        code
-        balanceAmount
-        isActive
-        marginPercent
-      }
+  static final _agentRequestsDocument = gql('''
+    query SubAgentRequests(\$agentId: ID!, \$limit: Int!) {
+      requests(agentId: \$agentId, limit: \$limit) { ${AgentRequestDto.requestFields} }
     }
   ''');
 
@@ -118,189 +119,154 @@ class AgentsRemoteDataSourceImpl implements AgentsRemoteDataSource {
     return _graphQLService.query<List<SubAgentDto>>(
       QueryOptions<List<SubAgentDto>>(
         document: _subAgentsDocument,
-        parserFn: (json) => (json['subAgents'] as List<dynamic>)
-            .map((e) => SubAgentDto.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        variables: const {'limit': pageSize},
+        fetchPolicy: FetchPolicy.networkOnly,
+        parserFn: _parseAgents,
       ),
     );
   }
 
+  static List<SubAgentDto> _parseAgents(Map<String, dynamic> json) {
+    final items = (json['portalAgents'] as Map<String, dynamic>)['items'] as List<dynamic>;
+    return [for (final e in items) SubAgentDto.fromPortalJson(e as Map<String, dynamic>)];
+  }
+
   @override
-  Future<Either<Failure, List<SubAgentRequestSummaryDto>>>
-      getPendingApprovalRequests() {
+  Future<Either<Failure, List<SubAgentRequestSummaryDto>>> getPendingApprovalRequests() {
     return _graphQLService.query<List<SubAgentRequestSummaryDto>>(
       QueryOptions<List<SubAgentRequestSummaryDto>>(
         document: _pendingApprovalRequestsDocument,
-        parserFn: (json) => (json['pendingAgentApprovalRequests']
-                as List<dynamic>)
-            .map((e) =>
-                SubAgentRequestSummaryDto.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        fetchPolicy: FetchPolicy.networkOnly,
+        parserFn: (json) => [
+          for (final e in json['requests'] as List<dynamic>)
+            SubAgentRequestSummaryDto.fromJson(e as Map<String, dynamic>, _language),
+        ],
       ),
     );
   }
 
-  @override
-  Future<Either<Failure, bool>> approveRequest(String requestId) {
+  Future<Either<Failure, bool>> _decide(String requestId, {required bool approve, String note = ''}) {
     return _graphQLService.mutate<bool>(
       MutationOptions<bool>(
-        document: _approveRequestDocument,
-        variables: {'requestId': requestId},
-        parserFn: (json) =>
-            (json['approveSubAgentRequest']
-                as Map<String, dynamic>?)?['success'] as bool? ??
-            true,
+        document: _decideDocument,
+        variables: {'requestId': requestId, 'approve': approve, 'note': note},
+        parserFn: (json) => json['decideMainAgentApproval'] != null,
       ),
     );
   }
 
   @override
-  Future<Either<Failure, bool>> rejectRequest(String requestId,
-      {required String reason}) {
-    return _graphQLService.mutate<bool>(
-      MutationOptions<bool>(
-        document: _rejectRequestDocument,
-        variables: {'requestId': requestId, 'reason': reason},
-        parserFn: (json) =>
-            (json['rejectSubAgentRequest'] as Map<String, dynamic>?)?['success']
-                as bool? ??
-            true,
-      ),
-    );
-  }
+  Future<Either<Failure, bool>> approveRequest(String requestId) => _decide(requestId, approve: true);
 
   @override
-  Future<Either<Failure, SubAgentDto>> fundSubAgentWallet({
+  Future<Either<Failure, bool>> rejectRequest(String requestId, {required String reason}) =>
+      _decide(requestId, approve: false, note: reason);
+
+  @override
+  Future<Either<Failure, bool>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   }) {
-    return _graphQLService.mutate<SubAgentDto>(
-      MutationOptions<SubAgentDto>(
-        document: _fundSubAgentWalletDocument,
+    return _graphQLService.mutate<bool>(
+      MutationOptions<bool>(
+        document: _topUpDocument,
         variables: {
           'subAgentId': subAgentId,
           'amount': MoneyParser.decimalStringFromCents(amountCents),
-          if (note != null && note.isNotEmpty) 'note': note,
+          'note': note ?? '',
+          'idempotencyKey': idempotencyKey,
         },
-        parserFn: (json) => SubAgentDto.fromJson(
-            json['fundSubAgentWallet'] as Map<String, dynamic>),
+        parserFn: (json) => json['topUpSubAgent'] != null,
       ),
     );
   }
-
-  // TODO(backend-contract): `createSubAgent` / `updateSubAgentCreditLimit` are
-  // placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 15).
-  static final _createSubAgentDocument = gql(r'''
-    mutation CreateSubAgent($input: CreateSubAgentInput!) {
-      createSubAgent(input: $input) {
-        id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending
-      }
-    }
-  ''');
-
-  static final _updateCreditLimitDocument = gql(r'''
-    mutation UpdateSubAgentCreditLimit($subAgentId: ID!, $creditLimit: String!) {
-      updateSubAgentCreditLimit(subAgentId: $subAgentId, creditLimit: $creditLimit) {
-        id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending
-      }
-    }
-  ''');
 
   @override
   Future<Either<Failure, SubAgentDto>> createSubAgent(NewSubAgent newSubAgent) {
     return _graphQLService.mutate<SubAgentDto>(
       MutationOptions<SubAgentDto>(
-        document: _createSubAgentDocument,
+        document: _createDocument,
         variables: {
           'input': {
-            'agencyName': newSubAgent.agencyName,
-            'managerName': newSubAgent.managerName,
-            'phone': newSubAgent.phone,
-            if (newSubAgent.email != null) 'email': newSubAgent.email,
-            if (newSubAgent.marginPercent != null)
-              'marginPercent': newSubAgent.marginPercent,
-            if (newSubAgent.creditLimitCents != null)
-              'creditLimit': MoneyParser.decimalStringFromCents(
-                  newSubAgent.creditLimitCents!),
-            'sendInvite': newSubAgent.sendInvite,
+            'name': newSubAgent.agencyName,
+            'ownerFullName': newSubAgent.managerName,
+            'ownerEmail': newSubAgent.email,
+            'ownerPassword': newSubAgent.password,
           },
         },
-        parserFn: (json) => SubAgentDto.fromJson(
-            json['createSubAgent'] as Map<String, dynamic>),
-      ),
-    );
-  }
-
-  @override
-  Future<Either<Failure, SubAgentDto>> updateCreditLimit(
-      {required String subAgentId, required int limitCents}) {
-    return _graphQLService.mutate<SubAgentDto>(
-      MutationOptions<SubAgentDto>(
-        document: _updateCreditLimitDocument,
-        variables: {
-          'subAgentId': subAgentId,
-          'creditLimit': MoneyParser.decimalStringFromCents(limitCents)
+        parserFn: (json) {
+          final agent = json['createSubAgent'] as Map<String, dynamic>;
+          return SubAgentDto(
+            id: agent['id'] as String,
+            name: agent['name'] as String,
+            status: agent['status'] as String? ?? '',
+            city: '',
+            balanceAmount: null,
+          );
         },
-        parserFn: (json) => SubAgentDto.fromJson(
-            json['updateSubAgentCreditLimit'] as Map<String, dynamic>),
       ),
     );
   }
 
-  // TODO(backend-contract): placeholders (docs/BACKEND_MIGRATION_GAPS.md, section 17).
-  static final _profileDocument = gql(r'''
-    query SubAgentProfile($subAgentId: ID!) {
-      subAgentProfile(subAgentId: $subAgentId) {
-        agent { id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending }
-        city
-        memberSince
-        monthlyRequestCount
-        inProgressRequestCount
-        ledger { id title amount side createdAt }
-        requests { id referenceId serviceName status submittedAt }
-      }
-    }
-  ''');
-
-  static final _setActiveDocument = gql(r'''
-    mutation SetSubAgentActive($subAgentId: ID!, $active: Boolean!, $reason: String) {
-      setSubAgentActive(subAgentId: $subAgentId, active: $active, reason: $reason) {
-        id name code balanceAmount isActive marginPercent creditLimitAmount creditUsedAmount invitePending
-      }
-    }
-  ''');
-
   @override
-  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(
-      String subAgentId) {
-    return _graphQLService.query<SubAgentProfileDto>(
-      QueryOptions<SubAgentProfileDto>(
+  Future<Either<Failure, SubAgentProfileDto>> getSubAgentProfile(String subAgentId) async {
+    final agents = await _graphQLService.query<List<SubAgentDto>>(
+      QueryOptions<List<SubAgentDto>>(
         document: _profileDocument,
-        variables: {'subAgentId': subAgentId},
+        variables: const {'limit': pageSize},
         fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (json) => SubAgentProfileDto.fromJson(
-            json['subAgentProfile'] as Map<String, dynamic>),
+        parserFn: _parseAgents,
       ),
     );
+    if (agents case Left(:final value)) return Left(value);
+    final matches = (agents as Right<Failure, List<SubAgentDto>>).value.where((a) => a.id == subAgentId);
+    // A sub-agency outside the caller's own looks nonexistent to the server too.
+    if (matches.isEmpty) return const Left(ServerFailure('Agency not found.', code: 'not_found'));
+
+    // The statement and the requests are extra sections: when the server refuses
+    // them (a permission the user does not hold) the profile shows without them.
+    final statement = await _graphQLService.query<List<LedgerEntryDto>>(
+      QueryOptions<List<LedgerEntryDto>>(
+        document: _statementDocument,
+        variables: {'agentId': subAgentId, 'limit': profileRows},
+        fetchPolicy: FetchPolicy.networkOnly,
+        parserFn: (json) => [
+          for (final e in (json['portalWallet'] as Map<String, dynamic>)['statement'] as List<dynamic>)
+            LedgerEntryDto.fromJson(e as Map<String, dynamic>),
+        ],
+      ),
+    );
+    final requests = await _graphQLService.query<List<AgentRequestDto>>(
+      QueryOptions<List<AgentRequestDto>>(
+        document: _agentRequestsDocument,
+        variables: {'agentId': subAgentId, 'limit': profileRows},
+        fetchPolicy: FetchPolicy.networkOnly,
+        parserFn: (json) => [
+          for (final e in json['requests'] as List<dynamic>) AgentRequestDto.fromJson(e as Map<String, dynamic>, _language),
+        ],
+      ),
+    );
+    // A dropped connection fails the whole profile (nothing half-shown); a refusal does not.
+    for (final extra in [statement, requests]) {
+      if (extra case Left(value: final NetworkFailure failure)) return Left(failure);
+      if (extra case Left(value: final UnauthorizedFailure failure)) return Left(failure);
+    }
+    return Right(SubAgentProfileDto(
+      agent: matches.first,
+      ledger: statement.getOrElse((_) => const []),
+      requests: requests.getOrElse((_) => const []),
+    ));
   }
 
   @override
-  Future<Either<Failure, SubAgentDto>> setSubAgentActive({
-    required String subAgentId,
-    required bool active,
-    String? reason,
-  }) {
-    return _graphQLService.mutate<SubAgentDto>(
-      MutationOptions<SubAgentDto>(
-        document: _setActiveDocument,
-        variables: {
-          'subAgentId': subAgentId,
-          'active': active,
-          if (reason != null && reason.isNotEmpty) 'reason': reason,
-        },
-        parserFn: (json) => SubAgentDto.fromJson(
-            json['setSubAgentActive'] as Map<String, dynamic>),
+  Future<Either<Failure, bool>> setSubAgentActive({required String subAgentId, required bool active}) {
+    return _graphQLService.mutate<bool>(
+      MutationOptions<bool>(
+        document: _setStatusDocument,
+        variables: {'agentId': subAgentId, 'status': active ? 'active' : 'suspended'},
+        parserFn: (json) => json['setAgentStatus'] != null,
       ),
     );
   }

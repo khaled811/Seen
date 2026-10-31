@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/widgets/skeleton.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/di/injection_container.dart';
@@ -20,6 +21,9 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_windows.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../domain/entities/wallet_transaction.dart';
 import '../bloc/top_up_history_cubit.dart';
 import '../bloc/wallet_bloc.dart';
@@ -94,13 +98,18 @@ class _Body extends StatelessWidget {
     return BlocBuilder<TopUpHistoryCubit, TopUpHistoryState>(
       builder: (context, state) {
         final cubit = context.read<TopUpHistoryCubit>();
-        if (state.status == TopUpHistoryStatus.loading) return SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel);
+        if (state.status == TopUpHistoryStatus.loading) {
+          return SeenWaitPolicy.loading(
+            loading: SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel),
+            onRetry: cubit.load,
+          );
+        }
         if (state.status == TopUpHistoryStatus.failure) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(state.error ?? l10n.error, textAlign: TextAlign.center),
+                Text(failureTextOr(l10n, state.failure, state.error ?? l10n.error), textAlign: TextAlign.center),
                 const SizedBox(height: SeenSpace.s3),
                 SeenButton(label: l10n.retry, onPressed: cubit.load),
               ],
@@ -108,7 +117,7 @@ class _Body extends StatelessWidget {
           );
         }
         final rows = state.visible;
-        return RefreshIndicator(
+        return SeenRefresh(
           onRefresh: cubit.load,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(0, 4, 0, SeenSpace.s6),
@@ -138,7 +147,7 @@ class _Body extends StatelessWidget {
                 const SizedBox(height: 12),
                 Center(
                   child: state.loadingMore
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SeenWindows(size: 8)
                       : SeenTextLink(
                           label: state.moreFailed ? l10n.walletHistoryLoadMoreRetry : l10n.walletHistoryLoadMore,
                           onTap: cubit.loadMore,

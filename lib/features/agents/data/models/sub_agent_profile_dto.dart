@@ -1,94 +1,80 @@
 import '../../../../core/constants/enums.dart';
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/sub_agent_profile.dart';
 import 'sub_agent_dto.dart';
 
-/// Wire shape of one sub-agent's profile.
-///
-/// TODO(backend-contract): placeholder field names (docs/BACKEND_MIGRATION_GAPS.md, section 17).
+/// One sub-agency's profile, put together from three reads: the agency itself
+/// (`portalAgents`), its wallet statement (`portalWallet(agentId:)`) and its
+/// requests (`requests(agentId:)`). The statement and the requests are optional:
+/// the server may refuse them to a user without that permission, and the
+/// profile then simply shows without those sections.
 class SubAgentProfileDto {
   const SubAgentProfileDto({
     required this.agent,
-    this.city,
-    this.memberSince,
-    this.monthlyRequestCount,
-    this.inProgressRequestCount = 0,
     this.ledger = const [],
     this.requests = const [],
   });
 
-  factory SubAgentProfileDto.fromJson(Map<String, dynamic> json) =>
-      SubAgentProfileDto(
-        agent: SubAgentDto.fromJson(json['agent'] as Map<String, dynamic>),
-        city: json['city'] as String?,
-        memberSince: json['memberSince'] == null
-            ? null
-            : DateTime.parse(json['memberSince'] as String),
-        monthlyRequestCount: json['monthlyRequestCount'] as int?,
-        inProgressRequestCount: json['inProgressRequestCount'] as int? ?? 0,
-        ledger: [
-          for (final e in (json['ledger'] as List<dynamic>? ?? const []))
-            LedgerEntryDto.fromJson(e as Map<String, dynamic>),
-        ],
-        requests: [
-          for (final e in (json['requests'] as List<dynamic>? ?? const []))
-            AgentRequestDto.fromJson(e as Map<String, dynamic>),
-        ],
-      );
-
   final SubAgentDto agent;
-  final String? city;
-  final DateTime? memberSince;
-  final int? monthlyRequestCount;
-  final int inProgressRequestCount;
   final List<LedgerEntryDto> ledger;
   final List<AgentRequestDto> requests;
 
+  static const _finished = {'completed', 'rejected', 'cancelled', 'draft'};
+
   SubAgentProfile toEntity() => SubAgentProfile(
         agent: agent.toEntity(),
-        city: city,
-        memberSince: memberSince,
-        monthlyRequestCount: monthlyRequestCount,
-        inProgressRequestCount: inProgressRequestCount,
+        city: agent.city.isEmpty ? null : agent.city,
+        memberSince: agent.createdAt,
+        monthlyRequestCount: agent.monthRequestCount,
+        inProgressRequestCount: requests.where((r) => !_finished.contains(r.status)).length,
         ledger: [for (final e in ledger) e.toEntity()],
         requests: [for (final e in requests) e.toEntity()],
       );
 }
 
+/// A `PortalStatementRow` of the sub-agency's wallet.
 class LedgerEntryDto {
   const LedgerEntryDto({
     required this.id,
-    required this.title,
+    required this.type,
     required this.amount,
     required this.isCredit,
     required this.createdAt,
+    this.referenceCode,
   });
 
   factory LedgerEntryDto.fromJson(Map<String, dynamic> json) => LedgerEntryDto(
         id: json['id'] as String,
-        title: json['title'] as String,
+        type: json['type'] as String?,
         amount: json['amount'] as String,
-        isCredit: json['side'] == 'credit',
+        isCredit: json['direction'] == 'credit',
         createdAt: DateTime.parse(json['createdAt'] as String),
+        referenceCode: json['referenceCode'] as String?,
       );
 
+  static const statementFields = 'id type direction amount createdAt referenceCode';
+
   final String id;
-  final String title;
+  final String? type;
 
   /// Decimal string, positive.
   final String amount;
   final bool isCredit;
   final DateTime createdAt;
+  final String? referenceCode;
 
   AgentLedgerEntry toEntity() => AgentLedgerEntry(
         id: id,
-        title: title,
+        type: TransactionType.fromValue(type),
+        referenceCode: referenceCode,
         amountCents: MoneyParser.centsFromDecimalString(amount).abs(),
         isCredit: isCredit,
         createdAt: createdAt,
       );
 }
 
+/// A `Request` of the sub-agency.
 class AgentRequestDto {
   const AgentRequestDto({
     required this.id,
@@ -98,14 +84,18 @@ class AgentRequestDto {
     required this.submittedAt,
   });
 
-  factory AgentRequestDto.fromJson(Map<String, dynamic> json) =>
-      AgentRequestDto(
-        id: json['id'] as String,
-        referenceId: json['referenceId'] as String,
-        serviceName: json['serviceName'] as String,
-        status: json['status'] as String?,
-        submittedAt: DateTime.parse(json['submittedAt'] as String),
-      );
+  factory AgentRequestDto.fromJson(Map<String, dynamic> json, AppLanguage language) {
+    final service = json['serviceType'] as Map<String, dynamic>?;
+    return AgentRequestDto(
+      id: json['id'] as String,
+      referenceId: json['referenceCode'] as String? ?? '',
+      serviceName: language.pick(ar: service?['nameAr'] as String?, en: service?['nameEn'] as String?),
+      status: json['status'] as String?,
+      submittedAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  static const requestFields = 'id referenceCode status createdAt serviceType { nameAr nameEn }';
 
   final String id;
   final String referenceId;

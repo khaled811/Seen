@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
@@ -15,9 +16,10 @@ import '../../../../core/presentation/widgets/text_field.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
-import '../../../../core/utils/latin_digits.dart';
-import '../../../../core/utils/money.dart';
 import '../../../../core/validators/form_validators.dart';
+import '../../../../core/presentation/widgets/loading/seen_blocking_overlay.dart';
+import '../../../../core/presentation/widgets/loading/loading_strings.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../auth/presentation/utils/phone_identifier.dart';
 import '../../domain/entities/new_sub_agent.dart';
 import '../bloc/sub_agent_management_bloc.dart';
@@ -53,52 +55,38 @@ class _ViewState extends State<_View> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _manager = TextEditingController();
-  final _phone = TextEditingController();
   final _email = TextEditingController();
-  final _margin = TextEditingController();
-  final _limit = TextEditingController();
-  bool _invite = true;
+  final _password = TextEditingController();
   bool _addedAny = false;
 
   @override
   void dispose() {
     _name.dispose();
     _manager.dispose();
-    _phone.dispose();
     _email.dispose();
-    _margin.dispose();
-    _limit.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   void _clear() {
-    for (final c in [_name, _manager, _phone, _email, _margin, _limit]) {
+    for (final c in [_name, _manager, _email, _password]) {
       c.clear();
     }
-    setState(() => _invite = true);
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final margin = _margin.text.trim();
-    final limit = _limit.text.trim();
     context.read<AddSubAgentBloc>().add(AddSubAgentSubmitted(NewSubAgent(
           agencyName: _name.text.trim(),
           managerName: _manager.text.trim(),
-          phone: PhoneIdentifier.toIdentifier(_phone.text),
-          email: _email.text.trim().isEmpty ? null : _email.text.trim(),
-          marginPercent: margin.isEmpty ? null : double.parse(margin),
-          creditLimitCents:
-              limit.isEmpty ? null : MoneyParser.centsFromDecimalString(limit),
-          sendInvite: _invite,
+          email: _email.text.trim(),
+          password: _password.text,
         )));
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final c = SeenColors.of(context);
-    final t = SeenType.of(context);
     return BlocConsumer<AddSubAgentBloc, AddSubAgentState>(
       listenWhen: (previous, current) =>
           previous.created == null && current.created != null,
@@ -117,7 +105,6 @@ class _ViewState extends State<_View> {
           );
         }
         final issue = state.issue;
-        final phoneTaken = issue?.kind == SubAgentIssueKind.phoneTaken;
         final emailTaken = issue?.kind == SubAgentIssueKind.emailTaken;
         String? required(String? v) =>
             FormValidators.required(v, message: l10n.validationRequired);
@@ -134,7 +121,10 @@ class _ViewState extends State<_View> {
           onPopInvoked: (didPop) {
             if (!didPop) Navigator.of(context).pop(true);
           },
-          child: Scaffold(
+          child: SeenBlockingOverlay(
+            visible: state.submitting,
+            title: SeenStrings.of(context).submittingSubAgent,
+            child: Scaffold(
             body: SeenScreenBackground(
               washHeight: 320,
               child: SafeArea(
@@ -167,119 +157,47 @@ class _ViewState extends State<_View> {
                             ),
                             const SizedBox(height: 14),
                             SeenTextField(
-                              label: l10n.agentAddPhone,
-                              isRequired: true,
-                              controller: _phone,
-                              ltr: true,
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: const [LatinDigitsFormatter()],
-                              textInputAction: TextInputAction.next,
-                              errorText:
-                                  phoneTaken ? l10n.agentAddPhoneTaken : null,
-                              prefix: Padding(
-                                padding: const EdgeInsetsDirectional.only(
-                                    end: SeenSpace.s2),
-                                child: Directionality(
-                                  textDirection: TextDirection.ltr,
-                                  child: Text(
-                                    PhoneIdentifier.defaultCountryCode,
-                                    style: t.bodyStrong.copyWith(color: c.ink),
-                                  ),
-                                ),
-                              ),
-                              onChanged: (_) => dismiss(),
-                              validator: (v) => PhoneIdentifier.isValid(v ?? '')
-                                  ? null
-                                  : l10n.validationInvalidPhone,
-                            ),
-                            const SizedBox(height: 14),
-                            SeenTextField(
                               label: l10n.agentAddEmail,
+                              isRequired: true,
                               controller: _email,
                               ltr: true,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
-                              errorText:
-                                  emailTaken ? l10n.agentAddEmailTaken : null,
+                              errorText: emailTaken ? l10n.agentAddEmailTaken : null,
                               onChanged: (_) => dismiss(),
                               validator: (v) {
                                 final value = (v ?? '').trim();
-                                if (value.isEmpty) return null;
-                                return value.contains('@') &&
-                                        PhoneIdentifier.isValidIdentifier(value)
+                                if (value.isEmpty) return l10n.validationRequired;
+                                return value.contains('@') && PhoneIdentifier.isValidIdentifier(value)
                                     ? null
                                     : l10n.validationInvalidEmail;
                               },
                             ),
                             const SizedBox(height: 14),
-                            // Credit limit leads (start edge), margin trails, as drawn.
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: SeenTextField(
-                                    label: l10n.agentAddCreditLimit,
-                                    controller: _limit,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    inputFormatters: const [
-                                      LatinDigitsFormatter()
-                                    ],
-                                    mono: true,
-                                    ltr: true,
-                                    suffixText: 'USD',
-                                    validator: (v) => (v ?? '').trim().isEmpty
-                                        ? null
-                                        : FormValidators.positiveAmount(v,
-                                            message:
-                                                l10n.validationInvalidAmount),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: SeenTextField(
-                                    label: l10n.agentAddMargin,
-                                    controller: _margin,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    inputFormatters: const [
-                                      LatinDigitsFormatter()
-                                    ],
-                                    mono: true,
-                                    ltr: true,
-                                    suffixText: '%',
-                                    validator: (v) {
-                                      final value = (v ?? '').trim();
-                                      if (value.isEmpty) return null;
-                                      final n = double.tryParse(value);
-                                      return n != null && n >= 0 && n <= 100
-                                          ? null
-                                          : l10n.agentAddMarginInvalid;
-                                    },
-                                  ),
-                                ),
-                              ],
+                            SeenTextField(
+                              label: l10n.agentAddPassword,
+                              isRequired: true,
+                              controller: _password,
+                              ltr: true,
+                              obscureText: true,
+                              helper: l10n.agentAddPasswordHint,
+                              textInputAction: TextInputAction.done,
+                              onChanged: (_) => dismiss(),
+                              validator: (v) => (v ?? '').length >= 12 ? null : l10n.agentAddPasswordShort,
                             ),
                             const SizedBox(height: 14),
-                            _InviteToggle(
-                              value: _invite,
-                              title: l10n.agentAddInviteTitle,
-                              body: l10n.agentAddInviteBody,
-                              onChanged: (v) => setState(() => _invite = v),
-                            ),
-                            if (issue != null &&
-                                issue.kind != SubAgentIssueKind.phoneTaken &&
-                                issue.kind != SubAgentIssueKind.emailTaken) ...[
+                            if (issue != null && issue.kind != SubAgentIssueKind.emailTaken) ...[
                               const SizedBox(height: 14),
                               SeenInlineBanner(
                                 tone: issue.kind == SubAgentIssueKind.offline
                                     ? SeenBannerTone.offline
                                     : SeenBannerTone.error,
-                                message: issue.kind == SubAgentIssueKind.offline
-                                    ? l10n.recoveryOffline
-                                    : l10n.recoveryServerError,
+                                message: switch (issue.kind) {
+                                  SubAgentIssueKind.offline => l10n.recoveryOffline,
+                                  SubAgentIssueKind.weakPassword => passwordRuleMessage(l10n, issue.passwordRule),
+                                  SubAgentIssueKind.notAllowed => l10n.agentAddNotAllowed,
+                                  _ => l10n.recoveryServerError,
+                                },
                               ),
                             ],
                           ],
@@ -303,51 +221,9 @@ class _ViewState extends State<_View> {
               ),
             ),
           ),
+          ),
         );
       },
-    );
-  }
-}
-
-class _InviteToggle extends StatelessWidget {
-  const _InviteToggle(
-      {required this.value,
-      required this.title,
-      required this.body,
-      required this.onChanged});
-
-  final bool value;
-  final String title;
-  final String body;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SeenColors.of(context);
-    final t = SeenType.of(context);
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-          color: SeenBrand.violet05,
-          borderRadius: BorderRadius.all(SeenRadius.lg)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: MergeSemantics(
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: t.label),
-                    Text(body, style: t.caption.copyWith(color: c.inkMuted)),
-                  ],
-                ),
-              ),
-              Switch(value: value, onChanged: onChanged),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

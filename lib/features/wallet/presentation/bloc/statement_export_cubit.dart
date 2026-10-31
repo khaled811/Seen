@@ -51,17 +51,14 @@ class StatementRange {
 class StatementExportCubit extends Cubit<StatementExportState> {
   StatementExportCubit({
     required ExportStatementUseCase exportStatement,
-    required FetchDocumentFileUseCase fetchDocument,
     required SaveDocumentUseCase saveDocument,
     required ShareDocumentUseCase shareDocument,
   })  : _export = exportStatement,
-        _fetch = fetchDocument,
         _save = saveDocument,
         _share = shareDocument,
         super(const StatementExportState());
 
   final ExportStatementUseCase _export;
-  final FetchDocumentFileUseCase _fetch;
   final SaveDocumentUseCase _save;
   final ShareDocumentUseCase _share;
 
@@ -78,9 +75,7 @@ class StatementExportCubit extends Cubit<StatementExportState> {
     final built = file.toNullable();
     if (built == null) return _fail();
 
-    final bytes = (await _fetch(built.url)).toNullable();
-    if (isClosed) return;
-    if (bytes == null) return _fail();
+    final bytes = built.bytes;
 
     switch (action) {
       case StatementAction.download:

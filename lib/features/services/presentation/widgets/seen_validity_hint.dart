@@ -14,6 +14,7 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 
 class SeenValidityHint extends StatelessWidget {
   const SeenValidityHint({super.key, required this.monthsLeft});
@@ -75,7 +76,7 @@ class SeenValidityHint extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Row(children: [
-            Icon(m < 6 ? SeenIcons.alert : SeenIcons.check, size: 14, color: ink),
+            m < 6 ? Icon(SeenIcons.alert, size: 14, color: ink) : SeenCheckGlyph(size: 14, color: ink),
             const SizedBox(width: SeenSpace.s1),
             Expanded(child: Text(msg, style: seenStyle(12, 18, FontWeight.w500, ink))),
           ]),

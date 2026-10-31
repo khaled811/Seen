@@ -15,6 +15,7 @@ import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../domain/entities/request_detail.dart';
 import '../../domain/entities/request_document.dart';
@@ -43,6 +44,7 @@ class RequestDocumentViewerScreen extends StatelessWidget {
     this.createPdfRenderer,
     this.documentUrl,
     this.documentName,
+    this.output,
   }) : referenceLabel = null;
 
   /// Any single file (e.g. a top-up receipt, Figma WAL-02), not tied to a request.
@@ -56,7 +58,8 @@ class RequestDocumentViewerScreen extends StatelessWidget {
     this.createPdfRenderer,
   })  : detail = null,
         documentUrl = url,
-        documentName = name;
+        documentName = name,
+        output = null;
 
   final RequestDetail? detail;
 
@@ -67,6 +70,10 @@ class RequestDocumentViewerScreen extends StatelessWidget {
   /// request's output document.
   final String? documentUrl;
   final String? documentName;
+
+  /// A delivered file to open by its id (a signed link is requested for it);
+  /// defaults to the request's first output when there is no [documentUrl].
+  final RequestOutput? output;
 
   /// Test seams; default to the DI container and [DocumentPagesView].
   final DocumentViewerBloc Function()? createBloc;
@@ -84,18 +91,30 @@ class RequestDocumentViewerScreen extends StatelessWidget {
     return request != null && request.hasOutput && url != null && url.isNotEmpty ? url : null;
   }
 
+  RequestOutput? get _output {
+    final own = output;
+    if (own != null) return own;
+    final request = detail;
+    if (documentUrl != null || request == null || !request.hasOutput || request.outputs.isEmpty) return null;
+    return request.outputs.first;
+  }
+
   @override
   Widget build(BuildContext context) {
     final url = _url;
-    if (url == null) return _NotReadyScreen(detail: detail!);
+    final file = _output;
+    if (file == null && url == null) return _NotReadyScreen(detail: detail!);
     return BlocProvider(
       create: (_) => (createBloc ?? InjectionContainer.instance.createDocumentViewerBloc)()
-        ..add(DocumentViewerLoadRequested(url)),
+        ..add(file != null && documentUrl == null
+            ? DocumentViewerFileRequested(file.fileId)
+            : DocumentViewerLoadRequested(url!)),
       child: _ViewerScreen(
         reference: detail?.referenceId ?? referenceLabel ?? '',
         serviceName: detail?.serviceName ?? '',
-        url: url,
-        name: documentName,
+        url: file != null && documentUrl == null ? file.fileName : url!,
+        fileId: documentUrl == null ? file?.fileId : null,
+        name: documentName ?? (documentUrl == null ? file?.fileName : null),
         pagesBuilder: pagesBuilder,
         createPdfRenderer: createPdfRenderer ?? InjectionContainer.instance.createPdfPageRenderer,
       ),
@@ -118,6 +137,7 @@ class _ViewerScreen extends StatefulWidget {
     required this.reference,
     required this.serviceName,
     required this.url,
+    this.fileId,
     this.name,
     this.pagesBuilder,
     this.createPdfRenderer,
@@ -125,7 +145,12 @@ class _ViewerScreen extends StatefulWidget {
 
   final String reference;
   final String serviceName;
+
+  /// What names the file (its URL or file name): tells an image from a PDF.
   final String url;
+
+  /// Set when the file is opened by id: a retry asks for a new signed link.
+  final String? fileId;
   final String? name;
   final DocumentPagesBuilder? pagesBuilder;
   final PdfPageRenderer Function()? createPdfRenderer;
@@ -233,7 +258,9 @@ class _ViewerScreenState extends State<_ViewerScreen> {
                                     label: l10n.uploadRetry,
                                     onTap: () {
                                       setState(() => _undecodable = false);
-                                      bloc.add(DocumentViewerLoadRequested(widget.url));
+                                      bloc.add(widget.fileId != null
+                                          ? DocumentViewerFileRequested(widget.fileId!)
+                                          : DocumentViewerLoadRequested(widget.url));
                                     },
                                   ),
                                   SeenTextLink(label: l10n.viewerReportSupport, onTap: () => _openSupport(context)),
@@ -241,7 +268,7 @@ class _ViewerScreenState extends State<_ViewerScreen> {
                               ),
                             ],
                           ),
-                        _ => const Center(child: CircularProgressIndicator()),
+                        _ => const Center(child: SeenLoader()),
                       },
                     ),
                     if (ready)

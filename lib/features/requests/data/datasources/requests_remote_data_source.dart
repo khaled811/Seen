@@ -2,151 +2,193 @@ import 'package:fpdart/fpdart.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/localization/app_language.dart';
 import '../../../../core/network/graphql_service.dart';
-import '../../../../core/state/branch_scope.dart';
 import '../../domain/entities/cancel_reason.dart';
+import '../models/portal_requests_mapping.dart';
 import '../models/request_detail_dto.dart';
-import '../models/request_summary_dto.dart';
+import '../models/requests_page_dto.dart';
 
-/// Raw GraphQL access for the requests feature. Returns DTOs, never entities.
-///
-/// TODO(backend-contract): documents below encode a placeholder schema
-/// (query/mutation names, argument names, response fields). Update once the
-/// real Seen Booking GraphQL schema is confirmed — see the matching TODOs
-/// in the DTO files.
+/// Raw GraphQL access for the requests feature (`docs/api/mobile-api-reference.md`,
+/// "Services and requests"). Returns DTOs, never entities.
 abstract interface class RequestsRemoteDataSource {
-  Future<Either<Failure, List<RequestSummaryDto>>> getRequests();
+  Future<Either<Failure, RequestsPageDto>> getRequests({
+    required String group,
+    String? search,
+    int offset = 0,
+    int limit = 30,
+  });
 
   Future<Either<Failure, RequestDetailDto>> getRequestDetail(String requestId);
 
-  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId, {CancelReason? reason});
+  /// `cancelRequest`. The answer is only the new status, so the caller reloads
+  /// the detail.
+  Future<Either<Failure, void>> cancelRequest(String requestId, {CancelReason? reason});
 
-  /// Nudges the approver of a request waiting on approval (Figma REQ-06 / 07).
+  /// The API has no operation to nudge an approver: always a failure.
   Future<Either<Failure, void>> remindApprover(String requestId);
 }
 
 class RequestsRemoteDataSourceImpl implements RequestsRemoteDataSource {
-  RequestsRemoteDataSourceImpl({required GraphQLService graphQLService, BranchScope? branchScope})
+  RequestsRemoteDataSourceImpl({required GraphQLService graphQLService, required AppLanguage language})
       : _graphQLService = graphQLService,
-        _branchScope = branchScope ?? BranchScope.shared;
+        _language = language;
 
   final GraphQLService _graphQLService;
+  final AppLanguage _language;
 
-  /// The branch the agent chose to view requests of (Figma ACC-07); null = all.
-  final BranchScope _branchScope;
+  /// Code of the failure returned for operations the API does not offer.
+  static const String unsupportedCode = 'unsupported_operation';
 
-  static const _travelerAndTimelineFields = r'''
-    travelers { name passportNumber status documents { name url status } }
-    timeline { status occurredAt note }
-    approval { kind approverName typicalWaitMinutes thresholdAmount }
-    rejectionReason
-    cancellation { cancelledBy cancelledAt reason code }
-    refundedAmount
+  static const _cardFields = '''
+    id
+    referenceCode
+    status
+    serviceNameAr
+    serviceNameEn
+    travelerCount
+    travelerNames
+    amount
+    deadlineAt
+    createdAt
   ''';
 
-  static final _requestsDocument = gql(r'''
-    query Requests($branchId: ID) {
-      requests(branchId: $branchId) {
-        id
-        referenceId
-        serviceName
-        travelerCount
-        totalPriceAmount
-        status
-        submittedAt
-        slaDeadline
-        travelerNames
+  static final _requestsDocument = gql('''
+    query PortalRequests(\$group: String!, \$search: String, \$limit: Int!, \$offset: Int!) {
+      portalRequests(group: \$group, search: \$search, limit: \$limit, offset: \$offset) {
+        items {
+          $_cardFields
+        }
+        total
+        hasMore
+        filters {
+          key
+          count
+        }
+        attention {
+          count
+          soonestRemainingSeconds
+        }
+        hasAnyRequests
+        canCreate
       }
     }
   ''');
 
-  static final _requestDetailDocument = gql('''
-    query RequestDetail(\$requestId: ID!) {
-      requestDetail(requestId: \$requestId) {
-        id
-        referenceId
-        serviceName
-        status
-        totalPriceAmount
-        submittedAt
-        slaDeadline
-        outputDocumentUrl
-        $_travelerAndTimelineFields
+  static final _trackingDocument = gql('''
+    query PortalRequestTracking(\$id: ID!) {
+      portalRequestTracking(id: \$id) {
+        request {
+          $_cardFields
+        }
+        filedAt
+        feeTotal
+        timeline {
+          key
+          state
+          at
+        }
+        infoRequest {
+          message
+          deadlineAt
+        }
+        terminal {
+          kind
+          at
+          reason
+        }
+        travelers {
+          name
+          status
+        }
+        outputs {
+          fileId
+          fileName
+          contentType
+          sizeBytes
+        }
+        actions {
+          canCancel
+          cancelReleasesFunds
+          canAddDocuments
+          canViewDocuments
+          canDownloadResult
+          canDecideApproval
+          canContactSupport
+        }
       }
     }
   ''');
 
-  // TODO(backend-contract): `reason` is a placeholder argument
-  // (docs/BACKEND_MIGRATION_GAPS.md, section 21).
-  static final _cancelRequestDocument = gql('''
-    mutation CancelRequest(\$requestId: ID!, \$reason: CancelReason) {
-      cancelRequest(requestId: \$requestId, reason: \$reason) {
+  static final _cancelDocument = gql(r'''
+    mutation CancelRequest($requestId: ID!, $reason: String!) {
+      cancelRequest(requestId: $requestId, reason: $reason) {
         id
-        referenceId
-        serviceName
         status
-        totalPriceAmount
-        submittedAt
-        slaDeadline
-        outputDocumentUrl
-        $_travelerAndTimelineFields
       }
     }
   ''');
 
   @override
-  Future<Either<Failure, List<RequestSummaryDto>>> getRequests() {
-    return _graphQLService.query<List<RequestSummaryDto>>(
-      QueryOptions<List<RequestSummaryDto>>(
+  Future<Either<Failure, RequestsPageDto>> getRequests({
+    required String group,
+    String? search,
+    int offset = 0,
+    int limit = 30,
+  }) {
+    final query = search?.trim();
+    return _graphQLService.query<RequestsPageDto>(
+      QueryOptions<RequestsPageDto>(
         document: _requestsDocument,
-        variables: {'branchId': _branchScope.value},
-        parserFn: (json) => (json['requests'] as List<dynamic>)
-            .map((e) => RequestSummaryDto.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      ),
-    );
-  }
-
-  @override
-  Future<Either<Failure, RequestDetailDto>> getRequestDetail(String requestId) {
-    return _graphQLService.query<RequestDetailDto>(
-      QueryOptions<RequestDetailDto>(
-        document: _requestDetailDocument,
-        variables: {'requestId': requestId},
+        variables: {
+          'group': group,
+          'search': query == null || query.isEmpty ? null : query,
+          'limit': limit,
+          'offset': offset,
+        },
         parserFn: (json) =>
-            RequestDetailDto.fromJson(json['requestDetail'] as Map<String, dynamic>),
+            PortalRequestsMapping.page(json['portalRequests'] as Map<String, dynamic>, _language),
       ),
     );
   }
 
   @override
-  Future<Either<Failure, RequestDetailDto>> cancelRequest(String requestId, {CancelReason? reason}) {
-    return _graphQLService.mutate<RequestDetailDto>(
-      MutationOptions<RequestDetailDto>(
-        document: _cancelRequestDocument,
-        variables: {'requestId': requestId, 'reason': reason?.wire},
-        parserFn: (json) =>
-            RequestDetailDto.fromJson(json['cancelRequest'] as Map<String, dynamic>),
+  Future<Either<Failure, RequestDetailDto>> getRequestDetail(String requestId) async {
+    // A list of zero or one: the service treats a null parse result as an error,
+    // and "missing or outside the agency's scope" is a normal answer here.
+    final result = await _graphQLService.query<List<RequestDetailDto>>(
+      QueryOptions<List<RequestDetailDto>>(
+        document: _trackingDocument,
+        variables: {'id': requestId},
+        parserFn: (json) {
+          final tracking = json['portalRequestTracking'];
+          return tracking == null
+              ? const <RequestDetailDto>[]
+              : [PortalRequestsMapping.tracking(tracking as Map<String, dynamic>, _language)];
+        },
       ),
+    );
+    return result.flatMap(
+      (found) => found.isEmpty
+          ? const Left(ServerFailure('Request not found.', code: 'request_not_found'))
+          : Right(found.single),
     );
   }
 
-  // TODO(backend-contract): placeholder (docs/BACKEND_MIGRATION_GAPS.md, section 20).
-  static final _remindDocument = gql(r'''
-    mutation RemindApprover($requestId: ID!) {
-      remindApprover(requestId: $requestId) { success }
-    }
-  ''');
-
   @override
-  Future<Either<Failure, void>> remindApprover(String requestId) async {
+  Future<Either<Failure, void>> cancelRequest(String requestId, {CancelReason? reason}) async {
     final result = await _graphQLService.mutate<bool>(
       MutationOptions<bool>(
-        document: _remindDocument,
-        variables: {'requestId': requestId},
-        parserFn: (json) => (json['remindApprover'] as Map<String, dynamic>)['success'] as bool? ?? false,
+        document: _cancelDocument,
+        // A free-text reason of 3-500 characters; the picked reason's name is readable text.
+        variables: {'requestId': requestId, 'reason': (reason?.wire ?? 'other').toLowerCase()},
+        parserFn: (json) => json['cancelRequest'] != null,
       ),
     );
-    return result.flatMap((ok) => ok ? const Right(null) : const Left(ServerFailure('Reminder was not sent.')));
+    return result.flatMap((ok) => ok ? const Right(null) : const Left(ServerFailure('Cancellation was not confirmed.')));
   }
+
+  @override
+  Future<Either<Failure, void>> remindApprover(String requestId) async =>
+      const Left(ServerFailure('An approver cannot be reminded.', code: unsupportedCode));
 }

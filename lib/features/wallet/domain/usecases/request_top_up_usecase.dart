@@ -19,12 +19,16 @@ class RequestTopUpUseCase {
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) =>
       _repository.requestTopUp(
         amountCents: amountCents,
         method: method,
         referenceNumber: referenceNumber,
-        notes: notes,
+        idempotencyKey: idempotencyKey,
+        paymentAccountId: paymentAccountId,
+        receiptFileId: receiptFileId,
       );
 }

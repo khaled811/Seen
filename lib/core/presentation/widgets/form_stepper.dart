@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
 import '../../theme/seen_typography.dart';
-import '../foundation/seen_icons.dart';
 import '../foundation/seen_strings.dart';
+import 'svg_icon.dart';
 
 class SeenFormStepper extends StatelessWidget {
   const SeenFormStepper({super.key, required this.labels, required this.current});
@@ -30,7 +30,7 @@ class SeenFormStepper extends StatelessWidget {
       if (i < current) {
         return DecoratedBox(
           decoration: const BoxDecoration(gradient: SeenBrand.gradientCta, shape: BoxShape.circle),
-          child: SizedBox(width: _dot, height: _dot, child: Icon(SeenIcons.check, size: 14, color: c.onPrimary)),
+          child: SizedBox(width: _dot, height: _dot, child: SeenCheckGlyph(size: 14, color: c.onPrimary)),
         );
       }
       final isCurrent = i == current;

@@ -14,6 +14,8 @@ class WalletBalance extends Equatable {
     required this.creditLimitCents,
     required this.currency,
     this.creditUsedCents,
+    this.spendableCents,
+    this.reportedTotalCents,
   });
 
   /// Free to spend right now.
@@ -32,7 +34,15 @@ class WalletBalance extends Equatable {
   /// Derived, not a separately-trusted backend field: total is definitionally
   /// available + hold, and treating it as anything else risks the two
   /// silently disagreeing.
-  int get totalCents => availableCents + holdCents;
+  /// What the server calls `spendable` (its own definition; the app does not
+  /// derive it).
+  final int? spendableCents;
+
+  /// The server's `total`, shown as it is. Falls back to available + held only
+  /// when the server did not send one.
+  final int? reportedTotalCents;
+
+  int get totalCents => reportedTotalCents ?? availableCents + holdCents;
 
   /// Nothing available and nothing held (Figma WAL-08 "zero").
   bool get isZero => availableCents == 0 && holdCents == 0;
@@ -65,5 +75,6 @@ class WalletBalance extends Equatable {
   }
 
   @override
-  List<Object?> get props => [availableCents, holdCents, creditLimitCents, currency, creditUsedCents];
+  List<Object?> get props =>
+      [availableCents, holdCents, creditLimitCents, currency, creditUsedCents, spendableCents, reportedTotalCents];
 }

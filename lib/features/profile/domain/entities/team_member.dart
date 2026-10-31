@@ -29,18 +29,30 @@ class TeamMember extends Equatable {
   List<Object?> get props => [id, name, role, status, branchName];
 }
 
-/// What the invite sheet collects.
+/// What the add-user sheet collects: the contract's `StaffUserInput` (e-mail, full name,
+/// first password, position, optional branch).
 class InviteDraft extends Equatable {
-  const InviteDraft({required this.name, required this.phone, required this.role, required this.branchName, this.branchId});
+  const InviteDraft({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.role,
+    this.branchName = '',
+    this.branchId,
+  });
 
   final String name;
-  final String phone;
+  final String email;
+
+  /// The user's first password, set by whoever adds them. It travels once with the
+  /// request and is not part of equality.
+  final String password;
   final TeamRole role;
   final String branchName;
 
-  /// Set when the branch was picked from the real list (Figma ACC-07); null when typed.
+  /// Set when the branch was picked from the real list (Figma ACC-07); null = no branch.
   final String? branchId;
 
   @override
-  List<Object?> get props => [name, phone, role, branchName, branchId];
+  List<Object?> get props => [name, email, role, branchName, branchId];
 }

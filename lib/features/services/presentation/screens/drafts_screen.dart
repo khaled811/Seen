@@ -5,26 +5,31 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
-import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
 import '../../../../core/presentation/widgets/error_patterns.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
-import '../../domain/entities/booking_draft.dart';
+import '../../../../core/presentation/widgets/loading/seen_loader.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
+import '../../../requests/domain/entities/request_summary.dart';
+import '../../domain/entities/service_definition.dart';
 import '../bloc/drafts_bloc.dart';
-import '../utils/draft_summary.dart';
+import '../bloc/service_booking_bloc.dart';
+import '../bloc/service_booking_event.dart';
 import '../widgets/seen_draft_card.dart';
 import '../widgets/service_card_copy.dart';
+import 'booking_review_screen.dart';
 import 'service_selection_screen.dart';
 
-/// Drafts list (Figma REQ-01): the agent's saved, unfinished bookings with
-/// Continue / Delete, a note about the 30-day clean-up, and an undo toast after
-/// deleting. Owns a [DraftsBloc].
+/// Drafts list (Figma REQ-01): the agent's unfinished requests as the server
+/// holds them (`portalRequests(group: draft)`), with Continue (opens the review)
+/// only: the API cannot cancel or delete a draft. Nothing is kept on the device.
+/// Owns a [DraftsBloc].
 class DraftsScreen extends StatelessWidget {
   const DraftsScreen({super.key, this.createBloc, this.clock = DateTime.now});
 
@@ -46,22 +51,21 @@ class _View extends StatelessWidget {
 
   final DateTime Function() clock;
 
-  Future<void> _delete(BuildContext context, BookingDraft draft, bool isLast) async {
+  /// A draft's travelers are the server's and cannot be edited: opening it goes to
+  /// the review, where it can be submitted.
+  Future<void> _continue(BuildContext context, RequestSummary draft) async {
     final bloc = context.read<DraftsBloc>();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => _DeleteDialog(draft: draft, isLast: isLast),
-    );
-    // The toast comes from the listener, once the delete went through.
-    if (confirmed == true) bloc.add(DraftDeleteRequested(draft));
-  }
-
-  Future<void> _continue(BuildContext context, BookingDraft draft) async {
-    final bloc = context.read<DraftsBloc>();
+    final validator = ServiceSelectionScreen.buildValidator(AppLocalizations.of(context)!);
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => ServiceSelectionScreen(resumeDraft: draft)),
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<ServiceBookingBloc>(
+          create: (_) => InjectionContainer.instance.createServiceBookingBloc(validator: validator)
+            ..add(BookingDraftOpened(draft.id)),
+          child: const BookingReviewScreen(),
+        ),
+      ),
     );
-    // The draft may have been sent (deleted) or saved again meanwhile.
+    // The draft may have been submitted meanwhile.
     bloc.add(const DraftsLoadRequested());
   }
 
@@ -69,18 +73,7 @@ class _View extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final s = SeenStrings.of(context);
-    final t = SeenType.of(context);
-    return BlocConsumer<DraftsBloc, DraftsState>(
-      listenWhen: (previous, current) => previous.deleteSeq != current.deleteSeq,
-      listener: (context, state) {
-        final bloc = context.read<DraftsBloc>();
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(
-            content: Text(l10n.draftDeletedToast),
-            action: SnackBarAction(label: l10n.draftUndo, onPressed: () => bloc.add(const DraftDeleteUndone())),
-          ));
-      },
+    return BlocBuilder<DraftsBloc, DraftsState>(
       builder: (context, state) {
         final now = clock();
         return Scaffold(
@@ -98,7 +91,10 @@ class _View extends StatelessWidget {
                   ),
                   Expanded(
                     child: switch (state.status) {
-                      DraftsStatus.loading => const Center(child: SeenLoader()),
+                      DraftsStatus.loading => SeenWaitPolicy.loading(
+                        loading: SeenCardsSkeleton(count: 2, label: SeenStrings.of(context).loadingLabel),
+                        onRetry: () => context.read<DraftsBloc>().add(const DraftsLoadRequested()),
+                      ),
                       DraftsStatus.failed => Padding(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                           child: Align(
@@ -116,37 +112,20 @@ class _View extends StatelessWidget {
                           message: l10n.draftsEmptyBody,
                           topInset: 80,
                         ),
-                      DraftsStatus.ready => ListView(
+                      DraftsStatus.ready => ListView.builder(
                           padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
-                          children: [
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: SeenRequestStatus.underReview.colors.bg,
-                                borderRadius: const BorderRadius.all(SeenRadius.lg),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                child: Row(
-                                  children: [
-                                    const SeenSvgIcon(SeenVectors.infoReview, size: 20),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        l10n.draftsInfo,
-                                        style: t.label.copyWith(color: SeenRequestStatus.underReview.colors.fg),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            for (final d in state.drafts)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _card(context, d, now, l10n, s, isLast: state.drafts.length == 1),
-                              ),
-                          ],
+                          // The info card, then the drafts, then (when the server has more) a
+                          // spinner that asks for the next page as it scrolls into view.
+                          itemCount: 1 + state.drafts.length + (state.hasMore ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == 0) return _InfoCard(text: l10n.draftsInfo);
+                            if (index > state.drafts.length) return const _LoadMoreTrigger();
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: _card(context, state.drafts[index - 1], now, l10n, s,
+                                  isLast: state.drafts.length == 1),
+                            );
+                          },
                         ),
                     },
                   ),
@@ -159,110 +138,63 @@ class _View extends StatelessWidget {
     );
   }
 
-  Widget _card(BuildContext context, BookingDraft d, DateTime now, AppLocalizations l10n, SeenStrings s,
+  Widget _card(BuildContext context, RequestSummary d, DateTime now, AppLocalizations l10n, SeenStrings s,
       {required bool isLast}) {
-    final daysLeft = d.daysLeft(now);
     return SeenDraftCard(
       title: d.serviceName,
-      subtitle: s.travelerCount(d.travelers.length),
+      subtitle: s.travelerCount(d.travelerCount),
       chipLabel: l10n.draftChip,
-      iconAsset: ServiceCardCopy.forCategory(d.category, l10n).iconAsset,
+      iconAsset: ServiceCardCopy.forCategory(ServiceCategory.unknown, l10n).iconAsset,
       continueLabel: l10n.draftContinue,
-      deleteLabel: l10n.draftDelete,
-      ageLabel: s.draftAge(d.updatedAt, now: now),
-      missingLine: draftMissingLine(d, l10n, s),
-      expiryLabel: daysLeft <= 3 ? s.draftDeletesIn(daysLeft) : null,
+      ageLabel: s.draftAge(d.submittedAt, now: now),
       onContinue: () => _continue(context, d),
-      onDelete: () => _delete(context, d, isLast),
     );
   }
 }
 
-/// Delete confirmation (Figma REQ-03).
-class _DeleteDialog extends StatelessWidget {
-  const _DeleteDialog({required this.draft, required this.isLast});
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.text});
 
-  final BookingDraft draft;
-  final bool isLast;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final s = SeenStrings.of(context);
-    final c = SeenColors.of(context);
     final t = SeenType.of(context);
-    final bad = SeenRequestStatus.rejected.colors;
-    final body = l10n.draftDeleteBody(draft.serviceName, s.travelerCount(draft.travelers.length));
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 30),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: c.card,
-          borderRadius: const BorderRadius.all(SeenRadius.r28),
-          boxShadow: const [
-            BoxShadow(color: Color(0x142C186A), blurRadius: 16, offset: Offset(0, 8)),
-            BoxShadow(color: Color(0x385B36DA), blurRadius: 48, offset: Offset(0, 24)),
+    final colors = SeenRequestStatus.underReview.colors;
+    return DecoratedBox(
+      decoration: BoxDecoration(color: colors.bg, borderRadius: const BorderRadius.all(SeenRadius.lg)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            const SeenSvgIcon(SeenVectors.infoReview, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text(text, style: t.label.copyWith(color: colors.fg))),
           ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(color: bad.bg, borderRadius: const BorderRadius.all(Radius.circular(17))),
-                child: const SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: Center(child: SeenSvgIcon(SeenVectors.notifAlert, size: 31)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(l10n.draftDeleteTitle, textAlign: TextAlign.center, style: t.h2),
-              const SizedBox(height: 12),
-              Text(
-                isLast ? '$body ${l10n.draftDeleteLast}' : body,
-                textAlign: TextAlign.center,
-                style: t.body.copyWith(color: c.inkSecondary),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: SeenButton.outline(
-                      label: l10n.transferCancel,
-                      expand: true,
-                      onPressed: () => Navigator.of(context).pop(false),
-                    ),
-                  ),
-                  const SizedBox(width: SeenSpace.s3),
-                  Expanded(
-                    child: Semantics(
-                      button: true,
-                      label: l10n.draftDelete,
-                      excludeSemantics: true,
-                      child: Material(
-                        color: bad.bg,
-                        borderRadius: const BorderRadius.all(SeenRadius.lg),
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).pop(true),
-                          borderRadius: const BorderRadius.all(SeenRadius.lg),
-                          child: SizedBox(
-                            height: 52,
-                            child: Center(child: Text(l10n.draftDelete, style: t.bodyStrong.copyWith(color: bad.fg))),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
+}
+
+/// Asks for the next page of drafts once it is built (lazy list end).
+class _LoadMoreTrigger extends StatefulWidget {
+  const _LoadMoreTrigger();
+
+  @override
+  State<_LoadMoreTrigger> createState() => _LoadMoreTriggerState();
+}
+
+class _LoadMoreTriggerState extends State<_LoadMoreTrigger> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<DraftsBloc>().add(const DraftsLoadMoreRequested());
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: SeenLoader()));
 }

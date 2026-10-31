@@ -7,11 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
-import 'package:seen_booking/features/services/data/datasources/booking_draft_local_data_source.dart';
-import 'package:seen_booking/features/services/domain/entities/booking_draft.dart';
 import 'package:seen_booking/features/services/domain/entities/hospital.dart';
-import 'package:seen_booking/features/services/domain/entities/service_definition.dart';
-import 'package:seen_booking/features/services/domain/entities/traveler_info.dart';
 import 'package:seen_booking/features/services/domain/repositories/hospital_repository.dart';
 import 'package:seen_booking/features/services/presentation/bloc/hospital_picker_cubit.dart';
 import 'package:seen_booking/features/services/presentation/widgets/hospital_picker_sheet.dart';
@@ -145,22 +141,5 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('مستشفى الأردن'), findsOneWidget);
     });
-  });
-
-  test('a draft keeps its hospital through save and load', () {
-    final draft = BookingDraft(
-      id: 'd1',
-      serviceId: 's',
-      serviceName: 'ميدماب',
-      category: ServiceCategory.medicalJordan,
-      travelers: const [TravelerInfo(id: 't', fieldValues: {})],
-      updatedAt: DateTime(2026, 10, 19),
-      hospitalId: 'h1',
-      hospitalName: 'مستشفى الأردن',
-    );
-    final back = BookingDraftJson.fromJson(Map<String, dynamic>.from(BookingDraftJson.toJson(draft)));
-    expect(back.hospitalId, 'h1');
-    expect(back.hospitalName, 'مستشفى الأردن');
-    expect(back.category, ServiceCategory.medicalJordan);
   });
 }

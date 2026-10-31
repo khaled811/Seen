@@ -17,30 +17,46 @@ import 'package:seen_booking/features/requests/presentation/screens/upload_missi
 
 final _now = DateTime(2026, 10, 15, 12);
 
-MissingDocumentRequest _request({DateTime? deadline}) => MissingDocumentRequest(
+const _ruqaya = UploadTarget(
+  travelerId: 'tr-1',
+  requirementId: 'req-passport',
+  requirementLabel: 'صورة جواز واضحة',
+  travelerLabel: 'رقية أحمد الحميري',
+);
+const _omar = UploadTarget(
+  travelerId: 'tr-2',
+  requirementId: 'req-passport',
+  requirementLabel: 'صورة جواز واضحة',
+  travelerLabel: 'عمر ص***',
+  alreadyUploaded: true,
+);
+
+MissingDocumentRequest _request({DateTime? deadline, bool noDeadline = false, List<UploadTarget> targets = const [_ruqaya]}) =>
+    MissingDocumentRequest(
       requestId: 'r1',
       referenceId: 'SB-20476',
-      documentTitle: 'صورة جواز واضحة',
-      travelerName: 'رقية أحمد الحميري',
       reason: 'الصورة الحالية غير مقروءة.',
-      deadline: deadline ?? _now.add(const Duration(hours: 46)),
+      targets: targets,
+      deadline: noDeadline ? null : (deadline ?? _now.add(const Duration(hours: 46))),
     );
 
 class _FakeRepo implements MissingDocumentRepository {
   Either<Failure, MissingDocumentRequest> getResult = Right(_request());
   Either<Failure, void> uploadResult = const Right(null);
   int uploads = 0;
+  final targets = <UploadTarget>[];
 
   @override
   Future<Either<Failure, MissingDocumentRequest>> getMissingDocument(String requestId) async => getResult;
 
   @override
   Future<Either<Failure, void>> upload({
-    required String requestId,
+    required UploadTarget target,
     required PickedDocument document,
     void Function(double fraction)? onProgress,
   }) async {
     uploads++;
+    targets.add(target);
     onProgress?.call(0.68);
     return uploadResult;
   }
@@ -153,7 +169,7 @@ void main() {
       expect(bloc.state.picked, isNull);
 
       final repo2 = _FakeRepo()
-        ..uploadResult = const Left(ServerFailure('late', code: DocumentIssue.deadlinePassedCode));
+        ..uploadResult = const Left(ServerFailure('late', code: DocumentIssue.notAllowedCode));
       final bloc2 = await _ready(repo2, _FakePicker());
       addTearDown(bloc2.close);
       bloc2.add(const MissingDocumentSourceChosen(DocumentSource.file));
@@ -161,6 +177,53 @@ void main() {
       bloc2.add(const MissingDocumentSubmitted());
       final s = await bloc2.stream.firstWhere((s) => s.deadlinePassed);
       expect(s.submitted, false);
+    });
+
+    test('the file goes to the chosen traveler and document type', () async {
+      final repo = _FakeRepo()..getResult = Right(_request(targets: const [_ruqaya, _omar]));
+      final bloc = await _ready(repo, _FakePicker());
+      addTearDown(bloc.close);
+      expect(bloc.state.target, _ruqaya); // the missing one first
+      bloc.add(const MissingDocumentSourceChosen(DocumentSource.file));
+      await bloc.stream.firstWhere((s) => s.picked != null);
+
+      bloc.add(const MissingDocumentTargetChosen(1));
+      await bloc.stream.firstWhere((s) => s.targetIndex == 1);
+      expect(bloc.state.picked, isNotNull); // the file stays
+      bloc.add(const MissingDocumentSubmitted());
+      await bloc.stream.firstWhere((s) => s.submitted);
+      expect(repo.targets.single, _omar);
+    });
+
+    test('a target outside the list is ignored', () async {
+      final bloc = await _ready(_FakeRepo(), _FakePicker());
+      addTearDown(bloc.close);
+      bloc.add(const MissingDocumentTargetChosen(5));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(bloc.state.targetIndex, 0);
+    });
+
+    test('a request with no deadline never runs out', () async {
+      final repo = _FakeRepo()..getResult = Right(_request(noDeadline: true));
+      final bloc = await _ready(repo, _FakePicker());
+      addTearDown(bloc.close);
+      expect(bloc.state.deadlinePassed, isFalse);
+      bloc.add(const MissingDocumentSourceChosen(DocumentSource.file));
+      await bloc.stream.firstWhere((s) => s.picked != null);
+      bloc.add(const MissingDocumentSubmitted());
+      await bloc.stream.firstWhere((s) => s.submitted);
+      expect(repo.uploads, 1);
+    });
+
+    test('the upload endpoint\'s refusals map to the right message', () {
+      DocumentIssueKind kind(String code) => DocumentIssue.fromUpload(ServerFailure('x', code: code)).kind;
+      expect(kind('file_too_large'), DocumentIssueKind.tooLarge);
+      expect(kind('file_type_not_allowed'), DocumentIssueKind.wrongType);
+      expect(kind('file_content_mismatch'), DocumentIssueKind.wrongType);
+      expect(kind('document_upload_not_allowed'), DocumentIssueKind.deadlinePassed);
+      expect(kind('too_many_files'), DocumentIssueKind.uploadFailed);
+      expect(DocumentIssue.fromUpload(const UnauthorizedFailure()).kind, DocumentIssueKind.uploadFailed);
+      expect(DocumentIssue.fromUpload(const NetworkFailure('off')).kind, DocumentIssueKind.offline);
     });
 
     test('a failed load reports loadFailed', () async {
@@ -175,8 +238,8 @@ void main() {
     late _FakeRepo repo;
     late _FakePicker picker;
 
-    Future<void> open(WidgetTester tester, {Widget Function(Widget screen)? wrap}) async {
-      repo = _FakeRepo();
+    Future<void> open(WidgetTester tester, {List<UploadTarget> targets = const [_ruqaya]}) async {
+      repo = _FakeRepo()..getResult = Right(_request(targets: targets));
       picker = _FakePicker();
       await tester.binding.setSurfaceSize(const Size(390, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -221,10 +284,26 @@ void main() {
       expect(find.text('صورة جواز واضحة'), findsOneWidget);
       expect(find.text('المسافر: رقية أحمد الحميري'), findsOneWidget);
       expect(find.text('المهلة المتبقية للرفع'), findsOneWidget);
-      expect(find.text('حتى 5MB'), findsOneWidget);
+      expect(find.text('حتى 8MB'), findsOneWidget);
       for (final s in ['ملف', 'المعرض', 'الكاميرا']) {
         expect(find.text(s), findsOneWidget);
       }
+    });
+
+    testWidgets('with several places to attach, the person can change where the file goes', (tester) async {
+      await open(tester, targets: const [_ruqaya, _omar]);
+      expect(find.text('تغيير'), findsOneWidget);
+      await tester.tap(find.text('تغيير'));
+      await tester.pumpAndSettle();
+      expect(find.text('تم رفع ملف سابقًا'), findsOneWidget);
+      await tester.tap(find.textContaining('عمر ص***'));
+      await tester.pumpAndSettle();
+      expect(find.text('المسافر: عمر ص***'), findsOneWidget);
+    });
+
+    testWidgets('with a single place there is nothing to change', (tester) async {
+      await open(tester);
+      expect(find.text('تغيير'), findsNothing);
     });
 
     testWidgets('pick → preview → send closes the screen with true', (tester) async {
@@ -253,7 +332,7 @@ void main() {
       picker.result = const Right(PickedDocument(path: '/b.jpg', fileName: 'b.jpg', sizeBytes: 9 * 1024 * 1024));
       await tester.tap(find.text('ملف'));
       await settle(tester);
-      expect(find.text('الملف أكبر من 5MB. اختر ملفًا أصغر أو صوّر من جديد.'), findsOneWidget);
+      expect(find.text('الملف أكبر من 8MB. اختر ملفًا أصغر أو صوّر من جديد.'), findsOneWidget);
       expect(repo.uploads, 0);
     });
 

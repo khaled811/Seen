@@ -25,6 +25,7 @@ class SeenMotionIcon extends StatefulWidget {
     this.semanticLabel,
     this.value,
     this.onTap,
+    this.tintAnimation = false,
   });
 
   /// Path under `assets/motion icons/`, e.g. `'assets/motion icons/refresh.json'`.
@@ -48,6 +49,10 @@ class SeenMotionIcon extends StatefulWidget {
   /// pull-to-refresh), or when [value] is driven purely by the parent
   /// rebuilding with a new value.
   final VoidCallback? onTap;
+
+  /// Paints every layer of the animation in [color] (for black artwork that must match the
+  /// surface it sits on). Off by default: the animation keeps its own colours.
+  final bool tintAnimation;
 
   @override
   State<SeenMotionIcon> createState() => SeenMotionIconState();
@@ -108,6 +113,11 @@ class SeenMotionIconState extends State<SeenMotionIcon> with SingleTickerProvide
               widget.asset,
               controller: _controller,
               fit: BoxFit.contain,
+              delegates: widget.tintAnimation && widget.color != null
+                  ? lottie.LottieDelegates(values: [
+                      lottie.ValueDelegate.colorFilter(['**'], value: ColorFilter.mode(widget.color!, BlendMode.srcATop)),
+                    ])
+                  : null,
               onLoaded: (composition) {
                 if (!mounted) return;
                 _controller.duration = composition.duration;

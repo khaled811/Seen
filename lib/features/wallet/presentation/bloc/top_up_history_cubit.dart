@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/error/failure.dart';
 import '../../domain/entities/wallet_transaction.dart';
 import '../../domain/usecases/get_transactions_usecase.dart';
 
@@ -19,6 +20,7 @@ class TopUpHistoryState extends Equatable {
     this.loadingMore = false,
     this.moreFailed = false,
     this.error,
+    this.failure,
   });
 
   final TopUpHistoryStatus status;
@@ -32,6 +34,9 @@ class TopUpHistoryState extends Equatable {
   /// The last "load more" failed (the list stays; the link offers a retry).
   final bool moreFailed;
   final String? error;
+
+  /// The failure behind [error] (shown localized).
+  final Failure? failure;
 
   /// The server filters by type; the status chips narrow what was loaded.
   List<WalletTransaction> get visible => switch (filter) {
@@ -49,6 +54,7 @@ class TopUpHistoryState extends Equatable {
     bool? loadingMore,
     bool? moreFailed,
     String? error,
+    Failure? failure,
   }) =>
       TopUpHistoryState(
         status: status ?? this.status,
@@ -58,10 +64,11 @@ class TopUpHistoryState extends Equatable {
         loadingMore: loadingMore ?? this.loadingMore,
         moreFailed: moreFailed ?? this.moreFailed,
         error: error ?? this.error,
+        failure: failure ?? this.failure,
       );
 
   @override
-  List<Object?> get props => [status, items, filter, hasMore, loadingMore, moreFailed, error];
+  List<Object?> get props => [status, items, filter, hasMore, loadingMore, moreFailed, error, failure];
 }
 
 /// The agent's top-up requests, paged from the server's ledger filtered by the
@@ -81,7 +88,12 @@ class TopUpHistoryCubit extends Cubit<TopUpHistoryState> {
     final result = await _get(type: TransactionType.topup, page: 1, pageSize: pageSize);
     if (isClosed) return;
     result.match(
-      (failure) => emit(TopUpHistoryState(status: TopUpHistoryStatus.failure, filter: state.filter, error: failure.message)),
+      (failure) => emit(TopUpHistoryState(
+        status: TopUpHistoryStatus.failure,
+        filter: state.filter,
+        error: failure.message,
+        failure: failure,
+      )),
       (items) => emit(TopUpHistoryState(
         status: TopUpHistoryStatus.loaded,
         items: items,

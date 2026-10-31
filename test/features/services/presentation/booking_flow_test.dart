@@ -9,25 +9,46 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
+import 'package:seen_booking/features/dynamic_forms/domain/entities/dynamic_form_field.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/presentation/widgets/actions.dart';
-import 'package:seen_booking/features/services/domain/entities/hospital.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
-import 'package:seen_booking/features/services/domain/entities/service_booking_request.dart';
-import 'package:seen_booking/features/services/domain/entities/service_booking_result.dart';
 import 'package:seen_booking/features/services/domain/entities/service_definition.dart';
 import 'package:seen_booking/features/services/domain/repositories/services_repository.dart';
 import 'package:seen_booking/features/services/domain/usecases/get_available_services_usecase.dart';
-import 'package:seen_booking/features/services/domain/usecases/submit_booking_usecase.dart';
+import 'package:seen_booking/features/requests/domain/usecases/get_request_detail_usecase.dart';
+import 'package:seen_booking/features/services/domain/usecases/booking_flow_usecases.dart';
 import 'package:seen_booking/features/services/presentation/bloc/service_booking_bloc.dart';
 import 'package:seen_booking/features/services/presentation/bloc/service_booking_event.dart';
 import 'package:seen_booking/features/services/presentation/bloc/service_booking_state.dart';
 import 'package:seen_booking/features/services/presentation/screens/service_selection_screen.dart';
 import 'package:seen_booking/features/services/presentation/screens/traveler_entry_screen.dart';
-import 'package:seen_booking/features/services/presentation/widgets/service_traveler_fields.dart';
-import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
-import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
-import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
+import '../../../support/booking_fakes.dart';
+
+const _passportFields = [
+  DynamicFormField(key: 'fullName', definitionId: 'f1', type: FieldType.text, label: 'الاسم الكامل', required: true, minLength: 2, maxLength: 100),
+  DynamicFormField(key: 'passportNumber', definitionId: 'f2', type: FieldType.text, label: 'رقم الجواز', required: true, minLength: 6, maxLength: 20),
+  DynamicFormField(
+    key: 'nationality',
+    definitionId: 'f3',
+    type: FieldType.select,
+    label: 'الجنسية',
+    required: true,
+    options: [FieldOption(value: 'يمني', label: 'يمني')],
+  ),
+  DynamicFormField(key: 'birthDate', definitionId: 'f4', type: FieldType.date, label: 'تاريخ الميلاد', required: true, dateNotFuture: true),
+  DynamicFormField(key: 'passportIssueDate', definitionId: 'f5', type: FieldType.date, label: 'تاريخ إصدار الجواز', required: true, dateNotFuture: true),
+  DynamicFormField(
+    key: 'passportExpiryDate',
+    definitionId: 'f6',
+    type: FieldType.date,
+    label: 'تاريخ انتهاء الجواز',
+    required: true,
+    minValidMonths: 6,
+  ),
+];
+
+const _passportDocument = ServiceDocumentRequirement(id: 'd1', key: 'passport', label: 'نسخة جواز السفر', required: true);
 
 const _nationalSecurity = ServiceDefinition(
   id: 's1',
@@ -36,6 +57,8 @@ const _nationalSecurity = ServiceDefinition(
   description: 'موافقة دخول مصر',
   perPersonPriceCents: 8500,
   availability: ServiceAvailability.available,
+  fields: _passportFields,
+  documents: [_passportDocument],
 );
 const _military = ServiceDefinition(
   id: 's2',
@@ -44,6 +67,7 @@ const _military = ServiceDefinition(
   description: 'موافقة خاصة',
   perPersonPriceCents: 20000,
   availability: ServiceAvailability.available,
+  fields: _passportFields,
 );
 const _airline = ServiceDefinition(
   id: 's3',
@@ -55,35 +79,17 @@ const _airline = ServiceDefinition(
 );
 
 class _FakeServicesRepository implements ServicesRepository {
-  final submitted = <ServiceBookingRequest>[];
-
   @override
   Future<Either<Failure, List<ServiceDefinition>>> getAvailableServices() async =>
       const Right([_nationalSecurity, _military, _airline]);
-
-  @override
-  Future<Either<Failure, ServiceBookingResult>> submitBooking(ServiceBookingRequest request) async {
-    submitted.add(request);
-    return Right(ServiceBookingResult(
-      requestId: 'SB-90001',
-      status: RequestStatus.submitted,
-      totalPriceCents: 8500,
-      createdAt: DateTime(2026, 11, 12),
-    ));
-  }
 }
 
-class _FakeWalletRepository implements WalletRepository {
-  @override
-  Future<Either<Failure, WalletBalance>> getBalance() async => const Right(WalletBalance(
-        availableCents: 100000,
-        holdCents: 0,
-        creditLimitCents: 0,
-        currency: WalletCurrency.usd,
-      ));
+class _Made {
+  _Made(this.bloc, this.flow, this.requests);
 
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  final ServiceBookingBloc bloc;
+  final FakeBookingFlowRepository flow;
+  final FakeBookingRequestsRepository requests;
 }
 
 Widget _app(Widget home) => MaterialApp(
@@ -99,22 +105,26 @@ Widget _app(Widget home) => MaterialApp(
       home: home,
     );
 
-({ServiceBookingBloc bloc, _FakeServicesRepository repo}) _makeBloc() {
-  final repo = _FakeServicesRepository();
+_Made _makeBloc() {
+  final flow = FakeBookingFlowRepository()
+    ..reviewResult = Right(bookingTestReview(travelerName: 'AHMED SALEH', serviceName: 'موافقة الأمن الوطني'));
+  final requests = FakeBookingRequestsRepository();
   final l10n = lookupAppLocalizations(const Locale('ar'));
   final bloc = ServiceBookingBloc(
-    getAvailableServicesUseCase: GetAvailableServicesUseCase(repo),
-    submitBookingUseCase: SubmitBookingUseCase(repo),
-    getWalletBalanceUseCase: GetWalletBalanceUseCase(_FakeWalletRepository()),
+    getAvailableServicesUseCase: GetAvailableServicesUseCase(_FakeServicesRepository()),
+    createDraftUseCase: CreateDraftRequestUseCase(flow),
+    addTravelersUseCase: AddTravelersUseCase(flow),
+    uploadDocumentUseCase: UploadBookingDocumentUseCase(flow),
+    reviewDraftUseCase: ReviewDraftUseCase(flow),
+    submitDraftUseCase: SubmitDraftRequestUseCase(flow),
+    getRequestDetailUseCase: GetRequestDetailUseCase(requests),
     validator: ServiceSelectionScreen.buildValidator(l10n),
+    referenceRetryDelay: Duration.zero,
   );
-  return (bloc: bloc, repo: repo);
+  return _Made(bloc, flow, requests);
 }
 
-void _select(ServiceBookingBloc bloc, ServiceDefinition service) => bloc.add(ServiceSelected(
-      service: service,
-      travelerFields: ServiceTravelerFields.forCategory(service.category, lookupAppLocalizations(const Locale('ar'))),
-    ));
+void _select(ServiceBookingBloc bloc, ServiceDefinition service) => bloc.add(ServiceSelected(service: service));
 
 void _fillTraveler(ServiceBookingBloc bloc, int index) {
   final values = <String, Object?>{
@@ -183,14 +193,14 @@ void main() {
   });
 
   group('traveler entry and review', () {
-    Future<_FakeServicesRepository> pumpTravelers(WidgetTester tester, {ServiceDefinition service = _nationalSecurity}) async {
+    Future<_Made> pumpTravelers(WidgetTester tester, {ServiceDefinition service = _nationalSecurity}) async {
       await _size(tester);
       final made = _makeBloc();
       addTearDown(() => made.bloc.close().ignore()); // not awaited: close() stalls under fake async
       _select(made.bloc, service);
-      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen())));
+      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen(createPrefill: noPrefillCubit))));
       await tester.pumpAndSettle();
-      return made.repo;
+      return made;
     }
 
     testWidgets('shows the step header, stepper, traveler card and the upload slot', (tester) async {
@@ -232,7 +242,7 @@ void main() {
       addTearDown(() => made.bloc.close().ignore()); // not awaited: close() stalls under fake async
       await _size(tester);
       _select(made.bloc, _nationalSecurity);
-      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen())));
+      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen(createPrefill: noPrefillCubit))));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextFormField).first, 'AHMED SALEH');
@@ -245,7 +255,7 @@ void main() {
     });
 
     testWidgets('valid travelers go to review; submit stays off until confirmed, then reaches success', (tester) async {
-      final repo = await pumpTravelers(tester);
+      final made = await pumpTravelers(tester);
       final bloc = BlocProvider.of<ServiceBookingBloc>(tester.element(find.byType(TravelerEntryScreen)));
       _fillTraveler(bloc, 0);
       await tester.pumpAndSettle();
@@ -269,8 +279,8 @@ void main() {
 
       await tester.tap(submit);
       await tester.pumpAndSettle();
-      expect(repo.submitted, hasLength(1));
-      expect(repo.submitted.single.serviceId, 's1');
+      expect(made.flow.created, ['s1']);
+      expect(made.flow.submitted, ['req-1']);
       expect(find.text(lookupAppLocalizations(const Locale('ar')).bookingSuccessTitle), findsOneWidget);
     });
   });
@@ -284,7 +294,7 @@ void main() {
       for (var i = 1; i < travelers; i++) {
         made.bloc.add(const TravelerAdded());
       }
-      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen())));
+      await tester.pumpWidget(_app(BlocProvider.value(value: made.bloc, child: const TravelerEntryScreen(createPrefill: noPrefillCubit))));
       await tester.pumpAndSettle();
       return made.bloc;
     }
@@ -333,35 +343,6 @@ void main() {
       bloc.add(TravelerFieldChanged(travelerIndex: 0, fieldKey: 'passportIssueDate', value: DateTime.now().add(const Duration(days: 90))));
       await tester.pumpAndSettle();
       expect(find.textContaining('تاريخ الإصدار في المستقبل'), findsOneWidget);
-    });
-  });
-
-  group('BOOK-10 hospital carried by the booking', () {
-    test('the chosen hospital is sent with the request', () async {
-      final made = _makeBloc();
-      addTearDown(() => made.bloc.close().ignore());
-      made.bloc.add(ServiceSelected(
-        service: _nationalSecurity,
-        travelerFields: ServiceTravelerFields.forCategory(_nationalSecurity.category, lookupAppLocalizations(const Locale('ar'))),
-        hospital: const HospitalChoice(id: 'h1', name: 'مستشفى الأردن'),
-      ));
-      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress);
-      _fillTraveler(made.bloc, 0);
-      made.bloc.add(const BookingSubmitted());
-      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress && s.submissionResult != null);
-      expect(made.repo.submitted.single.hospitalId, 'h1');
-      expect((made.bloc.state as ServiceBookingInProgress).hospital?.name, 'مستشفى الأردن');
-    });
-
-    test('a service without a hospital sends none', () async {
-      final made = _makeBloc();
-      addTearDown(() => made.bloc.close().ignore());
-      _select(made.bloc, _nationalSecurity);
-      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress);
-      _fillTraveler(made.bloc, 0);
-      made.bloc.add(const BookingSubmitted());
-      await made.bloc.stream.firstWhere((s) => s is ServiceBookingInProgress && s.submissionResult != null);
-      expect(made.repo.submitted.single.hospitalId, isNull);
     });
   });
 }

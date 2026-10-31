@@ -7,6 +7,10 @@
 /// in place and are tested directly.
 const bool kEnableSpiritualHub = false;
 
-/// Home promo banner. The banner is static placeholder copy until a backend
-/// banner/announcement API exists; flip to false to hide it.
+/// Home promo banner. Its content comes from the server (`activeAds`); nothing is
+/// shown when the server offers no ad. Flip to false to hide the slot entirely.
 const bool kShowHomePromoBanner = true;
+
+/// "Scan the passport" on the traveler form (`POST /files/read-passport/`). Flip to false to hide the
+/// button; the form then works exactly as before.
+const bool kEnablePassportScan = true;

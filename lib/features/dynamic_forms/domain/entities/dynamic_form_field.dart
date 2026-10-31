@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/constants/enums.dart';
+import 'field_condition.dart';
 
 /// A date field's business-rule constraint, applied on top of the generic
 /// [FieldType.date] rendering. Declarative — the engine doesn't need to
@@ -55,6 +56,16 @@ class DynamicFormField extends Equatable {
     this.options,
     this.dateConstraint = DateFieldConstraint.none,
     this.minMonthsInFuture = 6,
+    this.definitionId,
+    this.step = 1,
+    this.format,
+    this.showIf,
+    this.requiredIf,
+    this.dateNotFuture = false,
+    this.dateNotPast = false,
+    this.minValidMonths,
+    this.minAgeYears,
+    this.maxAgeYears,
   });
 
   /// Stable identifier; the key into a wizard's values/errors maps.
@@ -82,6 +93,38 @@ class DynamicFormField extends Equatable {
   /// Date only, used when [dateConstraint] is [DateFieldConstraint.minMonthsInFuture].
   final int minMonthsInFuture;
 
+  /// The server's id of this field (`fieldDefinitionId` when values are sent).
+  final String? definitionId;
+
+  /// The wizard step the server puts this field on.
+  final int step;
+
+  /// The server's `format` hint (informational; the server validates it).
+  final String? format;
+
+  /// Shown only while this holds for the traveler's other values; a hidden
+  /// field counts as empty and is neither validated nor sent.
+  final FieldCondition? showIf;
+
+  /// Required (in addition to [required]) while this holds.
+  final FieldCondition? requiredIf;
+
+  /// Date rules from the server, independent of each other: not after today,
+  /// not before today, at least this many months from today (a document's
+  /// remaining validity), and an age range in whole years from today.
+  final bool dateNotFuture;
+  final bool dateNotPast;
+  final int? minValidMonths;
+  final int? minAgeYears;
+  final int? maxAgeYears;
+
+  /// Whether the field is shown for a traveler's current [values].
+  bool isVisible(Map<String, Object?> values) => showIf == null || showIf!.matches(values);
+
+  /// Whether the field must be filled for a traveler's current [values].
+  bool isRequiredFor(Map<String, Object?> values) =>
+      isVisible(values) && (required || (requiredIf?.matches(values) ?? false));
+
   @override
   List<Object?> get props => [
         key,
@@ -97,5 +140,15 @@ class DynamicFormField extends Equatable {
         options,
         dateConstraint,
         minMonthsInFuture,
+        definitionId,
+        step,
+        format,
+        showIf,
+        requiredIf,
+        dateNotFuture,
+        dateNotPast,
+        minValidMonths,
+        minAgeYears,
+        maxAgeYears,
       ];
 }

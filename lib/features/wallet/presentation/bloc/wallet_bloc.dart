@@ -1,10 +1,13 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/utils/idempotency_key.dart';
+import '../../domain/entities/top_up_options.dart';
 import '../../domain/entities/wallet_balance.dart';
 import '../../domain/entities/wallet_transaction.dart';
+import '../../domain/usecases/get_top_up_options_usecase.dart';
 import '../../domain/usecases/get_transactions_usecase.dart';
 import '../../domain/usecases/get_wallet_balance_usecase.dart';
 import '../../domain/usecases/request_top_up_usecase.dart';
@@ -16,9 +19,13 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     required GetWalletBalanceUseCase getWalletBalanceUseCase,
     required GetTransactionsUseCase getTransactionsUseCase,
     required RequestTopUpUseCase requestTopUpUseCase,
+    GetTopUpOptionsUseCase? getTopUpOptionsUseCase,
+    IdempotencyKeyRegistry? idempotencyKeys,
   })  : _getWalletBalanceUseCase = getWalletBalanceUseCase,
         _getTransactionsUseCase = getTransactionsUseCase,
         _requestTopUpUseCase = requestTopUpUseCase,
+        _getTopUpOptionsUseCase = getTopUpOptionsUseCase,
+        _idempotencyKeys = idempotencyKeys ?? IdempotencyKeyRegistry(),
         super(const WalletInitial()) {
     on<WalletLoadRequested>(_onLoadRequested, transformer: droppable());
     on<WalletTransactionTypeFilterChanged>(_onFilterChanged);
@@ -29,6 +36,11 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   final GetWalletBalanceUseCase _getWalletBalanceUseCase;
   final GetTransactionsUseCase _getTransactionsUseCase;
   final RequestTopUpUseCase _requestTopUpUseCase;
+  final GetTopUpOptionsUseCase? _getTopUpOptionsUseCase;
+
+  /// One key per user action: a retry of the same top-up (same details) sends
+  /// the same key, so a timeout can never create two requests.
+  final IdempotencyKeyRegistry _idempotencyKeys;
 
   Future<void> _onLoadRequested(
     WalletLoadRequested event,
@@ -42,12 +54,14 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     emit(
       result.match(
         (failure) => previous == null
-            ? WalletFailure(failure.message, forbidden: failure is ForbiddenFailure)
-            : previous.copyWith(refreshError: failure.message),
+            ? WalletFailure(failure.message, forbidden: failure is ForbiddenFailure, failure: failure)
+            : previous.copyWith(refreshError: failure.message, refreshFailure: failure),
         (data) => WalletLoaded(
-          balance: data.$1,
-          transactions: data.$2,
+          balance: data.balance,
+          transactions: data.transactions,
           typeFilter: null,
+          // Keep what was known if the options could not be loaded this time.
+          topUpOptions: data.options ?? previous?.topUpOptions,
         ),
       ),
     );
@@ -76,11 +90,16 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       ),
     );
 
+    final key = _idempotencyKeys.keyFor(
+      '${event.amountCents}|${event.method.value}|${event.referenceNumber}|${event.paymentAccountId}|${event.receiptFileId}',
+    );
     final result = await _requestTopUpUseCase(
       amountCents: event.amountCents,
       method: event.method,
       referenceNumber: event.referenceNumber,
-      notes: event.notes,
+      idempotencyKey: key,
+      paymentAccountId: event.paymentAccountId,
+      receiptFileId: event.receiptFileId,
     );
 
     if (result case Left(:final value)) {
@@ -90,11 +109,14 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         latest.copyWith(
           topUpStatus: TopUpSubmissionStatus.failure,
           topUpError: value.message,
+          topUpFailure: value,
         ),
       );
       return;
     }
 
+    // The request exists now: the next action gets a new key.
+    _idempotencyKeys.settled();
     // Success: the backend is the source of truth for the resulting
     // balance/hold amounts and transaction list — refetch rather than
     // fabricate the update client-side.
@@ -102,13 +124,21 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     final refreshed = await _fetchData();
     emit(
       refreshed.match(
-        (failure) => WalletFailure(failure.message, forbidden: failure is ForbiddenFailure),
+        // The top-up went through even if the refresh did not: say so, and keep
+        // what was on screen with a refresh error instead of an error screen.
+        (failure) => current.copyWith(
+          topUpStatus: TopUpSubmissionStatus.success,
+          submittedTopUp: created,
+          refreshError: failure.message,
+          refreshFailure: failure,
+        ),
         (data) => WalletLoaded(
-          balance: data.$1,
-          transactions: data.$2,
+          balance: data.balance,
+          transactions: data.transactions,
           typeFilter: current.typeFilter,
           topUpStatus: TopUpSubmissionStatus.success,
           submittedTopUp: created,
+          topUpOptions: data.options ?? current.topUpOptions,
         ),
       ),
     );
@@ -130,16 +160,23 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     );
   }
 
-  Future<Either<Failure, (WalletBalance, List<WalletTransaction>)>> _fetchData() async {
+  /// The balance and the ledger are required; the top-up options are a
+  /// convenience (a failure there leaves the top-up screen without account
+  /// details, it does not fail the wallet).
+  Future<Either<Failure, ({WalletBalance balance, List<WalletTransaction> transactions, TopUpOptions? options})>>
+      _fetchData() async {
     final balanceResult = await _getWalletBalanceUseCase();
     if (balanceResult case Left(:final value)) return Left(value);
 
     final transactionsResult = await _getTransactionsUseCase();
     if (transactionsResult case Left(:final value)) return Left(value);
 
-    final balance = (balanceResult as Right<Failure, WalletBalance>).value;
-    final transactions =
-        (transactionsResult as Right<Failure, List<WalletTransaction>>).value;
-    return Right((balance, transactions));
+    final optionsResult = await _getTopUpOptionsUseCase?.call();
+
+    return Right((
+      balance: (balanceResult as Right<Failure, WalletBalance>).value,
+      transactions: (transactionsResult as Right<Failure, List<WalletTransaction>>).value,
+      options: optionsResult?.toNullable(),
+    ));
   }
 }

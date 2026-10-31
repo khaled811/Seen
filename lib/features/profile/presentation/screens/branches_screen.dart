@@ -19,6 +19,8 @@ import '../../../../core/state/branch_scope.dart';
 import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../../auth/domain/entities/role_permissions.dart';
 import '../../domain/entities/branch.dart';
 import '../../domain/entities/team_member.dart';
@@ -292,13 +294,13 @@ class _Body extends StatelessWidget {
           ),
         );
       }
-      return SeenCardsSkeleton(label: s.loadingLabel, count: 2);
+      return SeenWaitPolicy.loading(loading: SeenCardsSkeleton(label: s.loadingLabel, count: 2), onRetry: cubit.load);
     }
     final scopeName = scope.value == null
         ? s.allBranches
         : (state.branches.where((b) => b.id == scope.value).firstOrNull?.name ?? s.allBranches);
     final focus = state.focus;
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: cubit.load,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(14, 4, 14, SeenSpace.s6),
@@ -441,10 +443,11 @@ class _BranchRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(child: Text(branch.name, style: main ? t.bodyStrong : t.body)),
-                Text(
-                  '${s.staffCountLabel(branch.staffCount)} · ${s.requestCountLabel(branch.requestCount)}',
-                  style: t.caption.copyWith(color: c.inkMuted),
-                ),
+                if (branch.staffCount != null && branch.requestCount != null)
+                  Text(
+                    '${s.staffCountLabel(branch.staffCount!)} · ${s.requestCountLabel(branch.requestCount!)}',
+                    style: t.caption.copyWith(color: c.inkMuted),
+                  ),
               ],
             ),
           ),

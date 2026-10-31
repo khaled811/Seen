@@ -65,21 +65,9 @@
       }
     }
   },
-  "languageEnglish": "English",
-  "@languageEnglish": {
-    "description": "Display name of the English language, shown in the language switcher."
-  },
-  "languageArabic": "Arabic",
-  "@languageArabic": {
-    "description": "Display name of the Arabic language, shown in the language switcher."
-  },
   "loginTitle": "Sign In",
   "@loginTitle": {
     "description": "Title of the login screen."
-  },
-  "loginIdentifierLabel": "Email or phone",
-  "@loginIdentifierLabel": {
-    "description": "Label for the login identifier field (email or phone)."
   },
   "loginPasswordLabel": "Password",
   "@loginPasswordLabel": {
@@ -93,10 +81,6 @@
   "@otpInstructions": {
     "description": "Instructions shown above the OTP input."
   },
-  "otpCodeLabel": "Verification code",
-  "@otpCodeLabel": {
-    "description": "Label for the OTP code field."
-  },
   "otpResendIn": "Resend code in {seconds}s",
   "@otpResendIn": {
     "description": "Countdown shown before the resend action becomes available.",
@@ -109,15 +93,6 @@
   "otpResendAction": "Resend code",
   "@otpResendAction": {
     "description": "Button label to request a new OTP code."
-  },
-  "validationInvalidOtp": "Enter the {length}-digit code.",
-  "@validationInvalidOtp": {
-    "description": "Shown when the OTP field doesn't hold a valid code.",
-    "placeholders": {
-      "length": {
-        "type": "int"
-      }
-    }
   },
   "validationMaxLength": "Must be no more than {count} characters.",
   "@validationMaxLength": {
@@ -176,90 +151,6 @@
       }
     }
   },
-  "wizardNext": "Next",
-  "@wizardNext": {
-    "description": "Button label to advance to the next wizard step."
-  },
-  "wizardBack": "Back",
-  "@wizardBack": {
-    "description": "Button label to return to the previous wizard step."
-  },
-  "wizardFinish": "Finish",
-  "@wizardFinish": {
-    "description": "Button label on the last wizard step."
-  },
-  "wizardStepIndicator": "Step {current} of {total}",
-  "@wizardStepIndicator": {
-    "description": "Progress indicator shown above a wizard step.",
-    "placeholders": {
-      "current": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "wizardCompleted": "All steps completed successfully.",
-  "@wizardCompleted": {
-    "description": "Shown after the last wizard step is submitted."
-  },
-  "formsGalleryTitle": "Dynamic Form Gallery",
-  "@formsGalleryTitle": {
-    "description": "Title of the dynamic-form engine demo/test screen."
-  },
-  "stepPersonalInfoTitle": "Personal Information",
-  "@stepPersonalInfoTitle": {
-    "description": "Wizard step title."
-  },
-  "stepPassportInfoTitle": "Passport Information",
-  "@stepPassportInfoTitle": {
-    "description": "Wizard step title."
-  },
-  "stepPreferencesTitle": "Preferences",
-  "@stepPreferencesTitle": {
-    "description": "Wizard step title."
-  },
-  "fieldFullNameLabel": "Full name",
-  "@fieldFullNameLabel": {
-    "description": "Field label."
-  },
-  "fieldEmailLabel": "Email",
-  "@fieldEmailLabel": {
-    "description": "Field label."
-  },
-  "fieldPhoneLabel": "Phone number",
-  "@fieldPhoneLabel": {
-    "description": "Field label."
-  },
-  "fieldPassportIssueDateLabel": "Passport issue date",
-  "@fieldPassportIssueDateLabel": {
-    "description": "Field label."
-  },
-  "fieldPassportExpiryDateLabel": "Passport expiry date",
-  "@fieldPassportExpiryDateLabel": {
-    "description": "Field label."
-  },
-  "fieldBirthDateLabel": "Date of birth",
-  "@fieldBirthDateLabel": {
-    "description": "Field label."
-  },
-  "fieldTravelClassLabel": "Travel class",
-  "@fieldTravelClassLabel": {
-    "description": "Field label."
-  },
-  "fieldNotesLabel": "Notes",
-  "@fieldNotesLabel": {
-    "description": "Field label."
-  },
-  "optionEconomy": "Economy",
-  "@optionEconomy": {
-    "description": "Select option."
-  },
-  "optionBusiness": "Business",
-  "@optionBusiness": {
-    "description": "Select option."
-  },
   "validationInvalidAmount": "Enter an amount greater than 0.",
   "@validationInvalidAmount": {
     "description": "Shown when the top-up amount field is missing, zero, or negative."
@@ -268,37 +159,9 @@
   "@walletTitle": {
     "description": "Title of the wallet screen."
   },
-  "walletAvailableBalance": "Available Balance",
-  "@walletAvailableBalance": {
-    "description": "Wallet summary card label."
-  },
-  "walletHoldBalance": "Hold Balance",
-  "@walletHoldBalance": {
-    "description": "Wallet summary card label."
-  },
-  "walletTotalBalance": "Total Balance",
-  "@walletTotalBalance": {
-    "description": "Wallet summary card label."
-  },
-  "walletCreditLimit": "Credit Limit",
-  "@walletCreditLimit": {
-    "description": "Wallet summary card label."
-  },
-  "walletTransactionsTitle": "Transactions",
-  "@walletTransactionsTitle": {
-    "description": "Section title above the ledger list."
-  },
   "walletFilterAll": "All types",
   "@walletFilterAll": {
     "description": "Transaction-type filter option meaning no filter."
-  },
-  "walletEmptyTransactions": "No transactions yet.",
-  "@walletEmptyTransactions": {
-    "description": "Shown when the ledger has no entries (or none match the filter)."
-  },
-  "walletRequestTopUp": "Request Top-Up",
-  "@walletRequestTopUp": {
-    "description": "Button/FAB label opening the top-up request sheet."
   },
   "transactionTypeTopup": "Top-up",
   "@transactionTypeTopup": {
@@ -336,10 +199,6 @@
   "@transactionStatusRejected": {
     "description": "Transaction status label."
   },
-  "topUpSheetTitle": "Request Top-Up",
-  "@topUpSheetTitle": {
-    "description": "Title of the top-up request bottom sheet."
-  },
   "topUpAmountLabel": "Amount (USD)",
   "@topUpAmountLabel": {
     "description": "Top-up form field label."
@@ -350,10 +209,6 @@
   },
   "topUpReferenceNumberLabel": "Reference number",
   "@topUpReferenceNumberLabel": {
-    "description": "Top-up form field label."
-  },
-  "topUpNotesLabel": "Notes",
-  "@topUpNotesLabel": {
     "description": "Top-up form field label."
   },
   "topUpMethodBankTransfer": "Bank transfer",
@@ -372,21 +227,9 @@
   "@topUpReceiptLabel": {
     "description": "Label for the (currently mocked) receipt attachment row."
   },
-  "topUpReceiptComingSoon": "Attachment coming soon",
-  "@topUpReceiptComingSoon": {
-    "description": "Shown next to the disabled receipt-attachment control."
-  },
   "topUpSuccessMessage": "Top-up request submitted.",
   "@topUpSuccessMessage": {
     "description": "Shown after a top-up request succeeds."
-  },
-  "travelerPassportNumberLabel": "Passport number",
-  "@travelerPassportNumberLabel": {
-    "description": "Traveler form field label."
-  },
-  "travelerNationalityLabel": "Nationality",
-  "@travelerNationalityLabel": {
-    "description": "Traveler form field label."
   },
   "servicesTitle": "Services",
   "@servicesTitle": {
@@ -396,88 +239,17 @@
   "@serviceComingSoonBadge": {
     "description": "Badge shown on a not-yet-bookable service."
   },
-  "servicePerPersonPrice": "{amount} / person",
-  "@servicePerPersonPrice": {
-    "description": "Per-person price shown on a service card.",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "travelerEntryTitle": "Traveler Details",
-  "@travelerEntryTitle": {
-    "description": "Title of the multi-traveler entry screen."
-  },
-  "travelerTabLabel": "Traveler {number}",
-  "@travelerTabLabel": {
-    "description": "Label for one traveler's tab/chip.",
-    "placeholders": {
-      "number": {
-        "type": "int"
-      }
-    }
-  },
   "addTravelerAction": "Add traveler",
   "@addTravelerAction": {
     "description": "Button label to add another traveler to the booking."
-  },
-  "removeTravelerAction": "Remove traveler",
-  "@removeTravelerAction": {
-    "description": "Action to remove the current traveler from the booking."
-  },
-  "continueToReviewAction": "Continue to Review",
-  "@continueToReviewAction": {
-    "description": "Button label advancing from traveler entry to the review screen."
-  },
-  "travelerAttachmentLabel": "Passport copy",
-  "@travelerAttachmentLabel": {
-    "description": "Label for the (currently mocked) passport-attachment row."
-  },
-  "attachmentComingSoon": "Attachment coming soon",
-  "@attachmentComingSoon": {
-    "description": "Shown next to a disabled file-attachment control."
   },
   "reviewTitle": "Review & Confirm",
   "@reviewTitle": {
     "description": "Title of the booking cost-breakdown/confirmation screen."
   },
-  "reviewTravelerCountLabel": "Travelers",
-  "@reviewTravelerCountLabel": {
-    "description": "Review screen row label."
-  },
-  "reviewPerPersonPriceLabel": "Price per person",
-  "@reviewPerPersonPriceLabel": {
-    "description": "Review screen row label."
-  },
-  "reviewTotalPriceLabel": "Total price",
-  "@reviewTotalPriceLabel": {
-    "description": "Review screen row label."
-  },
-  "reviewInsufficientBalanceWarning": "Your available wallet balance may not cover this total. You can still submit — the backend will confirm.",
-  "@reviewInsufficientBalanceWarning": {
-    "description": "Warning shown when the available balance looks lower than the total price."
-  },
-  "confirmSubmitAction": "Confirm & Submit",
-  "@confirmSubmitAction": {
-    "description": "Button label submitting the booking request."
-  },
   "bookingSuccessTitle": "Request Submitted",
   "@bookingSuccessTitle": {
     "description": "Title shown after a booking is successfully submitted."
-  },
-  "bookingSuccessMessage": "Reference: {id}",
-  "@bookingSuccessMessage": {
-    "description": "Shows the booking's reference/request id after submission.",
-    "placeholders": {
-      "id": {
-        "type": "String"
-      }
-    }
-  },
-  "bookingBackToHomeAction": "Back to Home",
-  "@bookingBackToHomeAction": {
-    "description": "Button label returning to the home screen after a completed booking."
   },
   "requestStatusDraft": "Draft",
   "@requestStatusDraft": {
@@ -519,19 +291,6 @@
   "@requestStatusCancelled": {
     "description": "Request status label."
   },
-  "slaOverdue": "SLA overdue",
-  "@slaOverdue": {
-    "description": "Shown on the SLA countdown badge once the 72-hour deadline has passed."
-  },
-  "slaTimeRemaining": "{time} left",
-  "@slaTimeRemaining": {
-    "description": "Shown on the SLA countdown badge before the deadline.",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "requestsDashboardTitle": "My Requests",
   "@requestsDashboardTitle": {
     "description": "Title of the Requests Dashboard screen."
@@ -556,10 +315,6 @@
   "@requestsEmptyMessage": {
     "description": "Shown when the filtered request list is empty."
   },
-  "requestsSearchHint": "Search by reference or service",
-  "@requestsSearchHint": {
-    "description": "Placeholder in the inline requests search field."
-  },
   "requestsSearchAction": "Search",
   "@requestsSearchAction": {
     "description": "Accessible label for the search icon button opening the inline search field."
@@ -576,10 +331,6 @@
   "@requestsBookNewAction": {
     "description": "Button on the empty-search state that starts a new booking."
   },
-  "requestDetailCopyReferenceAction": "Copy reference",
-  "@requestDetailCopyReferenceAction": {
-    "description": "Overflow menu item copying the request's reference id."
-  },
   "requestDetailContactSupportAction": "Contact support",
   "@requestDetailContactSupportAction": {
     "description": "Overflow menu item opening the support tickets screen."
@@ -588,50 +339,8 @@
   "@requestDetailReferenceCopiedMessage": {
     "description": "Snackbar shown after copying the request reference."
   },
-  "requestDetailDownloadApprovalsAction": "Download issued approvals ({count})",
-  "@requestDetailDownloadApprovalsAction": {
-    "description": "Sticky bottom bar button downloading every approved traveler's document.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "requestDetailDownloadApprovalsUnavailable": "Approvals will be available once issued",
-  "@requestDetailDownloadApprovalsUnavailable": {
-    "description": "Caption shown under the download-approvals button when no traveler is approved yet."
-  },
-  "requestDetailSubmittedPrefix": "Submitted",
-  "@requestDetailSubmittedPrefix": {
-    "description": "Prefix before the submission timestamp in the request detail summary meta line."
-  },
-  "requestDetailHeldPrefix": "Held",
-  "@requestDetailHeldPrefix": {
-    "description": "Prefix before the held amount in the request detail summary meta line."
-  },
-  "requestCardTravelersLabel": "{count, plural, one{1 traveler} other{{count} travelers}}",
-  "@requestCardTravelersLabel": {
-    "description": "Traveler count shown on a dashboard request card.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "requestDetailTitle": "Request Detail",
-  "@requestDetailTitle": {
-    "description": "Title of the Request Detail screen."
-  },
   "requestDetailTravelersSection": "Travelers",
   "@requestDetailTravelersSection": {
-    "description": "Detail screen section title."
-  },
-  "requestDetailTimelineSection": "Timeline",
-  "@requestDetailTimelineSection": {
-    "description": "Detail screen section title."
-  },
-  "requestDetailOutputSection": "Output Delivery",
-  "@requestDetailOutputSection": {
     "description": "Detail screen section title."
   },
   "requestDetailDownloadAction": "Download Approval Document",
@@ -641,18 +350,6 @@
   "requestDetailCancelAction": "Cancel Request",
   "@requestDetailCancelAction": {
     "description": "Button label to cancel a request."
-  },
-  "requestDetailCancelConfirmTitle": "Cancel this request?",
-  "@requestDetailCancelConfirmTitle": {
-    "description": "Confirmation dialog title before cancelling a request."
-  },
-  "requestDetailCancelConfirmMessage": "This can't be undone. The request will be marked as cancelled.",
-  "@requestDetailCancelConfirmMessage": {
-    "description": "Confirmation dialog body before cancelling a request."
-  },
-  "requestDetailCancelSuccessMessage": "Request cancelled.",
-  "@requestDetailCancelSuccessMessage": {
-    "description": "Shown after a request is successfully cancelled."
   },
   "yes": "Yes",
   "@yes": {
@@ -671,63 +368,9 @@
       }
     }
   },
-  "subAgentsTitle": "Sub-Agents",
-  "@subAgentsTitle": {
-    "description": "Title of the sub-agents hierarchy list screen."
-  },
-  "subAgentCodeLabel": "Code: {code}",
-  "@subAgentCodeLabel": {
-    "description": "Sub-agent card row showing its code.",
-    "placeholders": {
-      "code": {
-        "type": "String"
-      }
-    }
-  },
-  "subAgentActiveStatus": "Active",
-  "@subAgentActiveStatus": {
-    "description": "Sub-agent active-status badge."
-  },
-  "subAgentInactiveStatus": "Inactive",
-  "@subAgentInactiveStatus": {
-    "description": "Sub-agent active-status badge."
-  },
-  "subAgentMarginLabel": "Margin: {percent}%",
-  "@subAgentMarginLabel": {
-    "description": "Sub-agent card row showing its assigned price markup/margin.",
-    "placeholders": {
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "subAgentFundAction": "Fund Wallet",
-  "@subAgentFundAction": {
-    "description": "Button label opening the transfer-balance sheet."
-  },
-  "subAgentApprovalsTitle": "Pending Approvals",
-  "@subAgentApprovalsTitle": {
-    "description": "Title of the sub-agent request approval-gate screen."
-  },
-  "subAgentApprovalsEmptyMessage": "No requests are awaiting your approval.",
-  "@subAgentApprovalsEmptyMessage": {
-    "description": "Shown when there are no pending-agent-approval requests."
-  },
-  "subAgentApproveAction": "Approve",
-  "@subAgentApproveAction": {
-    "description": "Button label approving a sub-agent's request."
-  },
   "subAgentRejectAction": "Reject",
   "@subAgentRejectAction": {
     "description": "Button label rejecting a sub-agent's request."
-  },
-  "subAgentApproveSuccessMessage": "Request approved.",
-  "@subAgentApproveSuccessMessage": {
-    "description": "Shown after a sub-agent request is approved."
-  },
-  "subAgentRejectSuccessMessage": "Request rejected.",
-  "@subAgentRejectSuccessMessage": {
-    "description": "Shown after a sub-agent request is rejected."
   },
   "subAgentRejectDialogTitle": "Reject this request?",
   "@subAgentRejectDialogTitle": {
@@ -737,27 +380,9 @@
   "@subAgentRejectReasonLabel": {
     "description": "Reject-reason dialog field label."
   },
-  "fundSheetTitle": "Transfer to {subAgentName}",
-  "@fundSheetTitle": {
-    "description": "Title of the transfer-balance modal sheet.",
-    "placeholders": {
-      "subAgentName": {
-        "type": "String"
-      }
-    }
-  },
   "fundAmountLabel": "Amount (USD)",
   "@fundAmountLabel": {
     "description": "Transfer-balance sheet field label."
-  },
-  "fundAvailableBalanceLabel": "Your available balance: {amount}",
-  "@fundAvailableBalanceLabel": {
-    "description": "Shown above the amount field in the transfer-balance sheet.",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
   },
   "fundSubmitAction": "Transfer",
   "@fundSubmitAction": {
@@ -799,15 +424,6 @@
   "@ticketCategoryFinancialCorrection": {
     "description": "Ticket category label."
   },
-  "ticketLinkedRequestLabel": "Linked to request {referenceId}",
-  "@ticketLinkedRequestLabel": {
-    "description": "Shown on a ticket card/detail when it's linked to a request.",
-    "placeholders": {
-      "referenceId": {
-        "type": "String"
-      }
-    }
-  },
   "createTicketTitle": "New Ticket",
   "@createTicketTitle": {
     "description": "Title of the create-ticket screen."
@@ -816,21 +432,9 @@
   "@createTicketAction": {
     "description": "FAB label opening the create-ticket screen."
   },
-  "ticketCategoryFieldLabel": "Category",
-  "@ticketCategoryFieldLabel": {
-    "description": "Create-ticket form field label."
-  },
   "ticketSubjectFieldLabel": "Subject",
   "@ticketSubjectFieldLabel": {
     "description": "Create-ticket form field label."
-  },
-  "ticketMessageFieldLabel": "Message",
-  "@ticketMessageFieldLabel": {
-    "description": "Create-ticket form field label."
-  },
-  "ticketRequestReferenceFieldLabel": "Request reference (optional)",
-  "@ticketRequestReferenceFieldLabel": {
-    "description": "Create-ticket form field label for the optional linked request."
   },
   "ticketDetailTitle": "Ticket Detail",
   "@ticketDetailTitle": {
@@ -852,33 +456,9 @@
   "@notificationsMarkAllReadAction": {
     "description": "Button label marking every notification read."
   },
-  "notificationMarkReadTooltip": "Mark as read",
-  "@notificationMarkReadTooltip": {
-    "description": "Tooltip on a single notification's mark-as-read action."
-  },
-  "homeThemeToggleLabel": "Toggle theme",
-  "@homeThemeToggleLabel": {
-    "description": "Accessible label for the home top bar's light/dark theme toggle."
-  },
-  "homeQuickActionServices": "Egypt Approvals",
-  "@homeQuickActionServices": {
-    "description": "Home quick-action tile navigating to the services/booking flow."
-  },
-  "homeQuickActionRequests": "Requests Dashboard",
-  "@homeQuickActionRequests": {
-    "description": "Home quick-action tile navigating to the requests dashboard."
-  },
-  "homeQuickActionSubAgents": "Sub-Agents",
-  "@homeQuickActionSubAgents": {
-    "description": "Home quick-action tile navigating to the sub-agents list."
-  },
   "homeQuickActionSupport": "Support",
   "@homeQuickActionSupport": {
     "description": "Home quick-action tile navigating to support tickets."
-  },
-  "homeRecentRequestsTitle": "Urgent & Recent Requests",
-  "@homeRecentRequestsTitle": {
-    "description": "Section header above the home screen's request feed."
   },
   "homeSeeAllAction": "See all",
   "@homeSeeAllAction": {
@@ -888,30 +468,13 @@
   "@homeEmptyRequestsMessage": {
     "description": "Shown on the home feed when there are no requests."
   },
-  "homeQuickActionAccount": "Account",
-  "@homeQuickActionAccount": {
-    "description": "Home quick-action tile opening the account sheet (sign-out)."
-  },
   "accountSignOutAction": "Sign Out",
   "@accountSignOutAction": {
     "description": "Button label signing the current user out."
   },
-  "reviewSubmitHoldAction": "Submit hold · {amount}",
-  "@reviewSubmitHoldAction": {
-    "description": "Booking review primary button label, repeating the amount that will be held.",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "bookingReferenceCopiedMessage": "Reference copied to clipboard.",
   "@bookingReferenceCopiedMessage": {
     "description": "Snackbar shown after copying the booking reference id."
-  },
-  "bookingCopyReferenceTooltip": "Copy reference",
-  "@bookingCopyReferenceTooltip": {
-    "description": "Tooltip/semantic label for the copy-reference icon button on the booking success screen."
   },
   "serviceProcessingEgyptNationalSecurity": "3–5 business days",
   "@serviceProcessingEgyptNationalSecurity": {
@@ -953,10 +516,6 @@
   "@walletLedgerFilterDebits": {
     "description": "Ledger segment filter: money going out (holds, final deductions, settlements)."
   },
-  "subAgentsDirectoryTitle": "Branches",
-  "@subAgentsDirectoryTitle": {
-    "description": "Section header above the sub-agent directory list."
-  },
   "fundSubmitActionNamed": "Transfer {amount} to {name}",
   "@fundSubmitActionNamed": {
     "description": "Primary button on the fund-branch sheet once a valid amount is entered, naming both the amount and the receiving branch.",
@@ -969,17 +528,9 @@
       }
     }
   },
-  "notificationsUnreadFilter": "Unread",
-  "@notificationsUnreadFilter": {
-    "description": "Segment filter chip showing only unread notifications."
-  },
   "ticketSendMessageTooltip": "Send message",
   "@ticketSendMessageTooltip": {
     "description": "Accessible label for the ticket reply's send button."
-  },
-  "refreshAction": "Refresh",
-  "@refreshAction": {
-    "description": "Accessible label for a manual refresh button (in addition to pull-to-refresh)."
   },
   "showPasswordAction": "Show password",
   "@showPasswordAction": {
@@ -1096,50 +647,6 @@
   },
   "homeLatestRequestsTitle": "Latest requests",
   "@homeLatestRequestsTitle": {
-    "description": "Home / shared component copy."
-  },
-  "serviceSaudiVisa": "Saudi visa",
-  "@serviceSaudiVisa": {
-    "description": "Home / shared component copy."
-  },
-  "serviceEgyptEntry": "Egypt entry",
-  "@serviceEgyptEntry": {
-    "description": "Home / shared component copy."
-  },
-  "serviceFlights": "Flights",
-  "@serviceFlights": {
-    "description": "Home / shared component copy."
-  },
-  "serviceIndiaVisa": "India visa",
-  "@serviceIndiaVisa": {
-    "description": "Home / shared component copy."
-  },
-  "serviceSecurityApproval": "Security approval",
-  "@serviceSecurityApproval": {
-    "description": "Home / shared component copy."
-  },
-  "serviceHotels": "Hotels",
-  "@serviceHotels": {
-    "description": "Home / shared component copy."
-  },
-  "serviceSoonTag": "Soon",
-  "@serviceSoonTag": {
-    "description": "Home / shared component copy."
-  },
-  "promoBadge": "New",
-  "@promoBadge": {
-    "description": "Home / shared component copy."
-  },
-  "promoTitle": "Saudi visa in 48 hours",
-  "@promoTitle": {
-    "description": "Home / shared component copy."
-  },
-  "promoSubtitle": "Reduced agent fees this month",
-  "@promoSubtitle": {
-    "description": "Home / shared component copy."
-  },
-  "promoAction": "Order now",
-  "@promoAction": {
     "description": "Home / shared component copy."
   },
   "homeHoldChip": "On hold {amount}",
@@ -1268,22 +775,6 @@
   "@servicesSearchHint": {
     "description": "Booking flow copy."
   },
-  "servicesGroupApprovals": "Approvals",
-  "@servicesGroupApprovals": {
-    "description": "Booking flow copy."
-  },
-  "servicesGroupTravel": "Travel",
-  "@servicesGroupTravel": {
-    "description": "Booking flow copy."
-  },
-  "servicesGroupOther": "Other services",
-  "@servicesGroupOther": {
-    "description": "Booking flow copy."
-  },
-  "servicesPerTraveler": "per traveler",
-  "@servicesPerTraveler": {
-    "description": "Booking flow copy."
-  },
   "servicesNoResults": "No matching services",
   "@servicesNoResults": {
     "description": "Booking flow copy."
@@ -1381,39 +872,9 @@
   "@walletStatementAction": {
     "description": "Wallet / agents copy."
   },
-  "walletStatementSoonBody": "Statement export is not available yet. Contact support for a copy.",
-  "@walletStatementSoonBody": {
-    "description": "Wallet / agents copy."
-  },
   "walletTransferToAgent": "Transfer to agent",
   "@walletTransferToAgent": {
     "description": "Wallet / agents copy."
-  },
-  "walletUsageHeldLabel": "Held for requests",
-  "@walletUsageHeldLabel": {
-    "description": "Wallet / agents copy."
-  },
-  "walletUsageAvailableLabel": "Available to use",
-  "@walletUsageAvailableLabel": {
-    "description": "Wallet / agents copy."
-  },
-  "walletUsageHeldValue": "Held {amount}",
-  "@walletUsageHeldValue": {
-    "description": "Wallet / agents copy.",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "walletUsageAvailableValue": "Available {amount}",
-  "@walletUsageAvailableValue": {
-    "description": "Wallet / agents copy.",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
   },
   "walletPendingTopUpTitle": "Top-up {amount}",
   "@walletPendingTopUpTitle": {
@@ -1505,14 +966,6 @@
   "@agentsAddAction": {
     "description": "Wallet / agents copy."
   },
-  "agentsAddSoon": "Adding a new agent is not available yet.",
-  "@agentsAddSoon": {
-    "description": "Wallet / agents copy."
-  },
-  "agentsNoMatch": "No matching agents",
-  "@agentsNoMatch": {
-    "description": "Wallet / agents copy."
-  },
   "agentsStatusSuspended": "Suspended",
   "@agentsStatusSuspended": {
     "description": "Wallet / agents copy."
@@ -1539,22 +992,6 @@
   },
   "accountAgencyDetails": "Agency details",
   "@accountAgencyDetails": {
-    "description": "Account / onboarding copy."
-  },
-  "accountAgencyDetailsSoonBody": "Viewing agency and commercial register details is not available yet. Contact support to update them.",
-  "@accountAgencyDetailsSoonBody": {
-    "description": "Account / onboarding copy."
-  },
-  "accountLanguageTitle": "Language",
-  "@accountLanguageTitle": {
-    "description": "Account / onboarding copy."
-  },
-  "accountLanguageName": "English",
-  "@accountLanguageName": {
-    "description": "Account / onboarding copy."
-  },
-  "accountThemeTitle": "Appearance",
-  "@accountThemeTitle": {
     "description": "Account / onboarding copy."
   },
   "accountSupportTitle": "Help & support",
@@ -1587,10 +1024,6 @@
   },
   "agencyCreateTitle": "Create an agency account",
   "@agencyCreateTitle": {
-    "description": "Account / onboarding copy."
-  },
-  "agencyCreateSubtitle": "Enter your agency details and we will review them within 24 hours",
-  "@agencyCreateSubtitle": {
     "description": "Account / onboarding copy."
   },
   "agencyNameLabel": "Agency name",
@@ -1629,7 +1062,7 @@
   "@agencyPendingTitle": {
     "description": "Account / onboarding copy."
   },
-  "agencyPendingBody": "We received your agency registration. The Jubari team will review it within one business day and notify you once it is activated.",
+  "agencyPendingBody": "We received your agency registration and e-mailed you a confirmation link. Confirm your e-mail, then the Seen team reviews the agency. You can sign in once it is approved.",
   "@agencyPendingBody": {
     "description": "Account / onboarding copy."
   },
@@ -1722,7 +1155,7 @@
   "@recoveryForgotHeading": {
     "description": "Forgot-password flow copy."
   },
-  "recoveryRequestBody": "Enter the phone number or email you registered with and we will send a verification code to reset your password.",
+  "recoveryRequestBody": "Enter the email you registered with and we will send you a link to reset your password.",
   "@recoveryRequestBody": {
     "description": "Forgot-password flow copy."
   },
@@ -1734,30 +1167,13 @@
   "@recoveryMethodEmail": {
     "description": "Forgot-password flow copy."
   },
-  "recoveryRequestHelper": "We will send a 6-digit code valid for 10 minutes",
+  "recoveryRequestHelper": "The link is sent to this address",
   "@recoveryRequestHelper": {
     "description": "Forgot-password flow copy."
   },
-  "recoverySendCode": "Send code",
+  "recoverySendCode": "Send link",
   "@recoverySendCode": {
     "description": "Forgot-password flow copy."
-  },
-  "recoveryUnknownPhone": "No account is registered with this number. Check the number or create an agency account.",
-  "@recoveryUnknownPhone": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryUnknownEmail": "No account is registered with this email. Check the address or create an agency account.",
-  "@recoveryUnknownEmail": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryRateLimited": "Too many attempts. You can request a new code in {time}",
-  "@recoveryRateLimited": {
-    "description": "Forgot-password flow copy.",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
   },
   "recoveryOffline": "No internet connection. Check your connection and try again.",
   "@recoveryOffline": {
@@ -1773,68 +1189,6 @@
   },
   "recoveryContactSupport": "Contact support",
   "@recoveryContactSupport": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryOtpTitle": "Verification code",
-  "@recoveryOtpTitle": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryOtpHeading": "Enter the code we sent",
-  "@recoveryOtpHeading": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryOtpSent": "We sent a 6-digit code to {destination}",
-  "@recoveryOtpSent": {
-    "description": "Forgot-password flow copy.",
-    "placeholders": {
-      "destination": {
-        "type": "String"
-      }
-    }
-  },
-  "recoveryResendAfter": "Resend available in",
-  "@recoveryResendAfter": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryVerify": "Verify",
-  "@recoveryVerify": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryResendNow": "Send a new code",
-  "@recoveryResendNow": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryResendAction": "Send",
-  "@recoveryResendAction": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryWrongCodeHeading": "Wrong code",
-  "@recoveryWrongCodeHeading": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryExpired": "The code has expired. Request a new one.",
-  "@recoveryExpired": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryExhausted": "No attempts left. Try again in {minutes} minutes or contact support.",
-  "@recoveryExhausted": {
-    "description": "Forgot-password flow copy.",
-    "placeholders": {
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
-  "recoveryNewPasswordTitle": "New password",
-  "@recoveryNewPasswordTitle": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryNewPasswordHeading": "Choose a new password",
-  "@recoveryNewPasswordHeading": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryNewPasswordLabel": "New password",
-  "@recoveryNewPasswordLabel": {
     "description": "Forgot-password flow copy."
   },
   "recoveryConfirmLabel": "Confirm password",
@@ -1853,15 +1207,7 @@
   "@recoveryStrengthFair": {
     "description": "Forgot-password flow copy."
   },
-  "recoveryStrengthGood": "Good",
-  "@recoveryStrengthGood": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryStrengthStrong": "Strong",
-  "@recoveryStrengthStrong": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryRuleLength": "At least 8 characters",
+  "recoveryRuleLength": "At least 12 characters",
   "@recoveryRuleLength": {
     "description": "Forgot-password flow copy."
   },
@@ -1869,32 +1215,8 @@
   "@recoveryRuleCase": {
     "description": "Forgot-password flow copy."
   },
-  "recoveryRuleDigit": "At least one digit",
-  "@recoveryRuleDigit": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryRuleNotReused": "Not a previous password",
-  "@recoveryRuleNotReused": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoverySavePassword": "Save password",
-  "@recoverySavePassword": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryPasswordReused": "This password was used before. Choose a different one.",
-  "@recoveryPasswordReused": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryPasswordWeak": "The password does not meet the requirements.",
+  "recoveryPasswordWeak": "The password was refused. Choose a stronger one: at least 12 characters, not a common password, not only digits, and not similar to your name or email.",
   "@recoveryPasswordWeak": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryDoneTitle": "Password changed",
-  "@recoveryDoneTitle": {
-    "description": "Forgot-password flow copy."
-  },
-  "recoveryDoneBody": "Sign in with your new password. We ended your sessions on other devices to protect your account.",
-  "@recoveryDoneBody": {
     "description": "Forgot-password flow copy."
   },
   "recoveryBackToLogin": "Back to sign in",
@@ -1941,56 +1263,6 @@
   "@registrationStrengthGood": {
     "description": "Agency registration flow copy."
   },
-  "registrationVerifyTitle": "Verify phone",
-  "@registrationVerifyTitle": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationVerifyHeading": "Verify your phone number",
-  "@registrationVerifyHeading": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationVerifySent": "We sent a code to {phone}.",
-  "@registrationVerifySent": {
-    "description": "Agency registration flow copy.",
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
-  "registrationWrongNumber": "Wrong number?",
-  "@registrationWrongNumber": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationEditNumber": "Edit it",
-  "@registrationEditNumber": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationResendQuestion": "Didn't get the code?",
-  "@registrationResendQuestion": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationResend": "Resend",
-  "@registrationResend": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationResendIn": "Resend in {time}",
-  "@registrationResendIn": {
-    "description": "Agency registration flow copy.",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "registrationVerifyAction": "Verify and continue",
-  "@registrationVerifyAction": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationPhoneTaken": "This number is linked to another account. Sign in or reset your password.",
-  "@registrationPhoneTaken": {
-    "description": "Agency registration flow copy."
-  },
   "registrationTermsTitle": "Accept the terms",
   "@registrationTermsTitle": {
     "description": "Agency registration flow copy."
@@ -2025,10 +1297,6 @@
   },
   "registrationRead": "Read",
   "@registrationRead": {
-    "description": "Agency registration flow copy."
-  },
-  "registrationReadSoon": "The document text will be available here soon.",
-  "@registrationReadSoon": {
     "description": "Agency registration flow copy."
   },
   "registrationConsentNote": "Accepting the terms and the privacy policy is required to create the account. You can go back without creating one.",
@@ -2438,51 +1706,27 @@
   "@agentAddManager": {
     "description": "Add sub-agent / credit limit copy."
   },
-  "agentAddPhone": "Phone number",
-  "@agentAddPhone": {
-    "description": "Add sub-agent / credit limit copy."
-  },
   "agentAddEmail": "Email",
   "@agentAddEmail": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentAddMargin": "Margin",
-  "@agentAddMargin": {
     "description": "Add sub-agent / credit limit copy."
   },
   "agentAddCreditLimit": "Credit limit",
   "@agentAddCreditLimit": {
     "description": "Add sub-agent / credit limit copy."
   },
-  "agentAddInviteTitle": "Send a login invitation",
-  "@agentAddInviteTitle": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentAddInviteBody": "The agent gets a link to create a password",
-  "@agentAddInviteBody": {
-    "description": "Add sub-agent / credit limit copy."
-  },
   "agentAddSubmit": "Add agent",
   "@agentAddSubmit": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentAddPhoneTaken": "This number belongs to another agent. Use a different one.",
-  "@agentAddPhoneTaken": {
     "description": "Add sub-agent / credit limit copy."
   },
   "agentAddEmailTaken": "This email belongs to another agent. Use a different one.",
   "@agentAddEmailTaken": {
     "description": "Add sub-agent / credit limit copy."
   },
-  "agentAddMarginInvalid": "Enter a percentage between 0 and 100.",
-  "@agentAddMarginInvalid": {
-    "description": "Add sub-agent / credit limit copy."
-  },
   "agentAddDoneTitle": "Agent added",
   "@agentAddDoneTitle": {
     "description": "Add sub-agent / credit limit copy."
   },
-  "agentAddDoneInvited": "We sent a login invitation to {name}. The agent shows as \"Activating\" until the invitation is accepted.",
+  "agentAddDoneInvited": "{name} was added. It shows as \"Activating\" until it is approved.",
   "@agentAddDoneInvited": {
     "description": "Add sub-agent / credit limit copy.",
     "placeholders": {
@@ -2491,7 +1735,7 @@
       }
     }
   },
-  "agentAddDoneNoInvite": "{name} was added without a login invitation.",
+  "agentAddDoneNoInvite": "{name} was added. The owner can sign in with the email and password you set.",
   "@agentAddDoneNoInvite": {
     "description": "Add sub-agent / credit limit copy.",
     "placeholders": {
@@ -2510,61 +1754,6 @@
   },
   "agentAddBackToList": "Back to agents",
   "@agentAddBackToList": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditTitle": "Edit credit limit",
-  "@agentCreditTitle": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditUsed": "Currently used",
-  "@agentCreditUsed": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditCurrent": "Current limit",
-  "@agentCreditCurrent": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditNew": "New limit",
-  "@agentCreditNew": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditBelowUsage": "The new limit is below what is currently used ({used}).",
-  "@agentCreditBelowUsage": {
-    "description": "Add sub-agent / credit limit copy.",
-    "placeholders": {
-      "used": {
-        "type": "String"
-      }
-    }
-  },
-  "agentCreditAboveBalance": "The limit exceeds your available main balance ({max}) if you enter more than that.",
-  "@agentCreditAboveBalance": {
-    "description": "Add sub-agent / credit limit copy.",
-    "placeholders": {
-      "max": {
-        "type": "String"
-      }
-    }
-  },
-  "agentCreditAboveBalanceError": "The new limit is above your available main balance ({max}).",
-  "@agentCreditAboveBalanceError": {
-    "description": "Add sub-agent / credit limit copy.",
-    "placeholders": {
-      "max": {
-        "type": "String"
-      }
-    }
-  },
-  "agentCreditSave": "Save limit",
-  "@agentCreditSave": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditSaved": "The credit limit was updated.",
-  "@agentCreditSaved": {
-    "description": "Add sub-agent / credit limit copy."
-  },
-  "agentCreditEditAction": "Edit credit limit",
-  "@agentCreditEditAction": {
     "description": "Add sub-agent / credit limit copy."
   },
   "connectivityOffline": "You are offline. Showing data as of {time}.",
@@ -2590,10 +1779,6 @@
   },
   "errorSectionLoad": "This section could not be loaded",
   "@errorSectionLoad": {
-    "description": "Connectivity and error pattern copy."
-  },
-  "errorSlowServer": "The server is taking longer than usual. Still trying…",
-  "@errorSlowServer": {
     "description": "Connectivity and error pattern copy."
   },
   "errorCancel": "Cancel",
@@ -2652,10 +1837,6 @@
   },
   "agentProfileFund": "Fund",
   "@agentProfileFund": {
-    "description": "Agent profile copy."
-  },
-  "agentProfileEditLimit": "Edit limit",
-  "@agentProfileEditLimit": {
     "description": "Agent profile copy."
   },
   "agentProfileSuspend": "Suspend",
@@ -2848,7 +2029,7 @@
   "@draftsTitle": {
     "description": "Drafts copy."
   },
-  "draftsInfo": "Drafts are deleted automatically 30 days after the last edit.",
+  "draftsInfo": "A draft keeps the travelers you entered. Continue to review and submit it.",
   "@draftsInfo": {
     "description": "Drafts copy."
   },
@@ -2876,33 +2057,6 @@
   "@draftDelete": {
     "description": "Drafts copy."
   },
-  "draftMissing": "Missing: {what}",
-  "@draftMissing": {
-    "description": "Drafts copy.",
-    "placeholders": {
-      "what": {
-        "type": "String"
-      }
-    }
-  },
-  "draftMissingTraveler": "traveler {i} details",
-  "@draftMissingTraveler": {
-    "description": "Drafts copy.",
-    "placeholders": {
-      "i": {
-        "type": "String"
-      }
-    }
-  },
-  "draftMissingTravelers": "details of {n} travelers",
-  "@draftMissingTravelers": {
-    "description": "Drafts copy.",
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
   "draftDeleteTitle": "Delete this draft?",
   "@draftDeleteTitle": {
     "description": "Drafts copy."
@@ -2925,10 +2079,6 @@
   },
   "draftDeletedToast": "Draft deleted",
   "@draftDeletedToast": {
-    "description": "Drafts copy."
-  },
-  "draftUndo": "Undo",
-  "@draftUndo": {
     "description": "Drafts copy."
   },
   "draftSaveTitle": "Save the request as a draft?",
@@ -2969,27 +2119,6 @@
       }
     }
   },
-  "draftSaveCount": "You have {n} of {max} drafts. Delete an old one to save more.",
-  "@draftSaveCount": {
-    "description": "Drafts copy.",
-    "placeholders": {
-      "n": {
-        "type": "String"
-      },
-      "max": {
-        "type": "String"
-      }
-    }
-  },
-  "draftSaveFull": "You reached the limit ({max} drafts). Delete one to save this request.",
-  "@draftSaveFull": {
-    "description": "Drafts copy.",
-    "placeholders": {
-      "max": {
-        "type": "String"
-      }
-    }
-  },
   "draftSaveAction": "Save as draft",
   "@draftSaveAction": {
     "description": "Drafts copy."
@@ -3000,10 +2129,6 @@
   },
   "draftSaved": "Draft saved.",
   "@draftSaved": {
-    "description": "Drafts copy."
-  },
-  "draftServiceGone": "This service is no longer available.",
-  "@draftServiceGone": {
     "description": "Drafts copy."
   },
   "requestWaitingAgent": "Waiting for the agent",
@@ -3705,10 +2830,6 @@
   "@ticketAttachOptional": {
     "description": "Support tickets copy."
   },
-  "ticketAttachComingSoon": "Attachments are not available yet.",
-  "@ticketAttachComingSoon": {
-    "description": "Support tickets copy."
-  },
   "ticketSubmitAction": "Send ticket",
   "@ticketSubmitAction": {
     "description": "Support tickets copy."
@@ -3735,10 +2856,6 @@
   },
   "ticketClosedNote": "A closed ticket is read-only",
   "@ticketClosedNote": {
-    "description": "Support tickets copy."
-  },
-  "ticketReopen": "Reopen",
-  "@ticketReopen": {
     "description": "Support tickets copy."
   },
   "contactSupportTitle": "Contact support",
@@ -3837,7 +2954,7 @@
   "@agencyLicenseTaken": {
     "description": "Agency registration field errors."
   },
-  "loginInvalidCredentials": "The phone number or password is not correct.",
+  "loginInvalidCredentials": "The email or password is not correct.",
   "@loginInvalidCredentials": {
     "description": "Login failure and sign-out copy."
   },
@@ -3892,10 +3009,6 @@
   "@reviewShortfallAvailable": {
     "description": "Booking review: insufficient balance."
   },
-  "reviewShortfallCredit": "Credit limit left",
-  "@reviewShortfallCredit": {
-    "description": "Booking review: insufficient balance."
-  },
   "reviewShortfallMissing": "Shortfall",
   "@reviewShortfallMissing": {
     "description": "Booking review: insufficient balance."
@@ -3909,7 +3022,7 @@
       }
     }
   },
-  "bookingTravelerLimit": "Limit: 1 to 9 travelers per request. For larger lists use the group manifest.",
+  "bookingTravelerLimit": "Up to 50 travelers per request.",
   "@bookingTravelerLimit": {
     "description": "Booking traveler switcher copy."
   },
@@ -3941,5 +3054,741 @@
   "bookingTravelerShow": "Show",
   "@bookingTravelerShow": {
     "description": "Booking traveler switcher copy."
-  }
+  },
+  "loginEmailRequired": "Sign in with the email address of your account.",
+  "@loginEmailRequired": {
+    "description": "Login failure copy."
+  },
+  "loginEnrollmentLinkRequired": "Set up two-step verification with the link we emailed you, then sign in again.",
+  "@loginEnrollmentLinkRequired": {
+    "description": "Login failure copy."
+  },
+  "loginVerificationExpired": "The verification step expired. Please sign in again.",
+  "@loginVerificationExpired": {
+    "description": "Login failure copy."
+  },
+  "otpAuthenticatorInstructions": "Enter the 6-digit code from your authenticator app.",
+  "@otpAuthenticatorInstructions": {
+    "description": "Verification step copy."
+  },
+  "otpInvalidCode": "The code is not correct. Try again.",
+  "@otpInvalidCode": {
+    "description": "Verification step copy."
+  },
+  "otpUseRecoveryCode": "Use a recovery code",
+  "@otpUseRecoveryCode": {
+    "description": "Verification step copy."
+  },
+  "otpUseAuthenticatorCode": "Use the authenticator code",
+  "@otpUseAuthenticatorCode": {
+    "description": "Verification step copy."
+  },
+  "otpRecoveryCodeLabel": "Recovery code",
+  "@otpRecoveryCodeLabel": {
+    "description": "Verification step copy."
+  },
+  "errorTooManyAttempts": "Too many attempts. Try again in about {minutes} minute(s).",
+  "@errorTooManyAttempts": {
+    "description": "Generic error copy.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "topUpBelowMinimum": "The minimum top-up is {amount}.",
+  "@topUpBelowMinimum": {
+    "description": "Error and wallet copy.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "errTopupBelowMinimum": "The amount is below the minimum top-up.",
+  "@errTopupBelowMinimum": {
+    "description": "Error and wallet copy."
+  },
+  "errInvalidTopupMethod": "Choose a valid way to pay.",
+  "@errInvalidTopupMethod": {
+    "description": "Error and wallet copy."
+  },
+  "errPaymentAccountNotFound": "That payment account is no longer available. Reload and try again.",
+  "@errPaymentAccountNotFound": {
+    "description": "Error and wallet copy."
+  },
+  "errPaymentAccountCurrencyMismatch": "That account receives a different currency than your wallet.",
+  "@errPaymentAccountCurrencyMismatch": {
+    "description": "Error and wallet copy."
+  },
+  "errIdempotencyKeyReused": "This request was already sent with different details. Check the form and try again.",
+  "@errIdempotencyKeyReused": {
+    "description": "Error and wallet copy."
+  },
+  "errPermissionDenied": "You do not have permission to do this.",
+  "@errPermissionDenied": {
+    "description": "Error and wallet copy."
+  },
+  "validationServerRejected": "This value was not accepted. Please check it.",
+  "@validationServerRejected": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errFileTooLarge": "The file is larger than 8 MB.",
+  "@errFileTooLarge": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errFileTypeNotAllowed": "Only PDF, JPEG and PNG files are accepted.",
+  "@errFileTypeNotAllowed": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errFileContentMismatch": "The file does not match its type. Choose another file.",
+  "@errFileContentMismatch": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errFileEmpty": "The file is empty.",
+  "@errFileEmpty": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errTooManyFiles": "Too many files for this traveler.",
+  "@errTooManyFiles": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errDocumentUploadNotAllowed": "Documents can no longer be added to this request.",
+  "@errDocumentUploadNotAllowed": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "errInsufficientFunds": "Your balance does not cover this request.",
+  "@errInsufficientFunds": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "reviewCannotSubmit": "This request can't be submitted yet. Check the travelers and documents.",
+  "@reviewCannotSubmit": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "reviewHoldDeferredNote": "Nothing is held now. The fee is held once the request is approved.",
+  "@reviewHoldDeferredNote": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "bookingReferencePending": "Your reference number will appear in your requests shortly.",
+  "@bookingReferencePending": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "reviewLoadFailed": "The summary couldn't be loaded.",
+  "@reviewLoadFailed": {
+    "description": "Booking flow with the server: error and review texts"
+  },
+  "draftSaveNeedsComplete": "Only a request with every traveler complete can be saved as a draft.",
+  "@draftSaveNeedsComplete": {
+    "description": "Save-as-draft sheet: the server only holds complete travelers"
+  },
+  "uploadChangeTarget": "Change",
+  "@uploadChangeTarget": {
+    "description": "Upload the missing document: choosing the traveler and document type"
+  },
+  "uploadTargetTitle": "Attach the file to",
+  "@uploadTargetTitle": {
+    "description": "Upload the missing document: choosing the traveler and document type"
+  },
+  "uploadAlreadySent": "A file was already uploaded",
+  "@uploadAlreadySent": {
+    "description": "Upload the missing document: choosing the traveler and document type"
+  },
+  "topUpReceiptAttached": "Attached. It is sent with your request.",
+  "@topUpReceiptAttached": {
+    "description": "Top-up receipt: staged upload states"
+  },
+  "topUpReceiptUploading": "Uploading the receipt…",
+  "@topUpReceiptUploading": {
+    "description": "Top-up receipt: staged upload states"
+  },
+  "errUnsupportedOperation": "This isn't available yet.",
+  "@errUnsupportedOperation": {
+    "description": "An action the backend does not offer yet"
+  },
+  "recoveryLinkSentTitle": "Check your email",
+  "@recoveryLinkSentTitle": {
+    "description": "Forgot password: the server e-mails a link (no in-app code)"
+  },
+  "recoveryLinkSentBody": "If an account exists for {email}, we sent a link to reset the password. Open it to choose a new one.",
+  "@recoveryLinkSentBody": {
+    "description": "Forgot password: the server e-mails a link (no in-app code)",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "recoveryNeedsEmail": "Password reset works with the email address of the account. Enter your email.",
+  "@recoveryNeedsEmail": {
+    "description": "Forgot password: the server e-mails a link (no in-app code)"
+  },
+  "agentAddPassword": "Owner's first password",
+  "@agentAddPassword": {
+    "description": "Add sub-agent copy."
+  },
+  "agentAddPasswordHint": "At least 12 characters. Give it to the owner; they can change it after signing in.",
+  "@agentAddPasswordHint": {
+    "description": "Add sub-agent copy."
+  },
+  "agentAddPasswordShort": "Use at least 12 characters.",
+  "@agentAddPasswordShort": {
+    "description": "Add sub-agent copy."
+  },
+  "agentAddWeakPassword": "The password was refused. Choose a stronger one: at least 12 characters, not a common password, not only digits, and not similar to your name or email.",
+  "@agentAddWeakPassword": {
+    "description": "Add sub-agent copy."
+  },
+  "agentAddNotAllowed": "You cannot add a sub-agent from this account.",
+  "@agentAddNotAllowed": {
+    "description": "Add sub-agent copy."
+  },
+  "passwordRuleSimilar": "The password is too similar to your name or email. Choose another one.",
+  "@passwordRuleSimilar": {
+    "description": "Password rule copy (the server names the rule it broke)."
+  },
+  "passwordRuleShort": "The password is too short. Use at least 12 characters.",
+  "@passwordRuleShort": {
+    "description": "Password rule copy (the server names the rule it broke)."
+  },
+  "passwordRuleCommon": "This is a very common password. Choose a less guessable one.",
+  "@passwordRuleCommon": {
+    "description": "Password rule copy (the server names the rule it broke)."
+  },
+  "passwordRuleNumeric": "The password cannot be only digits. Add letters.",
+  "@passwordRuleNumeric": {
+    "description": "Password rule copy (the server names the rule it broke)."
+  },
+  "topUpMethodEWallet": "E-wallet",
+  "@topUpMethodEWallet": {
+    "description": "Top-up method label."
+  },
+  "commonRetry": "Try again",
+  "commonCancel": "Cancel",
+  "commonNext": "Next",
+  "commonDone": "Done",
+  "commonClose": "Close",
+  "commonBack": "Back",
+  "commonErrorTitle": "Something went wrong",
+  "commonCheckConnection": "Check your connection and try again.",
+  "commonNoPermissionTitle": "You don't have permission",
+  "commonRequestPermission": "Request permission",
+  "commonNoPermissionChip": "No access",
+  "commonBackHome": "Back to Home",
+  "secSettingsTitle": "Security & sign-in",
+  "secSectionLogin": "Sign-in",
+  "secSectionExtra": "Extra protection",
+  "secChangePassword": "Change password",
+  "secTfaTitle": "Two-step verification",
+  "secTfaSub": "A code from your authenticator app at every sign-in",
+  "secTfaOff": "Off",
+  "secTfaOn": "On",
+  "secTfaPitch": "Keeps your account safe even if someone knows your password.",
+  "secTfaEnable": "Turn on two-step verification",
+  "secRecoveryCodes": "Recovery codes",
+  "secRecoveryCodesLeft": "{count, plural, =0{No recovery codes left} =1{1 recovery code left} other{{count} recovery codes left}}",
+  "@secRecoveryCodesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "secRegenerate": "Generate new codes",
+  "secRegenerateSub": "Your current codes stop working right away",
+  "secDisable": "Turn off two-step verification",
+  "secLoadError": "Couldn't load two-step verification. Check your connection.",
+  "secLastLogin": "Last sign-in: {when} · {city}",
+  "@secLastLogin": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "secSetupTitle": "Set up two-step verification",
+  "secStepOf": "Step {step} of {total}",
+  "@secStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "secScanTitle": "Scan the code with your authenticator app",
+  "secScanBody": "Open Google Authenticator or any authenticator app, then scan the code.",
+  "secManualKey": "Or enter the secret key manually",
+  "secCopyKey": "Copy key",
+  "secKeyCopied": "Secret key copied",
+  "secSetupErrorTitle": "Couldn't create the setup code",
+  "secCodeTitle": "Enter the verification code",
+  "secCodeBody": "Type the 6-digit code shown in your authenticator app.",
+  "secCodeRefreshHint": "The code refreshes in the app every 30 seconds",
+  "secVerify": "Verify",
+  "secVerifying": "Verifying…",
+  "secCodeWrong": "{left, plural, =0{Incorrect code.} =1{Incorrect code. 1 attempt left.} other{Incorrect code. {left} attempts left.}}",
+  "@secCodeWrong": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "secCodeExpiredTitle": "This code has expired",
+  "secCodeExpiredBody": "Enter the new code shown in the app now.",
+  "secLockedTitle": "Too many attempts",
+  "secLockedBody": "We paused entry to protect your account. Try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}}.",
+  "@secLockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "secCodesTitle": "Save your recovery codes",
+  "secCodesBody": "Use any of them to sign in if you lose your phone. Each code works once.",
+  "secCodesOnce": "Shown only once — you won't be able to see them again after this screen.",
+  "secCopyAll": "Copy all",
+  "secDownload": "Download",
+  "secSavedCheck": "I've saved the codes somewhere safe",
+  "secCodesErrorTitle": "Codes weren't created",
+  "secCodesErrorBody": "Couldn't create recovery codes. Two-step verification is on, and you can create the codes later in Settings.",
+  "secLoginTitle": "Sign in",
+  "secLoginCodeTitle": "Verification code",
+  "secLoginCodeBody": "Enter the code from your authenticator app to finish signing in to {email}",
+  "@secLoginCodeBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "secLostPhone": "Lost your phone? Use a recovery code",
+  "secSignIn": "Sign in",
+  "secRecoveryTitle": "Recovery code",
+  "secRecoveryBody": "Enter one of the recovery codes you saved when you turned on two-step verification.",
+  "secRecoveryField": "Recovery code",
+  "secRecoveryHelper": "Each code works only once",
+  "secRecoveryWrong": "This code is incorrect or has already been used.",
+  "secUseAuthApp": "Use the authenticator app instead",
+  "secLoginLockedTitle": "Sign-in is temporarily locked",
+  "secLoginLockedBody": "Too many incorrect attempts. Try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}} or contact support.",
+  "@secLoginLockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "secContactSupport": "Contact support",
+  "privTravelerTitle": "Traveler details",
+  "privSectionDoc": "Document details",
+  "privSectionContact": "Contact",
+  "privPassportNo": "Passport number",
+  "privNationalId": "National ID",
+  "privBirthDate": "Date of birth",
+  "privNationality": "Nationality",
+  "privEmail": "Email",
+  "privPhone": "Mobile number",
+  "privReveal": "Show",
+  "privHide": "Hide",
+  "privMaskedNote": "Sensitive values are hidden by default, and every reveal is logged under your name.",
+  "privCountdown": "{seconds}s",
+  "@privCountdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "privCountdownA11y": "Hides in {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@privCountdownA11y": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "privLoadErrorTitle": "Details didn't load",
+  "privLoadErrorBody": "Couldn't load the traveler's details. Check your connection and try again.",
+  "privRateLimited": "You've reached the reveal limit (10 per hour). You can try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}}.",
+  "@privRateLimited": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "privNoPermissionTitle": "You don't have permission to show these values",
+  "privNoPermissionBody": "The account manager grants the “Show sensitive data” permission.",
+  "privIntroTitle": "Before you show this value",
+  "privIntroSub": "You'll see this notice once",
+  "privIntroLoggedTitle": "Reveals are logged and never saved on your device",
+  "privIntroLoggedBody": "We record who showed the value and when. It isn't stored in the app.",
+  "privIntroTimerTitle": "Hides automatically after 30 seconds",
+  "privIntroTimerBody": "You can hide it sooner with the “Hide” button.",
+  "privIntroCopyTitle": "Copying isn't available",
+  "privIntroCopyBody": "To protect traveler data, sensitive values can't be copied.",
+  "accSettingsTitle": "Account settings",
+  "accChangeEmail": "Change email",
+  "accPendingSub": "Waiting for confirmation of {email}",
+  "@accPendingSub": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "accPendingChip": "Pending",
+  "accPendingNote": "Your current email stays active until you confirm the new one.",
+  "accFormIntro": "We'll send a confirmation link to your new email. Your current email stays active until you confirm.",
+  "accCurrentEmail": "Current email",
+  "accNewEmail": "New email",
+  "accCurrentPassword": "Current password",
+  "accPasswordHint": "Enter your password",
+  "accSend": "Send confirmation link",
+  "accSending": "Sending…",
+  "accInvalidEmail": "Enter a valid email, like name@mail.com",
+  "accSameEmail": "This is already your email",
+  "accEmailTaken": "This email is used by another account",
+  "accWrongPassword": "{left, plural, =0{Incorrect password.} =1{Incorrect password. 1 attempt left.} other{Incorrect password. {left} attempts left.}}",
+  "@accWrongPassword": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "accTooManyTitle": "Email change paused",
+  "accTooManyBody": "Too many attempts. Try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}}.",
+  "@accTooManyBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "accCheckTitle": "Check your email",
+  "accCheckSentTo": "We sent a confirmation link to",
+  "accCheckNote": "Open the link within 24 hours to finish the change. Your current email stays active until then.",
+  "accEditEmail": "Edit the email you entered",
+  "accOpenMail": "Open email",
+  "accResend": "Resend",
+  "accResendIn": "Resend {time}",
+  "@accResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "accResent": "We sent the link again. Check your spam folder too.",
+  "accSendFailed": "Couldn't send the link. Check your connection and try again.",
+  "accChanged": "Email changed",
+  "repTitle": "Reports",
+  "repIntro": "Choose a data source to build a custom report and export it.",
+  "repSourceBookings": "Bookings",
+  "repSourceBookingsSub": "Requests, travelers and statuses",
+  "repSourceWallet": "Wallet",
+  "repSourceWalletSub": "Transactions, fees and settlements",
+  "repSourceWalletLocked": "Needs the “Wallet” permission",
+  "repQuick": "Quick reports",
+  "repQuickThisMonth": "This month's bookings",
+  "repQuickCompleted": "Completed requests",
+  "repQuickWallet": "Wallet transactions",
+  "repLast30": "Last 30 days",
+  "repRecentFiles": "Recent exports",
+  "repRowsCount": "{count, plural, =1{1 row} other{{count} rows}}",
+  "@repRowsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "repLoadErrorTitle": "Couldn't load reports",
+  "repBookingsReport": "Bookings report",
+  "repWalletReport": "Wallet report",
+  "repBuilderSub": "Report builder",
+  "repPeriod": "Period",
+  "repPeriod7": "7 days",
+  "repPeriod30": "30 days",
+  "repPeriodMonth": "This month",
+  "repPeriodCustom": "Custom",
+  "repFrom": "From",
+  "repTo": "To",
+  "repRangeInvalid": "Before the start date",
+  "repRangeMax": "The longest period is 12 months",
+  "repColumns": "Columns",
+  "repColumnsCount": "{selected} of {total}",
+  "@repColumnsCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "repColOrder": "Request no.",
+  "repColTraveler": "Traveler",
+  "repColService": "Service",
+  "repColStatus": "Status",
+  "repColAmount": "Amount",
+  "repColAmountSar": "Amount (SAR)",
+  "repColSubAgent": "Sub-agent",
+  "repFilters": "Filters",
+  "repAddFilter": "Add filter",
+  "repShow": "Show report",
+  "repReset": "Reset",
+  "repEdit": "Edit",
+  "repKpiCount": "Requests",
+  "repKpiTotal": "Total",
+  "repTotalRow": "Total",
+  "repExport": "Export",
+  "repEmptyTitle": "No results",
+  "repEmptyBody": "No bookings match the selected period and filters. Try a longer period or remove some filters.",
+  "repEditFilters": "Edit filters",
+  "repTruncatedTitle": "More than 5,000 rows",
+  "repTruncatedBody": "The app shows only the first 5,000 rows. Narrow the period, or export the file to get everything.",
+  "repExportAll": "Export all",
+  "repNarrowPeriod": "Narrow the period",
+  "repGenerating": "Generating the report…",
+  "repGeneratingHint": "This can take a few seconds for long periods.",
+  "repGenerateErrorTitle": "Couldn't generate the report",
+  "repGenerateErrorBody": "Something went wrong while preparing the data. Try again shortly.",
+  "repExportTitle": "Export report",
+  "repExportSub": "{rows, plural, =1{1 row} other{{rows} rows}} · {cols, plural, =1{1 column} other{{cols} columns}}",
+  "@repExportSub": {
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "repFmtPdfSub": "Best for printing and sharing",
+  "repFmtXlsxSub": "For analysis and editing",
+  "repFmtCsvSub": "To import into other systems",
+  "repIncludeTotals": "Include the totals row",
+  "repExporting": "Exporting…",
+  "repReadyTitle": "Your file is ready",
+  "repReadySub": "Kept in “Recent exports” for 7 days",
+  "repShare": "Share",
+  "repDownload": "Download",
+  "repExportFailed": "Couldn't prepare the file. Check your connection and try again.",
+  "repNoPermissionBody": "Reports are available to the account manager and anyone with the “Reports” permission. Ask your account manager for it.",
+  "passScanButton": "Scan the passport to read the details",
+  "passManualHint": "Or enter the details manually as they appear in the passport",
+  "passApplied": "We filled {count, plural, =1{1 field} other{{count} fields}} from the passport. Complete {missing} and review before saving.",
+  "@passApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "passCaptureTitle": "Scan passport",
+  "passGuideTitle": "Place the data page inside the frame",
+  "passGuideSub": "Make sure both bottom lines are fully visible",
+  "passTipLight": "Good light",
+  "passTipGlare": "No glare",
+  "passTipFull": "Whole page",
+  "passCapture": "Capture",
+  "passFromPhotos": "From photos",
+  "passLowLight": "The light is low. Move closer to a light source and avoid shadows on the page.",
+  "passCameraDeniedTitle": "Can't access the camera",
+  "passCameraDeniedBody": "Allow Seen to use the camera in your device settings, or choose a photo of the passport.",
+  "passOpenSettings": "Open settings",
+  "passReading": "Reading the details…",
+  "passReadingHint": "This takes a few seconds",
+  "passFailedTitle": "Couldn't read the passport",
+  "passFailedBody": "Make sure the photo is clear and the whole data page shows, then try again.",
+  "passRetake": "Retake",
+  "passManual": "Enter manually",
+  "passUnavailableTitle": "Automatic reading isn't available right now",
+  "passUnavailableBody": "You can complete the traveler's details manually. Reading will be back soon.",
+  "passContinueManual": "Continue manually",
+  "passNotImage": "The selected file isn't an image. Choose a JPG or PNG photo.",
+  "passReviewTitle": "Review details",
+  "passReviewSub": "From the passport photo",
+  "passReadCount": "We read {count, plural, =1{1 field} other{{count} fields}} from the passport",
+  "@passReadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "passReviewHint": "Choose what to apply to the form",
+  "passLowConfidence": "Low confidence",
+  "passAppliedChip": "Applied",
+  "passLowNote": "Low-confidence fields aren't selected by default — review them before applying.",
+  "passApply": "Apply {count, plural, =1{1 field} other{{count} fields}}",
+  "@passApply": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "passFieldFirstName": "First name",
+  "passFieldLastName": "Last name",
+  "passFieldPassportNo": "Passport number",
+  "passFieldBirthDate": "Date of birth",
+  "passFieldNationality": "Nationality",
+  "passFieldExpiry": "Passport expiry date",
+  "profChangePhoto": "Change photo",
+  "profSheetTitle": "Profile photo",
+  "profSheetSub": "JPG or PNG, up to 5 MB",
+  "profTakePhoto": "Take a photo",
+  "profChoosePhoto": "Choose from photos",
+  "profDeletePhoto": "Remove photo",
+  "profCropTitle": "Preview photo",
+  "profCropHint": "Move and zoom the photo to fit inside the circle",
+  "profUse": "Use",
+  "profRedo": "Redo",
+  "profUploadProgress": "{size} · {percent}%",
+  "@profUploadProgress": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "profCancelUpload": "Cancel upload",
+  "profNotUploadedTitle": "Photo wasn't uploaded",
+  "profTooLarge": "The photo is {size}; the limit is 5 MB. Choose a smaller photo.",
+  "@profTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "profWrongType": "This format isn't supported. Choose a JPG or PNG photo.",
+  "profUploadFailed": "Upload failed — check your connection",
+  "profUpdated": "Photo updated",
+  "profDeleted": "Profile photo removed",
+  "supTicketClosedLine": "Ticket closed · {when}",
+  "@supTicketClosedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "supRateTitle": "How was your support experience?",
+  "supRateSub": "Your rating helps us improve",
+  "supRateA11y": "Rating",
+  "supStarA11y": "{value} of 5",
+  "@supStarA11y": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "supStar1": "Poor",
+  "supStar2": "Fair",
+  "supStar3": "Good",
+  "supStar4": "Very good",
+  "supStar5": "Excellent",
+  "supCommentHint": "Add a comment (optional)",
+  "supSendRating": "Send rating",
+  "supSending": "Sending…",
+  "supRateFailed": "Couldn't send your rating. Try again.",
+  "supRatedTitle": "Your rating for this conversation",
+  "supThanks": "Thanks for your rating",
+  "supRatedLocked": "Ratings can't be changed after they're sent.",
+  "supClosedBar": "This ticket is closed. You can open a new one anytime.",
+  "supNewTicket": "Open a new ticket",
+  "supNewTicketTitle": "New ticket",
+  "supCategory": "Category",
+  "supCategoryHint": "Choose a category",
+  "supCategorySheetTitle": "Ticket category",
+  "supCategorySheetSub": "Choose the closest match to your issue",
+  "supCategorySearch": "Search categories",
+  "supCategoryOther": "Other",
+  "supCategoryOtherSub": "I couldn't find the right category",
+  "supCategoryNoResultsTitle": "No matching categories",
+  "supCategoryNoResultsBody": "Choose “Other” and describe your issue in detail.",
+  "supCategoryLoadError": "Couldn't load categories. Try again or choose “Other”.",
+  "supUnreadA11y": "{count, plural, =1{1 unread message} other{{count} unread messages}}",
+  "@supUnreadA11y": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supUnreadTickets": "{count, plural, =1{1 ticket with new replies} other{{count} tickets with new replies}}",
+  "@supUnreadTickets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supMarkAllRead": "Mark all as read",
+  "supNoNewReplies": "No new replies",
+  "supNewMessagesDivider": "New messages ({count})",
+  "@supNewMessagesDivider": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supSupportTeam": "Support team",
+  "privRevealing": "Showing…",
+  "repAllStatuses": "All statuses",
+  "repFilterChip": "{name}: {value}",
+  "@repFilterChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "repFilterStatus": "Status",
+  "repFilterService": "Service",
+  "repFilterBranch": "Branch",
+  "repFilterSubAgent": "Sub-agent",
+  "repStatusCompleted": "Completed",
+  "commonCurrencySar": "SAR",
+  "commonSizeKb": "{size} KB",
+  "@commonSizeKb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSizeMb": "{size} MB",
+  "@commonSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "supBadgeMax": "9+"
 }

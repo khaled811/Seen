@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/error/unsupported.dart';
 import '../../domain/repositories/service_interest_repository.dart';
 
-enum InterestStatus { idle, sending, registered, failed }
+enum InterestStatus { idle, sending, registered, failed, unavailable }
 
 class ServiceInterestState extends Equatable {
   const ServiceInterestState(this.status);
@@ -33,6 +34,9 @@ class ServiceInterestCubit extends Cubit<ServiceInterestState> {
     if (isClosed) {
       return;
     }
-    emit(ServiceInterestState(r.isRight() ? InterestStatus.registered : InterestStatus.failed));
+    emit(ServiceInterestState(r.fold(
+      (f) => isUnsupportedFailure(f) ? InterestStatus.unavailable : InterestStatus.failed,
+      (_) => InterestStatus.registered,
+    )));
   }
 }

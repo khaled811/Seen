@@ -6,6 +6,7 @@ abstract final class TicketCategoryLabel {
   static String label(AppLocalizations l10n, TicketCategory category) => switch (category) {
         TicketCategory.general => l10n.ticketCategoryGeneral,
         TicketCategory.financialCorrection => l10n.ticketCategoryFinancialCorrection,
-        TicketCategory.unknown => l10n.error,
+        // A category the app does not know (a live chat, a custom one) is shown as general.
+        TicketCategory.unknown => l10n.ticketCategoryGeneral,
       };
 }

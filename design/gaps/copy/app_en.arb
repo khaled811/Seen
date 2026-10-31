@@ -1,0 +1,532 @@
+{
+  "@@locale": "en",
+  "common_retry": "Try again",
+  "common_cancel": "Cancel",
+  "common_next": "Next",
+  "common_done": "Done",
+  "common_close": "Close",
+  "common_back": "Back",
+  "common_errorTitle": "Something went wrong",
+  "common_checkConnection": "Check your connection and try again.",
+  "common_noPermissionTitle": "You don't have permission",
+  "common_requestPermission": "Request permission",
+  "common_noPermissionChip": "No access",
+  "common_backHome": "Back to Home",
+  "sec_settingsTitle": "Security & sign-in",
+  "sec_sectionLogin": "Sign-in",
+  "sec_sectionExtra": "Extra protection",
+  "sec_changePassword": "Change password",
+  "sec_tfaTitle": "Two-step verification",
+  "sec_tfaSub": "A code from your authenticator app at every sign-in",
+  "sec_tfaOff": "Off",
+  "sec_tfaOn": "On",
+  "sec_tfaPitch": "Keeps your account safe even if someone knows your password.",
+  "sec_tfaEnable": "Turn on two-step verification",
+  "sec_recoveryCodes": "Recovery codes",
+  "sec_recoveryCodesLeft": "{count, plural, =0{No recovery codes left} =1{1 recovery code left} other{{count} recovery codes left}}",
+  "@sec_recoveryCodesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_regenerate": "Generate new codes",
+  "sec_regenerateSub": "Your current codes stop working right away",
+  "sec_disable": "Turn off two-step verification",
+  "sec_loadError": "Couldn't load two-step verification. Check your connection.",
+  "sec_lastLogin": "Last sign-in: {when} · {city}",
+  "@sec_lastLogin": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "sec_setupTitle": "Set up two-step verification",
+  "sec_stepOf": "Step {step} of {total}",
+  "@sec_stepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_scanTitle": "Scan the code with your authenticator app",
+  "sec_scanBody": "Open Google Authenticator or any authenticator app, then scan the code.",
+  "sec_manualKey": "Or enter the secret key manually",
+  "sec_copyKey": "Copy key",
+  "sec_keyCopied": "Secret key copied",
+  "sec_setupErrorTitle": "Couldn't create the setup code",
+  "sec_codeTitle": "Enter the verification code",
+  "sec_codeBody": "Type the 6-digit code shown in your authenticator app.",
+  "sec_codeRefreshHint": "The code refreshes in the app every 30 seconds",
+  "sec_verify": "Verify",
+  "sec_verifying": "Verifying…",
+  "sec_codeWrong": "{left, plural, =0{Incorrect code.} =1{Incorrect code. 1 attempt left.} other{Incorrect code. {left} attempts left.}}",
+  "@sec_codeWrong": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_codeExpiredTitle": "This code has expired",
+  "sec_codeExpiredBody": "Enter the new code shown in the app now.",
+  "sec_lockedTitle": "Too many attempts",
+  "sec_lockedBody": "We paused entry to protect your account. Try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}}.",
+  "@sec_lockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_codesTitle": "Save your recovery codes",
+  "sec_codesBody": "Use any of them to sign in if you lose your phone. Each code works once.",
+  "sec_codesOnce": "Shown only once — you won't be able to see them again after this screen.",
+  "sec_copyAll": "Copy all",
+  "sec_download": "Download",
+  "sec_savedCheck": "I've saved the codes somewhere safe",
+  "sec_codesErrorTitle": "Codes weren't created",
+  "sec_codesErrorBody": "Couldn't create recovery codes. Two-step verification is on, and you can create the codes later in Settings.",
+  "sec_loginTitle": "Sign in",
+  "sec_loginCodeTitle": "Verification code",
+  "sec_loginCodeBody": "Enter the code from your authenticator app to finish signing in to {email}",
+  "@sec_loginCodeBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "sec_lostPhone": "Lost your phone? Use a recovery code",
+  "sec_signIn": "Sign in",
+  "sec_recoveryTitle": "Recovery code",
+  "sec_recoveryBody": "Enter one of the recovery codes you saved when you turned on two-step verification.",
+  "sec_recoveryField": "Recovery code",
+  "sec_recoveryHelper": "Each code works only once",
+  "sec_recoveryWrong": "This code is incorrect or has already been used.",
+  "sec_useAuthApp": "Use the authenticator app instead",
+  "sec_loginLockedTitle": "Sign-in is temporarily locked",
+  "sec_loginLockedBody": "Too many incorrect attempts. Try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}} or contact support.",
+  "@sec_loginLockedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sec_contactSupport": "Contact support",
+  "priv_travelerTitle": "Traveler details",
+  "priv_sectionDoc": "Document details",
+  "priv_sectionContact": "Contact",
+  "priv_passportNo": "Passport number",
+  "priv_nationalId": "National ID",
+  "priv_birthDate": "Date of birth",
+  "priv_nationality": "Nationality",
+  "priv_email": "Email",
+  "priv_phone": "Mobile number",
+  "priv_reveal": "Show",
+  "priv_hide": "Hide",
+  "priv_maskedNote": "Sensitive values are hidden by default, and every reveal is logged under your name.",
+  "priv_countdown": "{seconds}s",
+  "@priv_countdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "priv_countdownA11y": "Hides in {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@priv_countdownA11y": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "priv_loadErrorTitle": "Details didn't load",
+  "priv_loadErrorBody": "Couldn't load the traveler's details. Check your connection and try again.",
+  "priv_rateLimited": "You've reached the reveal limit (10 per hour). You can try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}}.",
+  "@priv_rateLimited": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "priv_noPermissionTitle": "You don't have permission to show these values",
+  "priv_noPermissionBody": "The account manager grants the “Show sensitive data” permission.",
+  "priv_introTitle": "Before you show this value",
+  "priv_introSub": "You'll see this notice once",
+  "priv_introLoggedTitle": "Reveals are logged and never saved on your device",
+  "priv_introLoggedBody": "We record who showed the value and when. It isn't stored in the app.",
+  "priv_introTimerTitle": "Hides automatically after 30 seconds",
+  "priv_introTimerBody": "You can hide it sooner with the “Hide” button.",
+  "priv_introCopyTitle": "Copying isn't available",
+  "priv_introCopyBody": "To protect traveler data, sensitive values can't be copied.",
+  "acc_settingsTitle": "Account settings",
+  "acc_changeEmail": "Change email",
+  "acc_pendingSub": "Waiting for confirmation of {email}",
+  "@acc_pendingSub": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "acc_pendingChip": "Pending",
+  "acc_pendingNote": "Your current email stays active until you confirm the new one.",
+  "acc_formIntro": "We'll send a confirmation link to your new email. Your current email stays active until you confirm.",
+  "acc_currentEmail": "Current email",
+  "acc_newEmail": "New email",
+  "acc_currentPassword": "Current password",
+  "acc_passwordHint": "Enter your password",
+  "acc_send": "Send confirmation link",
+  "acc_sending": "Sending…",
+  "acc_invalidEmail": "Enter a valid email, like name@mail.com",
+  "acc_sameEmail": "This is already your email",
+  "acc_emailTaken": "This email is used by another account",
+  "acc_wrongPassword": "{left, plural, =0{Incorrect password.} =1{Incorrect password. 1 attempt left.} other{Incorrect password. {left} attempts left.}}",
+  "@acc_wrongPassword": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "acc_tooManyTitle": "Email change paused",
+  "acc_tooManyBody": "Too many attempts. Try again in {minutes, plural, =1{1 minute} other{{minutes} minutes}}.",
+  "@acc_tooManyBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "acc_checkTitle": "Check your email",
+  "acc_checkSentTo": "We sent a confirmation link to",
+  "acc_checkNote": "Open the link within 24 hours to finish the change. Your current email stays active until then.",
+  "acc_editEmail": "Edit the email you entered",
+  "acc_openMail": "Open email",
+  "acc_resend": "Resend",
+  "acc_resendIn": "Resend {time}",
+  "@acc_resendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "acc_resent": "We sent the link again. Check your spam folder too.",
+  "acc_sendFailed": "Couldn't send the link. Check your connection and try again.",
+  "acc_changed": "Email changed",
+  "rep_title": "Reports",
+  "rep_intro": "Choose a data source to build a custom report and export it.",
+  "rep_sourceBookings": "Bookings",
+  "rep_sourceBookingsSub": "Requests, travelers and statuses",
+  "rep_sourceWallet": "Wallet",
+  "rep_sourceWalletSub": "Transactions, fees and settlements",
+  "rep_sourceWalletLocked": "Needs the “Wallet” permission",
+  "rep_quick": "Quick reports",
+  "rep_quickThisMonth": "This month's bookings",
+  "rep_quickCompleted": "Completed requests",
+  "rep_quickWallet": "Wallet transactions",
+  "rep_last30": "Last 30 days",
+  "rep_recentFiles": "Recent exports",
+  "rep_rowsCount": "{count, plural, =1{1 row} other{{count} rows}}",
+  "@rep_rowsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rep_loadErrorTitle": "Couldn't load reports",
+  "rep_bookingsReport": "Bookings report",
+  "rep_walletReport": "Wallet report",
+  "rep_builderSub": "Report builder",
+  "rep_period": "Period",
+  "rep_period7": "7 days",
+  "rep_period30": "30 days",
+  "rep_periodMonth": "This month",
+  "rep_periodCustom": "Custom",
+  "rep_from": "From",
+  "rep_to": "To",
+  "rep_rangeInvalid": "Before the start date",
+  "rep_rangeMax": "The longest period is 12 months",
+  "rep_columns": "Columns",
+  "rep_columnsCount": "{selected} of {total}",
+  "@rep_columnsCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "rep_colOrder": "Request no.",
+  "rep_colTraveler": "Traveler",
+  "rep_colService": "Service",
+  "rep_colStatus": "Status",
+  "rep_colAmount": "Amount",
+  "rep_colAmountSar": "Amount (SAR)",
+  "rep_colSubAgent": "Sub-agent",
+  "rep_filters": "Filters",
+  "rep_addFilter": "Add filter",
+  "rep_show": "Show report",
+  "rep_reset": "Reset",
+  "rep_edit": "Edit",
+  "rep_kpiCount": "Requests",
+  "rep_kpiTotal": "Total",
+  "rep_totalRow": "Total",
+  "rep_export": "Export",
+  "rep_emptyTitle": "No results",
+  "rep_emptyBody": "No bookings match the selected period and filters. Try a longer period or remove some filters.",
+  "rep_editFilters": "Edit filters",
+  "rep_truncatedTitle": "More than 5,000 rows",
+  "rep_truncatedBody": "The app shows only the first 5,000 rows. Narrow the period, or export the file to get everything.",
+  "rep_exportAll": "Export all",
+  "rep_narrowPeriod": "Narrow the period",
+  "rep_generating": "Generating the report…",
+  "rep_generatingHint": "This can take a few seconds for long periods.",
+  "rep_generateErrorTitle": "Couldn't generate the report",
+  "rep_generateErrorBody": "Something went wrong while preparing the data. Try again shortly.",
+  "rep_exportTitle": "Export report",
+  "rep_exportSub": "{rows, plural, =1{1 row} other{{rows} rows}} · {cols, plural, =1{1 column} other{{cols} columns}}",
+  "@rep_exportSub": {
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "rep_fmtPdfSub": "Best for printing and sharing",
+  "rep_fmtXlsxSub": "For analysis and editing",
+  "rep_fmtCsvSub": "To import into other systems",
+  "rep_includeTotals": "Include the totals row",
+  "rep_exporting": "Exporting…",
+  "rep_readyTitle": "Your file is ready",
+  "rep_readySub": "Kept in “Recent exports” for 7 days",
+  "rep_share": "Share",
+  "rep_download": "Download",
+  "rep_exportFailed": "Couldn't prepare the file. Check your connection and try again.",
+  "rep_noPermissionBody": "Reports are available to the account manager and anyone with the “Reports” permission. Ask your account manager for it.",
+  "pass_scanButton": "Scan the passport to read the details",
+  "pass_manualHint": "Or enter the details manually as they appear in the passport",
+  "pass_applied": "We filled {count, plural, =1{1 field} other{{count} fields}} from the passport. Complete {missing} and review before saving.",
+  "@pass_applied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "pass_captureTitle": "Scan passport",
+  "pass_guideTitle": "Place the data page inside the frame",
+  "pass_guideSub": "Make sure both bottom lines are fully visible",
+  "pass_tipLight": "Good light",
+  "pass_tipGlare": "No glare",
+  "pass_tipFull": "Whole page",
+  "pass_capture": "Capture",
+  "pass_fromPhotos": "From photos",
+  "pass_lowLight": "The light is low. Move closer to a light source and avoid shadows on the page.",
+  "pass_cameraDeniedTitle": "Can't access the camera",
+  "pass_cameraDeniedBody": "Allow Seen to use the camera in your device settings, or choose a photo of the passport.",
+  "pass_openSettings": "Open settings",
+  "pass_reading": "Reading the details…",
+  "pass_readingHint": "This takes a few seconds",
+  "pass_failedTitle": "Couldn't read the passport",
+  "pass_failedBody": "Make sure the photo is clear and the whole data page shows, then try again.",
+  "pass_retake": "Retake",
+  "pass_manual": "Enter manually",
+  "pass_unavailableTitle": "Automatic reading isn't available right now",
+  "pass_unavailableBody": "You can complete the traveler's details manually. Reading will be back soon.",
+  "pass_continueManual": "Continue manually",
+  "pass_notImage": "The selected file isn't an image. Choose a JPG or PNG photo.",
+  "pass_reviewTitle": "Review details",
+  "pass_reviewSub": "From the passport photo",
+  "pass_readCount": "We read {count, plural, =1{1 field} other{{count} fields}} from the passport",
+  "@pass_readCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pass_reviewHint": "Choose what to apply to the form",
+  "pass_lowConfidence": "Low confidence",
+  "pass_appliedChip": "Applied",
+  "pass_lowNote": "Low-confidence fields aren't selected by default — review them before applying.",
+  "pass_apply": "Apply {count, plural, =1{1 field} other{{count} fields}}",
+  "@pass_apply": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pass_fieldFirstName": "First name",
+  "pass_fieldLastName": "Last name",
+  "pass_fieldPassportNo": "Passport number",
+  "pass_fieldBirthDate": "Date of birth",
+  "pass_fieldNationality": "Nationality",
+  "pass_fieldExpiry": "Passport expiry date",
+  "prof_changePhoto": "Change photo",
+  "prof_sheetTitle": "Profile photo",
+  "prof_sheetSub": "JPG or PNG, up to 5 MB",
+  "prof_takePhoto": "Take a photo",
+  "prof_choosePhoto": "Choose from photos",
+  "prof_deletePhoto": "Remove photo",
+  "prof_cropTitle": "Preview photo",
+  "prof_cropHint": "Move and zoom the photo to fit inside the circle",
+  "prof_use": "Use",
+  "prof_redo": "Redo",
+  "prof_uploadProgress": "{size} · {percent}%",
+  "@prof_uploadProgress": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "prof_cancelUpload": "Cancel upload",
+  "prof_notUploadedTitle": "Photo wasn't uploaded",
+  "prof_tooLarge": "The photo is {size}; the limit is 5 MB. Choose a smaller photo.",
+  "@prof_tooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "prof_wrongType": "This format isn't supported. Choose a JPG or PNG photo.",
+  "prof_uploadFailed": "Upload failed — check your connection",
+  "prof_updated": "Photo updated",
+  "prof_deleted": "Profile photo removed",
+  "sup_ticketClosedLine": "Ticket closed · {when}",
+  "@sup_ticketClosedLine": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sup_rateTitle": "How was your support experience?",
+  "sup_rateSub": "Your rating helps us improve",
+  "sup_rateA11y": "Rating",
+  "sup_starA11y": "{value} of 5",
+  "@sup_starA11y": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_star1": "Poor",
+  "sup_star2": "Fair",
+  "sup_star3": "Good",
+  "sup_star4": "Very good",
+  "sup_star5": "Excellent",
+  "sup_commentHint": "Add a comment (optional)",
+  "sup_sendRating": "Send rating",
+  "sup_sending": "Sending…",
+  "sup_rateFailed": "Couldn't send your rating. Try again.",
+  "sup_ratedTitle": "Your rating for this conversation",
+  "sup_thanks": "Thanks for your rating",
+  "sup_ratedLocked": "Ratings can't be changed after they're sent.",
+  "sup_closedBar": "This ticket is closed. You can open a new one anytime.",
+  "sup_newTicket": "Open a new ticket",
+  "sup_newTicketTitle": "New ticket",
+  "sup_category": "Category",
+  "sup_categoryHint": "Choose a category",
+  "sup_categorySheetTitle": "Ticket category",
+  "sup_categorySheetSub": "Choose the closest match to your issue",
+  "sup_categorySearch": "Search categories",
+  "sup_categoryOther": "Other",
+  "sup_categoryOtherSub": "I couldn't find the right category",
+  "sup_categoryNoResultsTitle": "No matching categories",
+  "sup_categoryNoResultsBody": "Choose “Other” and describe your issue in detail.",
+  "sup_categoryLoadError": "Couldn't load categories. Try again or choose “Other”.",
+  "sup_unreadA11y": "{count, plural, =1{1 unread message} other{{count} unread messages}}",
+  "@sup_unreadA11y": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_unreadTickets": "{count, plural, =1{1 ticket with new replies} other{{count} tickets with new replies}}",
+  "@sup_unreadTickets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_markAllRead": "Mark all as read",
+  "sup_noNewReplies": "No new replies",
+  "sup_newMessagesDivider": "New messages ({count})",
+  "@sup_newMessagesDivider": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sup_supportTeam": "Support team",
+  "priv_revealing": "Showing…",
+  "rep_allStatuses": "All statuses",
+  "rep_filterChip": "{name}: {value}",
+  "@rep_filterChip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rep_filterStatus": "Status",
+  "rep_filterService": "Service",
+  "rep_filterBranch": "Branch",
+  "rep_filterSubAgent": "Sub-agent",
+  "rep_statusCompleted": "Completed",
+  "common_currencySar": "SAR",
+  "common_sizeKb": "{size} KB",
+  "@common_sizeKb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "common_sizeMb": "{size} MB",
+  "@common_sizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "sup_badgeMax": "9+"
+}

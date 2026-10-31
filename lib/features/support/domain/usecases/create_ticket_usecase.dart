@@ -16,6 +16,8 @@ class CreateTicketUseCase {
     required String message,
     String? requestId,
     TicketPriority priority = TicketPriority.normal,
+    String? attachmentFileId,
+    String? categoryCode,
   }) =>
       _repository.createTicket(
         category: category,
@@ -23,5 +25,7 @@ class CreateTicketUseCase {
         message: message,
         requestId: requestId,
         priority: priority,
+        attachmentFileId: attachmentFileId,
+        categoryCode: categoryCode,
       );
 }

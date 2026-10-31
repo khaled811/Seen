@@ -19,6 +19,7 @@ abstract final class SystemPermissions {
 
   // Staff & Sub-Agents
   static const String staffCreate = 'staff.create';
+  static const String userPermissionManage = 'user.permission.manage';
   static const String agentCreateSubAgent = 'agent.create_sub_agent';
 
   // Wallets & Financials
@@ -54,6 +55,7 @@ abstract final class SystemPermissions {
     pricingView,
     pricingSetMargin,
     staffCreate,
+    userPermissionManage,
     agentCreateSubAgent,
     walletView,
     walletTopupRequest,

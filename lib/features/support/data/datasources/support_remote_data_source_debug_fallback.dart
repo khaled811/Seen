@@ -1,44 +1,53 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:fpdart/fpdart.dart';
 
+import '../../../../core/config/debug_fallbacks.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
-import '../../domain/entities/support_ticket.dart' show SupportTicketStatus;
-import '../models/in_app_notification_dto.dart';
-import '../models/support_ticket_dto.dart';
-import '../models/ticket_message_dto.dart';
+import '../../domain/entities/in_app_notification.dart';
+import '../../domain/entities/support_ticket.dart';
+import '../../domain/entities/ticket_message.dart';
 import 'support_remote_data_source.dart';
+import '../../../../core/utils/app_clock.dart';
 
-/// DEBUG ONLY — decorates a real [SupportRemoteDataSource] and, only when a
-/// real call fails in a debug build, substitutes canned tickets and
-/// notifications. Same pattern (and the same reasoning) as every other
-/// feature's debug fallback this session: `kDebugMode` is a compile-time
-/// constant, so every fallback branch below is dead-code-eliminated in
-/// release.
+/// DEBUG ONLY (opt-in with `USE_DEBUG_FALLBACKS`): decorates a real
+/// [SupportRemoteDataSource] and, only when a real call fails in a debug build,
+/// answers with canned tickets and notifications held in memory. `kDebugMode` is
+/// a compile-time constant, so every fallback branch is removed from release builds.
 class DebugFallbackSupportRemoteDataSource implements SupportRemoteDataSource {
   DebugFallbackSupportRemoteDataSource(this._real);
 
   final SupportRemoteDataSource _real;
 
-  /// In-memory only — reset on app restart, never touches real persistence.
-  final Map<String, SupportTicketDto> _mockTickets = _seedTickets();
-  final Map<String, InAppNotificationDto> _mockNotifications = _seedNotifications();
+  final Map<String, SupportTicket> _tickets = {for (final t in _seedTickets()) t.id: t};
+  final Map<String, InAppNotification> _notifications = {for (final n in _seedNotifications()) n.id: n};
   int _nextTicketId = 100;
 
+  bool _fallback(Either<Failure, Object?> result) => debugFallbacksEnabled && result.isLeft();
+
   @override
-  Future<Either<Failure, List<SupportTicketDto>>> getTickets() async {
-    final result = await _real.getTickets();
-    if (kDebugMode && result.isLeft()) return Right(_mockTickets.values.toList());
-    return result;
+  Future<Either<Failure, List<SupportTicket>>> getTickets({int limit = 50, int offset = 0}) async {
+    final result = await _real.getTickets(limit: limit, offset: offset);
+    if (!_fallback(result)) return result;
+    return Right([for (final t in _tickets.values) t.copyWith(messages: const [], messagesLoaded: false)]);
   }
 
   @override
-  Future<Either<Failure, SupportTicketDto>> createTicket({
+  Future<Either<Failure, SupportTicket>> getTicket(String ticketId) async {
+    final result = await _real.getTicket(ticketId);
+    if (!_fallback(result)) return result;
+    final ticket = _tickets[ticketId];
+    return ticket == null ? const Left(ServerFailure('Ticket not found.')) : Right(ticket);
+  }
+
+  @override
+  Future<Either<Failure, SupportTicket>> createTicket({
     required TicketCategory category,
     required String subject,
     required String message,
     String? requestId,
     TicketPriority priority = TicketPriority.normal,
+    String? attachmentFileId,
+    String? categoryCode,
   }) async {
     final result = await _real.createTicket(
       category: category,
@@ -46,166 +55,109 @@ class DebugFallbackSupportRemoteDataSource implements SupportRemoteDataSource {
       message: message,
       requestId: requestId,
       priority: priority,
+      attachmentFileId: attachmentFileId,
+      categoryCode: categoryCode,
     );
-    if (kDebugMode && result.isLeft()) {
-      final id = 'ticket-${_nextTicketId++}';
-      final ticket = SupportTicketDto(
-        id: id,
-        referenceId: 'TCK-$_nextTicketId',
-        category: category.value,
-        priority: priority.value,
-        subject: subject,
-        requestId: requestId,
-        status: SupportTicketStatus.open.value,
-        createdAt: DateTime.now(),
-        messages: [
-          TicketMessageDto(
-            id: '$id-msg-1',
-            authorName: 'You',
-            isSupportReply: false,
-            body: message,
-            sentAt: DateTime.now(),
-          ),
-        ],
-      );
-      _mockTickets[id] = ticket;
-      return Right(ticket);
-    }
-    return result;
+    if (!_fallback(result)) return result;
+    final id = 'ticket-${_nextTicketId++}';
+    final ticket = SupportTicket(
+      id: id,
+      referenceId: 'TCK-$_nextTicketId',
+      category: category,
+      priority: priority,
+      subject: subject,
+      requestId: requestId,
+      status: SupportTicketStatus.open,
+      createdAt: DateTime.now(),
+      messages: [TicketMessage(id: '$id-msg-1', authorName: 'You', isSupportReply: false, body: message, sentAt: DateTime.now())],
+    );
+    _tickets[id] = ticket;
+    return Right(ticket);
   }
 
   @override
   Future<Either<Failure, bool>> markTicketRead(String ticketId) async {
     final result = await _real.markTicketRead(ticketId);
-    if (!(kDebugMode && result.isLeft())) return result;
-    final t = _mockTickets[ticketId];
-    if (t != null) _mockTickets[ticketId] = _copy(t, hasUnreadReply: false);
+    if (!_fallback(result)) return result;
+    final ticket = _tickets[ticketId];
+    if (ticket != null) _tickets[ticketId] = ticket.copyWith(hasUnreadReply: false);
     return const Right(true);
   }
 
   @override
-  Future<Either<Failure, SupportTicketDto>> reopenTicket(String ticketId) async {
-    final result = await _real.reopenTicket(ticketId);
-    if (!(kDebugMode && result.isLeft())) return result;
-    final t = _mockTickets[ticketId];
-    if (t == null) return const Left(ServerFailure('Ticket not found.'));
-    return Right(_mockTickets[ticketId] = _copy(t, status: SupportTicketStatus.open.value));
-  }
-
-  SupportTicketDto _copy(SupportTicketDto t, {bool? hasUnreadReply, String? status}) => SupportTicketDto(
-        id: t.id,
-        referenceId: t.referenceId,
-        category: t.category,
-        priority: t.priority,
-        subject: t.subject,
-        requestId: t.requestId,
-        status: status ?? t.status,
-        createdAt: t.createdAt,
-        messages: t.messages,
-        hasUnreadReply: hasUnreadReply ?? t.hasUnreadReply,
-      );
-
-  @override
-  Future<Either<Failure, SupportTicketDto>> replyToTicket({
-    required String ticketId,
-    required String message,
-  }) async {
-    final result = await _real.replyToTicket(ticketId: ticketId, message: message);
-    if (kDebugMode && result.isLeft()) {
-      final existing = _mockTickets[ticketId];
-      if (existing == null) {
-        return const Left(ServerFailure('Ticket not found.'));
-      }
-      final updated = SupportTicketDto(
-        id: existing.id,
-        referenceId: existing.referenceId,
-        category: existing.category,
-        priority: existing.priority,
-        subject: existing.subject,
-        requestId: existing.requestId,
-        status: existing.status,
-        createdAt: existing.createdAt,
-        messages: [
-          ...existing.messages,
-          TicketMessageDto(
-            id: '${existing.id}-msg-${existing.messages.length + 1}',
-            authorName: 'You',
-            isSupportReply: false,
-            body: message,
-            sentAt: DateTime.now(),
-          ),
-        ],
-      );
-      _mockTickets[ticketId] = updated;
-      return Right(updated);
-    }
-    return result;
+  Future<Either<Failure, TicketMessage>> replyToTicket({required String ticketId, required String message, String? attachmentFileId}) async {
+    final result = await _real.replyToTicket(ticketId: ticketId, message: message, attachmentFileId: attachmentFileId);
+    if (!_fallback(result)) return result;
+    final ticket = _tickets[ticketId];
+    if (ticket == null) return const Left(ServerFailure('Ticket not found.'));
+    final reply = TicketMessage(
+      id: '$ticketId-msg-${ticket.messages.length + 1}',
+      authorName: 'You',
+      isSupportReply: false,
+      body: message,
+      sentAt: DateTime.now(),
+    );
+    _tickets[ticketId] = ticket.copyWith(messages: [...ticket.messages, reply]);
+    return Right(reply);
   }
 
   @override
-  Future<Either<Failure, List<InAppNotificationDto>>> getNotifications() async {
-    final result = await _real.getNotifications();
-    if (kDebugMode && result.isLeft()) {
-      return Right(_mockNotifications.values.toList());
-    }
-    return result;
+  Future<Either<Failure, NotificationsPage>> getNotifications({bool unreadOnly = false, int limit = 20, int offset = 0}) async {
+    final result = await _real.getNotifications(unreadOnly: unreadOnly, limit: limit, offset: offset);
+    if (!_fallback(result)) return result;
+    final all = [for (final n in _notifications.values) if (!unreadOnly || !n.isRead) n];
+    final page = all.skip(offset).take(limit).toList();
+    return Right(NotificationsPage(
+      items: page,
+      unreadCount: _notifications.values.where((n) => !n.isRead).length,
+      total: all.length,
+      hasMore: offset + page.length < all.length,
+    ));
+  }
+
+  @override
+  Future<Either<Failure, int>> getUnreadNotificationCount() async {
+    final result = await _real.getUnreadNotificationCount();
+    if (!_fallback(result)) return result;
+    return Right(_notifications.values.where((n) => !n.isRead).length);
   }
 
   @override
   Future<Either<Failure, bool>> markNotificationRead(String notificationId) async {
     final result = await _real.markNotificationRead(notificationId);
-    if (kDebugMode && result.isLeft()) {
-      final existing = _mockNotifications[notificationId];
-      if (existing == null) return const Left(ServerFailure('Notification not found.'));
-      _mockNotifications[notificationId] = InAppNotificationDto(
-        id: existing.id,
-        type: existing.type,
-        title: existing.title,
-        body: existing.body,
-        createdAt: existing.createdAt,
-        isRead: true,
-        relatedRequestId: existing.relatedRequestId,
-      );
-      return const Right(true);
-    }
-    return result;
+    if (!_fallback(result)) return result;
+    final existing = _notifications[notificationId];
+    if (existing == null) return const Right(false);
+    _notifications[notificationId] = existing.copyWith(isRead: true);
+    return const Right(true);
   }
 
   @override
-  Future<Either<Failure, bool>> markAllNotificationsRead() async {
+  Future<Either<Failure, int>> markAllNotificationsRead() async {
     final result = await _real.markAllNotificationsRead();
-    if (kDebugMode && result.isLeft()) {
-      for (final id in _mockNotifications.keys.toList()) {
-        final existing = _mockNotifications[id]!;
-        _mockNotifications[id] = InAppNotificationDto(
-          id: existing.id,
-          type: existing.type,
-          title: existing.title,
-          body: existing.body,
-          createdAt: existing.createdAt,
-          isRead: true,
-          relatedRequestId: existing.relatedRequestId,
-        );
-      }
-      return const Right(true);
+    if (!_fallback(result)) return result;
+    var marked = 0;
+    for (final id in _notifications.keys.toList()) {
+      if (!_notifications[id]!.isRead) marked++;
+      _notifications[id] = _notifications[id]!.copyWith(isRead: true);
     }
-    return result;
+    return Right(marked);
   }
 }
 
-Map<String, SupportTicketDto> _seedTickets() {
-  final now = DateTime.now();
-  final tickets = [
-    SupportTicketDto(
+List<SupportTicket> _seedTickets() {
+  final now = AppClock.now();
+  return [
+    SupportTicket(
       id: 'ticket-1',
       referenceId: 'TCK-1001',
-      category: 'general',
-      priority: 'normal',
+      category: TicketCategory.general,
+      priority: TicketPriority.normal,
       subject: 'Question about Egypt visa processing time',
-      status: 'open',
+      status: SupportTicketStatus.open,
       createdAt: now.subtract(const Duration(days: 1)),
       messages: [
-        TicketMessageDto(
+        TicketMessage(
           id: 'ticket-1-msg-1',
           authorName: 'You',
           isSupportReply: false,
@@ -214,150 +166,55 @@ Map<String, SupportTicketDto> _seedTickets() {
         ),
       ],
     ),
-    SupportTicketDto(
+    SupportTicket(
       id: 'ticket-2',
       referenceId: 'TCK-1002',
-      category: 'general',
-      priority: 'high',
+      category: TicketCategory.general,
+      priority: TicketPriority.high,
       subject: 'Request stuck in review',
       requestId: 'req-3',
-      status: 'in_progress',
+      status: SupportTicketStatus.inProgress,
       hasUnreadReply: true,
       createdAt: now.subtract(const Duration(days: 3)),
       messages: [
-        TicketMessageDto(
+        TicketMessage(
           id: 'ticket-2-msg-1',
           authorName: 'You',
           isSupportReply: false,
           body: 'This request has been under review for 3 days, can you check?',
           sentAt: now.subtract(const Duration(days: 3)),
         ),
-        TicketMessageDto(
+        TicketMessage(
           id: 'ticket-2-msg-2',
-          authorName: 'Support (Layla)',
+          authorName: 'Support',
           isSupportReply: true,
-          body: "We've escalated this to the National Security desk — thanks for your patience.",
+          body: "We've escalated this to the National Security desk. Thanks for your patience.",
           sentAt: now.subtract(const Duration(days: 2)),
         ),
       ],
     ),
-    SupportTicketDto(
-      id: 'ticket-3',
-      referenceId: 'TCK-1003',
-      category: 'financial_correction',
-      priority: 'urgent',
-      subject: 'Wallet top-up not reflected',
-      status: 'resolved',
-      createdAt: now.subtract(const Duration(days: 6)),
-      messages: [
-        TicketMessageDto(
-          id: 'ticket-3-msg-1',
-          authorName: 'You',
-          isSupportReply: false,
-          body: "I sent a bank transfer top-up but it's not showing in my wallet.",
-          sentAt: now.subtract(const Duration(days: 6)),
-        ),
-        TicketMessageDto(
-          id: 'ticket-3-msg-2',
-          authorName: 'Support (Omar)',
-          isSupportReply: true,
-          body: 'Confirmed and applied — your balance has been updated.',
-          sentAt: now.subtract(const Duration(days: 5)),
-        ),
-      ],
-    ),
-    SupportTicketDto(
-      id: 'ticket-4',
-      referenceId: 'TCK-1004',
-      category: 'general',
-      priority: 'low',
-      subject: 'How to add a new sub-agent branch?',
-      status: 'closed',
-      createdAt: now.subtract(const Duration(days: 12)),
-      messages: [
-        TicketMessageDto(
-          id: 'ticket-4-msg-1',
-          authorName: 'You',
-          isSupportReply: false,
-          body: 'Is there a way to add a new branch under my account?',
-          sentAt: now.subtract(const Duration(days: 12)),
-        ),
-        TicketMessageDto(
-          id: 'ticket-4-msg-2',
-          authorName: 'Support (Layla)',
-          isSupportReply: true,
-          body: 'Please contact your account manager to request a new branch.',
-          sentAt: now.subtract(const Duration(days: 11)),
-        ),
-      ],
-    ),
   ];
-  return {for (final t in tickets) t.id: t};
 }
 
-Map<String, InAppNotificationDto> _seedNotifications() {
-  final now = DateTime.now();
-  final notifications = [
-    InAppNotificationDto(
+List<InAppNotification> _seedNotifications() {
+  final now = AppClock.now();
+  return [
+    InAppNotification(
       id: 'notif-1',
-      type: 'info_required',
-      title: 'Action required',
-      body: 'SB-1005 needs additional documents — SLA overdue.',
-      createdAt: now.subtract(const Duration(hours: 1)),
+      type: NotificationEventType.statusUpdate,
+      createdAt: now.subtract(const Duration(hours: 2)),
       isRead: false,
-      relatedRequestId: 'req-5',
+      relatedRequestId: 'req-1',
+      referenceCode: 'SB-20476',
+      serviceName: 'Egypt National Security Approval',
     ),
-    InAppNotificationDto(
+    InAppNotification(
       id: 'notif-2',
-      type: 'sla_breach',
-      title: 'SLA breach warning',
-      body: 'SB-1004 is within 6 hours of its response deadline.',
-      createdAt: now.subtract(const Duration(hours: 3)),
-      isRead: false,
-      relatedRequestId: 'req-4',
-    ),
-    InAppNotificationDto(
-      id: 'notif-3',
-      type: 'status_update',
-      title: 'Request under review',
-      body: 'SB-1003 moved to Under Review.',
-      createdAt: now.subtract(const Duration(hours: 20)),
-      isRead: false,
-      relatedRequestId: 'req-3',
-    ),
-    InAppNotificationDto(
-      id: 'notif-4',
-      type: 'top_up',
-      title: 'Wallet top-up approved',
-      body: 'Your \$2,000.00 top-up (TXN-1001) has been approved.',
+      type: NotificationEventType.topUp,
       createdAt: now.subtract(const Duration(days: 1)),
       isRead: true,
-    ),
-    InAppNotificationDto(
-      id: 'notif-5',
-      type: 'rejected',
-      title: 'Request rejected',
-      body: 'SB-1007 was rejected — passport expiry did not meet requirements.',
-      createdAt: now.subtract(const Duration(days: 5)),
-      isRead: true,
-      relatedRequestId: 'req-7',
-    ),
-    InAppNotificationDto(
-      id: 'notif-6',
-      type: 'new_request',
-      title: 'New sub-agent request',
-      body: 'Cairo Branch submitted a new request awaiting your approval.',
-      createdAt: now.subtract(const Duration(hours: 5)),
-      isRead: false,
-    ),
-    InAppNotificationDto(
-      id: 'notif-7',
-      type: 'ticket_update',
-      title: 'Ticket reply',
-      body: 'Support replied to TCK-1002.',
-      createdAt: now.subtract(const Duration(days: 2)),
-      isRead: true,
+      amountCents: 50000,
+      currency: 'USD',
     ),
   ];
-  return {for (final n in notifications) n.id: n};
 }

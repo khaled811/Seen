@@ -1,3 +1,4 @@
+import '../../../../core/error/password_rule.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failure.dart';
@@ -39,60 +40,31 @@ class RegistrationConsent extends Equatable {
   List<Object?> get props => [acceptedTerms, acceptedPrivacy, marketing];
 }
 
-/// A pending phone verification for a registration: where the code went and
-/// when it can be asked for again.
-class RegistrationChallenge extends Equatable {
-  const RegistrationChallenge({
-    required this.challengeToken,
-    required this.maskedPhone,
-    required this.resendCooldownSeconds,
-  });
-
-  final String challengeToken;
-  final String maskedPhone;
-  final int resendCooldownSeconds;
-
-  @override
-  List<Object?> get props => [challengeToken, maskedPhone, resendCooldownSeconds];
-}
-
 enum RegistrationIssueKind {
-  /// The phone already belongs to another account (Figma AUTH-06 banner).
-  phoneTaken,
-
-  /// The licence number belongs to another agency (Figma AUTH-08).
-  licenseTaken,
-
-  /// The e-mail belongs to another account (Figma AUTH-08).
+  /// The owner's e-mail belongs to another account (Figma AUTH-08).
   emailTaken,
   rateLimited,
   offline,
-  wrongCode,
-  expiredCode,
-  attemptsExhausted,
   weakPassword,
   generic,
 }
 
 /// A [Failure] in the vocabulary of the registration screens.
 class RegistrationIssue extends Equatable {
-  const RegistrationIssue(this.kind, {this.seconds, this.attemptsLeft, this.minutes});
+  const RegistrationIssue(this.kind, {this.seconds, this.attemptsLeft, this.minutes, this.passwordRule});
 
   final RegistrationIssueKind kind;
   final int? seconds;
   final int? attemptsLeft;
   final int? minutes;
 
-  /// Backend error codes (GraphQL `extensions.code`) this mapping expects.
-  /// TODO(backend-contract): confirm the names; see docs/BACKEND_MIGRATION_GAPS.md.
-  static const phoneTakenCode = 'PHONE_ALREADY_REGISTERED';
-  static const licenseTakenCode = 'LICENSE_ALREADY_REGISTERED';
-  static const emailTakenCode = 'EMAIL_ALREADY_REGISTERED';
-  static const rateLimitedCode = 'RATE_LIMITED';
-  static const wrongCodeCode = 'OTP_INVALID';
-  static const expiredCodeCode = 'OTP_EXPIRED';
-  static const exhaustedCode = 'OTP_ATTEMPTS_EXHAUSTED';
-  static const weakPasswordCode = 'PASSWORD_WEAK';
+  /// The password rule the server named (`weakPassword` only).
+  final String? passwordRule;
+
+  /// Error codes of the contract for `registerMainAgent`.
+  static const emailTakenCode = 'owner_email_taken';
+  static const rateLimitedCode = 'too_many_attempts';
+  static const weakPasswordCode = 'password_weak';
 
   factory RegistrationIssue.from(Failure failure) {
     if (failure is NetworkFailure) return const RegistrationIssue(RegistrationIssueKind.offline);
@@ -103,14 +75,9 @@ class RegistrationIssue extends Equatable {
       }
 
       return switch (failure.code) {
-        phoneTakenCode => const RegistrationIssue(RegistrationIssueKind.phoneTaken),
-        licenseTakenCode => const RegistrationIssue(RegistrationIssueKind.licenseTaken),
         emailTakenCode => const RegistrationIssue(RegistrationIssueKind.emailTaken),
-        rateLimitedCode => RegistrationIssue(RegistrationIssueKind.rateLimited, seconds: number('retryAfterSeconds')),
-        wrongCodeCode => RegistrationIssue(RegistrationIssueKind.wrongCode, attemptsLeft: number('attemptsLeft')),
-        expiredCodeCode => const RegistrationIssue(RegistrationIssueKind.expiredCode),
-        exhaustedCode => RegistrationIssue(RegistrationIssueKind.attemptsExhausted, minutes: number('lockoutMinutes')),
-        weakPasswordCode => const RegistrationIssue(RegistrationIssueKind.weakPassword),
+        rateLimitedCode => RegistrationIssue(RegistrationIssueKind.rateLimited, minutes: number('minutes')),
+        weakPasswordCode => RegistrationIssue(RegistrationIssueKind.weakPassword, passwordRule: passwordRuleOf(failure)),
         _ => const RegistrationIssue(RegistrationIssueKind.generic),
       };
     }
@@ -119,9 +86,8 @@ class RegistrationIssue extends Equatable {
 
   /// A problem with something typed on the form step: the flow goes back there
   /// and marks the field instead of showing a banner.
-  bool get isFormFieldConflict =>
-      kind == RegistrationIssueKind.licenseTaken || kind == RegistrationIssueKind.emailTaken;
+  bool get isFormFieldConflict => kind == RegistrationIssueKind.emailTaken;
 
   @override
-  List<Object?> get props => [kind, seconds, attemptsLeft, minutes];
+  List<Object?> get props => [kind, seconds, attemptsLeft, minutes, passwordRule];
 }

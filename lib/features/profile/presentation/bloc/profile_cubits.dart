@@ -104,13 +104,16 @@ class MarginsState extends Equatable {
 }
 
 class MarginsCubit extends Cubit<MarginsState> {
-  MarginsCubit({required GetMarginsUseCase get, required SaveMarginsUseCase save, this.canEdit = true})
+  MarginsCubit({required GetMarginsUseCase get, required SaveMarginsUseCase save, required this.agentId, this.canEdit = true})
       : _get = get,
         _save = save,
         super(const MarginsState());
 
   final GetMarginsUseCase _get;
   final SaveMarginsUseCase _save;
+
+  /// The sub-agency whose margins these are.
+  final String agentId;
 
   /// false = the signed-in user may only look (not the owner).
   final bool canEdit;
@@ -126,7 +129,7 @@ class MarginsCubit extends Cubit<MarginsState> {
       if (state.margins.isEmpty) {
         emit(const MarginsState());
       }
-      final result = await _get();
+      final result = await _get(agentId);
       if (isClosed) {
         return;
       }
@@ -137,6 +140,18 @@ class MarginsCubit extends Cubit<MarginsState> {
     } finally {
       _loading = false;
     }
+  }
+
+  Future<void> _reloadKeepingDrafts() async {
+    final result = await _get(agentId);
+    if (isClosed) return;
+    result.fold((_) {}, (o) {
+      final drafts = {
+        for (final e in state.drafts.entries)
+          if (o.margins.any((m) => m.serviceId == e.key && m.value != e.value)) e.key: e.value,
+      };
+      emit(state.copyWith(margins: o.margins, history: o.history, drafts: drafts));
+    });
   }
 
   /// Sets [serviceId]'s margin; setting it back to the saved value drops the edit.
@@ -164,22 +179,29 @@ class MarginsCubit extends Cubit<MarginsState> {
       return;
     }
     emit(state.copyWith(save: MarginSaveStatus.saving, clearFailure: true));
-    final result = await _save(state.drafts);
+    final result = await _save(agentId, state.drafts);
     if (isClosed) {
       return;
     }
+    var refused = false;
     result.fold(
-      (f) => emit(state.copyWith(save: MarginSaveStatus.failed, failure: f)),
+      (f) {
+        refused = true;
+        emit(state.copyWith(save: MarginSaveStatus.failed, failure: f));
+      },
       (o) => emit(MarginsState(
           status: LoadStatus.loaded, margins: o.margins, history: o.history, save: MarginSaveStatus.saved)),
     );
+    // Services are saved one by one, so a refusal may follow some that went through:
+    // read the server's figures again and keep only the edits that still differ.
+    if (refused && !isClosed) await _reloadKeepingDrafts();
   }
 }
 
 // ───────────────────────── ACC-03 ─────────────────────────
 
 /// One-shot outcome of a team action, for a snack bar.
-enum TeamNotice { invited, roleChanged, disabled, reactivated, inviteResent, inviteCancelled, failed }
+enum TeamNotice { invited, roleChanged, failed }
 
 class TeamState extends Equatable {
   const TeamState({
@@ -302,40 +324,4 @@ class TeamCubit extends Cubit<TeamState> {
         );
       });
 
-  Future<void> setActive(String id, {required bool active}) => _act(id, () async {
-        final r = await _uc.setActive(id, active: active);
-        if (isClosed) {
-          return;
-        }
-        r.fold(
-          (f) => emit(state.copyWith(notice: TeamNotice.failed, failure: f)),
-          (m) {
-            _replace(m);
-            emit(state.copyWith(notice: active ? TeamNotice.reactivated : TeamNotice.disabled));
-          },
-        );
-      });
-
-  Future<void> resendInvite(String id) => _act(id, () async {
-        final r = await _uc.resendInvite(id);
-        if (isClosed) {
-          return;
-        }
-        r.fold(
-          (f) => emit(state.copyWith(notice: TeamNotice.failed, failure: f)),
-          (_) => emit(state.copyWith(notice: TeamNotice.inviteResent)),
-        );
-      });
-
-  Future<void> cancelInvite(String id) => _act(id, () async {
-        final r = await _uc.cancelInvite(id);
-        if (isClosed) {
-          return;
-        }
-        r.fold(
-          (f) => emit(state.copyWith(notice: TeamNotice.failed, failure: f)),
-          (_) => emit(state.copyWith(
-              members: [for (final m in state.members) if (m.id != id) m], notice: TeamNotice.inviteCancelled)),
-        );
-      });
 }

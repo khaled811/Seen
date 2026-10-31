@@ -16,6 +16,8 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../../support/presentation/widgets/contact_support_sheet.dart';
 import '../../../system_status/domain/services/store_launcher.dart';
 import '../../domain/entities/agency_profile.dart';
@@ -114,9 +116,12 @@ class _Body extends StatelessWidget {
               ),
             );
           }
-          return SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel);
+          return SeenWaitPolicy.loading(
+            loading: SeenCardsSkeleton(label: SeenStrings.of(context).loadingLabel),
+            onRetry: () => context.read<AgencyDetailsCubit>().load(),
+          );
         }
-        return RefreshIndicator(
+        return SeenRefresh(
           onRefresh: () => context.read<AgencyDetailsCubit>().load(),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, SeenSpace.s6),

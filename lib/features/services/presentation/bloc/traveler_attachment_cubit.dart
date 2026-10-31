@@ -1,6 +1,6 @@
-// Per-traveler attachment (Figma BOOK-06). There is no booking-attachment upload API
-// yet, so the file is only held on the device: the UI says it was not sent.
-// TODO(backend-contract): upload on submit once the booking contract carries files.
+// Per-traveler document slots (Figma BOOK-06). A picked file is only referenced by
+// its path here (never copied or persisted); it is sent when the form is filed on
+// the server (`ServiceBookingBloc`), keyed by `bookingDocumentSlot`.
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,12 +11,12 @@ import '../../../requests/domain/services/document_picker.dart';
 enum AttachmentError { tooLarge, wrongType, unavailable, cameraDenied, photosDenied }
 
 const attachmentAllowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
-const attachmentMaxBytes = 5 * 1024 * 1024;
+const attachmentMaxBytes = 8 * 1024 * 1024; // contract 8.1
 
 class TravelerAttachmentState extends Equatable {
   const TravelerAttachmentState({this.files = const {}, this.error, this.errorTravelerId});
 
-  /// Keyed by traveler id.
+  /// Keyed by document slot (`bookingDocumentSlot(travelerId, requirementId)`).
   final Map<String, PickedDocument> files;
   final AttachmentError? error;
   final String? errorTravelerId;

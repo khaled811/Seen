@@ -69,6 +69,9 @@ extension ProfileStrings on SeenStrings {
   String get retry => _t('إعادة المحاولة', 'Try again');
 
   // ── ACC-02 ──
+  String get marginNoServices => _t('لا توجد خدمات مفعّلة لهذه الوكالة لتحديد هامشها.', 'No service is enabled for this sub-agency, so there is no margin to set.');
+  String get marginPickAgent => _t('اختر الوكيل الفرعي', 'Choose a sub-agency');
+  String get marginNoAgents => _t('لا يوجد وكلاء فرعيون نشطون لتحديد هامشهم.', 'There are no active sub-agencies to set a margin for.');
   String get marginTitle => _t('هامش الربح', 'Profit margin');
   String get marginBanner => _t('الهامش يُضاف على سعر الخدمة لوكلائك الفرعيين فقط، ولا يظهر لعملائك.',
       'The margin is added to the service price for your sub-agents only, and is not shown to your customers.');
@@ -129,30 +132,24 @@ extension ProfileStrings on SeenStrings {
         TeamMemberStatus.invited => _t('دعوة مُرسلة', 'Invite sent'),
         TeamMemberStatus.disabled => _t('معطّل', 'Disabled'),
       };
-  String get inviteUser => _t('دعوة مستخدم', 'Invite a user');
+  String get inviteUser => _t('إضافة مستخدم', 'Add a user');
   String get inviteName => _t('الاسم الكامل', 'Full name');
-  String get invitePhone => _t('رقم الجوال', 'Mobile number');
+  String get inviteEmail => _t('البريد الإلكتروني', 'Email');
+  String get invitePassword => _t('كلمة المرور الأولى', 'First password');
+  String get invitePasswordHint =>
+      _t('١٢ حرفًا على الأقل. سلّمها للمستخدم ويمكنه تغييرها بعد الدخول.', 'At least 12 characters. Give it to the user; they can change it after signing in.');
+  String get passwordTooShort => _t('استخدم ١٢ حرفًا على الأقل.', 'Use at least 12 characters.');
+  String get emailInvalid => _t('أدخل بريدًا إلكترونيًا صالحًا.', 'Enter a valid email address.');
   String get inviteRole => _t('الدور', 'Role');
   String get inviteBranch => _t('الفرع', 'Branch');
-  String get inviteSend => _t('إرسال الدعوة', 'Send invite');
+  String get inviteSend => _t('إضافة المستخدم', 'Add user');
   String get fieldRequired => _t('هذا الحقل مطلوب.', 'This field is required.');
-  String get phoneInvalid => _t('أدخل رقم جوال صحيحًا.', 'Enter a valid mobile number.');
   String teamNotice(TeamNotice n) => switch (n) {
-        TeamNotice.invited => _t('أرسلنا الدعوة.', 'Invite sent.'),
+        TeamNotice.invited => _t('تمت إضافة المستخدم.', 'User added.'),
         TeamNotice.roleChanged => _t('تم تغيير الدور.', 'Role changed.'),
-        TeamNotice.disabled => _t('تم تعطيل المستخدم.', 'User disabled.'),
-        TeamNotice.reactivated => _t('تم تفعيل المستخدم.', 'User reactivated.'),
-        TeamNotice.inviteResent => _t('أعدنا إرسال الدعوة.', 'Invite sent again.'),
-        TeamNotice.inviteCancelled => _t('ألغينا الدعوة.', 'Invite cancelled.'),
         TeamNotice.failed => _t('تعذّر تنفيذ الإجراء. حاول مرة أخرى.', 'Could not do that. Try again.'),
       };
   String get changeRoleAction => _t('تغيير الدور', 'Change role');
-  String get disableUserAction => _t('تعطيل المستخدم', 'Disable user');
-  String get enableUserAction => _t('تفعيل المستخدم', 'Reactivate user');
-  String get resendInviteAction => _t('إعادة إرسال الدعوة', 'Resend invite');
-  String get cancelInviteAction => _t('إلغاء الدعوة', 'Cancel invite');
-  String disableTitle(String name) => _t('تعطيل $name؟', 'Disable $name?');
-  String get disableBody => _t('لن يتمكن من الدخول حتى تعيد تفعيله.', 'They cannot sign in until you reactivate them.');
   String get teamForbidden => _t('إدارة المستخدمين لمالك الحساب ومديري الفروع. اطلب الصلاحية من مالك الحساب.',
       'Users are managed by the account owner and branch managers. Ask the account owner for access.');
 }

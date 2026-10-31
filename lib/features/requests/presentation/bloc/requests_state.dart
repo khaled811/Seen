@@ -1,14 +1,22 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/error/failure.dart';
 import '../../domain/entities/request_detail.dart';
 import '../../domain/entities/request_summary.dart';
+import '../../domain/entities/requests_page.dart';
 
-/// Dashboard filter buckets. `completed` covers the "Completed/Approved"
-/// bucket from the brief — our confirmed `RequestStatus` enum (Task 01) has
-/// no separate `approved` value, only `completed`; see the bloc's
-/// `_statusesFor` mapping for the full reasoning.
 enum RequestsDashboardFilter { all, pendingUnderReview, completed, actionRequired }
+
+/// Which server group each dashboard chip shows.
+extension RequestsFilterGroup on RequestsDashboardFilter {
+  RequestsGroup get group => switch (this) {
+        RequestsDashboardFilter.all => RequestsGroup.all,
+        RequestsDashboardFilter.pendingUnderReview => RequestsGroup.processing,
+        RequestsDashboardFilter.completed => RequestsGroup.completed,
+        RequestsDashboardFilter.actionRequired => RequestsGroup.actionNeeded,
+      };
+}
 
 enum RequestDetailStatus { idle, loading, loaded, failure }
 
@@ -30,18 +38,19 @@ final class RequestsLoading extends RequestsState {
 }
 
 final class RequestsFailure extends RequestsState {
-  const RequestsFailure(this.message, {this.offline = false, this.reference});
+  const RequestsFailure(this.message, {this.offline = false, this.reference, this.failure});
 
   final String message;
 
-  /// No connection / timeout (as opposed to a server error).
   final bool offline;
 
-  /// Support reference (`502 · a91f`), when the server gave one.
   final String? reference;
 
+  /// The underlying failure; the UI turns it into localized text.
+  final Failure? failure;
+
   @override
-  List<Object?> get props => [message, offline, reference];
+  List<Object?> get props => [message, offline, reference, failure];
 }
 
 final class RequestsLoaded extends RequestsState {
@@ -49,85 +58,165 @@ final class RequestsLoaded extends RequestsState {
     required this.requests,
     this.filter = RequestsDashboardFilter.all,
     this.searchQuery = '',
+    this.searchResults = const [],
+    this.searching = false,
+    this.searchFailure,
+    this.hasMore = false,
+    this.loadingMore = false,
+    this.loadMoreFailed = false,
+    this.listLoading = false,
+    this.listFailure,
+    this.counts = const {},
+    this.attentionCount,
+    this.attentionSoonestSeconds,
+    this.hasAnyRequests,
+    this.canCreate = true,
     this.detailStatus = RequestDetailStatus.idle,
     this.detail,
     this.detailError,
+    this.detailFailure,
     this.detailReady = false,
     this.cancelStatus = RequestCancelStatus.idle,
     this.cancelError,
+    this.cancelFailure,
   });
 
+  /// The loaded pages of the selected group, in the server's order (newest
+  /// first). The server filters and pages; the app does not re-sort, so loading
+  /// more never reshuffles what is on screen.
   final List<RequestSummary> requests;
   final RequestsDashboardFilter filter;
 
-  /// Client-side substring search over `referenceId`/`serviceName` — not a
-  /// server round trip, same as [filter].
   final String searchQuery;
+
+  /// The server's matches for [searchQuery] (first page).
+  final List<RequestSummary> searchResults;
+  final bool searching;
+  final Failure? searchFailure;
+
+  final bool hasMore;
+  final bool loadingMore;
+  final bool loadMoreFailed;
+
+  /// A group is being loaded (the chip was just changed).
+  final bool listLoading;
+  final Failure? listFailure;
+
+  /// Requests per group, from the server, keyed by the group's wire value.
+  final Map<String, int> counts;
+
+  /// The server's own "needs action" figures (`attention`).
+  final int? attentionCount;
+  final int? attentionSoonestSeconds;
+
+  /// False when the agency has never filed a request; null while unknown.
+  final bool? hasAnyRequests;
+
+  /// Whether this person may file a request.
+  final bool canCreate;
 
   final RequestDetailStatus detailStatus;
   final RequestDetail? detail;
   final String? detailError;
+  final Failure? detailFailure;
 
-  /// One-shot: true for exactly the emission right after a detail finishes
-  /// loading; the UI navigates then dispatches `RequestDetailAcknowledged`
-  /// to clear it (same pattern as the Services feature's `reviewReady`).
   final bool detailReady;
 
   final RequestCancelStatus cancelStatus;
   final String? cancelError;
+  final Failure? cancelFailure;
 
-  List<RequestSummary> get filteredRequests {
-    final byBucket = switch (filter) {
-      RequestsDashboardFilter.all => requests,
-      RequestsDashboardFilter.pendingUnderReview =>
-        requests.where((r) => _pendingStatuses.contains(r.status)).toList(),
-      RequestsDashboardFilter.completed =>
-        requests.where((r) => r.status == RequestStatus.completed).toList(),
-      RequestsDashboardFilter.actionRequired =>
-        requests.where((r) => r.status == RequestStatus.infoRequired).toList(),
+  /// The list the dashboard shows.
+  List<RequestSummary> get filteredRequests => requests;
+
+  /// How many requests a chip stands for: the server's count, or (for a state
+  /// built without one) what is loaded.
+  int countFor(RequestsDashboardFilter f) {
+    final fromServer = counts[f.group.wire];
+    if (fromServer != null) return fromServer;
+    return switch (f) {
+      RequestsDashboardFilter.all => requests.length,
+      RequestsDashboardFilter.pendingUnderReview => requests
+          .where((r) =>
+              r.status == RequestStatus.submitted ||
+              r.status == RequestStatus.underReview ||
+              r.status == RequestStatus.processing)
+          .length,
+      RequestsDashboardFilter.actionRequired => requests.where((r) => r.status == RequestStatus.infoRequired).length,
+      RequestsDashboardFilter.completed => requests.where((r) => r.status == RequestStatus.completed).length,
     };
-    final bySearch = _search(byBucket, searchQuery);
-    // `List.sort` isn't guaranteed stable, so ties (e.g. identical
-    // submittedAt) are broken by original index to keep ordering
-    // deterministic rather than relying on the sort algorithm's incidental
-    // behavior.
-    final indexed = bySearch.indexed.toList()
-      ..sort((a, b) {
-        final cmp = _compareRequests(a.$2, b.$2);
-        return cmp != 0 ? cmp : a.$1.compareTo(b.$1);
-      });
-    return [for (final entry in indexed) entry.$2];
   }
-
-  /// Requests matching [searchQuery] in the reference, service or a traveler's
-  /// name, across every status (the search screen, Figma REQ-13, ignores the
-  /// dashboard's filter chips). Empty while there is no query.
-  List<RequestSummary> get searchResults =>
-      searchQuery.trim().isEmpty ? const [] : _search(requests, searchQuery);
 
   RequestsLoaded copyWith({
     List<RequestSummary>? requests,
     RequestsDashboardFilter? filter,
     String? searchQuery,
+    List<RequestSummary>? searchResults,
+    bool? searching,
+    Failure? searchFailure,
+    bool clearSearchFailure = false,
+    bool? hasMore,
+    bool? loadingMore,
+    bool? loadMoreFailed,
+    bool? listLoading,
+    Failure? listFailure,
+    bool clearListFailure = false,
+    Map<String, int>? counts,
+    int? attentionCount,
+    int? attentionSoonestSeconds,
+    bool? hasAnyRequests,
+    bool? canCreate,
     RequestDetailStatus? detailStatus,
     RequestDetail? detail,
     String? detailError,
+    Failure? detailFailure,
     bool clearDetailError = false,
     bool? detailReady,
     RequestCancelStatus? cancelStatus,
     String? cancelError,
+    Failure? cancelFailure,
     bool clearCancelError = false,
   }) =>
       RequestsLoaded(
         requests: requests ?? this.requests,
         filter: filter ?? this.filter,
         searchQuery: searchQuery ?? this.searchQuery,
+        searchResults: searchResults ?? this.searchResults,
+        searching: searching ?? this.searching,
+        searchFailure: clearSearchFailure ? null : (searchFailure ?? this.searchFailure),
+        hasMore: hasMore ?? this.hasMore,
+        loadingMore: loadingMore ?? this.loadingMore,
+        loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
+        listLoading: listLoading ?? this.listLoading,
+        listFailure: clearListFailure ? null : (listFailure ?? this.listFailure),
+        counts: counts ?? this.counts,
+        attentionCount: attentionCount ?? this.attentionCount,
+        attentionSoonestSeconds: attentionSoonestSeconds ?? this.attentionSoonestSeconds,
+        hasAnyRequests: hasAnyRequests ?? this.hasAnyRequests,
+        canCreate: canCreate ?? this.canCreate,
         detailStatus: detailStatus ?? this.detailStatus,
         detail: detail ?? this.detail,
         detailError: clearDetailError ? null : (detailError ?? this.detailError),
+        detailFailure: clearDetailError ? null : (detailFailure ?? this.detailFailure),
         detailReady: detailReady ?? this.detailReady,
         cancelStatus: cancelStatus ?? this.cancelStatus,
         cancelError: clearCancelError ? null : (cancelError ?? this.cancelError),
+        cancelFailure: clearCancelError ? null : (cancelFailure ?? this.cancelFailure),
+      );
+
+  /// Applies a freshly loaded [page] as the start of the list.
+  RequestsLoaded withFirstPage(RequestsPage page) => copyWith(
+        requests: page.items,
+        hasMore: page.hasMore,
+        loadingMore: false,
+        loadMoreFailed: false,
+        listLoading: false,
+        clearListFailure: true,
+        counts: page.counts.isEmpty ? counts : page.counts,
+        attentionCount: page.attentionCount,
+        attentionSoonestSeconds: page.attentionSoonestSeconds,
+        hasAnyRequests: page.hasAnyRequests,
+        canCreate: page.canCreate,
       );
 
   @override
@@ -135,49 +224,26 @@ final class RequestsLoaded extends RequestsState {
         requests,
         filter,
         searchQuery,
+        searchResults,
+        searching,
+        searchFailure,
+        hasMore,
+        loadingMore,
+        loadMoreFailed,
+        listLoading,
+        listFailure,
+        counts,
+        attentionCount,
+        attentionSoonestSeconds,
+        hasAnyRequests,
+        canCreate,
         detailStatus,
         detail,
         detailError,
+        detailFailure,
         detailReady,
         cancelStatus,
         cancelError,
+        cancelFailure,
       ];
-}
-
-List<RequestSummary> _search(List<RequestSummary> source, String rawQuery) {
-  final query = rawQuery.trim().toLowerCase();
-  if (query.isEmpty) return source;
-  return source
-      .where((r) =>
-          r.referenceId.toLowerCase().contains(query) ||
-          r.serviceName.toLowerCase().contains(query) ||
-          r.travelerNames.any((n) => n.toLowerCase().contains(query)))
-      .toList();
-}
-
-const _pendingStatuses = {
-  RequestStatus.submitted,
-  RequestStatus.pendingAgentApproval,
-  RequestStatus.pendingManagementApproval,
-  RequestStatus.underReview,
-  RequestStatus.processing,
-};
-
-/// Action-required first, then SLA < 24h ascending (most urgent first), then
-/// newest-submitted first. Evaluated against "now" at sort time, same as the
-/// live SLA countdown elsewhere — this is a display order, not stored state.
-int _compareRequests(RequestSummary a, RequestSummary b) {
-  final now = DateTime.now();
-  final actionA = a.status == RequestStatus.infoRequired;
-  final actionB = b.status == RequestStatus.infoRequired;
-  if (actionA != actionB) return actionA ? -1 : 1;
-
-  final slaA = a.slaDeadline?.difference(now);
-  final slaB = b.slaDeadline?.difference(now);
-  final urgentA = slaA != null && slaA.inHours < 24;
-  final urgentB = slaB != null && slaB.inHours < 24;
-  if (urgentA != urgentB) return urgentA ? -1 : 1;
-  if (urgentA && urgentB) return slaA.compareTo(slaB);
-
-  return b.submittedAt.compareTo(a.submittedAt);
 }

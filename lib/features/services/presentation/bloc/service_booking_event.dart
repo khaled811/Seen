@@ -1,8 +1,7 @@
-import '../../domain/entities/hospital.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
-import '../../domain/entities/booking_draft.dart';
+import '../../../requests/domain/entities/missing_document.dart';
+import '../../domain/entities/hospital.dart';
 import '../../domain/entities/service_definition.dart';
 
 sealed class ServiceBookingEvent extends Equatable {
@@ -17,42 +16,30 @@ final class ServiceCatalogRequested extends ServiceBookingEvent {
   const ServiceCatalogRequested();
 }
 
-/// Starts a new booking session for [service]. [travelerFields] is
-/// resolved by the caller (needs `AppLocalizations` for labels — see
-/// `ServiceTravelerFields`), so the Bloc itself never needs l10n.
+/// Starts a new booking session for [service]; the traveler form is the
+/// service's own server-defined `fields`.
 final class ServiceSelected extends ServiceBookingEvent {
-  const ServiceSelected({required this.service, required this.travelerFields, this.hospital});
+  const ServiceSelected({required this.service, this.hospital});
 
   final ServiceDefinition service;
-  final List<DynamicFormField> travelerFields;
 
   /// Chosen first for a medical service (Figma BOOK-10).
   final HospitalChoice? hospital;
 
   @override
-  List<Object?> get props => [service, travelerFields, hospital];
+  List<Object?> get props => [service, hospital];
 }
 
-/// Opens the traveler form with the data of a saved draft (Figma REQ-01).
-final class BookingDraftResumed extends ServiceBookingEvent {
-  const BookingDraftResumed({required this.service, required this.travelerFields, required this.draft});
+/// Opens a server draft (the drafts list) straight at its review. The
+/// travelers of a draft come back masked and cannot be edited, so the review is
+/// the only step left.
+final class BookingDraftOpened extends ServiceBookingEvent {
+  const BookingDraftOpened(this.requestId);
 
-  final ServiceDefinition service;
-  final List<DynamicFormField> travelerFields;
-  final BookingDraft draft;
-
-  @override
-  List<Object?> get props => [service, travelerFields, draft];
-}
-
-/// The draft was saved (or its id is now known): later saves overwrite it.
-final class BookingDraftSaved extends ServiceBookingEvent {
-  const BookingDraftSaved(this.draftId);
-
-  final String draftId;
+  final String requestId;
 
   @override
-  List<Object?> get props => [draftId];
+  List<Object?> get props => [requestId];
 }
 
 final class TravelerFieldChanged extends ServiceBookingEvent {
@@ -68,6 +55,19 @@ final class TravelerFieldChanged extends ServiceBookingEvent {
 
   @override
   List<Object?> get props => [travelerIndex, fieldKey, value];
+}
+
+/// The person chose to copy the details of an earlier request: its values fill the
+/// matching fields (travelers are added as needed, up to the limit). Nothing is
+/// sent; the person reviews the form and continues as usual.
+final class TravelerPrefillApplied extends ServiceBookingEvent {
+  const TravelerPrefillApplied(this.travelers);
+
+  /// Per traveler: field key -> value.
+  final List<Map<String, String>> travelers;
+
+  @override
+  List<Object?> get props => [travelers];
 }
 
 final class TravelerAdded extends ServiceBookingEvent {
@@ -92,16 +92,34 @@ final class ActiveTravelerChanged extends ServiceBookingEvent {
   List<Object?> get props => [travelerIndex];
 }
 
-/// Validates every traveler's fields and, if all are clean, flips
-/// `reviewReady` so the UI can navigate to the review screen.
+/// The key of one document slot: a traveler (local id) and a document
+/// requirement of the service.
+String bookingDocumentSlot(String travelerId, String requirementId) => '$travelerId|$requirementId';
+
+/// Validates every traveler and, if all are clean, files them on the server
+/// (draft, travelers, documents) and loads the review: `reviewReady` then flips
+/// so the UI can open the review screen. With [saveOnly] it stops after the
+/// server holds the draft and flips `draftSaved` instead (leaving the form).
+///
+/// [documents] are the files picked so far, keyed by [bookingDocumentSlot].
 final class TravelerContinuePressed extends ServiceBookingEvent {
-  const TravelerContinuePressed();
+  const TravelerContinuePressed({this.documents = const {}, this.saveOnly = false});
+
+  final Map<String, PickedDocument> documents;
+  final bool saveOnly;
+
+  @override
+  List<Object?> get props => [documents, saveOnly];
 }
 
 /// Dispatched by the UI immediately after acting on `reviewReady`, so
 /// returning to this screen later doesn't re-trigger navigation.
 final class ReviewReadyAcknowledged extends ServiceBookingEvent {
   const ReviewReadyAcknowledged();
+}
+
+final class DraftSavedAcknowledged extends ServiceBookingEvent {
+  const DraftSavedAcknowledged();
 }
 
 final class BookingSubmitted extends ServiceBookingEvent {
@@ -114,7 +132,7 @@ final class BookingReset extends ServiceBookingEvent {
   const BookingReset();
 }
 
-/// Reload the wallet balance (after a top-up from the review screen, Figma BOOK-08).
-final class BookingBalanceRefreshRequested extends ServiceBookingEvent {
-  const BookingBalanceRefreshRequested();
+/// Reloads the server's quote (after a top-up from the review screen, Figma BOOK-08).
+final class BookingReviewRefreshRequested extends ServiceBookingEvent {
+  const BookingReviewRefreshRequested();
 }

@@ -25,10 +25,18 @@ import 'package:seen_booking/features/requests/presentation/screens/request_docu
 class _Repo implements DocumentFileRepository {
   Either<Failure, Uint8List> result = Right(Uint8List.fromList([1, 2, 3]));
   int fetches = 0;
+  final fileIds = <String>[];
 
   @override
   Future<Either<Failure, Uint8List>> fetch(String url) async {
     fetches++;
+    return result;
+  }
+
+  @override
+  Future<Either<Failure, Uint8List>> fetchFile(String fileId) async {
+    fetches++;
+    fileIds.add(fileId);
     return result;
   }
 }
@@ -86,12 +94,18 @@ class _FakeRenderer implements PdfPageRenderer {
 
 DocumentViewerBloc _bloc(_Repo r, _Exporter e) => DocumentViewerBloc(
       fetchDocument: FetchDocumentFileUseCase(r),
+      fetchFile: FetchRequestFileUseCase(r),
       saveDocument: SaveDocumentUseCase(e),
       shareDocument: ShareDocumentUseCase(e),
     );
 
-RequestDetail _detail({RequestStatus status = RequestStatus.completed, String? url = 'https://x.test/visa.pdf'}) =>
+RequestDetail _detail({
+  RequestStatus status = RequestStatus.completed,
+  String? url = 'https://x.test/visa.pdf',
+  List<RequestOutput> outputs = const [],
+}) =>
     RequestDetail(
+      outputs: outputs,
       id: 'r1',
       referenceId: 'SB-20485',
       serviceName: 'تأشيرة السعودية',
@@ -206,6 +220,56 @@ void main() {
       await tester.pump();
       expect(exporter.savedName, 'تأشيرة السعودية.pdf');
       expect(find.text('تم حفظ الملف.'), findsOneWidget);
+    });
+
+    testWidgets('a delivered file is opened by its id (a signed link is asked for, never a stored URL)', (tester) async {
+      const output = RequestOutput(fileId: 'file-77', fileName: 'visa-A.pdf', contentType: 'application/pdf', sizeBytes: 900);
+      await open(tester, _detail(url: null, outputs: const [output]));
+      expect(repo.fileIds, ['file-77']);
+      expect(find.text('visa-A.pdf'), findsOneWidget);
+      expect(find.text('PAGES'), findsOneWidget);
+    });
+
+    testWidgets('a delivered file that fails to open retries with a new request for the link', (tester) async {
+      const output = RequestOutput(fileId: 'file-77', fileName: 'visa-A.pdf');
+      await open(tester, _detail(url: null, outputs: const [output]), failFetch: true);
+      expect(find.text('تعذّر فتح المستند'), findsOneWidget);
+      repo.result = Right(Uint8List.fromList([1]));
+      await tester.tap(find.text('إعادة المحاولة'));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump();
+      await tester.pump();
+      expect(repo.fileIds, ['file-77', 'file-77']);
+      expect(find.text('PAGES'), findsOneWidget);
+    });
+
+    testWidgets('the chosen one of several delivered files is the one opened', (tester) async {
+      const second = RequestOutput(fileId: 'file-2', fileName: 'visa-B.pdf');
+      repo = _Repo();
+      exporter = _Exporter();
+      await tester.binding.setSurfaceSize(const Size(390, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('ar'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.light,
+        home: RequestDocumentViewerScreen(
+          detail: _detail(url: null, outputs: const [RequestOutput(fileId: 'file-1', fileName: 'visa-A.pdf'), second]),
+          output: second,
+          createBloc: () => _bloc(repo, exporter),
+          pagesBuilder: (context, bytes, kind, onPage, onFail) => const Center(child: Text('PAGES')),
+        ),
+      ));
+      await tester.pump();
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump();
+      expect(repo.fileIds, ['file-2']);
     });
 
     testWidgets('not ready: no document yet shows the explanation and where the request is', (tester) async {

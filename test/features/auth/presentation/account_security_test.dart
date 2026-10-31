@@ -66,10 +66,12 @@ void main() {
   group('AccountIssue', () {
     test('maps backend codes', () {
       AccountIssueKind kind(String code) => AccountIssue.from(ServerFailure('x', code: code)).kind;
-      expect(kind('WRONG_CURRENT_PASSWORD'), AccountIssueKind.wrongCurrentPassword);
-      expect(kind('PASSWORD_REUSED'), AccountIssueKind.passwordReused);
+      expect(kind('current_password_invalid'), AccountIssueKind.wrongCurrentPassword);
+      expect(kind('password_unchanged'), AccountIssueKind.passwordReused);
       expect(kind('PHONE_ALREADY_REGISTERED'), AccountIssueKind.phoneTaken);
       expect(kind('OTP_INVALID'), AccountIssueKind.wrongCode);
+      expect(kind('password_weak'), AccountIssueKind.weakPassword);
+      expect(kind('too_many_attempts'), AccountIssueKind.rateLimited);
       expect(kind('nonsense'), AccountIssueKind.generic);
       expect(AccountIssue.from(const NetworkFailure('off')).kind, AccountIssueKind.offline);
     });

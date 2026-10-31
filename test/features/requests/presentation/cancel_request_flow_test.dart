@@ -15,7 +15,7 @@ import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/requests/domain/entities/cancel_reason.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_detail.dart';
-import 'package:seen_booking/features/requests/domain/entities/request_summary.dart';
+import 'package:seen_booking/features/requests/domain/entities/requests_page.dart';
 import 'package:seen_booking/features/requests/domain/repositories/requests_repository.dart';
 import 'package:seen_booking/features/requests/domain/usecases/cancel_request_usecase.dart';
 import 'package:seen_booking/features/requests/domain/usecases/get_request_detail_usecase.dart';
@@ -26,6 +26,7 @@ import 'package:seen_booking/features/requests/presentation/bloc/requests_bloc.d
 import 'package:seen_booking/features/requests/presentation/bloc/requests_event.dart';
 import 'package:seen_booking/features/requests/presentation/bloc/requests_state.dart';
 import 'package:seen_booking/features/requests/presentation/screens/request_detail_screen.dart';
+import '../../../support/requests_fakes.dart';
 
 RequestDetail _detail(RequestStatus status) => RequestDetail(
       id: 'r1',
@@ -46,8 +47,8 @@ class _Repo implements RequestsRepository {
   int cancels = 0;
 
   @override
-  Future<Either<Failure, List<RequestSummary>>> getRequests() async =>
-      const Right([]);
+  Future<Either<Failure, RequestsPage>> getRequests({String group = 'all', String? search, int offset = 0, int limit = 30}) async =>
+      Right(fakeRequestsPage(const [], group: group, search: search, offset: offset, limit: limit));
 
   @override
   Future<Either<Failure, RequestDetail>> getRequestDetail(

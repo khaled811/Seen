@@ -31,16 +31,22 @@ final class WalletTopUpSubmitted extends WalletEvent {
     required this.amountCents,
     required this.method,
     required this.referenceNumber,
-    this.notes,
+    this.paymentAccountId,
+    this.receiptFileId,
   });
 
   final int amountCents;
   final TopUpMethod method;
   final String referenceNumber;
-  final String? notes;
+
+  /// The Seen account paid into (from the top-up options), when one applies.
+  final String? paymentAccountId;
+
+  /// A receipt already uploaded with `kind=ticket_attachment`.
+  final String? receiptFileId;
 
   @override
-  List<Object?> get props => [amountCents, method, referenceNumber, notes];
+  List<Object?> get props => [amountCents, method, referenceNumber, paymentAccountId, receiptFileId];
 }
 
 /// Dispatched by the UI once it has shown a completed top-up's

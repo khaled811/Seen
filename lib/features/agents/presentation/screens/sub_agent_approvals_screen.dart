@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
+
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -14,7 +16,10 @@ import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../domain/entities/sub_agent_request_summary.dart';
+import '../../../../core/di/injection_container.dart';
 import '../bloc/agents_bloc.dart';
+import '../bloc/sub_agent_top_ups_cubit.dart';
+import '../widgets/sub_agent_top_ups_section.dart';
 import '../bloc/agents_event.dart';
 import '../bloc/agents_state.dart';
 
@@ -22,7 +27,22 @@ import '../bloc/agents_state.dart';
 /// agent's gate, each with Reject (asks for a reason, AGT-07) and Approve. Uses
 /// the [AgentsBloc] above it; approved / rejected requests leave the list.
 class SubAgentApprovalsScreen extends StatelessWidget {
-  const SubAgentApprovalsScreen({super.key});
+  const SubAgentApprovalsScreen({super.key, this.createTopUps});
+
+  /// Test seam for the funding-requests cubit; defaults to the DI container.
+  final SubAgentTopUpsCubit Function()? createTopUps;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => (createTopUps ?? InjectionContainer.instance.createSubAgentTopUpsCubit)()..load(),
+      child: const _ApprovalsView(),
+    );
+  }
+}
+
+class _ApprovalsView extends StatelessWidget {
+  const _ApprovalsView();
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +67,7 @@ class SubAgentApprovalsScreen extends StatelessWidget {
             l10n.agentApprovalApproved,
           (ApprovalActionStatus.success, ApprovalActionKind.reject) =>
             l10n.agentApprovalRejected,
-          _ => loaded.approvalActionError ?? l10n.recoveryServerError,
+          _ => failureTextOr(l10n, loaded.approvalActionFailure, loaded.approvalActionError ?? l10n.recoveryServerError),
         };
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
@@ -79,6 +99,8 @@ class SubAgentApprovalsScreen extends StatelessWidget {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
                       children: [
+                        // A sub-agency's own funding requests, when there are any.
+                        SubAgentTopUpsSection(onApproved: () => context.read<AgentsBloc>().add(const AgentsLoadRequested())),
                         if (pending.isEmpty)
                           DecoratedBox(
                             decoration: BoxDecoration(

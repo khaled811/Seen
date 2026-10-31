@@ -17,6 +17,12 @@ class StatementRepositoryImpl implements StatementRepository {
     required StatementFormat format,
   }) async {
     final result = await _remote.exportStatement(from: from, to: to, format: format);
-    return result.map((dto) => dto.toEntity());
+    return result.flatMap((dto) {
+      try {
+        return Right(dto.toEntity());
+      } on FormatException {
+        return const Left(ServerFailure('The statement file could not be read.'));
+      }
+    });
   }
 }

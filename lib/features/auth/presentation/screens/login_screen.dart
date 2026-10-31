@@ -1,15 +1,17 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/config/debug_fallbacks.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_motion_icons.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/inline_banner.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
@@ -64,9 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
     _lockTimer?.cancel();
     if (failure.reason == LoginFailureReason.generic) {
       setState(() => _failure = null);
+      final l10n = AppLocalizations.of(context)!;
+      final cause = failure.cause;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+        ..showSnackBar(SnackBar(content: Text(cause == null ? failure.message : localizedFailureMessage(l10n, cause))));
       return;
     }
     setState(() {
@@ -150,6 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               alignment: AlignmentDirectional.centerStart,
                               child: SeenRoundIconButton(
                                 icon: SeenIcons.back(context),
+                                // The back icon of Figma 03 · Login (it points right in RTL, so it is
+                                // mirrored in LTR).
+                                glyph: const SeenBackGlyph(),
                                 semanticLabel: MaterialLocalizations.of(context).backButtonTooltip,
                                 tonal: true,
                                 onPressed: widget.onBack,
@@ -218,16 +225,32 @@ class _LoginScreenState extends State<LoginScreen> {
                             autofillHints: const [AutofillHints.password],
                             textInputAction: TextInputAction.done,
                             onSubmitted: (_) => _submit(),
-                            suffix: SeenMotionIcon(
-                              asset: SeenMotionIcons.passwordVisibility,
-                              fallbackIcon: _obscurePassword ? SeenIcons.eye : SeenIcons.eyeSlash,
-                              // Two-state toggle, not a one-shot: true =
-                              // password visible (eye open).
-                              value: !_obscurePassword,
-                              size: 16,
-                              color: c.inkMuted,
-                              semanticLabel: _obscurePassword ? l10n.showPasswordAction : l10n.hidePasswordAction,
-                              onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                            // The field gives its suffix a 48 px box: the eye is centred in it at its own
+                            // size (a bare small box would be stretched to 48), light grey, with the whole
+                            // box as the tap target.
+                            suffix: Semantics(
+                              button: true,
+                              label: _obscurePassword ? l10n.showPasswordAction : l10n.hidePasswordAction,
+                              excludeSemantics: true,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                                child: SizedBox(
+                                  width: 44,
+                                  height: 44,
+                                  child: Center(
+                                    child: SeenMotionIcon(
+                                      asset: SeenMotionIcons.passwordVisibility,
+                                      fallbackIcon: _obscurePassword ? SeenIcons.eye : SeenIcons.eyeSlash,
+                                      // Two-state toggle: true = password visible (eye open).
+                                      value: !_obscurePassword,
+                                      size: 26,
+                                      color: SeenBrand.tabIconInactive,
+                                      tintAnimation: true,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                             showError: badCredentials,
                             errorText: badCredentials
@@ -265,6 +288,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                   tone: SeenBannerTone.error,
                                   message: l10n.loginLocked(s.clockMs(_lockSeconds)),
                                 ),
+                              LoginFailureReason.emailRequired => SeenInlineBanner(
+                                  tone: SeenBannerTone.warn,
+                                  message: l10n.loginEmailRequired,
+                                ),
+                              LoginFailureReason.enrollmentLinkRequired => SeenInlineBanner(
+                                  tone: SeenBannerTone.warn,
+                                  message: l10n.loginEnrollmentLinkRequired,
+                                  actionLabel: l10n.loginBannerSupport,
+                                  onAction: () => showContactSupportSheet(context),
+                                ),
+                              LoginFailureReason.verificationExpired => SeenInlineBanner(
+                                  tone: SeenBannerTone.warn,
+                                  message: l10n.loginVerificationExpired,
+                                ),
                               _ => const SizedBox.shrink(),
                             },
                           ],
@@ -296,12 +333,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          // DEBUG ONLY: `kDebugMode` is a compile-time
-                          // constant, so this whole block (and the
-                          // string, deliberately not put through ARB —
-                          // it's a developer tool, not user-facing copy)
-                          // is dead-code-eliminated from release builds.
-                          if (kDebugMode) ...[
+                          // DEBUG ONLY and opt-in: shown just in a debug build
+                          // started with USE_DEBUG_FALLBACKS=true (the fake
+                          // session only works with fake data, so it must not
+                          // be one tap away when pointed at a real server). The
+                          // string is deliberately not in ARB: a developer
+                          // tool, not user-facing copy.
+                          if (debugFallbacksEnabled) ...[
                             const SizedBox(height: SeenSpace.s4),
                             Divider(color: c.border),
                             const SizedBox(height: SeenSpace.s2),

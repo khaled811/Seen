@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
@@ -18,6 +19,8 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../domain/entities/support_ticket.dart';
 import '../bloc/support_bloc.dart';
 import '../bloc/support_event.dart';
@@ -113,8 +116,12 @@ class _TicketsViewState extends State<_TicketsView> {
                 Expanded(
                   child: BlocBuilder<SupportBloc, SupportState>(
                     builder: (context, state) => switch (state) {
-                      SupportInitial() || SupportLoading() => const _Skeleton(),
-                      SupportFailure(:final message) => _ErrorView(message: message),
+                      SupportInitial() || SupportLoading() => SeenWaitPolicy.loading(
+                        loading: const _Skeleton(),
+                        onRetry: () => context.read<SupportBloc>().add(const SupportTicketsLoadRequested()),
+                      ),
+                      SupportFailure(:final message, :final failure) =>
+                        _ErrorView(message: failureTextOr(AppLocalizations.of(context)!, failure, message)),
                       SupportLoaded(:final tickets) => _Loaded(
                           tickets: tickets,
                           closedTab: _closedTab,
@@ -158,7 +165,7 @@ class _Loaded extends StatelessWidget {
     final open = [for (final t in sorted) if (t.isLive) t];
     final closed = [for (final t in sorted) if (!t.isLive) t];
     final shown = closedTab ? closed : open;
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: () async {
         final bloc = context.read<SupportBloc>()..add(const SupportTicketsLoadRequested());
         await bloc.stream.firstWhere((x) => x is! SupportLoading);

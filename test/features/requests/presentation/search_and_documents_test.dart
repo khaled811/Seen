@@ -6,19 +6,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
-import 'package:seen_booking/features/requests/data/datasources/secure_recent_searches_store.dart';
+import 'package:seen_booking/features/requests/data/datasources/in_memory_recent_searches_store.dart';
 import 'package:seen_booking/features/requests/data/models/request_summary_dto.dart';
 import 'package:seen_booking/features/requests/data/models/request_traveler_status_dto.dart';
 import 'package:seen_booking/features/requests/domain/entities/cancel_reason.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_detail.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_summary.dart';
+import 'package:seen_booking/features/requests/domain/entities/requests_page.dart';
 import 'package:seen_booking/features/requests/domain/entities/request_traveler_status.dart';
 import 'package:seen_booking/features/requests/domain/repositories/recent_searches_store.dart';
 import 'package:seen_booking/features/requests/domain/repositories/requests_repository.dart';
@@ -33,6 +33,7 @@ import 'package:seen_booking/features/requests/presentation/bloc/requests_event.
 import 'package:seen_booking/features/requests/presentation/bloc/requests_state.dart';
 import 'package:seen_booking/features/requests/presentation/screens/request_detail_screen.dart';
 import 'package:seen_booking/features/requests/presentation/screens/requests_search_screen.dart';
+import '../../../support/requests_fakes.dart';
 
 RequestSummary _summary(String id, String ref, RequestStatus status, List<String> names,
         {String service = 'حجز طيران'}) =>
@@ -87,7 +88,8 @@ class _Repo implements RequestsRepository {
   final RequestDetail? detail;
 
   @override
-  Future<Either<Failure, List<RequestSummary>>> getRequests() async => Right(_summaries);
+  Future<Either<Failure, RequestsPage>> getRequests({String group = 'all', String? search, int offset = 0, int limit = 30}) async =>
+      Right(fakeRequestsPage(_summaries, group: group, search: search, offset: offset, limit: limit));
 
   @override
   Future<Either<Failure, RequestDetail>> getRequestDetail(String requestId) async =>
@@ -196,18 +198,8 @@ void main() {
       expect(_detailWithDocs().hasTravelerDocuments, true);
     });
 
-    test('searchResults matches reference, service and traveler across every filter', () {
-      final loaded = RequestsLoaded(requests: _summaries, filter: RequestsDashboardFilter.completed, searchQuery: 'الحميري');
-      expect(loaded.searchResults.map((r) => r.referenceId), ['SB-20488', 'SB-20487', 'SB-20481']);
-      expect(loaded.copyWith(searchQuery: 'sb-20476').searchResults.single.id, '4');
-      expect(loaded.copyWith(searchQuery: 'مصر').searchResults.single.id, '4');
-      expect(loaded.copyWith(searchQuery: '  ').searchResults, isEmpty);
-      expect(loaded.copyWith(searchQuery: 'zzz').searchResults, isEmpty);
-    });
-
-    test('the secure recents store keeps the newest five, without duplicates, and clears', () async {
-      storage.clear();
-      final store = SecureRecentSearchesStore(storage: const FlutterSecureStorage(), userId: () async => 'u1');
+    test('the in-memory recents store keeps the newest five, without duplicates, and clears', () async {
+      final store = InMemoryRecentSearchesStore();
       for (final q in ['a', 'b', 'c', 'd', 'e', 'f']) {
         await store.remember(q);
       }
@@ -216,6 +208,13 @@ void main() {
       expect(await store.remember('  '), ['D', 'f', 'e', 'c', 'b']);
       await store.clear();
       expect(await store.read(), isEmpty);
+    });
+
+    test('recent searches are never written to secure storage', () async {
+      storage.clear();
+      final store = InMemoryRecentSearchesStore();
+      await store.remember('AHMED SALEH');
+      expect(storage, isEmpty);
     });
   });
 

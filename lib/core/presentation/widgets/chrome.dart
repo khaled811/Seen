@@ -125,6 +125,7 @@ class SeenTopBar extends StatelessWidget implements PreferredSizeWidget {
             if (showBack)
               SeenIconButton(
                 icon: SeenIcons.back(context),
+                glyph: const SeenBackGlyph(),
                 semanticLabel: s.back,
                 onPressed: onBack ?? () => Navigator.maybePop(context),
               )
@@ -160,7 +161,8 @@ class SeenTopBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// Five-tab bottom navigation: Home, Requests, Wallet, Sub-agents, Account.
 /// Flows (booking, detail) hide it and show a [SeenActionBar] instead.
-class SeenBottomNav extends StatelessWidget {
+/// The icon of the tab that is tapped (also the one already selected) does a short springy hop.
+class SeenBottomNav extends StatefulWidget {
   const SeenBottomNav({
     super.key,
     required this.selectedIndex,
@@ -182,6 +184,19 @@ class SeenBottomNav extends StatelessWidget {
     SeenVectors.iconAgents,
     SeenVectors.iconAccount,
   ];
+
+  @override
+  State<SeenBottomNav> createState() => _SeenBottomNavState();
+}
+
+class _SeenBottomNavState extends State<SeenBottomNav> {
+  /// Bumped per tap on a tab; its icon replays the hop when its number changes.
+  final _taps = List<int>.filled(5, 0);
+
+  void _select(int i) {
+    setState(() => _taps[i]++);
+    widget.onSelected(i);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -206,21 +221,95 @@ class SeenBottomNav extends StatelessWidget {
           }),
         ),
         child: NavigationBar(
-          selectedIndex: selectedIndex,
-          onDestinationSelected: onSelected,
+          selectedIndex: widget.selectedIndex,
+          onDestinationSelected: _select,
           destinations: [
             for (var i = 0; i < 5; i++)
               Opacity(
-                opacity: dimmed.contains(i) ? .25 : 1,
+                opacity: widget.dimmed.contains(i) ? .25 : 1,
                 child: NavigationDestination(
-                  icon: SeenSvgIcon(_icons[i], color: SeenBrand.tabIconInactive),
-                  selectedIcon: SeenSvgIcon(_icons[i], color: c.primary),
+                  icon: _TabHop(
+                    tick: _taps[i],
+                    child: SeenSvgIcon(SeenBottomNav._icons[i], color: SeenBrand.tabIconInactive),
+                  ),
+                  selectedIcon: _TabHop(
+                    tick: _taps[i],
+                    child: SeenSvgIcon(SeenBottomNav._icons[i], color: c.primary),
+                  ),
                   label: labels[i],
                 ),
               ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A calm, playful tilt of a tab icon: it leans one way, sways back past upright, and settles
+/// with a small rise and a soft grow (about 480 ms). Replays when [tick] changes; still with
+/// "reduce motion". Owns one controller, disposed in dispose.
+class _TabHop extends StatefulWidget {
+  const _TabHop({required this.tick, required this.child});
+
+  final int tick;
+  final Widget child;
+
+  @override
+  State<_TabHop> createState() => _TabHopState();
+}
+
+class _TabHopState extends State<_TabHop> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 480));
+
+  /// Radians: lean, sway back the other way, then rest.
+  static final _tilt = TweenSequence<double>([
+    TweenSequenceItem(tween: Tween(begin: 0.0, end: -.22).chain(CurveTween(curve: Curves.easeOutCubic)), weight: 28),
+    TweenSequenceItem(tween: Tween(begin: -.22, end: .14).chain(CurveTween(curve: Curves.easeInOutCubic)), weight: 32),
+    TweenSequenceItem(tween: Tween(begin: .14, end: 0.0).chain(CurveTween(curve: Curves.easeOutBack)), weight: 40),
+  ]);
+
+  /// A soft grow and back.
+  static final _scale = TweenSequence<double>([
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.1).chain(CurveTween(curve: Curves.easeOut)), weight: 35),
+    TweenSequenceItem(tween: Tween(begin: 1.1, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 65),
+  ]);
+
+  /// A small rise and back.
+  static final _lift = TweenSequence<double>([
+    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)), weight: 40),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 60),
+  ]);
+
+  @override
+  void didUpdateWidget(_TabHop old) {
+    super.didUpdateWidget(old);
+    if (old.tick != widget.tick && !MediaQuery.disableAnimationsOf(context)) {
+      _c.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      child: widget.child,
+      builder: (context, child) {
+        final t = _c.value;
+        return Transform.translate(
+          offset: Offset(0, -2 * _lift.transform(t)),
+          child: Transform.rotate(
+            angle: _tilt.transform(t),
+            child: Transform.scale(scale: _scale.transform(t), child: child),
+          ),
+        );
+      },
     );
   }
 }
@@ -315,19 +404,36 @@ class SeenSectionHeader extends StatelessWidget {
       padding: padding,
       child: Row(
         children: [
-          Flexible(child: Text(title, style: SeenType.of(context).h2)),
-          if (count != null) ...[
-            const SizedBox(width: SeenSpace.s2),
-            Container(
-              constraints: const BoxConstraints(minWidth: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              decoration: BoxDecoration(color: c.dangerBg, borderRadius: const BorderRadius.all(SeenRadius.full)),
-              child: Text('$count',
-                  textAlign: TextAlign.center, style: text.labelMedium!.copyWith(color: c.dangerFg, height: 20 / 12)),
+          // The title (and its count) takes all the room the link leaves, so the link sits at
+          // the far end of the row. (A Flexible + Spacer pair split the free space in half and
+          // left the link floating next to the title.)
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(child: Text(title, style: SeenType.of(context).h2)),
+                  if (count != null) ...[
+                    const SizedBox(width: SeenSpace.s2),
+                    Container(
+                      constraints: const BoxConstraints(minWidth: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      decoration:
+                          BoxDecoration(color: c.dangerBg, borderRadius: const BorderRadius.all(SeenRadius.full)),
+                      child: Text('$count',
+                          textAlign: TextAlign.center,
+                          style: text.labelMedium!.copyWith(color: c.dangerFg, height: 20 / 12)),
+                    ),
+                  ],
+                ],
+              ),
             ),
+          ),
+          if (actionLabel != null) ...[
+            const SizedBox(width: SeenSpace.s3),
+            SeenTextLink(label: actionLabel!, onTap: onAction),
           ],
-          const Spacer(),
-          if (actionLabel != null) SeenTextLink(label: actionLabel!, onTap: onAction),
         ],
       ),
     );

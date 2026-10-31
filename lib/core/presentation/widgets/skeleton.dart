@@ -1,65 +1,31 @@
-// Loading skeletons (Figma SYS-06): grey placeholder shapes with one shared, calm pulse
-// (1.6 s). With "reduce motion" on they are drawn still. One [SeenSkeletonGroup] owns the
-// single controller for every box inside it, so a screen full of bars costs one ticker.
+// Loading skeletons (Figma SYS-06): placeholder shapes under one shared sweep (the Seen
+// loading system, see widgets/loading/seen_shimmer.dart): a highlight band crossing the
+// whole region once every 1.4 s, right -> left in RTL. With "reduce motion" on they are drawn
+// still. One [SeenSkeletonGroup] owns the single controller for every box inside it, so a
+// screen full of bars costs one ticker.
 import 'package:flutter/material.dart';
 
 import '../../theme/seen_colors.dart';
 import '../../theme/seen_dimensions.dart';
+import 'loading/seen_mark.dart';
+import 'loading/seen_shimmer.dart';
 
-const _skeletonColors = [Color(0xFFEFEBF8), Color(0xFFF7F5FC)];
-
-/// How long one pulse (dim -> bright -> dim) takes.
-const seenSkeletonPulse = Duration(milliseconds: 1600);
-
-class _PulseScope extends InheritedWidget {
-  const _PulseScope({required this.animation, required super.child});
-
-  /// null = still (reduce motion, or no group around the box).
-  final Animation<double>? animation;
-
-  @override
-  bool updateShouldNotify(_PulseScope old) => animation != old.animation;
-}
-
-/// Owns the pulse for the skeleton boxes below it. Created in initState, disposed in
-/// dispose; stopped while "reduce motion" is on.
-class SeenSkeletonGroup extends StatefulWidget {
-  const SeenSkeletonGroup({super.key, required this.child});
+/// Owns the sweep for the skeleton boxes below it. [onDark] switches to the white-on-gradient
+/// colours (a skeleton on the balance card).
+class SeenSkeletonGroup extends StatelessWidget {
+  const SeenSkeletonGroup({super.key, required this.child, this.onDark = false});
 
   final Widget child;
+  final bool onDark;
 
   @override
-  State<SeenSkeletonGroup> createState() => _SeenSkeletonGroupState();
+  Widget build(BuildContext context) => SeenShimmer(
+        colors: onDark ? const SeenLoaderColors.onDark() : const SeenLoaderColors(),
+        child: child,
+      );
 }
 
-class _SeenSkeletonGroupState extends State<SeenSkeletonGroup> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(vsync: this, duration: seenSkeletonPulse);
-  late final Animation<double> _curve = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _controller.stop();
-    } else if (!_controller.isAnimating) {
-      _controller.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final still = MediaQuery.disableAnimationsOf(context);
-    return _PulseScope(animation: still ? null : _curve, child: widget.child);
-  }
-}
-
-/// One placeholder shape. Pulses with its [SeenSkeletonGroup]; still without one.
+/// One placeholder shape. Sweeps with its [SeenSkeletonGroup]; still without one.
 class SeenSkeletonBox extends StatelessWidget {
   const SeenSkeletonBox({super.key, this.width, this.height = 12, this.radius = 6});
 
@@ -69,20 +35,7 @@ class SeenSkeletonBox extends StatelessWidget {
   final double radius;
 
   @override
-  Widget build(BuildContext context) {
-    final animation = context.dependOnInheritedWidgetOfExactType<_PulseScope>()?.animation;
-    final box = DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(begin: Alignment.centerRight, end: Alignment.centerLeft, colors: _skeletonColors),
-        borderRadius: BorderRadius.all(Radius.circular(radius)),
-      ),
-      child: SizedBox(width: width, height: height),
-    );
-    if (animation == null) {
-      return box;
-    }
-    return FadeTransition(opacity: Tween<double>(begin: 0.55, end: 1).animate(animation), child: box);
-  }
+  Widget build(BuildContext context) => SkeletonBox(width: width, height: height, radius: radius);
 }
 
 /// The balance card while the wallet loads (Figma SYS-06).

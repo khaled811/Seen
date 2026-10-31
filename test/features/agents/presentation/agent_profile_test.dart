@@ -28,13 +28,13 @@ import 'package:seen_booking/features/agents/presentation/screens/agent_profile_
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 
 class _World {
   bool active = true;
   Either<Failure, SubAgentProfile>? profileOverride;
-  Either<Failure, SubAgent>? activeOverride;
-  String? lastReason;
+  Either<Failure, void>? activeOverride;
   int setActiveCalls = 0;
   int profileLoads = 0;
 
@@ -57,13 +57,14 @@ class _World {
         ledger: [
           AgentLedgerEntry(
               id: 'l1',
-              title: 'تمويل من الوكيل الرئيسي',
+              type: TransactionType.topup,
               amountCents: 30000,
               isCredit: true,
               createdAt: DateTime(2026, 10, 1)),
           AgentLedgerEntry(
               id: 'l2',
-              title: 'SB-20484 · حجز طيران',
+              type: TransactionType.hold,
+              referenceCode: 'SB-20484',
               amountCents: 124000,
               isCredit: false,
               createdAt: DateTime(2026, 9, 30)),
@@ -92,16 +93,14 @@ class _Repo implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
   }) async {
     w.setActiveCalls++;
-    w.lastReason = reason;
     if (w.activeOverride != null) return w.activeOverride!;
     w.active = active;
-    return Right(w.agent);
+    return const Right(null);
   }
 
   @override
@@ -122,21 +121,17 @@ class _Repo implements AgentsRepository {
       const Right(null);
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+  Future<Either<Failure, void>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   }) async =>
-      Right(w.agent);
+      const Right(null);
 
   @override
   Future<Either<Failure, SubAgent>> createSubAgent(
           NewSubAgent newSubAgent) async =>
-      Right(w.agent);
-
-  @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit(
-          {required String subAgentId, required int limitCents}) async =>
       Right(w.agent);
 }
 
@@ -161,11 +156,16 @@ class _WalletRepo implements WalletRepository {
       throw UnimplementedError();
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError();
 }
@@ -217,7 +217,6 @@ void main() {
           .firstWhere((s) => s.outcome == AgentProfileOutcome.suspended);
       expect(s.profile!.agent.isActive, false);
       expect(s.profile!.ledger, isNotEmpty);
-      expect(w.lastReason, 'تجاوز الحد');
 
       w.activeOverride = const Left(ServerFailure('x'));
       bloc.add(const AgentActiveChangeSubmitted(active: true));
@@ -275,11 +274,14 @@ void main() {
       expect(find.textContaining('420.00'), findsOneWidget);
       expect(find.textContaining('500.00'), findsOneWidget);
       expect(find.text('٤١٢'), findsOneWidget);
-      for (final a in ['إيقاف', 'تعديل الحد', 'تمويل']) {
+      for (final a in ['إيقاف', 'تمويل']) {
         expect(find.text(a), findsOneWidget);
       }
+      // No operation sets a sub-agency's credit limit, so there is no control for it.
+      expect(find.text('تعديل الحد'), findsNothing);
       expect(find.text('سجل الرصيد'), findsOneWidget);
-      expect(find.text('تمويل من الوكيل الرئيسي'), findsOneWidget);
+      expect(find.text('شحن رصيد'), findsOneWidget);
+      expect(find.text('حجز · SB-20484'), findsOneWidget);
       expect(find.text('+300.00'), findsOneWidget);
       expect(find.text('−1,240.00'), findsOneWidget);
       expect(find.text('طلبات الوكيل · ٣ قيد التنفيذ'), findsOneWidget);
@@ -311,7 +313,6 @@ void main() {
           of: find.byType(Dialog), matching: find.text('إيقاف')));
       await settle(tester);
       expect(w.setActiveCalls, 1);
-      expect(w.lastReason, 'تجاوز حد الائتمان المتكرر');
       expect(find.text('موقوف'), findsOneWidget);
       expect(find.text('إعادة التفعيل'), findsOneWidget);
     });

@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/error/failure.dart';
+import 'package:seen_booking/core/localization/app_language.dart';
 import 'package:seen_booking/core/presentation/foundation/seen_icons.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/support/data/models/support_ticket_dto.dart';
@@ -27,9 +28,14 @@ import 'package:seen_booking/features/support/presentation/bloc/support_bloc.dar
 import 'package:seen_booking/features/support/presentation/bloc/support_event.dart';
 import 'package:seen_booking/features/support/presentation/bloc/support_state.dart';
 import 'package:seen_booking/features/support/presentation/bloc/ticket_actions_cubit.dart';
+import 'package:seen_booking/features/support/presentation/bloc/ticket_categories_cubit.dart';
+import 'package:seen_booking/features/support/presentation/bloc/ticket_rating_cubit.dart';
 import 'package:seen_booking/features/support/presentation/screens/create_ticket_screen.dart';
 import 'package:seen_booking/features/support/presentation/screens/support_tickets_screen.dart';
 import 'package:seen_booking/features/support/presentation/screens/ticket_detail_screen.dart';
+
+import '../../../support/attachment_fakes.dart';
+import '../../../support/rating_fakes.dart';
 
 // Midday today, so "minutes ago" offsets never cross midnight (the tests used to fail between 00:00 and 01:00).
 final _now = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 12);
@@ -69,8 +75,11 @@ class _Repo implements SupportRepository {
   bool failLoad = false;
   bool failReply = false;
   final replies = <String>[];
+  final replyAttachments = <String?>[];
   TicketPriority? lastPriority;
+  String? lastCreateAttachment;
   String? lastSubject;
+  String? lastCategoryCode;
 
   @override
   Future<Either<Failure, List<SupportTicket>>> getTickets() async =>
@@ -83,47 +92,51 @@ class _Repo implements SupportRepository {
     required String message,
     String? requestId,
     TicketPriority priority = TicketPriority.normal,
+    String? attachmentFileId,
+      String? categoryCode,
   }) async {
     lastPriority = priority;
+    lastCategoryCode = categoryCode;
     lastSubject = subject;
+    lastCreateAttachment = attachmentFileId;
     return Right(_ticket('new', subject, messages: [_msg('new-1', message)]));
   }
 
   @override
-  Future<Either<Failure, SupportTicket>> replyToTicket({required String ticketId, required String message}) async {
+  Future<Either<Failure, TicketMessage>> replyToTicket({required String ticketId, required String message, String? attachmentFileId}) async {
     if (failReply) return const Left(NetworkFailure('offline'));
     replies.add(message);
-    final t = tickets.firstWhere((t) => t.id == ticketId);
-    return Right(t.copyWith(messages: [...t.messages, _msg('r${replies.length}', message, minutesAgo: 0)]));
+    replyAttachments.add(attachmentFileId);
+    return Right(_msg('r${replies.length}', message, minutesAgo: 0));
   }
 
   @override
-  Future<Either<Failure, List<InAppNotification>>> getNotifications() => throw UnimplementedError();
+  Future<Either<Failure, SupportTicket>> getTicket(String ticketId) async {
+    final t = tickets.where((t) => t.id == ticketId);
+    return t.isEmpty ? const Left(ServerFailure('x', code: 'ticket_not_found')) : Right(t.first);
+  }
 
   @override
-  Future<Either<Failure, void>> markNotificationRead(String notificationId) => throw UnimplementedError();
+  Future<Either<Failure, NotificationsPage>> getNotifications({bool unreadOnly = false, int limit = 20, int offset = 0}) =>
+      throw UnimplementedError();
 
   @override
-  Future<Either<Failure, void>> markAllNotificationsRead() => throw UnimplementedError();
+  Future<Either<Failure, int>> getUnreadNotificationCount() => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, bool>> markNotificationRead(String notificationId) => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, int>> markAllNotificationsRead() => throw UnimplementedError();
 }
 
 class _Actions implements TicketActionsRepository {
-  _Actions(this.onReopen);
-
-  final SupportTicket Function(String id) onReopen;
   final read = <String>[];
-  final reopened = <String>[];
 
   @override
   Future<Either<Failure, void>> markRead(String ticketId) async {
     read.add(ticketId);
     return const Right(null);
-  }
-
-  @override
-  Future<Either<Failure, SupportTicket>> reopen(String ticketId) async {
-    reopened.add(ticketId);
-    return Right(onReopen(ticketId));
   }
 }
 
@@ -131,11 +144,11 @@ SupportBloc _bloc(_Repo repo) => SupportBloc(
       getTicketsUseCase: GetTicketsUseCase(repo),
       createTicketUseCase: CreateTicketUseCase(repo),
       replyToTicketUseCase: ReplyToTicketUseCase(repo),
+      getTicketUseCase: GetTicketUseCase(repo),
     );
 
 TicketActionsCubit _actionsCubit(_Actions actions) => TicketActionsCubit(
       markRead: MarkTicketReadUseCase(actions),
-      reopen: ReopenTicketUseCase(actions),
     );
 
 Widget _app(Widget home) => MaterialApp(
@@ -169,24 +182,28 @@ void main() {
     });
 
     test('closed is read-only, resolved is not; activity follows the last message', () {
-      expect(_ticket('1', 'x', status: SupportTicketStatus.closed).isClosed, true);
-      expect(_ticket('1', 'x', status: SupportTicketStatus.resolved).isClosed, false);
+      expect(_ticket('1', 'x', status: SupportTicketStatus.closed).isFinal, true);
+      expect(_ticket('1', 'x', status: SupportTicketStatus.resolved).isFinal, false);
       expect(_ticket('1', 'x', status: SupportTicketStatus.resolved).isLive, false);
       final t = _ticket('1', 'x', messages: [_msg('a', 'q', minutesAgo: 90), _msg('b', 'a', minutesAgo: 5)]);
       expect(t.lastActivityAt, t.messages.last.sentAt);
     });
 
-    test('hasUnreadReply maps from the wire and defaults to false', () {
+    test('isUnread maps from the wire and defaults to false', () {
       Map<String, dynamic> json(Object? unread) => {
             'id': '1',
-            'referenceId': 'TK-1',
-            'subject': 's',
+            'type': 'general',
+            'category': 'general',
+            'priority': 'normal',
+            'status': 'open',
+            'payload': {'subject': 's'},
             'createdAt': '2026-10-14T09:00:00Z',
-            'messages': <dynamic>[],
-            if (unread != null) 'hasUnreadReply': unread,
+            if (unread != null) 'isUnread': unread,
           };
-      expect(SupportTicketDto.fromJson(json(true)).toEntity().hasUnreadReply, true);
-      expect(SupportTicketDto.fromJson(json(null)).toEntity().hasUnreadReply, false);
+      SupportTicket parse(Object? unread) => SupportTicketDto.parse(json(unread), AppLanguage(), withMessages: false);
+      expect(parse(true).hasUnreadReply, true);
+      expect(parse(null).hasUnreadReply, false);
+      expect(parse(true).messagesLoaded, false);
     });
   });
 
@@ -232,16 +249,13 @@ void main() {
       await bloc.close();
     });
 
-    test('opening marks the ticket read locally; a reopened ticket replaces the old one', () async {
+    test('opening marks the ticket read locally', () async {
       final repo = _Repo([_ticket('1', 'x', unread: true, status: SupportTicketStatus.closed)]);
       final bloc = _bloc(repo)..add(const SupportTicketsLoadRequested());
       await bloc.stream.firstWhere((s) => s is SupportLoaded);
       bloc.add(const SupportTicketMarkedRead('1'));
-      var s = await bloc.stream.firstWhere((s) => s is SupportLoaded && !s.tickets.first.hasUnreadReply) as SupportLoaded;
+      final s = await bloc.stream.firstWhere((s) => s is SupportLoaded && !s.tickets.first.hasUnreadReply) as SupportLoaded;
       expect(s.tickets.first.hasUnreadReply, false);
-      bloc.add(SupportTicketReplaced(_ticket('1', 'x')));
-      s = await bloc.stream.firstWhere((s) => s is SupportLoaded && !s.tickets.first.isClosed) as SupportLoaded;
-      expect(s.tickets.first.status, SupportTicketStatus.open);
       await bloc.close();
     });
 
@@ -317,23 +331,32 @@ void main() {
 
     testWidgets('an error shows a retry that loads again', (tester) async {
       final repo = await open(tester, tickets, failLoad: true);
-      expect(find.text('تعذّر التحميل'), findsOneWidget);
+      // The reason is the app's own text for a lost connection, not the server's.
+      final noNetwork = lookupAppLocalizations(const Locale('ar')).errorNetwork;
+      expect(find.text(noNetwork), findsOneWidget);
       repo.failLoad = false;
       await tester.tap(find.text('إعادة المحاولة'));
       await settle(tester);
-      expect(find.text('تعذّر التحميل'), findsNothing);
+      expect(find.text(noNetwork), findsNothing);
       expect(find.text('تعديل اسم مسافر'), findsOneWidget);
     });
   });
 
   group('CreateTicketScreen (SUP-02)', () {
-    Future<_Repo> open(WidgetTester tester) async {
+    Future<_Repo> open(WidgetTester tester, {FakeStagedUploader? uploader}) async {
       final repo = _Repo([]);
       final bloc = _bloc(repo)..add(const SupportTicketsLoadRequested());
       addTearDown(() => bloc.close().ignore());
       await tester.binding.setSurfaceSize(const Size(390, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(BlocProvider.value(value: bloc, child: _app(const CreateTicketScreen())));
+      final stager = uploader ?? FakeStagedUploader();
+      await tester.pumpWidget(BlocProvider.value(
+        value: bloc,
+        child: _app(CreateTicketScreen(
+          createAttachment: () => fakeAttachmentCubit(stager),
+          createCategories: () => TicketCategoriesCubit(FakeTicketCategoriesRepository()),
+        )),
+      ));
       await tester.runAsync(() async {
         while (bloc.state is! SupportLoaded) {
           await Future<void>.delayed(const Duration(milliseconds: 1));
@@ -345,9 +368,14 @@ void main() {
 
     testWidgets('shows the category, priority, subject, description and attachment slot', (tester) async {
       await open(tester);
-      for (final label in const ['التصنيف', 'عام', 'تصحيح مالي', 'الأولوية', 'منخفضة', 'عادية', 'عالية', 'الموضوع', 'الوصف', 'إرفاق ملف (اختياري)', 'إرسال التذكرة']) {
+      for (final label in const ['التصنيف', 'اختر التصنيف', 'الأولوية', 'منخفضة', 'عادية', 'عالية', 'الموضوع', 'الوصف', 'إرفاق ملف (اختياري)', 'إرسال التذكرة']) {
         expect(find.textContaining(label), findsWidgets, reason: label);
       }
+    });
+
+    testWidgets('a financial correction is not offered: it needs an agent, an action and an amount', (tester) async {
+      await open(tester);
+      expect(find.textContaining('تصحيح مالي'), findsNothing);
     });
 
     testWidgets('an empty subject says it is required and sends nothing', (tester) async {
@@ -362,19 +390,97 @@ void main() {
       final repo = await open(tester);
       await tester.tap(find.text('عالية'));
       await tester.pump();
-      await tester.enterText(find.byType(TextFormField).at(0), 'تأخر الطلب');
-      await tester.enterText(find.byType(TextFormField).at(1), 'الطلب SB-1 متأخر');
+      await tester.enterText(find.byType(TextFormField).at(1), 'تأخر الطلب');
+      await tester.enterText(find.byType(TextFormField).at(2), 'الطلب SB-1 متأخر');
       await tester.tap(find.text('إرسال التذكرة'));
       await settle(tester);
       expect(repo.lastSubject, 'تأخر الطلب');
       expect(repo.lastPriority, TicketPriority.high);
     });
 
-    testWidgets('the attachment slot says attachments are not available yet', (tester) async {
-      await open(tester);
+
+    testWidgets('the picked category fills the field and its code goes with the ticket', (tester) async {
+      final repo = await open(tester);
+      await tester.tap(find.text('اختر التصنيف'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('المدفوعات والمحفظة'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextFormField, 'المدفوعات والمحفظة'), findsOneWidget);
+      await tester.enterText(find.byType(TextFormField).at(1), 'تأخر الشحن');
+      await tester.enterText(find.byType(TextFormField).at(2), 'الشحن لم يصل');
+      await tester.tap(find.text('إرسال التذكرة'));
+      await settle(tester);
+      expect(repo.lastCategoryCode, 'payments');
+    });
+
+    testWidgets('without picking, the ticket is general: no code is sent and the form still works', (tester) async {
+      final repo = await open(tester);
+      await tester.enterText(find.byType(TextFormField).at(1), 'سؤال');
+      await tester.enterText(find.byType(TextFormField).at(2), 'تفاصيل');
+      await tester.tap(find.text('إرسال التذكرة'));
+      await settle(tester);
+      expect(repo.lastSubject, 'سؤال');
+      expect(repo.lastCategoryCode, isNull);
+    });
+
+    testWidgets('choosing Other sends the general code', (tester) async {
+      final repo = await open(tester);
+      await tester.tap(find.text('اختر التصنيف'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('أخرى'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).at(1), 'سؤال');
+      await tester.enterText(find.byType(TextFormField).at(2), 'تفاصيل');
+      await tester.tap(find.text('إرسال التذكرة'));
+      await settle(tester);
+      expect(repo.lastCategoryCode, 'general');
+    });
+
+    Future<void> attachFile(WidgetTester tester) async {
       await tester.tap(find.text('إرفاق ملف (اختياري)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ملف'));
+      await settle(tester);
+    }
+
+    testWidgets('a picked file is staged at once and the ticket carries its id', (tester) async {
+      final uploader = FakeStagedUploader(id: 'file-77');
+      final repo = await open(tester, uploader: uploader);
+      await attachFile(tester);
+      expect(uploader.staged, ['/tmp/proof.pdf']);
+      expect(find.text('proof.pdf'), findsOneWidget);
+      expect(find.text('تم إرفاق الملف.'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextFormField).at(1), 'تأخر الطلب');
+      await tester.enterText(find.byType(TextFormField).at(2), 'الطلب SB-1 متأخر');
+      await tester.tap(find.text('إرسال التذكرة'));
+      await settle(tester);
+      expect(repo.lastCreateAttachment, 'file-77');
+    });
+
+    testWidgets('a removed file is not sent', (tester) async {
+      final repo = await open(tester);
+      await attachFile(tester);
+      await tester.tap(find.text('حذف المرفق'));
       await tester.pump();
-      expect(find.text('إرفاق الملفات غير متاح بعد.'), findsOneWidget);
+      await tester.enterText(find.byType(TextFormField).at(1), 'س');
+      await tester.enterText(find.byType(TextFormField).at(2), 'ص');
+      await tester.tap(find.text('إرسال التذكرة'));
+      await settle(tester);
+      expect(repo.lastSubject, 'س');
+      expect(repo.lastCreateAttachment, isNull);
+    });
+
+    testWidgets('a failed upload shows its own message and attaches nothing', (tester) async {
+      final repo = await open(tester, uploader: FakeStagedUploader(failure: const ServerFailure('x', code: 'file_too_large')));
+      await attachFile(tester);
+      expect(find.text('proof.pdf'), findsNothing);
+      expect(find.text(lookupAppLocalizations(const Locale('ar')).errFileTooLarge), findsOneWidget);
+      await tester.enterText(find.byType(TextFormField).at(1), 'س');
+      await tester.enterText(find.byType(TextFormField).at(2), 'ص');
+      await tester.tap(find.text('إرسال التذكرة'));
+      await settle(tester);
+      expect(repo.lastCreateAttachment, isNull);
     });
   });
 
@@ -383,16 +489,22 @@ void main() {
       WidgetTester tester,
       SupportTicket ticket, {
       bool failReply = false,
+      FakeStagedUploader? uploader,
     }) async {
       final repo = _Repo([ticket])..failReply = failReply;
-      final actions = _Actions((id) => _ticket(id, ticket.subject));
+      final actions = _Actions();
       final bloc = _bloc(repo)..add(const SupportTicketsLoadRequested());
       addTearDown(() => bloc.close().ignore());
       await tester.binding.setSurfaceSize(const Size(390, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(BlocProvider.value(
         value: bloc,
-        child: _app(TicketDetailScreen(ticketId: ticket.id, createActionsCubit: () => _actionsCubit(actions))),
+        child: _app(TicketDetailScreen(
+          ticketId: ticket.id,
+          createActionsCubit: () => _actionsCubit(actions),
+          createAttachment: () => fakeAttachmentCubit(uploader ?? FakeStagedUploader()),
+          createRating: () => TicketRatingCubit(FakeTicketRatingRepository(), ticketId: ticket.id),
+        )),
       ));
       await tester.runAsync(() async {
         while (bloc.state is! SupportLoaded) {
@@ -438,6 +550,9 @@ void main() {
       expect(find.text('أرفقت صورة الجواز'), findsOneWidget);
       expect(find.textContaining('فشل الإرسال'), findsOneWidget);
       repo.failReply = false;
+      // The failure toast sits over the resend link until it goes away.
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.text('إعادة إرسال'));
       await settle(tester);
       expect(find.text('إعادة إرسال'), findsNothing);
@@ -446,23 +561,82 @@ void main() {
       expect(find.text('أرفقت صورة الجواز'), findsOneWidget);
     });
 
-    testWidgets('a closed ticket is read-only until it is reopened', (tester) async {
-      final closed = _ticket('9', 'مغلقة', status: SupportTicketStatus.closed);
-      final (_, actions, _) = await open(tester, closed);
-      expect(find.text('عند إغلاق التذكرة تصبح للقراءة فقط'), findsOneWidget);
-      expect(find.text('اكتب رسالة...'), findsNothing);
-      await tester.tap(find.text('إعادة فتح'));
-      await settle(tester);
-      expect(actions.reopened, ['9']);
-      expect(find.text('عند إغلاق التذكرة تصبح للقراءة فقط'), findsNothing);
-      expect(find.text('اكتب رسالة...'), findsOneWidget);
+    testWidgets('closed and cancelled tickets are final: read-only, with no reopen', (tester) async {
+      for (final status in [SupportTicketStatus.closed, SupportTicketStatus.cancelled]) {
+        await open(tester, _ticket('9', 'نهائية', status: status));
+        expect(find.text('عند إغلاق التذكرة تصبح للقراءة فقط'), findsOneWidget, reason: status.name);
+        expect(find.text('اكتب رسالة...'), findsNothing, reason: status.name);
+        expect(find.text('إعادة فتح'), findsNothing, reason: status.name);
+      }
     });
 
-    testWidgets('the attach button says attachments are not available yet', (tester) async {
+    testWidgets('a resolved ticket still takes a reply: replying reopens it on the server', (tester) async {
+      final (repo, _, _) = await open(tester, _ticket('8', 'محلولة', status: SupportTicketStatus.resolved));
+      expect(find.text('اكتب رسالة...'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).last, 'ما زالت المشكلة');
+      await tester.tap(find.byIcon(SeenIcons.send));
+      await settle(tester);
+      expect(repo.replies, ['ما زالت المشكلة']);
+    });
+
+
+    testWidgets('a closed ticket ends with the closing line and the rating card; rating sends the stars', (tester) async {
+      final (repo, _, _) = await open(tester, _ticket('9', 'مغلقة', status: SupportTicketStatus.closed));
+      expect(find.textContaining('أُغلقت التذكرة'), findsOneWidget);
+      expect(find.text('كيف كانت تجربتك مع الدعم؟'), findsOneWidget);
+      expect(repo.replies, isEmpty);
+    });
+
+    testWidgets('a resolved ticket offers the rating card but no closing line; open and cancelled ones offer neither', (tester) async {
+      await open(tester, _ticket('8', 'محلولة', status: SupportTicketStatus.resolved));
+      expect(find.text('كيف كانت تجربتك مع الدعم؟'), findsOneWidget);
+      expect(find.textContaining('أُغلقت التذكرة'), findsNothing);
+      for (final status in [SupportTicketStatus.open, SupportTicketStatus.cancelled]) {
+        await open(tester, _ticket('7', 'x', status: status));
+        expect(find.text('كيف كانت تجربتك مع الدعم؟'), findsNothing, reason: status.name);
+      }
+    });
+
+    testWidgets('unread messages get a "new messages" divider before the first one, and it stays after opening marks them read', (tester) async {
+      final ticket = _ticket('6', 'ردود',
+              unread: true,
+              messages: [
+                _msg('a', 'سؤالي', minutesAgo: 90),
+                _msg('b', 'رد أول', support: true, author: 'الدعم', minutesAgo: 20),
+                _msg('c', 'رد ثان', support: true, author: 'الدعم', minutesAgo: 10),
+              ])
+          .copyWith(unreadCount: 2);
+      final (_, actions, _) = await open(tester, ticket);
+      expect(find.text('رسائل جديدة (٢)'), findsOneWidget);
+      expect(actions.read, ['6']);
+      final divider = tester.getTopLeft(find.text('رسائل جديدة (٢)')).dy;
+      expect(tester.getTopLeft(find.text('سؤالي')).dy < divider, isTrue);
+      expect(tester.getTopLeft(find.text('رد أول')).dy > divider, isTrue);
+    });
+
+    testWidgets('nothing unread: no divider', (tester) async {
       await open(tester, _ticket('5', 'x'));
+      expect(find.textContaining('رسائل جديدة'), findsNothing);
+    });
+
+    testWidgets('a reply carries the staged file once, and the next reply starts without it', (tester) async {
+      final (repo, _, _) = await open(tester, _ticket('5', 'x'), uploader: FakeStagedUploader(id: 'file-5'));
       await tester.tap(find.bySemanticsLabel('إرفاق ملف (اختياري)'));
-      await tester.pump();
-      expect(find.text('إرفاق الملفات غير متاح بعد.'), findsOneWidget);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ملف'));
+      await settle(tester);
+      expect(find.text('proof.pdf'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).last, 'هذه الصورة');
+      await tester.tap(find.byIcon(SeenIcons.send));
+      await settle(tester);
+      expect(repo.replyAttachments, ['file-5']);
+      expect(find.text('proof.pdf'), findsNothing);
+
+      await tester.enterText(find.byType(TextField).last, 'شكرًا');
+      await tester.tap(find.byIcon(SeenIcons.send));
+      await settle(tester);
+      expect(repo.replyAttachments, ['file-5', null]);
     });
   });
 }

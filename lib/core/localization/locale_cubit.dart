@@ -3,16 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 
+import 'app_language.dart';
+
 /// Manages the app's active [Locale] and persists the user's choice.
 ///
 /// `flutter_secure_storage` opens/closes its own platform channel per call
 /// and holds no subscription or timer, so this cubit owns no disposable
 /// resource and needs no `close()` override.
 class LocaleCubit extends Cubit<Locale> {
-  LocaleCubit({FlutterSecureStorage? storage, Logger? logger})
+  LocaleCubit({FlutterSecureStorage? storage, Logger? logger, AppLanguage? language})
       : _storage = storage ?? const FlutterSecureStorage(),
         _logger = logger ?? Logger(),
+        _language = language,
         super(defaultLocale) {
+    _language?.code = defaultLocale.languageCode;
     _restore();
   }
 
@@ -28,6 +32,15 @@ class LocaleCubit extends Cubit<Locale> {
 
   final FlutterSecureStorage _storage;
   final Logger _logger;
+
+  /// Kept in step with the state so the data layer can pick `…Ar` / `…En` fields.
+  final AppLanguage? _language;
+
+  @override
+  void onChange(Change<Locale> change) {
+    super.onChange(change);
+    _language?.code = change.nextState.languageCode;
+  }
 
   Future<void> _restore() async {
     try {

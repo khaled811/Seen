@@ -8,7 +8,8 @@ import 'sub_agent.dart';
 class AgentLedgerEntry extends Equatable {
   const AgentLedgerEntry({
     required this.id,
-    required this.title,
+    required this.type,
+    this.referenceCode,
     required this.amountCents,
     required this.isCredit,
     required this.createdAt,
@@ -16,8 +17,11 @@ class AgentLedgerEntry extends Equatable {
 
   final String id;
 
-  /// Written by the backend ("Funding from the main agent", "SB-20484 · flight booking").
-  final String title;
+  /// What kind of movement it was; the screen words it (the server sends no text).
+  final TransactionType type;
+
+  /// The request it belongs to, when it belongs to one.
+  final String? referenceCode;
 
   /// Always positive; [isCredit] decides the sign.
   final int amountCents;
@@ -25,7 +29,7 @@ class AgentLedgerEntry extends Equatable {
   final DateTime createdAt;
 
   @override
-  List<Object?> get props => [id, title, amountCents, isCredit, createdAt];
+  List<Object?> get props => [id, type, referenceCode, amountCents, isCredit, createdAt];
 }
 
 /// A request the sub-agent submitted (the profile's "Agent requests").

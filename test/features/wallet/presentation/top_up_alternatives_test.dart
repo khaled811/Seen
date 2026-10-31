@@ -5,13 +5,14 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:seen_booking/core/presentation/widgets/svg_icon.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/error/failure.dart';
-import 'package:seen_booking/core/presentation/foundation/seen_icons.dart';
 import 'package:seen_booking/core/theme/app_theme.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_transactions_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/request_top_up_usecase.dart';
@@ -43,11 +44,16 @@ class _Repo implements WalletRepository {
       const Right([]);
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async {
     calls++;
     this.method = method;
@@ -138,10 +144,10 @@ void main() {
     await open(tester);
     await tester.tap(find.text('شركة صرافة'));
     await tester.pumpAndSettle();
-    final before = find.byIcon(SeenIcons.check).evaluate().length;
+    final before = find.byType(SeenCheckGlyph).evaluate().length;
     await tester.enterText(find.byType(TextFormField).first, 'EX-4471029');
     await tester.pump();
-    expect(find.byIcon(SeenIcons.check), findsNWidgets(before + 1));
+    expect(find.byType(SeenCheckGlyph), findsNWidgets(before + 1));
   });
 
   testWidgets('cash: the branch steps with the agent code', (tester) async {

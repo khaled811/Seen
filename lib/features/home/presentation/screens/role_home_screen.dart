@@ -16,6 +16,7 @@ import '../../../auth/domain/entities/role_permissions.dart';
 import '../../../requests/presentation/screens/requests_dashboard_screen.dart';
 import '../../../services/presentation/screens/service_selection_screen.dart';
 import '../widgets/role_strings.dart';
+import '../../../../core/presentation/widgets/svg_icon.dart';
 
 /// Capabilities shown in the differences table (profit margin is not one of them).
 const roleTableRows = [
@@ -175,7 +176,7 @@ class RoleDifferencesTable extends StatelessWidget {
                                       color: SeenRequestStatus.completed.colors.fg,
                                       borderRadius: const BorderRadius.all(Radius.circular(4)),
                                     ),
-                                    child: Icon(SeenIcons.check, size: 14, color: c.onPrimary),
+                                    child: SeenCheckGlyph(size: 14, color: c.onPrimary),
                                   )
                                 : Text('—', style: t.label.copyWith(color: c.inkMuted)),
                           ),

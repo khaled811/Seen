@@ -7,6 +7,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_icons.dart';
 import '../../../../core/presentation/foundation/seen_strings.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
+import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/error_patterns.dart';
 import '../../../../core/state/branch_scope.dart';
 import '../../../../core/presentation/widgets/empty_state.dart';
@@ -19,10 +20,15 @@ import '../../../../core/theme/seen_colors.dart';
 import '../../../../core/theme/seen_dimensions.dart';
 import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
+import '../../../../core/presentation/widgets/loading/seen_refresh.dart';
+import '../../../../core/presentation/widgets/loading/seen_windows.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
 import '../../../services/presentation/screens/service_selection_screen.dart';
 import '../../../services/presentation/screens/drafts_screen.dart';
 import '../../../support/presentation/screens/support_tickets_screen.dart';
 import '../../domain/entities/request_summary.dart';
+import '../../domain/entities/requests_page.dart';
 import '../bloc/requests_bloc.dart';
 import '../bloc/requests_event.dart';
 import '../bloc/requests_state.dart';
@@ -52,8 +58,16 @@ class RequestsDashboardScreen extends StatelessWidget {
             bottom: false,
             child: BlocBuilder<RequestsBloc, RequestsState>(
               builder: (context, state) => switch (state) {
-                RequestsInitial() || RequestsLoading() => const Column(
-                    children: [_Header(), Expanded(child: _SkeletonList())],
+                RequestsInitial() || RequestsLoading() => Column(
+                    children: [
+                      const _Header(),
+                      Expanded(
+                        child: SeenWaitPolicy.loading(
+                          loading: const _SkeletonList(),
+                          onRetry: () => context.read<RequestsBloc>().add(const RequestsLoadRequested()),
+                        ),
+                      ),
+                    ],
                   ),
                 RequestsFailure() => Column(
                     children: [const _Header(), Expanded(child: _ErrorView(failure: state))],
@@ -211,55 +225,24 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-/// First-load placeholder: 3 skeleton cards with a soft opacity pulse (no
-/// shimmer), honouring `MediaQuery.disableAnimations`.
-class _SkeletonList extends StatefulWidget {
+/// First-load placeholder: 3 skeleton cards under one shared sweep (Seen loading system),
+/// still with "reduce motion".
+class _SkeletonList extends StatelessWidget {
   const _SkeletonList();
 
   @override
-  State<_SkeletonList> createState() => _SkeletonListState();
-}
-
-class _SkeletonListState extends State<_SkeletonList> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-  late final Animation<double> _opacity =
-      Tween(begin: 0.5, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.of(context).disableAnimations) {
-      _controller.stop();
-    } else if (!_controller.isAnimating) {
-      _controller.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final reduceMotion = MediaQuery.of(context).disableAnimations;
-    final content = Padding(
-      padding: const EdgeInsets.all(_gutter),
-      child: Column(children: [
-        for (var i = 0; i < 3; i++)
-          Padding(
-            padding: EdgeInsets.only(bottom: i < 2 ? SeenSpace.s3 : 0),
-            child: const _SkeletonCard(),
-          ),
-      ]),
-    );
-    if (reduceMotion) return Opacity(opacity: 0.7, child: content);
-    return AnimatedBuilder(
-      animation: _opacity,
-      builder: (context, child) => Opacity(opacity: _opacity.value, child: child),
-      child: content,
+    return SeenSkeletonGroup(
+      child: Padding(
+        padding: const EdgeInsets.all(_gutter),
+        child: Column(children: [
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: EdgeInsets.only(bottom: i < 2 ? SeenSpace.s3 : 0),
+              child: const _SkeletonCard(),
+            ),
+        ]),
+      ),
     );
   }
 }
@@ -271,11 +254,7 @@ class _SkeletonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
 
-    Widget block(double height, double width) => Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(color: c.surfaceSunken, borderRadius: BorderRadius.circular(4)),
-        );
+    Widget block(double height, double width) => SeenSkeletonBox(width: width, height: height, radius: 4);
 
     return Container(
       decoration: BoxDecoration(
@@ -331,38 +310,42 @@ class _DashboardBodyState extends State<_DashboardBody> {
     final state = widget.state;
     final requests = state.filteredRequests;
 
-    final all = state.requests;
-    final pendingCount = all
-        .where((r) =>
-            r.status == RequestStatus.submitted ||
-            r.status == RequestStatus.underReview ||
-            r.status == RequestStatus.processing)
-        .length;
-    final actionRequired = all.where((r) => r.status == RequestStatus.infoRequired).toList();
-    final completedCount = all.where((r) => r.status == RequestStatus.completed).length;
-    final noData = all.isEmpty;
+    // The counts and the "needs action" figures are the server's, for the whole
+    // list; what is loaded is only the pages seen so far.
+    final actionRequiredCount = state.attentionCount ?? state.countFor(RequestsDashboardFilter.actionRequired);
+    // Nothing at all yet: the server says so (or, for a state built without it,
+    // an empty first view).
+    final noData = state.hasAnyRequests == false ||
+        (state.hasAnyRequests == null && state.requests.isEmpty && state.filter == RequestsDashboardFilter.all);
 
     int? countOf(RequestsDashboardFilter f) {
-      final n = switch (f) {
-        RequestsDashboardFilter.all => all.length,
-        RequestsDashboardFilter.pendingUnderReview => pendingCount,
-        RequestsDashboardFilter.actionRequired => actionRequired.length,
-        RequestsDashboardFilter.completed => completedCount,
-      };
+      final n = state.countFor(f);
       return n > 0 ? n : null;
     }
 
-    // Earliest SLA deadline among action-required requests drives the banner.
-    final deadlines = [for (final r in actionRequired) if (r.slaDeadline != null) r.slaDeadline!]
-      ..sort();
-    final earliest = deadlines.isEmpty ? null : deadlines.first;
+    // The soonest deadline among requests that need action drives the banner.
+    final soonest = state.attentionSoonestSeconds;
+    final earliest = soonest != null
+        ? DateTime.now().add(Duration(seconds: soonest))
+        : ([for (final r in state.requests) if (r.status == RequestStatus.infoRequired && r.slaDeadline != null) r.slaDeadline!]
+              ..sort())
+            .firstOrNull;
 
-    return RefreshIndicator(
+    return SeenRefresh(
       onRefresh: () async {
         context.read<RequestsBloc>().add(const RequestsLoadRequested());
         await context.read<RequestsBloc>().stream.firstWhere((s) => s is! RequestsLoading);
       },
-      child: CustomScrollView(
+      // The end of the list is near: ask for the next page (the bloc ignores the
+      // event while a page is loading or when there is nothing more).
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (n) {
+          if (n.metrics.extentAfter < 600 && state.hasMore) {
+            context.read<RequestsBloc>().add(const RequestsLoadMoreRequested());
+          }
+          return false;
+        },
+        child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
@@ -377,7 +360,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                     Expanded(
                       child: SeenStatCard(
                         label: l10n.requestsStatAll,
-                        value: s.numeral(all.length),
+                        value: s.numeral(state.countFor(RequestsDashboardFilter.all)),
                         dotColor: c.inkMuted,
                       ),
                     ),
@@ -385,7 +368,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                     Expanded(
                       child: SeenStatCard(
                         label: l10n.requestsStatProcessing,
-                        value: s.numeral(pendingCount),
+                        value: s.numeral(state.countFor(RequestsDashboardFilter.pendingUnderReview)),
                         dotColor: SeenBrand.violet,
                       ),
                     ),
@@ -393,7 +376,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                     Expanded(
                       child: SeenStatCard(
                         label: l10n.requestsStatActionRequired,
-                        value: s.numeral(actionRequired.length),
+                        value: s.numeral(actionRequiredCount),
                         dotColor: SeenBrand.progressWaiting,
                       ),
                     ),
@@ -412,16 +395,29 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 onSelected: (i) => context.read<RequestsBloc>().add(RequestsFilterChanged(_filterOrder[i])),
               ),
             ),
-            if (actionRequired.isNotEmpty)
+            if (actionRequiredCount > 0)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(_gutter, 18, _gutter, 0),
-                  child: _ActionBanner(count: actionRequired.length, earliestDeadline: earliest),
+                  child: _ActionBanner(count: actionRequiredCount, earliestDeadline: earliest),
                 ),
               ),
             const SliverToBoxAdapter(child: SizedBox(height: 18)),
           ],
-          if (requests.isEmpty)
+          if (state.listLoading)
+            const SliverToBoxAdapter(child: _SkeletonList())
+          else if (requests.isEmpty && state.listFailure != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(_gutter),
+                child: SeenInlineError(
+                  title: l10n.errorSectionLoad,
+                  retryLabel: l10n.retry,
+                  onRetry: () => context.read<RequestsBloc>().add(const RequestsLoadRequested()),
+                ),
+              ),
+            )
+          else if (requests.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
@@ -450,12 +446,27 @@ class _DashboardBodyState extends State<_DashboardBody> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(_gutter, 0, _gutter, SeenSpace.s6),
               sliver: SliverList.separated(
-                itemCount: requests.length,
+                itemCount: requests.length + (state.hasMore || state.loadingMore ? 1 : 0),
                 separatorBuilder: (_, __) => const SizedBox(height: 18),
-                itemBuilder: (context, index) => _RequestCard(request: requests[index]),
+                itemBuilder: (context, index) {
+                  if (index < requests.length) return _RequestCard(request: requests[index]);
+                  // The footer: a spinner while the next page loads, a retry if it failed.
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: SeenSpace.s3),
+                    child: Center(
+                      child: state.loadMoreFailed
+                          ? SeenButton(
+                              label: l10n.retry,
+                              onPressed: () => context.read<RequestsBloc>().add(const RequestsLoadMoreRequested()),
+                            )
+                          : const SeenWindows(size: 8),
+                    ),
+                  );
+                },
               ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -562,9 +573,10 @@ class _DraftsButtonState extends State<_DraftsButton> {
   }
 
   Future<void> _refresh() async {
-    final result = await InjectionContainer.instance.getBookingDraftsUseCase();
+    // The server's own count of drafts (one row is enough to read it).
+    final result = await InjectionContainer.instance.getRequestsUseCase(group: RequestsGroup.draft.wire, limit: 1);
     if (!mounted) return;
-    setState(() => _count = result.fold((_) => 0, (list) => list.length));
+    setState(() => _count = result.fold((_) => 0, (page) => page.total));
   }
 
   @override

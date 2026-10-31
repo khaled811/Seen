@@ -1,17 +1,12 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failure.dart';
-import '../entities/password_recovery.dart';
 
-/// "Forgot password": ask for a code, verify it, set a new password. Failures
-/// carry backend codes that [RecoveryIssue.from] understands.
+/// "Forgot password": the server e-mails a one-time link that opens a web page
+/// (contract 3.3). The app only asks for the e-mail; choosing the new password
+/// happens on that page.
 abstract interface class PasswordRecoveryRepository {
-  Future<Either<Failure, RecoveryChallenge>> requestCode({required String identifier});
-
-  Future<Either<Failure, RecoveryChallenge>> resendCode({required String challengeToken});
-
-  /// Returns the one-time reset token that [resetPassword] needs.
-  Future<Either<Failure, String>> verifyCode({required String challengeToken, required String code});
-
-  Future<Either<Failure, void>> resetPassword({required String resetToken, required String newPassword});
+  /// Always succeeds for a well-formed request (the server never says whether an
+  /// account exists); `too_many_attempts` when it is asked too often.
+  Future<Either<Failure, void>> requestReset({required String email});
 }

@@ -22,6 +22,17 @@ final class DocumentViewerLoadRequested extends DocumentViewerEvent {
   List<Object?> get props => [url];
 }
 
+/// Opens a stored file (a request's output) by id; a fresh signed link is
+/// requested each time, so a retry always works with a live link.
+final class DocumentViewerFileRequested extends DocumentViewerEvent {
+  const DocumentViewerFileRequested(this.fileId);
+
+  final String fileId;
+
+  @override
+  List<Object?> get props => [fileId];
+}
+
 final class DocumentViewerSaveRequested extends DocumentViewerEvent {
   const DocumentViewerSaveRequested(this.fileName);
 
@@ -77,24 +88,37 @@ class DocumentViewerState extends Equatable {
 class DocumentViewerBloc extends Bloc<DocumentViewerEvent, DocumentViewerState> {
   DocumentViewerBloc({
     required FetchDocumentFileUseCase fetchDocument,
+    required FetchRequestFileUseCase fetchFile,
     required SaveDocumentUseCase saveDocument,
     required ShareDocumentUseCase shareDocument,
   })  : _fetch = fetchDocument,
+        _fetchFile = fetchFile,
         _save = saveDocument,
         _share = shareDocument,
         super(const DocumentViewerState()) {
     on<DocumentViewerLoadRequested>(_onLoad, transformer: restartable());
+    on<DocumentViewerFileRequested>(_onFile, transformer: restartable());
     on<DocumentViewerSaveRequested>(_onSave, transformer: droppable());
     on<DocumentViewerShareRequested>(_onShare, transformer: droppable());
   }
 
   final FetchDocumentFileUseCase _fetch;
+  final FetchRequestFileUseCase _fetchFile;
   final SaveDocumentUseCase _save;
   final ShareDocumentUseCase _share;
 
   Future<void> _onLoad(DocumentViewerLoadRequested event, Emitter<DocumentViewerState> emit) async {
     emit(const DocumentViewerState());
     final result = await _fetch(event.url);
+    result.match(
+      (failure) => emit(const DocumentViewerState(status: DocumentViewerStatus.failed)),
+      (bytes) => emit(DocumentViewerState(status: DocumentViewerStatus.ready, bytes: bytes)),
+    );
+  }
+
+  Future<void> _onFile(DocumentViewerFileRequested event, Emitter<DocumentViewerState> emit) async {
+    emit(const DocumentViewerState());
+    final result = await _fetchFile(event.fileId);
     result.match(
       (failure) => emit(const DocumentViewerState(status: DocumentViewerStatus.failed)),
       (bytes) => emit(DocumentViewerState(status: DocumentViewerStatus.ready, bytes: bytes)),

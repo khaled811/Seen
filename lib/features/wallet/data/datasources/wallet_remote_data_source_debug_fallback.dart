@@ -1,11 +1,15 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'dart:convert';
+
 import 'package:fpdart/fpdart.dart';
+
+import '../../../../core/config/debug_fallbacks.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/utils/money.dart';
 import '../../domain/entities/statement.dart';
 import '../models/statement_file_dto.dart';
+import '../models/top_up_options_dto.dart';
 import '../models/wallet_balance_dto.dart';
 import '../models/wallet_transaction_dto.dart';
 import 'wallet_remote_data_source.dart';
@@ -37,16 +41,21 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
     required StatementFormat format,
   }) async {
     final result = await _real.exportStatement(from: from, to: to, format: format);
-    if (!(kDebugMode && result.isLeft())) return result;
+    if (!(debugFallbacksEnabled && result.isLeft())) return result;
     await Future<void>.delayed(const Duration(milliseconds: 600));
-    // The debug document source serves a sample PDF for any mock:// link.
-    return Right(StatementFileDto(url: 'mock://statements/statement.pdf', fileName: 'statement.${format.extension}'));
+    // Not a real statement: a few bytes under a PDF name, enough to try the sheet.
+    return Right(
+      StatementFileDto(
+        fileName: 'statement.${format.extension}',
+        contentBase64: base64Encode(utf8.encode('%PDF-1.4 debug statement')),
+      ),
+    );
   }
 
   @override
   Future<Either<Failure, WalletTransactionDto>> cancelTopUp(String transactionId) async {
     final result = await _real.cancelTopUp(transactionId);
-    if (!(kDebugMode && result.isLeft())) return result;
+    if (!(debugFallbacksEnabled && result.isLeft())) return result;
     final index = _mockTransactions.indexWhere((t) => t.id == transactionId);
     if (index < 0) return const Left(ServerFailure('Top-up not found.'));
     // Demo: only a request finance has not decided yet can be withdrawn.
@@ -59,7 +68,7 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
   @override
   Future<Either<Failure, WalletBalanceDto>> getBalance() async {
     final result = await _real.getBalance();
-    if (kDebugMode && result.isLeft()) return const Right(_mockBalance);
+    if (debugFallbacksEnabled && result.isLeft()) return const Right(_mockBalance);
     return result;
   }
 
@@ -78,7 +87,7 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
       page: page,
       pageSize: pageSize,
     );
-    if (kDebugMode && result.isLeft()) {
+    if (debugFallbacksEnabled && result.isLeft()) {
       return Right(List.unmodifiable(_mockTransactions));
     }
     return result;
@@ -89,15 +98,19 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async {
     final result = await _real.requestTopUp(
       amountCents: amountCents,
       method: method,
       referenceNumber: referenceNumber,
-      notes: notes,
+      idempotencyKey: idempotencyKey,
+      paymentAccountId: paymentAccountId,
+      receiptFileId: receiptFileId,
     );
-    if (kDebugMode && result.isLeft()) {
+    if (debugFallbacksEnabled && result.isLeft()) {
       final mock = WalletTransactionDto(
         id: 'debug-topup-${_mockTransactions.length + 1}',
         type: TransactionType.topup.value,
@@ -107,14 +120,57 @@ class DebugFallbackWalletRemoteDataSource implements WalletRemoteDataSource {
         currency: WalletCurrency.usd.value,
         createdAt: DateTime.now(),
         referenceId: referenceNumber,
-        notes: notes,
       );
       _mockTransactions.insert(0, mock);
       return Right(mock);
     }
     return result;
   }
+
+  @override
+  Future<Either<Failure, TopUpOptionsDto>> getTopUpOptions() async {
+    final result = await _real.getTopUpOptions();
+    if (debugFallbacksEnabled && result.isLeft()) return Right(_mockOptions);
+    return result;
+  }
 }
+
+/// Demo options: obvious placeholders, never real account details.
+final _mockOptions = TopUpOptionsDto.fromJson(const {
+  'currency': 'USD',
+  'minimumAmount': '10.00',
+  'canRequest': true,
+  'pendingCount': 0,
+  'methods': [
+    {'method': 'bank_transfer', 'accountKinds': ['bank']},
+    {'method': 'cash', 'accountKinds': ['other']},
+    {'method': 'exchange_house', 'accountKinds': ['money_transfer']},
+  ],
+  'accounts': [
+    {
+      'id': 'debug-account-1',
+      'kind': 'bank',
+      'title': 'Sample Bank (debug)',
+      'holder': 'Sample Beneficiary',
+      'bankName': 'Sample Bank (debug)',
+      'accountNumber': 'XX00 0000 0000 0000 0000',
+      'currency': 'USD',
+      'instructions': '',
+      'isActive': true,
+    },
+    {
+      'id': 'debug-account-2',
+      'kind': 'money_transfer',
+      'title': 'Sample Exchange (debug)',
+      'holder': 'Sample Beneficiary (debug)',
+      'bankName': '',
+      'accountNumber': 'AG-0000',
+      'currency': 'USD',
+      'instructions': 'Sample branch (debug)',
+      'isActive': true,
+    },
+  ],
+});
 
 const _mockBalance = WalletBalanceDto(
   availableAmount: '5420.00',

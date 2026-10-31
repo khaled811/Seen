@@ -54,7 +54,8 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
 
   // Which fields the agent has typed in: only those show the "accepted" mark.
   final _touched = <TextEditingController>{};
-  late bool _licenseTaken = widget.conflict == RegistrationIssueKind.licenseTaken;
+  // The contract has no "licence already registered" answer: only the e-mail can conflict.
+  late bool _licenseTaken = false;
   late bool _emailTaken = widget.conflict == RegistrationIssueKind.emailTaken;
 
   void _edited(TextEditingController controller) => setState(() {
@@ -113,7 +114,7 @@ class _CreateAgencyAccountScreenState extends State<CreateAgencyAccountScreen> {
             children: [
               SeenScreenHeader(
                 title: l10n.agencyCreateTitle,
-                subtitle: l10n.registrationStepOf(SeenStrings.of(context).numeral(1), SeenStrings.of(context).numeral(4)),
+                subtitle: l10n.registrationStepOf(SeenStrings.of(context).numeral(1), SeenStrings.of(context).numeral(3)),
                 onBack: widget.onBack,
               ),
               Expanded(

@@ -6,8 +6,7 @@ import 'request_traveler_status_dto.dart';
 
 /// Wire shape of the Request Detail screen's data.
 ///
-/// TODO(backend-contract): field names are placeholders pending the real
-/// Seen Booking GraphQL schema.
+/// NOTE: these are the app's own field names. The real wire shape is read by the mapping beside this class and every document is checked against `docs/api/` in tests.
 class RequestDetailDto {
   const RequestDetailDto({
     required this.id,
@@ -24,6 +23,9 @@ class RequestDetailDto {
     this.rejectionReason,
     this.cancellation,
     this.refundedAmount,
+    this.actions,
+    this.outputs = const [],
+    this.infoRequestMessage,
   });
 
   factory RequestDetailDto.fromJson(Map<String, dynamic> json) => RequestDetailDto(
@@ -69,6 +71,9 @@ class RequestDetailDto {
 
   /// Decimal string.
   final String? refundedAmount;
+  final RequestActions? actions;
+  final List<RequestOutput> outputs;
+  final String? infoRequestMessage;
   final List<RequestTravelerStatusDto> travelers;
   final List<RequestTimelineEntryDto> timeline;
 
@@ -85,12 +90,15 @@ class RequestDetailDto {
         rejectionReason: rejectionReason,
         cancellation: cancellation?.toEntity(),
         refundedCents: refundedAmount == null ? null : MoneyParser.centsFromDecimalString(refundedAmount!),
+        actions: actions,
+        outputs: outputs,
+        infoRequestMessage: infoRequestMessage,
         travelers: travelers.map((dto) => dto.toEntity()).toList(),
         timeline: timeline.map((dto) => dto.toEntity()).toList(),
       );
 }
 
-/// Wire shape of the approval info. TODO(backend-contract): placeholder names.
+/// Wire shape of the approval info (see the note above: the app's own names).
 class RequestApprovalDto {
   const RequestApprovalDto({required this.kind, this.approverName, this.typicalWaitMinutes, this.thresholdAmount});
 

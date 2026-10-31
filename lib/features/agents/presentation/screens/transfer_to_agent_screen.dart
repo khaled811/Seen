@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../../core/presentation/failure_message.dart';
+
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/presentation/foundation/seen_vectors.dart';
 import '../../../../core/presentation/widgets/actions.dart';
 import '../../../../core/presentation/widgets/chrome.dart';
 import '../../../../core/presentation/widgets/error_patterns.dart';
 import '../../../../core/presentation/widgets/inline_banner.dart';
-import '../../../../core/presentation/widgets/loader.dart';
 import '../../../../core/presentation/widgets/screen_background.dart';
 import '../../../../core/presentation/widgets/screen_header.dart';
 import '../../../../core/presentation/widgets/sheets.dart';
@@ -21,6 +22,11 @@ import '../../../../core/theme/seen_format.dart';
 import '../../../../core/theme/seen_typography.dart';
 import '../../../../core/utils/latin_digits.dart';
 import '../../../../core/utils/money.dart';
+import '../../../../core/presentation/widgets/loading/seen_wait_policy.dart';
+import '../../../../core/presentation/widgets/skeleton.dart';
+import '../../../../core/presentation/foundation/seen_strings.dart';
+import '../../../../core/presentation/widgets/loading/seen_blocking_overlay.dart';
+import '../../../../core/presentation/widgets/loading/loading_strings.dart';
 import '../../domain/entities/sub_agent.dart';
 import '../bloc/agents_bloc.dart';
 import '../bloc/agents_event.dart';
@@ -99,13 +105,13 @@ class _ViewState extends State<_View> {
       if (a.id == _agentId) return a;
     }
     // A single active agent needs no choosing.
-    final active = agents.where((a) => a.isActive).toList();
+    final active = agents.where((a) => a.isActive && a.canFund).toList();
     return _agentId == null && active.length == 1 ? active.first : null;
   }
 
   Future<void> _pickAgent(List<SubAgent> agents) async {
     final l10n = AppLocalizations.of(context)!;
-    final active = agents.where((a) => a.isActive).toList();
+    final active = agents.where((a) => a.isActive && a.canFund).toList();
     final picked = await showSeenSheet<SubAgent>(
       context: context,
       title: l10n.transferPickerTitle,
@@ -182,7 +188,10 @@ class _ViewState extends State<_View> {
               balance: state.masterWalletBalance?.availableCents,
               onAnother: _another);
         }
-        return Scaffold(
+        return SeenBlockingOverlay(
+          visible: state is AgentsLoaded && state.fundingStatus == FundingStatus.submitting,
+          title: SeenStrings.of(context).submittingTransfer,
+          child: Scaffold(
           body: SeenScreenBackground(
             washHeight: 320,
             child: SafeArea(
@@ -216,13 +225,17 @@ class _ViewState extends State<_View> {
                             ),
                           ],
                         ),
-                      _ => const Center(child: SeenLoader()),
+                      _ => SeenWaitPolicy.loading(
+                        loading: SeenCardsSkeleton(count: 2, label: SeenStrings.of(context).loadingLabel),
+                        onRetry: () => context.read<AgentsBloc>().add(const AgentsLoadRequested()),
+                      ),
                     },
                   ),
                 ],
               ),
             ),
           ),
+        ),
         );
       },
     );
@@ -410,7 +423,7 @@ class _AgentCard extends StatelessWidget {
                       Text(agent.name, style: t.label),
                       Text(
                         l10n.transferAgentMeta(
-                            SeenFormat.usd(agent.balanceCents / 100)),
+                            agent.balanceKnown ? SeenFormat.usd(agent.balanceCents / 100) : '—'),
                         style: t.caption.copyWith(color: c.inkMuted),
                       ),
                     ],
@@ -562,7 +575,7 @@ class _ConfirmSheet extends StatelessWidget {
               context,
               title: l10n.transferFailedTitle,
               detail: [
-                if (loaded.fundingError != null) loaded.fundingError!,
+                if (loaded.fundingError != null) failureTextOr(l10n, loaded.fundingFailure, loaded.fundingError!),
                 if (loaded.fundingReference != null)
                   l10n.errorReference(loaded.fundingReference!),
               ].join(' · '),
@@ -642,7 +655,7 @@ class _ConfirmSheet extends StatelessWidget {
                       row(l10n.transferRowMyAfter,
                           SeenFormat.usd((availableCents! - cents) / 100)),
                     row(l10n.transferRowAgentAfter,
-                        SeenFormat.usd((agent.balanceCents + cents) / 100)),
+                        agent.balanceKnown ? SeenFormat.usd((agent.balanceCents + cents) / 100) : '—'),
                   ],
                 ),
               ),

@@ -18,14 +18,14 @@ import '../../../../core/theme/seen_typography.dart';
 import '../../../dynamic_forms/domain/entities/dynamic_form_field.dart';
 import '../../domain/entities/traveler_info.dart';
 import '../bloc/service_booking_bloc.dart';
+import '../bloc/prefill_cubit.dart';
+import '../widgets/prefill_link.dart';
 import '../bloc/service_booking_event.dart';
 import '../bloc/service_booking_state.dart';
 import '../bloc/traveler_attachment_cubit.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../domain/entities/booking_draft.dart';
+import '../../../../core/presentation/failure_message.dart';
 import '../utils/draft_summary.dart';
-import '../../../manifest/presentation/screens/manifest_build_screen.dart';
-import '../../../manifest/presentation/widgets/manifest_strings.dart';
 import '../widgets/save_draft_sheet.dart';
 import '../../../dynamic_forms/domain/validators/passport_validators.dart';
 import '../widgets/seen_attachment_slot.dart';
@@ -34,6 +34,7 @@ import '../widgets/seen_traveler_chips.dart' show SeenTravelerState;
 import '../widgets/seen_traveler_switcher.dart';
 import '../widgets/seen_validity_hint.dart';
 import 'booking_review_screen.dart';
+import '../widgets/passport_scan_entry.dart';
 
 const _passportExpiryFieldKey = 'passportExpiryDate';
 const _passportIssueFieldKey = 'passportIssueDate';
@@ -53,7 +54,10 @@ const _ltrFieldKeys = {'passportNumber'};
 /// from the same `DynamicFormField` definitions as before, rendered by
 /// [SeenDynamicField]; validation and the booking bloc are unchanged.
 class TravelerEntryScreen extends StatelessWidget {
-  const TravelerEntryScreen({super.key});
+  const TravelerEntryScreen({super.key, this.createPrefill});
+
+  /// Test seam for the "copy an earlier request" cubit of a service; defaults to the DI container.
+  final PrefillCubit Function(String serviceId)? createPrefill;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +66,34 @@ class TravelerEntryScreen extends StatelessWidget {
       // The picker is resolved on first use, so tests never touch the plugins.
       create: (_) => TravelerAttachmentCubit(
           () => InjectionContainer.instance.documentPicker),
-      child: BlocListener<ServiceBookingBloc, ServiceBookingState>(
+      child: MultiBlocListener(
+        listeners: [
+          // The server refused or could not be reached: say so (the form stays as it is).
+          BlocListener<ServiceBookingBloc, ServiceBookingState>(
+            listenWhen: (previous, current) =>
+                current is ServiceBookingInProgress &&
+                current.syncFailure != null &&
+                (previous is! ServiceBookingInProgress || previous.syncFailure != current.syncFailure),
+            listener: (context, state) {
+              final failure = (state as ServiceBookingInProgress).syncFailure!;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(localizedFailureMessage(AppLocalizations.of(context)!, failure))));
+            },
+          ),
+          // Filed as a draft on the server: leave the form.
+          BlocListener<ServiceBookingBloc, ServiceBookingState>(
+            listenWhen: (previous, current) => current is ServiceBookingInProgress && current.draftSaved,
+            listener: (context, state) {
+              final l10n = AppLocalizations.of(context)!;
+              context.read<ServiceBookingBloc>().add(const DraftSavedAcknowledged());
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(l10n.draftSaved)));
+              Navigator.of(context).pop();
+            },
+          ),
+          BlocListener<ServiceBookingBloc, ServiceBookingState>(
         listenWhen: (previous, current) =>
             current is ServiceBookingInProgress && current.reviewReady,
         listener: (context, state) {
@@ -78,6 +109,8 @@ class TravelerEntryScreen extends StatelessWidget {
             ),
           );
         },
+          ),
+        ],
         child: BlocBuilder<ServiceBookingBloc, ServiceBookingState>(
           buildWhen: (previous, current) =>
               _isDirty(previous) != _isDirty(current),
@@ -97,23 +130,17 @@ class TravelerEntryScreen extends StatelessWidget {
   static bool _isDirty(ServiceBookingState state) =>
       state is ServiceBookingInProgress && hasAnyTravelerData(state.travelers);
 
+  /// Leaving with data entered: keep it as a draft on the server (only possible
+  /// while every traveler is complete) or discard it (Figma REQ-04).
   Future<void> _askToSaveDraft(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
     final bloc = context.read<ServiceBookingBloc>();
     final state = bloc.state;
     if (state is! ServiceBookingInProgress) return;
     final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    final container = InjectionContainer.instance;
-    final existing =
-        (await container.getBookingDraftsUseCase()).getOrElse((_) => const []);
-    if (!context.mounted) return;
+    final documents = context.read<TravelerAttachmentCubit>().state.files;
     final choice = await showSaveDraftSheet(
       context,
       travelers: travelerCompleteness(state.travelers, state.travelerFields),
-      existingDrafts: existing.length,
-      isUpdate:
-          state.draftId != null && existing.any((d) => d.id == state.draftId),
     );
     switch (choice) {
       case null:
@@ -121,27 +148,8 @@ class TravelerEntryScreen extends StatelessWidget {
       case LeaveFormChoice.discard:
         navigator.pop();
       case LeaveFormChoice.save:
-        final id =
-            state.draftId ?? 'draft-${DateTime.now().microsecondsSinceEpoch}';
-        final saved = await container.saveBookingDraftUseCase(BookingDraft(
-          id: id,
-          serviceId: state.service.id,
-          serviceName: state.service.name,
-          category: state.service.category,
-          travelers: state.travelers,
-          updatedAt: DateTime.now(),
-          hospitalId: state.hospital?.id,
-          hospitalName: state.hospital?.name,
-        ));
-        final ok = saved.fold((_) => false, (r) => r == SaveDraftResult.saved);
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(
-              content: Text(ok ? l10n.draftSaved : l10n.recoveryServerError)));
-        if (ok) {
-          bloc.add(BookingDraftSaved(id));
-          navigator.pop();
-        }
+        // The listener leaves the form once the server holds the draft.
+        bloc.add(TravelerContinuePressed(documents: documents, saveOnly: true));
     }
   }
 
@@ -161,7 +169,7 @@ class TravelerEntryScreen extends StatelessWidget {
                 children: [
                   SeenScreenHeader(
                       title: state.service.name, subtitle: s.bookingStep(2, 3)),
-                  Expanded(child: _Body(state: state)),
+                  Expanded(child: _Body(state: state, createPrefill: createPrefill)),
                 ],
               );
             },
@@ -184,7 +192,9 @@ class TravelerEntryScreen extends StatelessWidget {
 }
 
 class _Body extends StatelessWidget {
-  const _Body({required this.state});
+  const _Body({required this.state, this.createPrefill});
+
+  final PrefillCubit Function(String serviceId)? createPrefill;
 
   final ServiceBookingInProgress state;
 
@@ -211,15 +221,10 @@ class _Body extends StatelessWidget {
             style: SeenType.of(context)
                 .caption
                 .copyWith(color: SeenColors.of(context).inkMuted)),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: SeenTextLink(
-            label: SeenStrings.of(context).openGroupManifest,
-            onTap: () => Navigator.of(context).push(ManifestBuildScreen.route(
-              serviceId: state.service.id,
-              serviceLabel: state.service.name,
-            )),
-          ),
+        PrefillLink(
+          serviceId: state.service.id,
+          onValues: (values) => context.read<ServiceBookingBloc>().add(TravelerPrefillApplied(values.travelers)),
+          createCubit: createPrefill == null ? null : () => createPrefill!(state.service.id),
         ),
         const SizedBox(height: SeenSpace.s3),
         // A fresh card per traveler, cross-faded (add / remove / switch).
@@ -286,7 +291,7 @@ class _TravelerCard extends StatelessWidget {
         key: ValueKey('${traveler.id}-${field.key}'),
         field: field,
         value: traveler.fieldValues[field.key],
-        errorText: errors[field.key],
+        errorText: _errorText(context, errors[field.key]),
         ltr: _ltrFieldKeys.contains(field.key),
         onChanged: (value) => context.read<ServiceBookingBloc>().add(
               TravelerFieldChanged(
@@ -304,13 +309,14 @@ class _TravelerCard extends StatelessWidget {
     Map<String, String> errors,
     Object? expiry,
   ) {
-    final byKey = {for (final f in state.travelerFields) f.key: f};
+    final visible = [for (final f in state.travelerFields) if (f.isVisible(traveler.fieldValues)) f];
+    final byKey = {for (final f in visible) f.key: f};
     final secondOfPair = {
       for (final e in _pairs.entries)
         if (byKey.containsKey(e.key) && byKey.containsKey(e.value)) e.value,
     };
     final out = <Widget>[];
-    for (final field in state.travelerFields) {
+    for (final field in visible) {
       if (secondOfPair.contains(field.key)) continue;
       final partner = secondOfPair.contains(_pairs[field.key])
           ? byKey[_pairs[field.key]]
@@ -338,9 +344,32 @@ class _TravelerCard extends StatelessWidget {
     return out;
   }
 
+  /// A message from the server's validation is shown in the app's own words.
+  static String? _errorText(BuildContext context, String? message) {
+    if (message == null || !message.startsWith(bookingServerIssuePrefix)) return message;
+    final issue = decodeServerIssue(message);
+    final l10n = AppLocalizations.of(context)!;
+    num number(String key) {
+      final v = issue.params[key];
+      return v is num ? v : num.tryParse('${v ?? ''}') ?? 0;
+    }
+    // The codes the server's field validation uses (services/validation.py), in the app's own words.
+    return switch (issue.code) {
+      'required' || 'document_missing' => l10n.validationRequired,
+      'too_short' => l10n.validationMinLength(number('min').toInt()),
+      'too_long' => l10n.validationMaxLength(number('max').toInt()),
+      'bad_number' => l10n.validationInvalidNumber,
+      'out_of_range' => '${l10n.validationNumberTooSmall(number('min'))} ${l10n.validationNumberTooLarge(number('max'))}',
+      'bad_date' || 'date_future' || 'date_past' || 'not_after' || 'not_before' => l10n.validationInvalidDate,
+      'too_soon' => l10n.validationExpiryTooSoon(number('months').toInt()),
+      'not_in_options' => l10n.validationInvalidSelection,
+      _ => l10n.validationServerRejected,
+    };
+  }
+
   /// Every required field has a value (a UX hint; the validator decides).
   bool _isComplete(Map<String, Object?> values) =>
-      state.travelerFields.where((f) => f.required).every((f) {
+      state.travelerFields.where((f) => f.isRequiredFor(values)).every((f) {
         final v = values[f.key];
         return v != null && !(v is String && v.trim().isEmpty);
       });
@@ -394,15 +423,19 @@ class _TravelerCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
+            // Reads the passport from a photo into the fields below (hidden when the flag is off).
+            PassportScanEntry(state: state),
             ..._fieldWidgets(context, state, traveler, errors, expiry),
             if (blocked) ...[const _SixMonthRule(), const SizedBox(height: 14)],
-            // No booking-attachment upload API yet: the file stays on the device
-            // and the slot says so (see TravelerAttachmentCubit).
-            SeenAttachmentSlot(
-              travelerId: traveler.id,
-              title: l10n.travelerAttachmentLabel,
-              caption: s.attachTypes,
-            ),
+            // One slot per document the service asks for, sent when the form is filed.
+            for (final requirement in state.service.documents) ...[
+              SeenAttachmentSlot(
+                travelerId: bookingDocumentSlot(traveler.id, requirement.id),
+                title: requirement.label,
+                caption: s.attachTypes,
+              ),
+              const SizedBox(height: 10),
+            ],
             if (state.travelers.length > 1) ...[
               const SizedBox(height: 6),
               Align(
@@ -437,12 +470,16 @@ class _ActionsBar extends StatelessWidget {
         final blocked = progress != null && progress.travelers.any((t) => _passportBlocked(t, now));
         final activeBlocked = progress != null && _passportBlocked(progress.activeTraveler, now);
         final canRemove = progress != null && activeBlocked && progress.travelers.length > 1;
+        final saving = progress?.isSaving ?? false;
         final next = SeenButton(
-          label: l10n.bookingNextAction,
+          label: saving ? l10n.loading : l10n.bookingNextAction,
           expand: true,
-          onPressed: blocked
+          loading: saving,
+          onPressed: blocked || saving
               ? null
-              : () => context.read<ServiceBookingBloc>().add(const TravelerContinuePressed()),
+              : () => context.read<ServiceBookingBloc>().add(
+                    TravelerContinuePressed(documents: context.read<TravelerAttachmentCubit>().state.files),
+                  ),
         );
         if (blocked) {
           return SeenActionBar(

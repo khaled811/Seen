@@ -143,18 +143,22 @@ class SeenReviewFeesCard extends StatelessWidget {
     required this.travelerCount,
     required this.perTravelerPrice,
     required this.totalLabel,
+    this.total,
   });
 
   final int travelerCount;
   final num perTravelerPrice;
   final String totalLabel;
 
+  /// The total the server quoted; computed from the unit price when absent.
+  final num? total;
+
   @override
   Widget build(BuildContext context) {
     final c = SeenColors.of(context);
     final type = SeenType.of(context);
     final s = SeenStrings.of(context);
-    final total = perTravelerPrice * travelerCount;
+    final total = this.total ?? perTravelerPrice * travelerCount;
     return _card(
       c,
       Padding(
@@ -268,7 +272,7 @@ class SeenWalletHoldCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             if (loading)
-              const Padding(padding: EdgeInsets.symmetric(vertical: SeenSpace.s2), child: Center(child: SeenLoader()))
+              const Padding(padding: EdgeInsets.symmetric(vertical: SeenSpace.s2), child: Center(child: SeenLoader(size: 24)))
             else if (available != null) ...[
               DecoratedBox(
                 decoration: BoxDecoration(color: c.card, borderRadius: const BorderRadius.all(SeenRadius.full)),

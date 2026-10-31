@@ -21,11 +21,14 @@ class DynamicFieldValidator {
   /// spaces/dashes/parentheses a user might type.
   static final _phoneRegExp = RegExp(r'^\+?[1-9]\d{7,14}$');
 
-  String? validate(DynamicFormField field, Object? rawValue) {
+  /// Validates one field. [values] are the traveler's other entered values,
+  /// needed for `show_if` / `required_if`; a hidden field is never an error.
+  String? validate(DynamicFormField field, Object? rawValue, {Map<String, Object?> values = const {}}) {
+    if (!field.isVisible(values)) return null;
     final isEmpty = rawValue == null ||
         (rawValue is String && rawValue.trim().isEmpty);
 
-    if (isEmpty) return field.required ? messages.required : null;
+    if (isEmpty) return field.isRequiredFor(values) ? messages.required : null;
 
     return switch (field.type) {
       FieldType.text || FieldType.textarea =>
@@ -73,6 +76,26 @@ class DynamicFieldValidator {
   String? _validateDate(DynamicFormField field, Object? rawValue) {
     if (rawValue is! DateTime) return messages.invalidDate;
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(rawValue.year, rawValue.month, rawValue.day);
+
+    // The server's date rules (hints; the server validates again).
+    if (field.dateNotFuture && day.isAfter(today)) return messages.dateInFuture(field.label);
+    if (field.dateNotPast && day.isBefore(today)) return (messages.dateInPast ?? (_) => messages.invalidDate)(field.label);
+    final validMonths = field.minValidMonths;
+    if (validMonths != null &&
+        !PassportValidators.isValidExpiryDate(rawValue, now: now, minMonths: validMonths)) {
+      return messages.expiryTooSoon(validMonths);
+    }
+    final minAge = field.minAgeYears;
+    if (minAge != null && minAge > 0 && day.isAfter(DateTime(today.year - minAge, today.month, today.day))) {
+      return (messages.ageTooYoung ?? (_) => messages.invalidDate)(minAge);
+    }
+    final maxAge = field.maxAgeYears;
+    if (maxAge != null && day.isBefore(DateTime(today.year - maxAge, today.month, today.day))) {
+      return (messages.ageTooOld ?? (_) => messages.invalidDate)(maxAge);
+    }
+
     return switch (field.dateConstraint) {
       DateFieldConstraint.none => null,
       DateFieldConstraint.minMonthsInFuture =>

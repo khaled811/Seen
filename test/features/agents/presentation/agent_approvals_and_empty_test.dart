@@ -8,6 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import '../../../support/agents_fakes.dart';
 import 'package:seen_booking/core/constants/enums.dart';
 import 'package:seen_booking/core/di/injection_container.dart';
 import 'package:seen_booking/core/error/failure.dart';
@@ -30,6 +31,7 @@ import 'package:seen_booking/features/agents/presentation/widgets/fund_sub_agent
 import 'package:seen_booking/features/wallet/domain/entities/wallet_balance.dart';
 import 'package:seen_booking/features/wallet/domain/entities/wallet_transaction.dart';
 import 'package:seen_booking/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:seen_booking/features/wallet/domain/entities/top_up_options.dart';
 import 'package:seen_booking/features/wallet/domain/usecases/get_wallet_balance_usecase.dart';
 
 final _requests = [
@@ -89,9 +91,10 @@ class _Repo implements AgentsRepository {
   }
 
   @override
-  Future<Either<Failure, SubAgent>> fundSubAgentWallet({
+  Future<Either<Failure, void>> fundSubAgentWallet({
     required String subAgentId,
     required int amountCents,
+    required String idempotencyKey,
     String? note,
   }) async {
     w.lastFund = amountCents;
@@ -103,7 +106,7 @@ class _Repo implements AgentsRepository {
         balanceCents: a.balanceCents + amountCents,
         isActive: true);
     w.agents = [updated];
-    return Right(updated);
+    return const Right(null);
   }
 
   @override
@@ -112,22 +115,16 @@ class _Repo implements AgentsRepository {
       throw UnimplementedError();
 
   @override
-  Future<Either<Failure, SubAgent>> updateCreditLimit(
-          {required String subAgentId, required int limitCents}) async =>
-      throw UnimplementedError();
-
-  @override
   Future<Either<Failure, SubAgentProfile>> getSubAgentProfile(
           String subAgentId) async =>
       throw UnimplementedError();
 
   @override
-  Future<Either<Failure, SubAgent>> setSubAgentActive({
+  Future<Either<Failure, void>> setSubAgentActive({
     required String subAgentId,
     required bool active,
-    String? reason,
   }) async =>
-      throw UnimplementedError();
+      const Right(null);
 }
 
 class _WalletRepo implements WalletRepository {
@@ -151,11 +148,16 @@ class _WalletRepo implements WalletRepository {
       throw UnimplementedError();
 
   @override
+  Future<Either<Failure, TopUpOptions>> getTopUpOptions() async => const Left(ServerFailure('x'));
+
+  @override
   Future<Either<Failure, WalletTransaction>> requestTopUp({
     required int amountCents,
     required TopUpMethod method,
     required String referenceNumber,
-    String? notes,
+    required String idempotencyKey,
+    String? paymentAccountId,
+    String? receiptFileId,
   }) async =>
       throw UnimplementedError();
 }
@@ -210,7 +212,7 @@ void main() {
         'lists the waiting requests with value and counts them in the header',
         (tester) async {
       w.pending = _requests;
-      await pump(tester, () => const SubAgentApprovalsScreen());
+      await pump(tester, () => const SubAgentApprovalsScreen(createTopUps: emptyTopUpsCubit));
       expect(find.text('موافقات الوكلاء'), findsOneWidget);
       expect(find.text('٢ بانتظارك'), findsOneWidget);
       expect(find.text('مكتب الريان'), findsOneWidget);
@@ -221,7 +223,7 @@ void main() {
 
     testWidgets('approve removes the request', (tester) async {
       w.pending = _requests;
-      await pump(tester, () => const SubAgentApprovalsScreen());
+      await pump(tester, () => const SubAgentApprovalsScreen(createTopUps: emptyTopUpsCubit));
       await tester.tap(find.text('موافقة').first);
       await settle(tester);
       expect(w.approved, 'a');
@@ -233,7 +235,7 @@ void main() {
         'reject needs a reason; "another reason" needs a note; the reason is sent',
         (tester) async {
       w.pending = _requests;
-      await pump(tester, () => const SubAgentApprovalsScreen());
+      await pump(tester, () => const SubAgentApprovalsScreen(createTopUps: emptyTopUpsCubit));
       await tester.tap(find.text('رفض').first);
       await tester.pumpAndSettle();
       expect(find.text('سبب الرفض'), findsOneWidget);
@@ -260,7 +262,7 @@ void main() {
     });
 
     testWidgets('nothing waiting shows the empty note', (tester) async {
-      await pump(tester, () => const SubAgentApprovalsScreen());
+      await pump(tester, () => const SubAgentApprovalsScreen(createTopUps: emptyTopUpsCubit));
       expect(find.text('لا طلبات بانتظار موافقتك'), findsOneWidget);
     });
   });

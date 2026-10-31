@@ -1,44 +1,20 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import '../../../../core/config/debug_fallbacks.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../../core/error/failure.dart';
-import '../../../../core/network/graphql_service.dart';
+import '../../../../core/error/unsupported.dart';
 import '../../domain/entities/hospital.dart';
 import '../../domain/repositories/hospital_repository.dart';
 
-/// GraphQL access to hospital availability.
-///
-/// TODO(backend-contract): placeholder query `hospitalAvailability(serviceId)`; see
-/// docs/BACKEND_MIGRATION_GAPS.md section 44.
+/// Hospital availability has no operation in the API, and no operation of the
+/// request flow takes a hospital either (DECISIONS D-15), so this is always
+/// `unsupported_operation`: nothing is sent and nothing is faked.
 class HospitalRemoteDataSource implements HospitalRepository {
-  HospitalRemoteDataSource({required GraphQLService graphQLService}) : _graphQL = graphQLService;
-
-  final GraphQLService _graphQL;
-
-  static final _doc = gql(r'''
-    query HospitalAvailability($serviceId: ID!) {
-      hospitalAvailability(serviceId: $serviceId) { id name capacity remaining }
-    }
-  ''');
+  const HospitalRemoteDataSource();
 
   @override
-  Future<Either<Failure, List<Hospital>>> availability(String serviceId) =>
-      _graphQL.query<List<Hospital>>(QueryOptions<List<Hospital>>(
-        document: _doc,
-        variables: {'serviceId': serviceId},
-        // Places change by the hour: never a cached answer.
-        fetchPolicy: FetchPolicy.networkOnly,
-        parserFn: (j) => [
-          for (final h in (j['hospitalAvailability'] as List<dynamic>).cast<Map<String, dynamic>>())
-            Hospital(
-              id: h['id'] as String,
-              name: h['name'] as String? ?? '',
-              capacity: (h['capacity'] as num?)?.toInt() ?? 0,
-              remaining: (h['remaining'] as num?)?.toInt() ?? 0,
-            ),
-        ],
-      ));
+  Future<Either<Failure, List<Hospital>>> availability(String serviceId) async =>
+      unsupportedOperation('Hospital availability');
 }
 
 /// DEBUG ONLY: when the call fails in a debug build, answers with the three hospitals of the
@@ -51,7 +27,7 @@ class DebugFallbackHospitalRepository implements HospitalRepository {
   @override
   Future<Either<Failure, List<Hospital>>> availability(String serviceId) async {
     final r = await _real.availability(serviceId);
-    if (kDebugMode && r.isLeft()) {
+    if (debugFallbacksEnabled && r.isLeft()) {
       return const Right([
         Hospital(id: 'h1', name: 'مستشفى الأردن', capacity: 40, remaining: 12),
         Hospital(id: 'h2', name: 'المستشفى التخصصي', capacity: 30, remaining: 3),
